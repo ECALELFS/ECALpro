@@ -1,0 +1,15 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+
+<use name="CalibCode/CalibTools"/>
+
+<use name="CalibCode/GBRTrain"/>
+<use name="CalibCode/EgammaObjects"/>
+<use name="Geometry/EcalAlgo"/>
+<use name="roottmva"/>
+
+<flags EDM_PLUGIN="1"/>
+<export>
+   <lib name="1"/>
+</export>
