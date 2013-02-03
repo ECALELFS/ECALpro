@@ -82,6 +82,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.EEContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EEContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.ContCorr_EB              = cms.untracked.string('" + pwd + "/common/" + EBContCorr + "')\n")
     outputfile.write("process.analyzerFillEpsilon.json_file               = cms.untracked.string('" + pwd + "/common/" + json_file + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.HLTResults              = cms.untracked.bool(" + HLTResults + ")\n")
     if(is2012):
         outputfile.write("process.analyzerFillEpsilon.Is2012               = cms.untracked.bool(True)\n")
     else:

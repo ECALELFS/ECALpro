@@ -31,82 +31,84 @@ EBContCorr = 'correctionsEB.root'
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
-inputlist_n = 'ALL_2012C_good.list' # list of the input files
+inputlist_n = 'ALL_2012D_good.list' # list of the input files
 ijobmax     = 3                     #5 number of files per job
 nHadd       = 35                    #50 number of files per hadd
 nFit        = 2000                  # number of fits done in parallel
 Barrel_or_Endcap='ALL_PLEASE'       #Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname     = 'ALL_2012C_NormSelect_NormFit_Merged_02'
-NameTag='2012Cmerg_'                #Tag to the names to avoid overlap
-queueForDaemon       = '1nw'        #Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue                = '1nd'
+dirname     = 'ALL_2012D_NormSelect_NormFit_Merged_NEWLaser_04'
+NameTag='2012Dmerg_'                #Tag to the names to avoid overlap
+queueForDaemon       = 'cmscaf1nw'        #Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+queue                = 'cmscaf1nd'
 
 nIterations = 14
 
 #-----------------------------------------------------------------------------------
-#alphaTagRecord2='';alphaTag2='';alphaDB2=''
-#GeVTagRecord='';GeVTag='';GeVDB=''
+alphaTagRecord2='';alphaTag2='';alphaDB2=''
+GeVTagRecord='';GeVTag='';GeVDB=''
 
-################
-#2012D
+######################################################################
+# Now decomment the part that correspond to data you want to run on. #
+######################################################################
+##2012D
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt
-#json_file ='goodrunlist_json2012D.txt'
-#HLTResults = 'True'
-#is2012 = True
-#is_2011 = 'True' #Just for the fit, put true 
-#useHLTFilter="True"
-#correctHits='True'
-#overWriteGlobalTag = True
-##|OLD |globaltag='GR_P_V42::All'
-#globaltag='GR_P_V40::All'
-#ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-#eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-#esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-#doEnenerScale='True'
-#doIC='True'
-#doLaserCorr="True"
-#GeVTagRecord='EcalADCToGeVConstantRcd'
-#GeVTag='EcalADCToGeVConstant_Bon_V20111129'
-#GeVDB='frontier://FrontierProd/CMS_COND_31X_ECAL'
-#laserTagRecord='EcalIntercalibConstantsRcd'
-#laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-#laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-##alphaTagRecord2='EcalLaserAlphasRcd'
-##alphaTag2='EcalLaserAlphas_EB_sic1_btcp152_EE_sic1_btcp116'
-##alphaDB2='frontier://FrontierInt/CMS_COND_ECAL'
-#alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-##|TT EE SBAGLIATA| alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
-#alphaTag='EcalLaserAPDPNRatios_20130124_447_p1_v2'
-#alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-#HLTPaths='AlCa_EcalPi0*' 
-
-##############
-#2012C
-###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-json_file ='goodrunlist_json2012C.txt'
+json_file ='goodrunlist_json2012D.txt'
 HLTResults = 'True'
 is2012 = True
 is_2011 = 'True' #Just for the fit, put true 
 useHLTFilter="True"
 correctHits='True'
 overWriteGlobalTag = True
-globaltag='GR_P_V42::All'
+#|OLD |globaltag='GR_P_V42::All'
+globaltag='GR_P_V40::All'
 ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
 eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
 esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
 doEnenerScale='True'
 doIC='True'
 doLaserCorr="True"
+GeVTagRecord='EcalADCToGeVConstantRcd'
+GeVTag='EcalADCToGeVConstant_Bon_V20111129'
+GeVDB='frontier://FrontierProd/CMS_COND_31X_ECAL'
 laserTagRecord='EcalIntercalibConstantsRcd'
 laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
 laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#alphaTagRecord2='EcalLaserAlphasRcd'
+#alphaTag2='EcalLaserAlphas_EB_sic1_btcp152_EE_sic1_btcp116'
+#alphaDB2='frontier://FrontierInt/CMS_COND_ECAL'
 alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#|TT EE SBAGLIATA| alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+alphaTag='EcalLaserAPDPNRatios_20130124_447_p1_v2'
 alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
 HLTPaths='AlCa_EcalPi0*' 
 
 ##############
-#2012B
+#2012C
+###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
+#json_file ='goodrunlist_json2012C.txt'
+#HLTResults = 'True'
+#is2012 = True
+#is_2011 = 'True' #Just for the fit, put true 
+#useHLTFilter="True"
+#correctHits='True'
+#overWriteGlobalTag = True
+#globaltag='GR_P_V42::All'
+#ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+#eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+#esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+#doEnenerScale='True'
+#doIC='True'
+#doLaserCorr="True"
+#laserTagRecord='EcalIntercalibConstantsRcd'
+#laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#HLTPaths='AlCa_EcalPi0*' 
+
+##############
+##2012B
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
 #json_file ='goodrunlist_json2012C.txt'
 #HLTResults = 'True'
@@ -132,7 +134,7 @@ HLTPaths='AlCa_EcalPi0*'
 
 
 ##############
-#2011 AlcaRAW
+##2011 AlcaRAW
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions11/7TeV/Prompt/Cert_160404-180252_7TeV_PromptReco_Collisions11_JSON.txt
 #json_file ='goodrunlist_json2011.txt'
 #HLTResults = 'False'
@@ -158,7 +160,7 @@ HLTPaths='AlCa_EcalPi0*'
 
 ##############
 
-#2010 AlcaRECO
+##2010 AlcaRECO
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/StreamExpress/goodrunlist_json.txt
 #json_file = 'goodrunlist_json2010.txt'
 #HLTResults = 'False'

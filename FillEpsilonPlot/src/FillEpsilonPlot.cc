@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.36 2013/01/25 13:45:21 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.38 2013/01/30 15:55:29 lpernie Exp $
 //
 //
 
@@ -116,6 +116,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EBRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag");
     EERecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
     ESRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
+    HLTResults_             = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     l1TriggerTag_           = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerTag_             = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
     outfilename_            = iConfig.getUntrackedParameter<std::string>("OutputFile");
@@ -182,23 +183,15 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
     GeometryService::setGeometryPtr(geom_);
     
     /// containment corrections
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
     if(useEEContainmentCorrections_)
         containmentCorrections_.loadContainmentPointCorrectionsEE(eeContainmentCorrections_.c_str());
     if(useEBContainmentCorrections_){
         containmentCorrections_.loadContainmentCorrectionsEB(ebContainmentCorrections_.c_str());
-        //EBPHI_Cont_Corr_load( "/afs/cern.ch/work/l/lpernie/pi0/Calibration/CMSSW_4_2_4/src/CalibCode/submit/common/correctionsEB_PHI.root" );
         EBPHI_Cont_Corr_load( ebPHIContainmentCorrections_.c_str() );
     }
-#ifdef NEW_CONTCORR 
-    cout << "trying to open Luca's containment corrections" << endl;
-    if(useEBContainmentCorrections_)  EB_Cont_Corr_load( ContCorr_EB_.c_str() );
 #endif
-#ifdef RESIDUALCORR
-    if(useEBContainmentCorrections_){
-       bool isETA = true;  EB_Resid_Corr_load( isETA );
-            isETA = false; EB_Resid_Corr_load( isETA );
-    }
-#endif
+
     /// subdetector topology
     ebtopology_ = new CaloTopology();
     EcalBarrelHardcodedTopology* ebHTopology = new EcalBarrelHardcodedTopology();
@@ -207,8 +200,6 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
     eetopology_ = new CaloTopology();  
     EcalEndcapHardcodedTopology* eeHTopology=new EcalEndcapHardcodedTopology();
     eetopology_->setSubdetTopology(DetId::Ecal,EcalEndcap,eeHTopology);
-    
-    estopology_ = new EcalPreshowerHardcodedTopology();
     
     /// retrieving calibration coefficients of the previous iteration
     if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
@@ -219,7 +210,6 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
        cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
        sprintf(fileName,"%s", calibMapPath_.c_str());
        regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
-       //if     ( calibTypeNumber_ == xtal )    { (xtalCalib.getCalibMap())->loadCalibMapFromFile(fileName);}
     }
 
     /// epsilon histograms
@@ -298,7 +288,6 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
     hev_JSON = new TH1F("hev_JSON", "Events after Json file selection",1, 0.5, 1.5);
 }
 
-
 FillEpsilonPlot::~FillEpsilonPlot()
 {
     externalGeometryFile_->Close();
@@ -326,34 +315,21 @@ FillEpsilonPlot::~FillEpsilonPlot()
     delete geom_;
     delete ebtopology_;
     delete eetopology_;
-    delete estopology_;
-    if(useEBContainmentCorrections_){
-#ifdef NEW_CONTCORR 
-       delete EB_ConCorr_1;
-       delete EB_ConCorr_2;
-       delete EB_ConCorr_3;
-       delete EB_ConCorr_4;
-       delete EB_ConCorr_5;
-       delete EB_ConCorr_6;
-       delete EB_ConCorr_7;
+
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
+    delete EBPHI_ConCorr_p;
+    delete EBPHI_ConCorr_m;
 #endif
-#ifdef RESIDUALCORR
-       delete EB_Residual_Eta;
-       delete EB_Residual_Phi;
-#endif
-    }
+
 #ifdef MVA_REGRESSIO_EB
-      //delete TTree_JoshMva;
+    //delete TTree_JoshMva;
     //delete reader_;
 #endif
 
-#ifdef DEBUG_HIGHETA
-   delete Tree_HighEta;
-   delete Tree_HighEta_clus;
-#endif
-   //JSON
-   delete hev_TOT;
-   delete hev_JSON;
+    //JSON
+    delete myjson;
+    delete hev_TOT;
+    delete hev_JSON;
 }
 
 
@@ -370,11 +346,11 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    ///------- HANDLE ---------
     
-    cout<<"iEvent.id()  "<<iEvent.id().event()<<endl;
     if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
     else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
     //cout<<"passed!"<<endl;
     //ES
+
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
     geometry = geoHandle.product();
@@ -398,14 +374,19 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    vs2s9.clear();
 
    Ncristal_EB.clear();
-   
-   if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*") ) fillEBClusters(ebclusters, iEvent);
+   bool EB_HLT=true, EE_HLT=true;
+   if( HLTResults_ ){
+       EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
+       EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
+   }
+    
+   if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) fillEBClusters(ebclusters, iEvent);
 
    std::vector< CaloCluster > eseeclusters; 
    std::vector< CaloCluster > eseeclusters_tot; 
    eseeclusters.clear(); eseeclusters_tot.clear();
    Ncristal_EE.clear();  
-   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*") ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
+   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
 
 
    //EB
@@ -418,6 +399,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot,EcalEndcap);
    #endif
 
+   delete estopology_;
+   //delete geometry_p;
 //   BeamSpot beamSpot;
 //   edm::Handle<BeamSpot> beamSpotHandle;
 //   eventCont->getByLabel("offlineBeamSpot", beamSpotHandle);
@@ -609,11 +592,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
           if(s4s9<S4S9_cut_[EcalBarrel]) continue;
 
-         // energy corrections in bins of eta and energy
-         //if(!noCorrections_) e3x3 *= energyCorrection(e3x3,clusPos.eta());
-         //if(!noCorrections_) e3x3 *=  containmentCorrections_.getContainmentCorrectionsEB(e3x3,seed_ieta);
-
-#if !defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
          if(useEBContainmentCorrections_) 
          {
              e3x3 *=  containmentCorrections_.getContainmentCorrectionsEB(e3x3, seed_id.ieta() );
@@ -621,53 +600,9 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
          }
 #endif
 
-//Otherwise you can use mine
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
-         if(useEBContainmentCorrections_) e3x3 *=  EB_Cont_Corr(e3x3/cosh(clusPos.eta()), abs(seed_id.ieta()) );
-#endif
-
-//Residual
-#ifdef RESIDUALCORR
-             e3x3 *= EB_Resid_Corr( seed_id.ieta(), seed_id.iphi() );
-#endif
-
-//MVA require not other correction
-#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO_EB)
-
-        //CaloCluster *g2 = new CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL),enFracs, CaloCluster::undefined, seed_id );
-        //EBDetId EBId( g1->seed() ); int iEta = EBId.ieta(); int iPhi = EBId.iphi();
-
-        //MVA_E3x3_1 = e3x3;
-        //MVA_E3x3MC_1 = e3x3;
-        //MVA_Pt_1 = e3x3/cosh(clusPos.eta());
-        //MVA_Nxtal_1 = RecHitsInWindow.size();
-        //MVA_S1S9_1 = itseed->energy()/e3x3 ;
-        //int IndMax=-1;
-        //double maxEne = max_array( EnergyCristals, 9 );
-        //for(int i=0; i<9; i++){ if(EnergyCristals[i]==maxEne) IndMax = i; }
-        //for(int i=0; i<9; i++){ if(i == IndMax) EnergyCristals[i]=0.; }
-        //double maxEne2 = max_array( EnergyCristals, 9);
-        //MVA_S2S9_1 = (maxEne+maxEne2)/e3x3 ;
-        //MVA_S4S9_1 = s4s9;
-        //MVA_Eta_1 = iEta;
-        //MVA_Phi_1 = iPhi;
-        //MVA_Eta_1on5 = iEta%5;
-        //MVA_Phi_1on2 = iPhi%2;
-        //MVA_Eta_1on2520 = (TMath::Abs(iEta)<=25)*(iEta%25) + (TMath::Abs(iEta)>25)*((iEta-25*TMath::Abs(iEta)/iEta)%20); //Distance in xtal from module boundaries
-        //MVA_Phi_1on20 = iPhi%20;
-
-        //double result =  reader_->EvaluateMVA("BDTG");
-        //cout<<MVA_Pt_1<<" "<<MVA_Nxtal_1<<" "<<MVA_S1S9_1<<" "<<MVA_S2S9_1<<" "<<MVA_S4S9_1<<"  "<<MVA_Eta_1<<"  "<<MVA_Phi_1<<" "<<MVA_Eta_1on5<<"  "<<MVA_Phi_1on2<<" "<<MVA_Eta_1on2520<<" "<<MVA_Phi_1on20<<endl;
-        //if( e3x3>0.01 && (e3x3/cosh(clusPos.eta()))>0.6 && RecHitsInWindow.size()>7 && s4s9>0.8) cout<<"MVA REGERESSION: "<<result<<endl;
-        //e3x3 *=result;
-#endif
-
          // compute pt of gamma and cut
          float ptClus = e3x3/cosh(clusPos.eta());
-
-         //cout << "seed #" << seed_c << " ptClus(after): " << ptClus << endl;
          
-         // default alca: ptClus > 0.8
          if(ptClus<gPtCut_[EcalBarrel]) continue;
 
          // make calo clusters
@@ -905,9 +840,6 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
     //loop over eecluster to find matches with preshower
     int ind=0;
-#ifdef DEBUG_HIGHETA   
-    int ngamma(0);
-#endif
     std::vector<int> Nxtal; Nxtal.clear();
     std::vector<int> Nxtal_tot; Nxtal_tot.clear();
 
@@ -946,10 +878,9 @@ if(fabs(eeclus_iter->position().Eta())>1.7 && fabs(eeclus_iter->position().Eta()
              double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
 
              tempenergy = deltaE + eeclus_iter->energy();
-
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
              if(useEEContainmentCorrections_) tempenergy *= containmentCorrections_.getContainmentPointCorrectionsEE( tempenergy , (eeclus_iter->position()).eta() );
-
-             // cout << "EE corr w ES: " <<  containmentCorrections_.getContainmentPointCorrectionsEE( tempenergy , (eeclus_iter->position()).eta() ) << endl;
+#endif
 
              eseeclusters.push_back( CaloCluster( tempenergy, eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
              Nxtal.push_back(Ncristal_EE[ind]);
@@ -964,46 +895,17 @@ if(fabs(eeclus_iter->position().Eta())>1.7 && fabs(eeclus_iter->position().Eta()
                   math::XYZPoint posit(posClu.x(),posClu.y(),posClu.z());
                   eseeclusters_tot.push_back( CaloCluster( tempenergy, posit, CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
                   Nxtal_tot.push_back(Ncristal_EE[ind]);
-#ifdef DEBUG_HIGHETA
-                  ESpos_eta_1_clus[ngamma] = posit.Eta();
-                  ESpos_phi_1_clus[ngamma] = posit.Phi();
-                  ESpos_eta_2_clus[ngamma] = eeclus_iter->position().Eta();
-                  ESpos_phi_2_clus[ngamma] = eeclus_iter->position().Phi();
-                  ngamma++;
-#endif
                 }
            }
         }
 }
-//@
+
 else{
     eseeclusters_tot.push_back( CaloCluster( eeclus_iter->energy(), eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
     Nxtal_tot.push_back(Ncristal_EE[ind]);
 }
-  //      else if(!useOnlyEEClusterMatchedWithES_) 
-  //      {
-  //          //cout << "using EE clusters not matched with ES" << endl;
-  //        eseeclusters.push_back( 
-  //            CaloCluster( eeclus_iter->energy() * ( useEEContainmentCorrections_ ? 
-  //                                                 ( containmentCorrections_.getContainmentPointCorrectionsEE( eeclus_iter->energy() ,(eeclus_iter->position()).eta()) ) : 1. ), 
-  //                         eeclus_iter->position(), 
-  //                         CaloID(CaloID::DET_ECAL_ENDCAP), 
-  //                         eeclus_iter->hitsAndFractions(), 
-  //                         CaloCluster::undefined, 
-  //                         eeclus_iter->seed() ) );
-  //        Nxtal.push_back(Ncristal_EE[ind]);
-  //        //cout << "EE corr w/o ES: " <<  containmentCorrections_.getContainmentPointCorrectionsEE( eeclus_iter->energy() , (eeclus_iter->position()).eta() ) << endl; 
-  //        //cout << "    '- crosscheck: "<< (useEEContainmentCorrections_ ? containmentCorrections_.getContainmentPointCorrectionsEE( eeclus_iter->energy() ,(eeclus_iter->position()).eta())  : 1.) << endl; 
-  //      } 
-
     }//end of the matching loop
 
-#ifdef DEBUG_HIGHETA
-    if(ngamma>0){
-      nPi0HighEta_clus = ngamma;
-      Tree_HighEta_clus->Fill();
-    }
-#endif
     Ncristal_EE.clear();
     #ifndef NEWCUT_ESPOS
     Ncristal_EE = Nxtal;
@@ -1067,9 +969,6 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
 void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
 {
 
-#ifdef DEBUG_HIGHETA
-    int pi0High(0);
-#endif
     if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
         throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
 
@@ -1165,17 +1064,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
     
            math::PtEtaPhiMLorentzVector pi0P4 = g1P4 + g2P4;
 
-#ifdef DEBUG_HIGHETA
-          // Studio Posizione Clusetr eta alti
-          //if(subDetId == EcalEndcap && fabs(pi0P4.eta())>1.7 && abs(pi0P4.eta())<2.4){
-          if(subDetId == EcalEndcap && abs(pi0P4.eta())>2.5){
-              ESpos_eta_1[pi0High] = g1->eta(); ESpos_phi_1[pi0High] = g1->phi();
-              ESpos_eta_2[pi0High] = g2->eta(); ESpos_phi_2[pi0High] = g1->phi();
-              ESpos_mass[pi0High]  = pi0P4.mass();
-              pi0High++;
-          }
-#endif
-          //@@ In case ES give same posizion for different clusters
+          //In case ES give same posizion for different clusters
           if( pi0P4.mass()<0.002 ) continue;
 #ifdef SELECTION_TREE
           if( subDetId == EcalBarrel ){ 
@@ -1301,12 +1190,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
             }
         } // loop over clusters (g2)
     } // loop over clusters to make pi0 
-#ifdef DEBUG_HIGHETA
-    if(pi0High>0){
-      nPi0HighEta = pi0High;
-      Tree_HighEta->Fill();
-    }
-#endif
 }
 
 
@@ -1344,23 +1227,6 @@ FillEpsilonPlot::beginJob()
     eep.Write();
     eem.Write();
     
-#ifdef DEBUG_HIGHETA
-    Tree_HighEta = new TTree("Tree_HighEta","Pos gamma if pi0 is high Eta");
-    Tree_HighEta->Branch("nPi0HighEta", &nPi0HighEta, "nPi0HighEta/I");
-    Tree_HighEta->Branch("ESpos_eta_1", &ESpos_eta_1, "ESpos_eta_1[nPi0HighEta]/F");
-    Tree_HighEta->Branch("ESpos_phi_1", &ESpos_phi_1, "ESpos_phi_1[nPi0HighEta]/F");
-    Tree_HighEta->Branch("ESpos_eta_2", &ESpos_eta_2, "ESpos_eta_2[nPi0HighEta]/F");
-    Tree_HighEta->Branch("ESpos_phi_2", &ESpos_phi_2, "ESpos_phi_2[nPi0HighEta]/F");
-    Tree_HighEta->Branch("ESpos_mass", &ESpos_mass, "ESpos_mass[nPi0HighEta]/F");
-
-    Tree_HighEta_clus = new TTree("Tree_HighEta_clus","Pos Clus and ES");
-    Tree_HighEta_clus->Branch("nPi0HighEta_clus", &nPi0HighEta_clus, "nPi0HighEta_clus/I");
-    Tree_HighEta_clus->Branch("ESpos_eta_1_clus", &ESpos_eta_1_clus, "ESpos_eta_1_clus[nPi0HighEta_clus]/F");
-    Tree_HighEta_clus->Branch("ESpos_phi_1_clus", &ESpos_phi_1_clus, "ESpos_phi_1_clus[nPi0HighEta_clus]/F");
-    Tree_HighEta_clus->Branch("ESpos_eta_2_clus", &ESpos_eta_2_clus, "ESpos_eta_2_clus[nPi0HighEta_clus]/F");
-    Tree_HighEta_clus->Branch("ESpos_phi_2_clus", &ESpos_phi_2_clus, "ESpos_phi_2_clus[nPi0HighEta_clus]/F");
-#endif
-
 #ifdef MVA_REGRESSIO_EB
    // TTree_JoshMva = new TTree("TTree_JoshMva","MVA corrections");
    // TTree_JoshMva->Branch("Correction1_mva", &Correction1_mva, "Correction1_mva/F");
@@ -1494,47 +1360,12 @@ FillEpsilonPlot::endJob()
     triggerComposition->Write();
     if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
     if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
-#ifdef DEBUG_HIGHETA
-    Tree_HighEta->Write();
-    Tree_HighEta_clus->Write();
-#endif
+
 #ifdef MVA_REGRESSIO_EB
     //TTree_JoshMva->Write();
 #endif
 }
 
-// ------------ EB LOAD Containment correction  ------------
-void FillEpsilonPlot::EB_Cont_Corr_load(std::string FileName )
-{
-    TFile* f = TFile::Open(FileName.c_str());
-    if(!f)     cout << "Invalid Cont. corr. file " << FileName << " .. try again" << endl;
-
-    else{
-	  EB_ConCorr_1 = (TH1F*) f->Get("EB_FittedContCorr_bin_1");
-	  EB_ConCorr_2 = (TH1F*) f->Get("EB_FittedContCorr_bin_2");
-	  EB_ConCorr_3 = (TH1F*) f->Get("EB_FittedContCorr_bin_3");
-	  EB_ConCorr_4 = (TH1F*) f->Get("EB_FittedContCorr_bin_4");
-	  EB_ConCorr_5 = (TH1F*) f->Get("EB_FittedContCorr_bin_5");
-	  EB_ConCorr_6 = (TH1F*) f->Get("EB_FittedContCorr_bin_6");
-	  EB_ConCorr_7 = (TH1F*) f->Get("EB_FittedContCorr_bin_7");
-    }
-    f->Close();
-}
-
-// ------------ EB LOAD Residual correction  ------------
-void FillEpsilonPlot::EB_Resid_Corr_load( bool isETA )
-{
-    std::string FileName = "/afs/cern.ch/work/l/lpernie/pi0/Calibration/CMSSW_4_2_4/src/CalibCode/submit/common/Residual_2010_i";
-    if(isETA) FileName += "ETA_00.root";
-    else      FileName += "PHI_00.root";
-    TFile* f = TFile::Open(FileName.c_str());
-    if(!f)     cout << "Invalid Residual file " << FileName << " .. try again" << endl;
-    else{
-	  if(isETA)  EB_Residual_Eta = (TH1F*) f->Get("res_2010_iETA");
-	  else       EB_Residual_Phi = (TH1F*) f->Get("res_2010_iPHI"); 
-
-    }
-}
 // ------------ EBPHI LOAD Containment correction  ------------
 void FillEpsilonPlot::EBPHI_Cont_Corr_load(std::string FileName )
 {
@@ -1549,43 +1380,6 @@ void FillEpsilonPlot::EBPHI_Cont_Corr_load(std::string FileName )
     }
     f->Close();
 }
-
-// ------------ EB Containment correction  ------------
-float FillEpsilonPlot::EB_Cont_Corr(float PT, int iEta)
-{
-
-    // Choos PT bin
-    int ien=0;
-    double PtBinBoundEB[7];
-    PtBinBoundEB[0]=0.; PtBinBoundEB[1]=0.9; PtBinBoundEB[2]=1.5; PtBinBoundEB[3]=2.1; PtBinBoundEB[4]=3.; PtBinBoundEB[5]=5.; PtBinBoundEB[6]=8.;
-
-    for(ien=0; ien < 7; ++ien) {
-	  if(PT <= PtBinBoundEB[ien+1]) break;
-    }
-    //ien puo' essere 7
-    float Correction = 1.;
-    if(ien==0) Correction = EB_ConCorr_1->GetBinContent(iEta+1);    
-    if(ien==1) Correction = EB_ConCorr_2->GetBinContent(iEta+1);    
-    if(ien==2) Correction = EB_ConCorr_3->GetBinContent(iEta+1);    
-    if(ien==3) Correction = EB_ConCorr_4->GetBinContent(iEta+1);    
-    if(ien==4) Correction = EB_ConCorr_5->GetBinContent(iEta+1);    
-    if(ien==5) Correction = EB_ConCorr_6->GetBinContent(iEta+1);    
-    else       Correction = EB_ConCorr_7->GetBinContent(iEta+1);    
-
-    if(Correction > 0.85){ return 1./Correction;}
-    else{                if(iEta!=85 && iEta!=0){ cout<<"Cont. Correction too low... I'm using 1. Check if all is right please. (iEta = "<<iEta<<" )"<<endl;}  return 1.;}
-}
-
-// ------------ EB Residual correction  ------------
-float FillEpsilonPlot::EB_Resid_Corr(int iEta, int iPhi)
-{
-    float Res(1.);
-    Res *= EB_Residual_Eta->GetBinContent( iEta+85 );
-    Res *= EB_Residual_Phi->GetBinContent( iPhi );
-
-    return 1/Res;
-}
-
 
 // ------------ EBPHI Containment correction  ------------
 float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)

@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.18 2012/12/06 11:36:16 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.19 2013/01/30 17:46:29 lpernie Exp $
 //
 //
 
@@ -144,7 +144,7 @@ void FitEpsilonPlot::loadEpsilonPlot(char *filename)
     inputEpsilonFile_ = TFile::Open(filename);
     if(!inputEpsilonFile_) 
         throw cms::Exception("loadEpsilonPlot") << "Cannot open file " << string(filename) << "\n"; 
-  if( EEoEB_ == "Barrel" ){
+  if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
     for(int iR=inRangeFit_; iR < finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
     {
         sprintf(line,"Barrel/epsilon_EB_iR_%d",iR);
@@ -156,7 +156,7 @@ void FitEpsilonPlot::loadEpsilonPlot(char *filename)
             cout << "FIT_EPSILON: Epsilon distribution for EB region " << iR << " loaded" << endl;
     }
   }
-  else if( EEoEB_ == "Endcap" ){
+  else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
     for(int jR=inRangeFit_; jR < finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
     {
         sprintf(line,"Endcap/epsilon_EE_iR_%d",jR);
@@ -167,7 +167,6 @@ void FitEpsilonPlot::loadEpsilonPlot(char *filename)
             cout << "FIT_EPSILON: Epsilon distribution for EE region " << jR << " loaded" << endl;
     }
   }
-  else throw cms::Exception("loadEpsilonPlot") << "Input to fit is not Barrel neither endcap " << "\n";
 }
 
 

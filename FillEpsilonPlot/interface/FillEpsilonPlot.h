@@ -27,11 +27,8 @@
 
 //#define SELECTION_TREE
 #define NEWCUT_ESPOS
-//#define RESIDUALCORR
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO_EB
-//#define DEBUG_HIGHETA
-//To see why at high Eta you have a hot eta-ring
 
 //MVA Stuff
 #if not defined(__CINT__) || defined(__MAKECINT__)
@@ -84,25 +81,13 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool getTriggerByName( std::string s );
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
 
-      float EB_Cont_Corr( float PT, int iEta);
-      float EB_Resid_Corr(int iEta, int iPhi);
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
-      void  EB_Cont_Corr_load(std::string FileName );
-      void  EB_Resid_Corr_load( bool isETA );
       void  EBPHI_Cont_Corr_load(std::string FileName );
-      TH1F * EB_ConCorr_1;
-      TH1F * EB_ConCorr_2;
-      TH1F * EB_ConCorr_3;
-      TH1F * EB_ConCorr_4;
-      TH1F * EB_ConCorr_5;
-      TH1F * EB_ConCorr_6;
-      TH1F * EB_ConCorr_7;
       TH1F * EBPHI_ConCorr_p;
       TH1F * EBPHI_ConCorr_m;
-      //Residual
-      TH1F * EB_Residual_Eta;
-      TH1F * EB_Residual_Phi;
-
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
+      EcalEnerCorr containmentCorrections_;
+#endif
       // ----------member data ---------------------------
  
       const EcalPreshowerGeometry *esGeometry_;     
@@ -122,7 +107,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useEEContainmentCorrections_;
       bool useOnlyEEClusterMatchedWithES_;
       bool Is2012_;
-
+      bool HLTResults_;
       edm::InputTag EBRecHitCollectionTag_;
       edm::InputTag EERecHitCollectionTag_;
       edm::InputTag ESRecHitCollectionTag_;
@@ -137,9 +122,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       CaloTopology *eetopology_;
       CaloSubdetectorTopology *estopology_;
       
-      EcalEnerCorr containmentCorrections_;
-      //bool noCorrections_;
-
       std::string calibTypeString_;
       calibGranularity calibTypeNumber_;
 
@@ -180,7 +162,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useMassInsteadOfEpsilon_;
 
 #ifdef SELECTION_TREE
-      Float_t NSeeds_EB, Xclus_EB, Yclus_EB, Zclus_EB, e3x3_EB, S4S9_EB, PTClus_EB;//@@@@
+      Float_t NSeeds_EB, Xclus_EB, Yclus_EB, Zclus_EB, e3x3_EB, S4S9_EB, PTClus_EB;
       void Fill_NSeeds_EB(float nSeed){ NSeeds_EB=nSeed; };
       void Fill_xClus_EB(float x){ Xclus_EB=x; };
       void Fill_yClus_EB(float y){ Xclus_EB=y; };
@@ -220,12 +202,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool areLabelsSet_;
 
       std::vector<std::string> alcaL1TrigNames_;
-      //std::vector<std::string> l1TrigNames_(128,"");
       std::map< std::string, int > l1TrigNames_;
       bool l1TrigBit_[128];
 #ifdef MVA_REGRESSIO_EB
       Float_t   MVA_Pt_1, MVA_S1S9_1, MVA_S2S9_1, MVA_S4S9_1;
-      //Int_t   MVA_Nxtal_1, MVA_Eta_1, MVA_Phi_1, MVA_Eta_1on5, MVA_Phi_1on2, MVA_Eta_1on2520, MVA_Phi_1on20;
       Float_t   MVA_Nxtal_1, MVA_Eta_1, MVA_Phi_1, MVA_Eta_1on5, MVA_Phi_1on2, MVA_Eta_1on2520, MVA_Phi_1on20;
       Float_t MVA_E3x3_1;
       Float_t MVA_E3x3MC_1;
@@ -243,22 +223,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
       //Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva;
 #endif   
-#ifdef DEBUG_HIGHETA
-      static const int nMaxMC = 350;
-      TTree *Tree_HighEta;
-      Int_t nPi0HighEta;
-      Float_t ESpos_eta_1[nMaxMC];
-      Float_t ESpos_phi_1[nMaxMC];
-      Float_t ESpos_eta_2[nMaxMC];
-      Float_t ESpos_phi_2[nMaxMC];
-      Float_t ESpos_mass[nMaxMC];
-      TTree *Tree_HighEta_clus;
-      Int_t nPi0HighEta_clus;
-      Float_t ESpos_eta_1_clus[nMaxMC];
-      Float_t ESpos_phi_1_clus[nMaxMC];
-      Float_t ESpos_eta_2_clus[nMaxMC];
-      Float_t ESpos_phi_2_clus[nMaxMC];
-#endif
       //JSON
       int ev_TOT;
       int ev_JSON;
