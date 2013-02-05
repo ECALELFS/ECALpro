@@ -3,8 +3,23 @@ Welcome and thanks for choosing the ECALpro tools!
 
 Intro:
 
+To get IC you basically need only to do 2 things:
+1) Set the file parameters.py with the right values
+2) lounce the command: "./submitCalibration.py"
+----
+
+1) parameters.py
+It contains all parameters define yout IC, divided id:
+ a) Calib parameter: Name of directories, output names, how to split jobs, the queues.
+       This is the first part of the file. in general is commnted the meaning of the variable, so it is easy to understand.
+ b) IC parameter: selection cuts, Name of the dataset, json files, Global Tag, Laser correction, adcToGev Tag ecc...
+       This is easy to choose, because they are in the last part of the file, and just decommenting the part of the dataset you need you will have all consistent values.
 
 
+2) submitCalibration.py
+It creates all the directories and the cfg/sh files you need to run the calibration (using the functions in method.py). At the end of the process it will launche the DEAMON. This is a job that controll all the others, waiting that
+they finish to proced with the calibration.
+----
 
 For more questions: luca.pernie@cern.ch
 
