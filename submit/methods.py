@@ -34,7 +34,7 @@ def printFillCfg1( outputfile ):
               outputfile.write('     )\n')
         if not(alphaTag2==''):
            outputfile.write('     ),\n')
-           outputfile.write("     cms.PSet(record = cms.string('" + alphaTag2 + "'),\n")
+           outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord2 + "'),\n")
            outputfile.write("             tag = cms.string('" + alphaTag2 + "'),\n")
            outputfile.write("             connect = cms.untracked.string('" + alphaDB2 + "')\n")
            outputfile.write('     )\n')
@@ -169,7 +169,7 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
     outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
 
-def printSubmitSrc(outputfile, cfgName, source, destination, pwd):
+def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     if(is2012):
@@ -177,8 +177,12 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd):
     else:       
         outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("echo 'cmsRun " + cfgName + "'\n")
-    outputfile.write("cmsRun " + cfgName + "\n")
+    if not(Silent):
+        outputfile.write("echo 'cmsRun " + cfgName + "'\n")
+        outputfile.write("cmsRun " + cfgName + "\n")
+    else:
+        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FILL_COUT:/{quote}' > " + logpath  + "\n")
+        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
     outputfile.write("echo 'cmsStage -f " + source + " " + destination + "'\n")
     outputfile.write("cmsStage -f " + source + " " + destination + "\n")
     outputfile.write("echo 'rm -f " + source + "'\n")
