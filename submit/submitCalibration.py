@@ -155,7 +155,8 @@ for iter in range(nIterations):
         fillSrc_f = open( fillSrc_n, 'w')
         source_s = NameTag +outputFile + "_" + str(ijob) + ".root"
         destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
-        printSubmitSrc(fillSrc_f, fill_cfg_n, "/tmp/" + source_s, destination_s , pwd)
+        logpathFill = pwd + "/" + dirname + "/log/" + "fillEpsilonPlot_iter_" + str(iter) + "_job_" + str(ijob) + ".log"
+        printSubmitSrc(fillSrc_f, fill_cfg_n, "/tmp/" + source_s, destination_s , pwd, logpathFill)
         fillSrc_f.close()
 
         # make the source file executable
