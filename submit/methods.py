@@ -78,6 +78,9 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EBContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('" + pwd + "/common/" + MVAEBContainmentCorrections_01 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('" + pwd + "/common/" + MVAEBContainmentCorrections_02 + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('" + pwd + "/common/" + MVAEEContainmentCorrections_01 + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('" + pwd + "/common/" + MVAEEContainmentCorrections_02 + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('" + pwd + "/common/" + Endc_x_y + "')\n")
     outputfile.write("process.analyzerFillEpsilon.EBPHIContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EBPHIContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.EEContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EEContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.ContCorr_EB              = cms.untracked.string('" + pwd + "/common/" + EBContCorr + "')\n")
@@ -180,13 +183,19 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
+        outputfile.write("echo 'cmsStage -f " + source + " " + destination + "'\n")
+        outputfile.write("cmsStage -f " + source + " " + destination + "\n")
+        outputfile.write("echo 'rm -f " + source + "'\n")
+        outputfile.write("rm -f " + source + "\n")
     else:
         outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FILL_COUT:/{quote}' > " + logpath  + "\n")
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
-    outputfile.write("echo 'cmsStage -f " + source + " " + destination + "'\n")
-    outputfile.write("cmsStage -f " + source + " " + destination + "\n")
-    outputfile.write("echo 'rm -f " + source + "'\n")
-    outputfile.write("rm -f " + source + "\n")
+        outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
+        outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+        outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")
+        outputfile.write("cmsStage -f " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
+        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
 
 def printParallelHadd(outputfile, outFile, list, destination, pwd):
     outputfile.write("#!/bin/bash\n")
