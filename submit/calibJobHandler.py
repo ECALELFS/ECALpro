@@ -27,7 +27,11 @@ for iters in range(nIterations):
         # preparing submission of filling tasks
         fill_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".log"
         fill_src_n = srcPath + "/Fill/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
-        submit_s = "bsub -q " + queue + " -o " + fill_log_n + " " + fill_src_n
+        if not(Silent):
+             submit_s = "bsub -q " + queue + " -o " + fill_log_n + " " + fill_src_n
+        else:
+             submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fill_src_n
+
         print '\n[job #' + str(ijob) + '] :: ' + submit_s
 
         # actually submitting filling tasks
