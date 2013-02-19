@@ -26,9 +26,9 @@
 #include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
 //#define SELECTION_TREE
-#define NEWCUT_ESPOS
 //#define NEW_CONTCORR
-#define MVA_REGRESSIO_EB
+#define MVA_REGRESSIO
+//#define MVA_REGRESSIO_EE
 
 //MVA Stuff
 #if not defined(__CINT__) || defined(__MAKECINT__)
@@ -37,7 +37,7 @@
 #include "TMVA/Reader.h"
 #endif
 
-#ifdef MVA_REGRESSIO_EB
+#ifdef MVA_REGRESSIO
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
 #include "Cintex/Cintex.h"
@@ -45,6 +45,14 @@
 
 enum calibGranularity{ xtal, tt, etaring };
 //enum subdet{ thisIsEE, thisIsEB }; 
+
+struct iXiYtoRing {
+    int iX;
+    int iY;
+    int sign;
+    int Ring;
+    iXiYtoRing() : iX(0), iY(0), sign(0), Ring(-1) { }
+} GiveRing;
 
 using namespace reco;
 
@@ -85,7 +93,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void  EBPHI_Cont_Corr_load(std::string FileName );
       TH1F * EBPHI_ConCorr_p;
       TH1F * EBPHI_ConCorr_m;
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO_EB)
+#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
       EcalEnerCorr containmentCorrections_;
 #endif
       // ----------member data ---------------------------
@@ -100,6 +108,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string ebContainmentCorrections_;
       std::string MVAEBContainmentCorrections_01_;
       std::string MVAEBContainmentCorrections_02_;
+      std::string MVAEEContainmentCorrections_01_;
+      std::string MVAEEContainmentCorrections_02_;
+      std::string Endc_x_y_;
       std::string ebPHIContainmentCorrections_;
       std::string eeContainmentCorrections_;
       std::string Barrel_orEndcap_;
@@ -204,13 +215,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<std::string> alcaL1TrigNames_;
       std::map< std::string, int > l1TrigNames_;
       bool l1TrigBit_[128];
-#ifdef MVA_REGRESSIO_EB
-      Float_t   MVA_Pt_1, MVA_S1S9_1, MVA_S2S9_1, MVA_S4S9_1;
-      Float_t   MVA_Nxtal_1, MVA_Eta_1, MVA_Phi_1, MVA_Eta_1on5, MVA_Phi_1on2, MVA_Eta_1on2520, MVA_Phi_1on20;
-      Float_t MVA_E3x3_1;
-      Float_t MVA_E3x3MC_1;
-      //TMVA::Reader *reader_;
-      vector<float> vNxtal;
+#ifdef MVA_REGRESSIO
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
@@ -222,7 +227,21 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //TTree *TTree_JoshMva;
       //Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
       //Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva;
-#endif   
+#endif
+#ifdef MVA_REGRESSIO_EE
+      vector<iXiYtoRing> VectRing;
+      vector<float> vs4s9EE;
+      vector<float> vs1s9EE;
+      vector<float> vs2s9EE;
+      vector<float> ESratio;
+      TFile *EEweight_file_pi01;
+      TFile *EEweight_file_pi02;
+      const GBRForest *forest_EE_pi01;
+      const GBRForest *forest_EE_pi02;
+      TTree *TTree_JoshMva_EE;
+      Float_t Correction1EE_mva, Correction2EE_mva, Pt1EE_mva, Pt2EE_mva, MassEE_mva, MassEEOr_mva;
+      Int_t   iX1_mva, iY1_mva, iX2_mva, iY2_mva, EtaRing1_mva, EtaRing2_mva;
+#endif
       //JSON
       int ev_TOT;
       int ev_JSON;
