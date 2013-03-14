@@ -34,7 +34,10 @@ I suggest you to use ThePerfectBashScript.sh in Utilities to do that.
 3) After calibration:
 When calibration is finished you can work in your IC, and print teh IC.txt used to crate a TAG with your IC.
  a) You can start checking if the IC are converged using the "Convergence.C" in AfterCalibTools/TestConvergence.
-    doing .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","directory",nIter,"TAGname") you your see that the RMS of the IC iter by iter decreas gradually under the per mill.
+    doing:
+      gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
+      .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","directory",nIter,"TAGname")
+    you your see that the RMS of the IC iter by iter decreas gradually under the per mill.
  b) Then you want to applky the residual correction from 2010 using "Residual.C". Residual are final correction to recover what Containment correction are not correcting.
     To do that you need to have IC derived on 2010 with the same selection you are using on your dataset:
     (I have it and is /store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root).
