@@ -1,10 +1,10 @@
-#ifndef __CINT__
-#include "RooGlobalFunc.h"
-#else
-// Refer to a class implemented in libRooFit to force its loading
-// via the autoloader.
-class Roo2DKeysPdf;
-#endif
+//#ifndef __CINT__
+//#include "RooGlobalFunc.h"
+//#else
+//// Refer to a class implemented in libRooFit to force its loading
+//// via the autoloader.
+//class Roo2DKeysPdf;
+//#endif
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "RooGaussian.h"
@@ -60,10 +60,14 @@ static const int MIN_IPHI = 1;
 void Convergence( string Path_0, string Path, int nIter, string Tag ){
 
     string PathL = "root://eoscms//eos/cms" + Path_0 + Path;
-
     system( (string("mkdir -p plot_") + Path ).c_str());
-
     TCanvas* myc1 = new TCanvas("myc1", "CMS", 600, 600);
+    TString outname = "plot_" + Path + "/Differences.root";
+    TFile* output = new TFile(outname.Data(),"RECREATE");
+    TH2F* rms_EB  = new TH2F("rms_EB","IC(n)-IC(n-1) #phi on x #eta on y",MAX_IPHI, MIN_IPHI, MAX_IPHI, 2*MAX_IETA+1, -MAX_IETA-0.5, MAX_IETA+0.5 );
+    TH2F* rms_EEp = new TH2F("rms_EEp","IC(n)-IC(n-1) iX on x iY on y (EEp)",100,0.5,100.5,100,0.5,100.5);
+    TH2F* rms_EEm = new TH2F("rms_EEm","IC(n)-IC(n-1) iY on x iY on y (EEm)",100,0.5,100.5,100,0.5,100.5);
+
     for(int isEB=0; isEB<2; isEB++){  
 
 	  float *EB_RMS = NULL;
@@ -74,7 +78,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 	  float hmean(0.), hrms(0.01), sigma_plot(0);
 	  if(isEB==1){ hmean=0.02; hrms=0.015; }
 
-	  for(int i=0; i<nIter-1; i++){
+	  for(int i=0; i<nIter; i++){
 
 		//Iter
 		stringstream ss; ss<<i;
@@ -100,10 +104,22 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 		}
 		Float_t coeff, coeff1;
 		Float_t Ndof, Ndof1;
+		Int_t ieta, iphi, ix, iy, iz;
 		Tree->SetBranchAddress( "coeff_", &coeff);
 		Tree1->SetBranchAddress( "coeff_", &coeff1);
 		Tree->SetBranchAddress( "Ndof_", &Ndof);
 		Tree1->SetBranchAddress( "Ndof_", &Ndof1);
+		Tree->SetBranchAddress( "Ndof_", &Ndof);
+		Tree1->SetBranchAddress( "Ndof_", &Ndof1);
+		if(isEB==0){
+		    Tree1->SetBranchAddress( "ieta_", &ieta);
+		    Tree1->SetBranchAddress( "iphi_", &iphi);
+		}
+		if(isEB==1){
+		    Tree1->SetBranchAddress( "ix_", &ix);
+		    Tree1->SetBranchAddress( "iy_", &iy);
+		    Tree1->SetBranchAddress( "zside_", &iz);
+		}
 
 		//Histo
 		TH1F *h1; h1 =new TH1F("h1","",100,hmean-3*hrms,hmean+3*hrms);
@@ -117,6 +133,20 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 			  if(isEB==0 )                              h1->Fill((coeff1-coeff));
 			  if(isEB==1 && coeff>0.97 && coeff1>0.97 ) h1->Fill((coeff1-coeff));
 		    }
+
+		    if(i==nIter-1){
+			  if(isEB==0 && coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && Ndof>10 && Ndof1>10){ 
+				rms_EB->SetBinContent(iphi, ieta+86., fabs(coeff1-coeff)/coeff1);
+			  }
+			  if(isEB==1){
+				if(iz==1){    
+				    rms_EEp->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
+				}
+				else if(iz==-1)rms_EEm->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
+				else cout<<"WARNING!!! zside_ not -1 or 1"<<endl;
+			  }
+		    }
+
 		}
 		TString out;
 		if(isEB==0) out = "plot_" + Path + "/EB_Iter_" + Iter + ".png";
@@ -195,4 +225,13 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 	  if(isEB==1) out = "plot_" + Path + "/EE_IC_Convergence.png";
 	  myc1->SaveAs(out.Data());
     }
+    output->cd();
+    rms_EB->Write();
+    rms_EEp->Write();
+    rms_EEm->Write();
+    output->Close();
+//    delete output;
+//    delete rms_EB;
+//    delete rms_EEp;
+//    delete rms_EEm;
 }
