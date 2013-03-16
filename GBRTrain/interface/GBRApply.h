@@ -42,7 +42,6 @@
        ~GBRApply();
        
        TTree *ApplyAsFriend(TTree *intree, const GBRForest *forest, const std::vector<std::string> &vars, std::string targetname="target") const;
-       float ApplyAsFriend_calib( const GBRForest *forest, std::vector<float> vars ) const;
        
     protected:
       

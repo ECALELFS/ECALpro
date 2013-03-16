@@ -19,17 +19,6 @@ GBRApply::~GBRApply()
 }
 
 //_______________________________________________________________________
-float GBRApply::ApplyAsFriend_calib( const GBRForest *forest, std::vector<float> vars ) const
-{
-  Float_t *vals = new Float_t[vars.size()];
-  for(unsigned int i=0; i<vars.size(); i++ ){
-     vals[i] = vars[i];
-  }
-  
-  float Correction = forest->GetResponse(vals);
-  return Correction;
-}
-//_______________________________________________________________________
 TTree *GBRApply::ApplyAsFriend(TTree *intree, const GBRForest *forest, const std::vector<std::string> &vars, std::string targetname) const
 {
   
