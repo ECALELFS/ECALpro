@@ -61,9 +61,8 @@ def printFillCfg1( outputfile ):
     outputfile.write('    process.AlcaP0Filter.HLTPaths = ["' + HLTPaths + '"]\n\n')
 
     outputfile.write("process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(" + nEventsPerJob +") )\n")
-    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 10000\n")
+    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 1000000\n")
     outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
-    outputfile.write("        threshold  = cms.untracked.string('ERROR'),\n")
     outputfile.write("        ERROR      = cms.untracked.PSet (\n")
     outputfile.write("                                         limit = cms.untracked.int32(1)\n")
     outputfile.write("        )\n")
@@ -73,6 +72,10 @@ def printFillCfg1( outputfile ):
     outputfile.write(")\n")
     outputfile.write("process.source = cms.Source('PoolSource',\n")
     outputfile.write("    fileNames = cms.untracked.vstring(\n")
+    outputfile.write("import PhysicsTools.PythonAnalysis.LumiList as LumiList\n")
+    outputfile.write("myLumis = LumiList.LumiList(filename = 'common/" + json_file + "').getCMSSWString().split(',')\n")
+    outputfile.write("process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
+    outputfile.write("process.source.lumisToProcess.extend(myLumis)\n")
 
 def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    )\n")
