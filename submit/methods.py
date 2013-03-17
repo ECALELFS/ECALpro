@@ -62,6 +62,15 @@ def printFillCfg1( outputfile ):
 
     outputfile.write("process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(" + nEventsPerJob +") )\n")
     outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 10000\n")
+    outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
+    outputfile.write("        threshold  = cms.untracked.string('ERROR'),\n")
+    outputfile.write("        ERROR      = cms.untracked.PSet (\n")
+    outputfile.write("                                         limit = cms.untracked.int32(1)\n")
+    outputfile.write("        )\n")
+    outputfile.write(")\n")
+    outputfile.write("process.options = cms.untracked.PSet(\n")
+    outputfile.write("   wantSummary = cms.untracked.bool(True)\n")
+    outputfile.write(")\n")
     outputfile.write("process.source = cms.Source('PoolSource',\n")
     outputfile.write("    fileNames = cms.untracked.vstring(\n")
 
