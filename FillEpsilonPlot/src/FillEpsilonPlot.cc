@@ -28,7 +28,6 @@
 // user include files
 #include "TFile.h"
 #include "TRegexp.h"
-//#include "TStopwatch.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -205,7 +204,7 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
     eetopology_ = new CaloTopology();  
     EcalEndcapHardcodedTopology* eeHTopology=new EcalEndcapHardcodedTopology();
     eetopology_->setSubdetTopology(DetId::Ecal,EcalEndcap,eeHTopology);
-
+    
     /// retrieving calibration coefficients of the previous iteration
     if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
     else if(currentIteration_ > 0)
@@ -331,18 +330,11 @@ FillEpsilonPlot::~FillEpsilonPlot()
     delete EBPHI_ConCorr_p;
     delete EBPHI_ConCorr_m;
 #endif
+
     //JSON
     delete myjson;
     delete hev_TOT;
     delete hev_JSON;
-#ifdef MVA_REGRESSIO
-    delete forest_EB_pi01;
-    delete forest_EB_pi02;
-#endif
-#ifdef MVA_REGRESSIO_EE
-    delete forest_EE_pi01;
-    delete forest_EE_pi02;
-#endif
 }
 
 
@@ -356,6 +348,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 {
 //cout<<"----------------------------Start Event--------------------------------------------------"<<endl;
    using namespace edm;
+
     //For Syst error SystOrNot_=1 or 2, for normal calib is 0
     if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
     else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
@@ -365,7 +358,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
     geometry = geoHandle.product();
     estopology_ = new EcalPreshowerTopology(geoHandle);
-    esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
+    const CaloSubdetectorGeometry *geometry_p = geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ;
+    esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>(geometry_p));
 
    /// ------ EB CLUSTERS -------
    //if( !getTriggerResult(iEvent, iSetup)) return;
@@ -392,7 +386,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
        EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
        EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
    }
-
+    
    if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) fillEBClusters(ebclusters, iEvent);
    if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
 
@@ -400,6 +394,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot,EcalEndcap);
 
    delete estopology_;
+
 }
 
 
@@ -414,8 +409,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
    std::vector<EcalRecHit> ebseeds;
    ebseeds.clear();
 
-   typedef std::set<EBDetId> XtalInUse;
-
+   typedef std::map< EBDetId, bool > XtalInUse;
    XtalInUse isUsed; // map of which xtals have been used
 
    int dc = 0;
@@ -440,10 +434,12 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
          EBDetId seed_id( itseed->id() );
 
          // check if seed already in use. If so go to next seed
-         if(isUsed.count(seed_id)!=0) continue;
+         XtalInUse::const_iterator mapit = isUsed.find( seed_id );
+         if( mapit != isUsed.end() ) continue; // seed already in use
 
          // find 3x3 matrix of xtals
-         std::vector<DetId> clus_v = ebtopology_->getWindow(seed_id,3,3);       
+         int clusEtaSize_(3), clusPhiSize_(3);
+         std::vector<DetId> clus_v = ebtopology_->getWindow(seed_id,clusEtaSize_,clusPhiSize_);       
          // needed for position calculator
          std::vector<std::pair<DetId,float> > clus_used;
 
@@ -459,7 +455,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
          {
             EBDetId thisId( *det );
             // skip this xtal if already used
-            if(isUsed.count(thisId)!=0) continue; //already used
+            XtalInUse::const_iterator mapit = isUsed.find( thisId );
+            if( mapit != isUsed.end() ) continue; // xtal already used
 
             // find the rec hit
             EBRecHitCollection::const_iterator ixtal = ebHandle->find( thisId );
@@ -479,7 +476,10 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
            continue;
          }
 
-         float s4s9_tmp[4]={0.,0.,0.,0.};
+         float s4s9_tmp[4];
+         for(int i=0;i<4;i++){ 
+            s4s9_tmp[i]= 0;
+         }
 
          int seed_ieta = seed_id.ieta();
          int seed_iphi = seed_id.iphi();
@@ -525,12 +525,12 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
             {
                e3x3 += en;
                if(dx <= 0 && dy <=0){ s4s9_tmp[0] += en; }
-               else if(dx >= 0 && dy <=0){ s4s9_tmp[1] += en; }
-               else if(dx <= 0 && dy >=0){ s4s9_tmp[2] += en; }
-               else if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
+               if(dx >= 0 && dy <=0){ s4s9_tmp[1] += en; }
+               if(dx <= 0 && dy >=0){ s4s9_tmp[2] += en; }
+               if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
                enFracs.push_back( std::make_pair( RecHitsInWindow[j]->id(), en ) );
                                 // NOTA BENE: sto usando le frazioni per salvare energia rechit
-               isUsed.insert(RecHitsInWindow[j]->id());
+               isUsed[ RecHitsInWindow[j]->id() ] = true;
 
             }
 
@@ -614,6 +614,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle);
 
     std::vector<EcalRecHit> eeseeds;
+    eeseeds.clear();
 
     vector <double> eeclusterS4S9; eeclusterS4S9.clear();
 #ifdef MVA_REGRESSIO_EE
@@ -718,9 +719,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
        float T0 = PCparams_.param_T0_endc_;
        float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
        float maxToFront = geom_->getPosition(eeseed_id).mag(); // to front face
-#ifdef MVA_REGRESSIO_EE
        double EnergyCristals[9] = {0.};
-#endif
+
        // loop over xtals and compute energy and position
        for(unsigned int j=0; j<RecHitsInWindow.size();j++)
        {
@@ -734,9 +734,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
           float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
           int dx = seed_ix-ix;
           int dy = seed_iy-iy;
-#ifdef MVA_REGRESSIO_EE
           EnergyCristals[j] = en;
-#endif
+
           if(abs(dx)<=1 && abs(dy)<=1) 
           {
              e3x3 += en;
@@ -852,9 +851,7 @@ if(fabs(eeclus_iter->position().Eta())>1.7 && fabs(eeclus_iter->position().Eta()
 
              eseeclusters.push_back( CaloCluster( tempenergy, eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
              Nxtal.push_back(Ncristal_EE[ind]);
-             //The perfect cluster
-             //double DZ2 = (preshowerclusterp2.get_z()-preshowerclusterp1.get_z() )/2.;
-             //GlobalPoint posClu(preshowerclusterp1.get_x()*(1.+DZ2/preshowerclusterp1.get_z() ),preshowerclusterp2.get_y()*(1.-DZ2/preshowerclusterp2.get_z()),(preshowerclusterp1.get_z()+preshowerclusterp2.get_z() )/2. );
+
              double DZ2 = (preshowerclusterp2.z()-preshowerclusterp1.z() )/2.;
              GlobalPoint posClu(preshowerclusterp1.x()*(1.+DZ2/preshowerclusterp1.z() ),preshowerclusterp2.y()*(1.-DZ2/preshowerclusterp2.z()),(preshowerclusterp1.z()+preshowerclusterp2.z() )/2. );
 
@@ -995,8 +992,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
        value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
        value_pi01[13] = ( iPhi1%20 );
        float Correct1 = forest_EB_pi01->GetResponse(value_pi01);
-        //cout<<"Correction1: "<<Correct1<<" iEta: "<<iEta1<<" iPhi "<<iPhi1<<" E "<<G_Sort_1.E()<<endl;
-          
        float value_pi02[14];
        value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
        value_pi02[1] = ( G_Sort_2.Pt() );
@@ -1013,7 +1008,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
        value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
        value_pi02[13] = ( iPhi2%20 );
        float Correct2 = forest_EB_pi02->GetResponse(value_pi02);
-       //cout<<"Correction2: "<<Correct2<<" iEta: "<<iEta2<<" iPhi "<<iPhi2<<" E "<<G_Sort_2.E()<<endl;
 
          if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
          else           { Corr1 = Correct2; Corr2 = Correct1; }
@@ -1030,7 +1024,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
          //Mass_mva = (mvag1P4 + mvag2P4).M();
          //MassOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
          //TTree_JoshMva->Fill();   
-
+       
      }
 #endif
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO_EE)
