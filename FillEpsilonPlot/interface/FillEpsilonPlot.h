@@ -23,7 +23,7 @@
 #include "Geometry/EcalAlgo/interface/EcalPreshowerGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 //JSON
-#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
+//#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
@@ -243,9 +243,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   iX1_mva, iY1_mva, iX2_mva, iY2_mva, EtaRing1_mva, EtaRing2_mva;
 #endif
       //JSON
-      int ev_TOT;
-      int ev_JSON;
-      JSON* myjson;
-      TH1F *hev_TOT;
-      TH1F *hev_JSON;    
+      //int ev_TOT;
+      //int ev_JSON;
+      //JSON* myjson;
+      //TH1F *hev_TOT;
+      //TH1F *hev_JSON;    
 };
