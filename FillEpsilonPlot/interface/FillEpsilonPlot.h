@@ -97,7 +97,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       EcalEnerCorr containmentCorrections_;
 #endif
       // ----------member data ---------------------------
- 
+      edm::Handle< EBRecHitCollection > ebHandle;
+      edm::Handle< EBRecHitCollection > eeHandle;
+      edm::Handle< ESRecHitCollection > esHandle;
+
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
 
@@ -243,9 +246,5 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   iX1_mva, iY1_mva, iX2_mva, iY2_mva, EtaRing1_mva, EtaRing2_mva;
 #endif
       //JSON
-      //int ev_TOT;
-      //int ev_JSON;
       //JSON* myjson;
-      //TH1F *hev_TOT;
-      //TH1F *hev_JSON;    
 };

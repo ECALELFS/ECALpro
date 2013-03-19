@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.5 2013/03/18 22:48:42 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.6 2013/03/18 23:21:04 lpernie Exp $
 //
 //
 
@@ -292,11 +292,7 @@ cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat comput
     forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
 #endif
     //JSON
-    //ev_TOT=0;
-    //ev_JSON=0;
     //myjson = new JSON(jsonFile_.c_str());
-    //hev_TOT  = new TH1F("hev_TOT", "Events before Json file selection",1, 0.5, 1.5);
-    //hev_JSON = new TH1F("hev_JSON", "Events after Json file selection",1, 0.5, 1.5);
 }
 
 FillEpsilonPlot::~FillEpsilonPlot()
@@ -333,8 +329,6 @@ FillEpsilonPlot::~FillEpsilonPlot()
 #endif
     //JSON
     //delete myjson;
-    //delete hev_TOT;
-    //delete hev_JSON;
 #ifdef MVA_REGRESSIO
     delete forest_EB_pi01;
     delete forest_EB_pi02;
@@ -360,6 +354,10 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
     else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
 
+    iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
+    iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);
+    iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);
+
     //ES
     edm::ESHandle<CaloGeometry> geoHandle;
     iSetup.get<CaloGeometryRecord>().get(geoHandle);
@@ -377,9 +375,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    //Vectors
    std::vector< CaloCluster > ebclusters; // contains the output clusters
    ebclusters.clear();
-   vs4s9.clear();
-   vs2s9.clear();
-   vs2s9.clear();
+   vs4s9.clear(); vs2s9.clear(); vs2s9.clear();
 #ifdef MVA_REGRESSIO_EE
    vs4s9EE.clear(); vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
 #endif
@@ -407,9 +403,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent)
 /*===============================================================*/
 {
-   edm::Handle< EBRecHitCollection > ebHandle;
-   bool goodhandle = iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
-   if(!goodhandle) cout << "problem in eventCont->getByLabel ( ebLabel, ebHandle)" << endl;
 
    std::vector<EcalRecHit> ebseeds;
 
@@ -601,14 +594,6 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent)
 /*===============================================================*/
 {
-    edm::Handle< EERecHitCollection > eeHandle;                     
-    bool goodhandle = iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);                     
-    if(!goodhandle) throw cms::Exception("Handle") << "Bad EE Handle\n";
-
-    edm::Handle< ESRecHitCollection > esHandle;                     
-    goodhandle = iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);  
-    if(!goodhandle) throw cms::Exception("Handle") << "Bad ES Handle\n";
-
     PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle);
 
     std::vector<EcalRecHit> eeseeds;
@@ -643,18 +628,16 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
     sort(eeseeds.begin(), eeseeds.end(), ecalRecHitLess());
     
-    typedef std::map< EEDetId, bool > EEXtalInUse;
-    EEXtalInUse EEXisUsed;  //map of which eextals have been used
-    
-   
+    typedef std::set<EBDetId> EEXtalInUse;
+    EEXtalInUse EEXisUsed; // map of which xtals have been used
+
     //loop over seeds to make eeclusters
     for (std::vector<EcalRecHit>::iterator eeitseed=eeseeds.begin(); eeitseed!=eeseeds.end(); eeitseed++) 
     {
        EEDetId eeseed_id( eeitseed->id() );
 
        // check if seed already in use. If so go to next seed
-       EEXtalInUse::const_iterator mapit = EEXisUsed.find( eeseed_id );
-       if( mapit != EEXisUsed.end() ) continue; // seed already in use
+       if(EEXisUsed.count(eeseed_id)!=0) continue;
 
        // find 3x3 matrix of xtals
        int clusEtaSize_(3), clusPhiSize_(3);
@@ -675,8 +658,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
        {
           EEDetId thisId( *det );
           // skip this xtal if already used
-          EEXtalInUse::const_iterator mapit = EEXisUsed.find( thisId );
-          if( mapit != EEXisUsed.end() ) continue; // xtal already used
+          if(EEXisUsed.count(thisId)!=0) continue;
 
           // find the rec hit
           EERecHitCollection::const_iterator ixtal = eeHandle->find( thisId );
@@ -743,6 +725,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
              if(dx <= 0 && dy >=0){ s4s9_tmp[2] += en; }
              if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
              enFracs.push_back( std::make_pair( RecHitsInWindow[j]->id(), en ) );
+             //xtal used
+             EEXisUsed.insert(RecHitsInWindow[j]->id());
          }
 
          // compute position
@@ -781,12 +765,6 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
       if(ptClus<gPtCut_[EcalEndcap]) continue;  //original cut 0.6
 
       // make calo clusters
-
-      //Filling the usedxtal vector
-      for(unsigned int j=0; j<RecHitsInWindow.size();j++){
-         EEXisUsed [RecHitsInWindow[j]->id()] = true;
-      }
-
       Ncristal_EE.push_back( RecHitsInWindow.size() );
       eeclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_ENDCAP),
                                          enFracs, CaloCluster::undefined, eeseed_id ) );
