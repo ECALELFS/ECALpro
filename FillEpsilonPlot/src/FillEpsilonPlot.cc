@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.6 2013/03/18 23:21:04 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.7 2013/03/19 15:47:14 lpernie Exp $
 //
 //
 
@@ -628,8 +628,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
     sort(eeseeds.begin(), eeseeds.end(), ecalRecHitLess());
     
-    typedef std::set<EBDetId> EEXtalInUse;
-    EEXtalInUse EEXisUsed; // map of which xtals have been used
+    typedef std::map< EEDetId, bool > EEXtalInUse;
+    EEXtalInUse EEXisUsed;  //map of which eextals have been used
 
     //loop over seeds to make eeclusters
     for (std::vector<EcalRecHit>::iterator eeitseed=eeseeds.begin(); eeitseed!=eeseeds.end(); eeitseed++) 
@@ -637,7 +637,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
        EEDetId eeseed_id( eeitseed->id() );
 
        // check if seed already in use. If so go to next seed
-       if(EEXisUsed.count(eeseed_id)!=0) continue;
+       EEXtalInUse::const_iterator mapit = EEXisUsed.find( eeseed_id );
+       if( mapit != EEXisUsed.end() ) continue; // seed already in use
 
        // find 3x3 matrix of xtals
        int clusEtaSize_(3), clusPhiSize_(3);
@@ -658,7 +659,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
        {
           EEDetId thisId( *det );
           // skip this xtal if already used
-          if(EEXisUsed.count(thisId)!=0) continue;
+          EEXtalInUse::const_iterator mapit = EEXisUsed.find( thisId );
+          if( mapit != EEXisUsed.end() ) continue; // xtal already used
 
           // find the rec hit
           EERecHitCollection::const_iterator ixtal = eeHandle->find( thisId );
@@ -725,8 +727,6 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
              if(dx <= 0 && dy >=0){ s4s9_tmp[2] += en; }
              if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
              enFracs.push_back( std::make_pair( RecHitsInWindow[j]->id(), en ) );
-             //xtal used
-             EEXisUsed.insert(RecHitsInWindow[j]->id());
          }
 
          // compute position
@@ -765,6 +765,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
       if(ptClus<gPtCut_[EcalEndcap]) continue;  //original cut 0.6
 
       // make calo clusters
+      for(unsigned int j=0; j<RecHitsInWindow.size();j++){
+         EEXisUsed [RecHitsInWindow[j]->id()] = true;
+      }
       Ncristal_EE.push_back( RecHitsInWindow.size() );
       eeclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_ENDCAP),
                                          enFracs, CaloCluster::undefined, eeseed_id ) );
