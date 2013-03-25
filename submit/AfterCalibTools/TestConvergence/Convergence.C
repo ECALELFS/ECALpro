@@ -18,6 +18,7 @@
 #include "RooAddPdf.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
+#include "RooChebychev.h"
 
 #include <iostream>
 #include <fstream>
@@ -29,6 +30,7 @@
 #include <cmath>
 #include <cstdlib>
 //Root Stuff
+#include "TLatex.h"
 #include "TFile.h"
 #include "TString.h"
 #include "TTree.h"
@@ -54,7 +56,8 @@ static const int MAX_IPHI = 360;
 static const int MIN_IETA = 1;
 static const int MIN_IPHI = 1;
 
-//gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
+//before: gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
+//5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
 //Usage: .x Convergence.C+("/store/caf/user/lpernie/","ALL_2010ArelevantFiles_NOXTALWRONG_01/",14,"")
 //Usage: .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2010_WithNEWSelection_01",6,"2012Cmerg_")
 void Convergence( string Path_0, string Path, int nIter, string Tag ){
@@ -68,7 +71,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
     TH2F* rms_EEp = new TH2F("rms_EEp","IC(n)-IC(n-1) iX on x iY on y (EEp)",100,0.5,100.5,100,0.5,100.5);
     TH2F* rms_EEm = new TH2F("rms_EEm","IC(n)-IC(n-1) iY on x iY on y (EEm)",100,0.5,100.5,100,0.5,100.5);
 
-    for(int isEB=0; isEB<2; isEB++){  
+    for(int isEB=0; isEB<2; isEB++){
 
 	  float *EB_RMS = NULL;
 	  EB_RMS = new float[nIter];
@@ -149,9 +152,9 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 
 		}
 		TString out;
+		h1->Draw();
 		if(isEB==0) out = "plot_" + Path + "/EB_Iter_" + Iter + ".png";
 		if(isEB==1) out = "plot_" + Path + "/EE_Iter_" + Iter + ".png";
-		myc1->SaveAs(out.Data());
 
 		hmean = h1->GetMean();
 		hrms  = h1->GetRMS();
@@ -160,9 +163,9 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 		RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h1);
 		RooRealVar mean("mean","mean",hmean, hmean-1.5*hrms,hmean+1.5*hrms,"");
 		RooRealVar sigma("sigma","#sigma",hrms, hrms-hrms/40.,hrms+hrms/40.,"");
-		RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 		mean.setRange(hmean-hmean/2.,hmean+hmean/2.);
 		sigma.setRange(0.,hrms+hrms/2.);
+		RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 		RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
 		Nsig.setVal( h1->Integral()-h1->Integral()/1000. );
 		Nsig.setRange(h1->Integral()/50.,h1->Integral());
@@ -192,6 +195,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 		//model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
 		h1->Draw();
 		xframe->Draw("same");
+		myc1->SaveAs(out.Data());
 		sigma_plot  = sigma.getVal();
 
 		TLatex lat;
@@ -200,14 +204,16 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 		lat.SetTextSize(0.030);
 		lat.SetTextColor(1);
 		sprintf(line,"SIGMA: %.6f ", sigma_plot );
-		float xmin(0.55), yhi(0.80), ypass(0.05);
+		float xmin(0.55), yhi(0.80);// ypass(0.05);
 		lat.DrawLatex(xmin,yhi, line);
-
-		hmean=mean.getVal();
-		EB_RMS[i]=sigma_plot;
+//
+//		hmean=mean.getVal();
+//		EB_RMS[i]=sigma_plot;
+		hmean=h1->GetMean();
+		EB_RMS[i]=h1->GetRMS();
 		iter[i]=i+1;
-
 	  }
+
 	  TGraph *Conv = new TGraph(nIter-1, iter, EB_RMS);
 	  Conv->SetLineColor(2);
 	  Conv->SetLineWidth(1);
@@ -230,6 +236,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
     rms_EEp->Write();
     rms_EEm->Write();
     output->Close();
+
 //    delete output;
 //    delete rms_EB;
 //    delete rms_EEp;
