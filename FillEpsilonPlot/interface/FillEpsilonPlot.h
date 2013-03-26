@@ -122,6 +122,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useOnlyEEClusterMatchedWithES_;
       bool Is2012_;
       bool HLTResults_;
+      bool Are_pi0_;
       edm::InputTag EBRecHitCollectionTag_;
       edm::InputTag EERecHitCollectionTag_;
       edm::InputTag ESRecHitCollectionTag_;

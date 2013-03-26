@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.19 2013/01/30 17:46:29 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.2 2013/02/03 15:59:14 lpernie Exp $
 //
 //
 
@@ -89,6 +89,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     finRangeFit_ = iConfig.getUntrackedParameter<int>("NFinFit");    
     EEoEB_ = iConfig.getUntrackedParameter<std::string>("EEorEB");
     is_2011_ = iConfig.getUntrackedParameter<bool>("is_2011");
+    Are_pi0_ = iConfig.getUntrackedParameter<bool>("Are_pi0");
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
 
     /// setting calibration type
@@ -447,9 +448,6 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if ( Max+Bound2 > 0.34  ){ Bound2 = 0.05;}
         if ( fabs(Max+Bound1) > 0.24  ){ Bound1 = -0.009;}
         if ( Max+Bound2 > 0.34  ){ Bound2 = 0.01;}
-
-         //@@IterativeFit(epsilon_EB_h[j], ffit);
-         //@@mean = ffit.GetParameter(1); 
        
         epsilon_EB_h[j]->Fit(&ffit,"qB","", Max+Bound1,Max+Bound2);
         if(ffit.GetNDF() != 0) {
@@ -473,7 +471,6 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 }
         else cout<<"DAMN: NDF == 0"<<endl;
         mean = ffit.GetParameter(1);
-//@@
       }
       else if(useMassInsteadOfEpsilon_)
       {
@@ -483,7 +480,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
           if(integral>60.)
           {
-              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], 0.08, 0.21, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
+              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_?0.08:0.04, Are_pi0_?0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
               RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
               mean = mean_fitresult->getVal();
                             
@@ -557,7 +554,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
           if(integral>70.)
           {
-              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], 0.08, 0.25, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
+              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_?0.08:0.03, Are_pi0_?0.25:0.7, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
               RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
               mean = mean_fitresult->getVal();
 
@@ -632,29 +629,22 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
   RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-  RooRealVar mean("mean","#pi^{0} peak position",0.116, 0.105,0.150,"GeV/c^{2}");
+  RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_?0.116:0.57,  Are_pi0_?0.105:0.5, Are_pi0_?0.150:0.65,"GeV/c^{2}");
   RooRealVar sigma("sigma","#pi^{0} core #sigma",0.013, 0.005,0.020,"GeV/c^{2}");
 
 
   if(mode==Pi0EE)  {
-     //mean.setRange(0.105, 0.130);
-     mean.setRange(0.10, 0.140); // 0.200
-     mean.setVal(0.120);
+     mean.setRange( Are_pi0_?0.10:0.45, Are_pi0_?0.140:0.7); // 0.200
+     mean.setVal(Are_pi0_?0.120:0.6);
      sigma.setRange(0.005, 0.060);
-  } else if(mode==EtaEB) {
-     mean.setRange(0.450, 0.550);
-     mean.setVal(0.500);
-     sigma.setRange(0.005, 0.070);
   }
-   if(mode==Pi0EB && niter==1){
-     mean.setRange(0.105, 0.155);
-     sigma.setRange(0.003, 0.030);
-   }
-
+  if(mode==Pi0EB && niter==1){
+    mean.setRange(Are_pi0_?0.105:0.5, Are_pi0_?0.155:0.65);
+    sigma.setRange(0.003, 0.030);
+  }
 
   RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
   Nsig.setVal( h->GetSum()*0.1);
-  //if(mode==Pi0EE)  Nsig.setVal( h->GetSum()*0.05);
 
   RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 
@@ -690,7 +680,6 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
   //if(mode==Pi0EE) cbpars.add( cb4);
   //if(mode==Pi0EE) cbpars.add( cb5);
   
-
   if(mode==Pi0EB && niter==1){
     cb3.setRange(-1,1.);
     cb4.setRange(-0.3,0.3);

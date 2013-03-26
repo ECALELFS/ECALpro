@@ -108,6 +108,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.ContCorr_EB              = cms.untracked.string('" + pwd + "/common/" + EBContCorr + "')\n")
     outputfile.write("process.analyzerFillEpsilon.json_file               = cms.untracked.string('" + pwd + "/common/" + json_file + "')\n")
     outputfile.write("process.analyzerFillEpsilon.HLTResults              = cms.untracked.bool(" + HLTResults + ")\n")
+    if(Are_pi0):
+        outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(False)\n")
     if(is2012):
         outputfile.write("process.analyzerFillEpsilon.Is2012               = cms.untracked.bool(True)\n")
     else:
@@ -171,6 +175,10 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     outputfile.write("process.fitEpsilon.NFinFit = cms.untracked.int32(" + str(nFin) + ")\n")
     outputfile.write("process.fitEpsilon.EEorEB = cms.untracked.string('" + EBorEE + "')\n")
     outputfile.write("process.fitEpsilon.is_2011 = cms.untracked.bool(" + is_2011 + ")\n")
+    if(Are_pi0):
+        outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( True )\n")
+    else:
+        outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( False )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
     outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + "calibMap.root')\n")
