@@ -5,19 +5,35 @@ outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
-Pi0PtCutEB = '2.1'
-Pi0PtCutEE = '2.1'
-gPtCutEB = '0.8'
-gPtCutEE = '0.8'
-Pi0IsoCutEB = '0.'
-Pi0IsoCutEE = '0.25'
-nXtal_1_EB = '6'
-nXtal_2_EB = '4'
-nXtal_1_EE = '6'
-nXtal_2_EE = '4'
-S4S9_EB = '0.7'
-S4S9_EE = '0.85'
-
+Are_pi0  = True # True = using Pi0, False = using Eta
+#Pi0
+if(Are_pi0):
+   Pi0PtCutEB = '2.1'
+   Pi0PtCutEE = '2.1'
+   gPtCutEB = '0.8'
+   gPtCutEE = '0.8'
+   Pi0IsoCutEB = '0.'
+   Pi0IsoCutEE = '0.25'
+   nXtal_1_EB = '6'
+   nXtal_2_EB = '4'
+   nXtal_1_EE = '6'
+   nXtal_2_EE = '4'
+   S4S9_EB = '0.7'
+   S4S9_EE = '0.85'
+#ETA
+else:
+   Pi0PtCutEB = '4.'
+   Pi0PtCutEE = '3'
+   gPtCutEB = '1.2'
+   gPtCutEE = '1.'
+   Pi0IsoCutEB = '0.2'
+   Pi0IsoCutEE = '0.2'
+   nXtal_1_EB = '6'
+   nXtal_2_EB = '4'
+   nXtal_1_EE = '6'
+   nXtal_2_EE = '4'
+   S4S9_EB = '0.9'
+   S4S9_EE = '0.9'
 #containment corrections
 useEBContainmentCorrections = 'True'
 useEEContainmentCorrections = 'False'
@@ -34,18 +50,18 @@ EBContCorr = 'correctionsEB.root'
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
-inputlist_n = 'ALL_2012D_good.list' # list of the input files
-ijobmax     = 3                     #5 number of files per job
-nHadd       = 35                    #50 number of files per hadd
-nFit        = 2000                  # number of fits done in parallel
-Barrel_or_Endcap='ALL_PLEASE'       #Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname     = 'ALL_2012D_NormSelect_NormFit_Merged_NEWLaser_05'
-Silent      = True                  #True->Fill modules is silent; False->Fill modules has a standard output
-NameTag='2012Dmerg_'                #Tag to the names to avoid overlap
-queueForDaemon       = 'cmscaf1nw'        #Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue                = 'cmscaf1nd'
+inputlist_n      = 'ALL_2012D_good.list' # list of the input files
+ijobmax          = 5                     # 5 number of files per job
+nHadd            = 35                    # 50 number of files per hadd
+nFit             = 2000                  # number of fits done in parallel
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+dirname          = 'ALL_2012D_tryEta_02'
+Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
+NameTag          = '2012D_'          # Tag to the names to avoid overlap
+queueForDaemon   = '1nw'           # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+queue            = '1nd'
 
-nIterations = 14
+nIterations = 1
 
 #-----------------------------------------------------------------------------------
 alphaTagRecord2='';alphaTag2='';alphaDB2=''
@@ -63,11 +79,17 @@ is_2011 = 'True' #Just for the fit, put true
 useHLTFilter="True"
 correctHits='True'
 overWriteGlobalTag = True
-#|OLD |globaltag='GR_P_V42::All'
 globaltag='GR_P_V40::All'
-ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+if(Are_pi0): 
+   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalPi0*' 
+else:
+   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalEta*'
 doEnenerScale='True'
 doIC='True'
 doLaserCorr="True"
@@ -81,11 +103,8 @@ alphaTagRecord2='EcalLaserAlphasRcd'
 alphaTag2='EcalLaserAlphas_EB_sic1_btcp152_EE_sic1_btcp116'
 alphaDB2='frontier://FrontierInt/CMS_COND_ECAL'
 alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-#|TT EE WRONG| alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
 alphaTag='EcalLaserAPDPNRatios_20130124_447_p1_v2'
 alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-HLTPaths='AlCa_EcalPi0*' 
-
 ##############
 #2012C
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
