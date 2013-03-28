@@ -13,7 +13,7 @@
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.2 2013/02/03 15:59:14 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.3 2013/03/26 10:17:51 lpernie Exp $
 //
 //
 
@@ -480,7 +480,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
           if(integral>60.)
           {
-              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_?0.08:0.04, Are_pi0_?0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
+              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_?0.08:0.4, Are_pi0_?0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
               RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
               mean = mean_fitresult->getVal();
                             
@@ -554,7 +554,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
           if(integral>70.)
           {
-              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_?0.08:0.03, Are_pi0_?0.25:0.7, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
+              Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_?0.08:0.3, Are_pi0_?0.25:0.7, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
               RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
               mean = mean_fitresult->getVal();
 
