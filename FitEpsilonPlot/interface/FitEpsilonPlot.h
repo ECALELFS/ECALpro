@@ -73,6 +73,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::string EEoEB_; 
       bool is_2011_; 
       bool Are_pi0_; 
+      bool StoreForTest_; 
       int inRangeFit_; 
       int finRangeFit_; 
 
@@ -83,6 +84,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
 
       TFile *inputEpsilonFile_;
       TFile *outfile_;
+      TFile *outfileTEST_;
 
       bool useMassInsteadOfEpsilon_;
 
