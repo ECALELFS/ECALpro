@@ -22,16 +22,16 @@ if(Are_pi0):
    S4S9_EE = '0.85'
 #ETA
 else:
-   Pi0PtCutEB = '4.'
-   Pi0PtCutEE = '3'
-   gPtCutEB = '1.2'
-   gPtCutEE = '1.'
-   Pi0IsoCutEB = '0.2'
-   Pi0IsoCutEE = '0.2'
-   nXtal_1_EB = '6'
+   Pi0PtCutEB = '3.2'
+   Pi0PtCutEE = '3.2'
+   gPtCutEB = '1.4'
+   gPtCutEE = '1.4'
+   Pi0IsoCutEB = '0.1'
+   Pi0IsoCutEE = '0.25'
+   nXtal_1_EB = '5'
    nXtal_2_EB = '4'
-   nXtal_1_EE = '6'
-   nXtal_2_EE = '4'
+   nXtal_1_EE = '7'
+   nXtal_2_EE = '5'
    S4S9_EB = '0.9'
    S4S9_EE = '0.9'
 #containment corrections
@@ -55,7 +55,7 @@ ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_2012D_tryEta_02'
+dirname          = 'ALL_2012D_Etaopt_01'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 NameTag          = '2012D_'          # Tag to the names to avoid overlap
 queueForDaemon   = '1nw'           # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
