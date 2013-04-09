@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.8 2013/03/20 12:50:38 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.9 2013/03/26 10:17:33 lpernie Exp $
 //
 //
 
@@ -491,23 +491,21 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	  float xclu(0.), yclu(0.), zclu(0.); // temp var to compute weighted average
 	  float total_weight(0.);// to compute position
 
-	  // EB only for the time being
-	  //float etaSeed = geom->getPosition(seed_id).eta() ;
-	  //double T0(0.);
-	  //if( fabs(ctreta) < 1.479 )  T0 = param_T0_barl_;
-	  //else T0 = param_T0_endcES_;
-
 	  // Calculate shower depth
 	  float T0 = PCparams_.param_T0_barl_;
 	  float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
 	  float maxToFront = geom_->getPosition(seed_id).mag(); // to front face
 	  double EnergyCristals[9] = {0.};
 
+	  bool All_rechit_good=true;
+
 	  // loop over xtals and compute energy and position
 	  for(unsigned int j=0; j<RecHitsInWindow.size();j++)
 	  {
+
 		EBDetId det(RecHitsInWindow[j]->id());
-		//cout << "id: " << det << " calib coeff: " << calibMap->coeff(RecHitsInWindow[j]->id()) << endl;
+		if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
+		if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
 
 		int ieta = det.ieta();
 		int iphi = det.iphi();
@@ -548,6 +546,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
 	  } // loop over 3x3 rechits
 
+	  if(!All_rechit_good) continue;
 	  float e2x2 = *max_element( s4s9_tmp,s4s9_tmp+4);
 	  float s4s9 = e2x2/e3x3;
 	  math::XYZPoint clusPos( xclu/total_weight, 
@@ -710,11 +709,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 #ifdef MVA_REGRESSIO_EE
 	  double EnergyCristals[9] = {0.};
 #endif
+	  bool All_rechit_good=true;
 	  // loop over xtals and compute energy and position
 	  for(unsigned int j=0; j<RecHitsInWindow.size();j++)
-	  {
+	  { 
 		EEDetId det(RecHitsInWindow[j]->id());
-		//cout << "id: " << det << " calib coeff: " << calibMap->coeff(RecHitsInWindow[j]->id()) << endl;
+		if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
+            if(!All_rechit_good) cout<<"EE: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
 
 		int ix = det.ix();
 		int iy = det.iy();
@@ -751,6 +752,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 		}
 	  } // loop over 3x3 eerechits
 
+	  if(!All_rechit_good) continue;
 	  float e2x2 = *max_element( s4s9_tmp,s4s9_tmp+4);
 	  float s4s9 = e2x2/e3x3;
 	  math::XYZPoint clusPos( xclu/total_weight, yclu/total_weight, zclu/total_weight ); 
