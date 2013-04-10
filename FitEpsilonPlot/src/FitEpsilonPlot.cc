@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.4 2013/03/28 11:05:25 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.5 2013/04/09 14:29:11 lpernie Exp $
 //
 //
 
@@ -196,7 +196,7 @@ void FitEpsilonPlot::saveCoefficients()
     TH2F* hmap_EEm = new TH2F("calibMap_EEm","EE- calib coefficients",100,0.5,100.5,100,0.5,100.5);
     hmap_EEm->GetXaxis()->SetTitle("ix");
     hmap_EEm->GetYaxis()->SetTitle("iy");
-    TH1F* hint = new TH1F("hint","",3,0.,3.);
+    TH1F* hint = new TH1F("hint","Bin1: inRangeFit_ Bin2: finRangeFit_ Bin3: Barrel(0)/Endcap(1)",3,0.,3.);
     hint->SetBinContent(1,inRangeFit_);
     hint->SetBinContent(2,finRangeFit_);
     if( EEoEB_ == "Barrel" ) hint->SetBinContent(3,0);
@@ -465,13 +465,13 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 		else if(useMassInsteadOfEpsilon_)
 		{
-		    int iMin = epsilon_EB_h[j]->GetXaxis()->FindBin(0.08); 
-		    int iMax = epsilon_EB_h[j]->GetXaxis()->FindBin(0.18);
+		    int iMin = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.08:0.4 ); 
+		    int iMax = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.18:0.65 );
 		    double integral = epsilon_EB_h[j]->Integral(iMin, iMax);  
 
 		    if(integral>60.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_?0.08:0.4, Are_pi0_?0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 
@@ -539,13 +539,13 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 		else if(useMassInsteadOfEpsilon_)
 		{
-		    int iMin = epsilon_EE_h[jR]->GetXaxis()->FindBin(0.08); 
-		    int iMax = epsilon_EE_h[jR]->GetXaxis()->FindBin(0.18);
+		    int iMin = epsilon_EE_h[jR]->GetXaxis()->FindBin(Are_pi0_? 0.08:0.4 ); 
+		    int iMax = epsilon_EE_h[jR]->GetXaxis()->FindBin(Are_pi0_? 0.18:0.65 );
 		    double integral = epsilon_EE_h[jR]->Integral(iMin, iMax);  
 
 		    if(integral>70.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_?0.08:0.3, Are_pi0_?0.25:0.7, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.25:0.65, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 
@@ -620,17 +620,17 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_?0.116:0.57,  Are_pi0_?0.105:0.5, Are_pi0_?0.150:0.65,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.116:0.57,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.150:0.65,"GeV/c^{2}");
     RooRealVar sigma("sigma","#pi^{0} core #sigma",0.013, 0.005,0.020,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_?0.10:0.45, Are_pi0_?0.140:0.7); // 0.200
-	  mean.setVal(Are_pi0_?0.120:0.6);
+	  mean.setRange( Are_pi0_? 0.10:0.45, Are_pi0_? 0.140:0.7); // 0.200
+	  mean.setVal(Are_pi0_? 0.120:0.6);
 	  sigma.setRange(0.005, 0.060);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_?0.105:0.5, Are_pi0_?0.155:0.65);
+	  mean.setRange(Are_pi0_? 0.105:0.5, Are_pi0_? 0.155:0.65);
 	  sigma.setRange(0.003, 0.030);
     }
 
@@ -853,6 +853,7 @@ FitEpsilonPlot::endJob()
 {
     saveCoefficients();
     if(StoreForTest_){
+	  cout<<"Fit stored in /tmp/Fit_Stored.root"<<endl;
 	  outfileTEST_->Write();
 	  outfileTEST_->Close();
     }
