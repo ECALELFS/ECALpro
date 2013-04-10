@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.9 2013/03/26 10:17:33 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.10 2013/04/09 12:37:35 lpernie Exp $
 //
 //
 
@@ -230,8 +230,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","Epsilon distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
     }
 
-    allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240,0.,0.5);
-    allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240,0.,0.5);
+    allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
     entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
 
@@ -893,8 +893,7 @@ TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char
 
 	  if(useMassInsteadOfEpsilon_)
 	  {
-		if(Are_pi0_) h[jR] = new TH1F(name_c, title_c, 120,0.,0.5);
-		else         h[jR] = new TH1F(name_c, title_c, 120,0.3,0.8);
+		h[jR] = new TH1F(name_c, title_c, 120, Are_pi0_? 0.:0.3, Are_pi0_? 0.5:0.8);
 		h[jR]->GetXaxis()->SetTitle("Mass(#gamma#gamma)");
 	  }
 	  else
@@ -979,7 +978,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi01[11] = ( iPhi1%2 );
 		    value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
 		    value_pi01[13] = ( iPhi1%20 );
-		    float Correct1 = forest_EB_pi01->GetResponse(value_pi01);
+		    float Correct1 = Are_pi0_? forest_EB_pi01->GetResponse(value_pi01) : 1.;
 		    //cout<<"Correction1: "<<Correct1<<" iEta: "<<iEta1<<" iPhi "<<iPhi1<<" E "<<G_Sort_1.E()<<endl;
 		    float value_pi02[14];
 		    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
@@ -996,7 +995,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi02[11] = ( iPhi2%2 );
 		    value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
 		    value_pi02[13] = ( iPhi2%20 );
-		    float Correct2 = forest_EB_pi02->GetResponse(value_pi02);
+		    float Correct2 = Are_pi0_? forest_EB_pi02->GetResponse(value_pi02) : 1.;
 		    //cout<<"Correction2: "<<Correct2<<" iEta: "<<iEta2<<" iPhi "<<iPhi2<<" E "<<G_Sort_2.E()<<endl;
 
 		    if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
@@ -1051,7 +1050,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi01[7] = ( vs2s9EE[ind1] );
 		    value_pi01[8] = ( ESratio[ind1] );
 		    value_pi01[9] = ( EtaRing_1 );
-		    float Correct1 = forest_EE_pi01->GetResponse(value_pi01);
+		    float Correct1 = Are_pi0_? forest_EE_pi01->GetResponse(value_pi01) : 1.;
 		    cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
 			  <<" ratio E "<< G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_1.Pt()
 			  <<" xtal "<<Ncristal_EE[ind1]<<" vs4s9EE "<<vs4s9EE[ind1]<<" vs1s9EE "<<vs1s9EE[ind1]<<" vs2s9EE "<<vs2s9EE[ind1]
@@ -1068,7 +1067,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi02[7] = ( vs2s9EE[ind2] );
 		    value_pi02[8] = ( ESratio[ind2] );
 		    value_pi02[9] = ( EtaRing_2 );
-		    float Correct2 = forest_EE_pi02->GetResponse(value_pi02);
+		    float Correct2 = Are_pi0_? forest_EE_pi02->GetResponse(value_pi02) : 1.;
 		    cout<<"Correction2: "<<Correct2<<" iX: "<<iX2<<" iY "<<iY2<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
 			  <<" ratio E "<< G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_2.Pt()
 			  <<" xtal "<<Ncristal_EE[ind2]<<" vs4s9EE "<<vs4s9EE[ind2]<<" vs1s9EE "<<vs1s9EE[ind2]<<" vs2s9EE "<<vs2s9EE[ind2]
@@ -1099,7 +1098,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		math::PtEtaPhiMLorentzVector pi0P4 = g1P4 + g2P4;
 
 		//In case ES give same posizion for different clusters
-		if( pi0P4.mass()<0.002 ) continue;
+		if( pi0P4.mass()<0.03 ) continue;
 #ifdef SELECTION_TREE
 		if( subDetId == EcalBarrel ){ 
 		    Fill_PtPi0_EB( pi0P4.Pt() );
@@ -1133,6 +1132,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    }
 		}
 		if( nextClu<pi0IsoCut_[subDetId] ) continue;
+
 		int Nxtal_EnergGamma=0;
 		int Nxtal_EnergGamma2=0;
 		if(subDetId==EcalEndcap){
