@@ -13,7 +13,8 @@
 #include "CalibCode/CalibTools/interface/EcalCalibTypes.h"
 #include "CalibCode/CalibTools/interface/EcalCalibMap.h"
 
-#define PI0MASS 0.135
+#define PI0MASS 0.1349
+#define ETAMASS 0.5479
 
 //using namespace std;
 

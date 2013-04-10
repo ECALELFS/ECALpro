@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.5 2013/04/09 14:29:11 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.6 2013/04/10 09:17:12 lpernie Exp $
 //
 //
 
@@ -475,7 +475,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 
-			  float r2 = mean/PI0MASS;
+			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
 			  r2 = r2*r2;
 			  if( fitres.SoB>(is_2011_ ? 0.04:0.1) && (fitres.chi2/fitres.dof)< 0.049 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
 			  else                                                                                                  mean = 0.;
@@ -549,7 +549,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 
-			  float r2 = mean/PI0MASS;
+			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
 			  r2 = r2*r2;
 			  if( (fitres.chi2/fitres.dof)<0.3 && fitres.SoB>(is_2011_? 0.07:0.35) && fabs(mean-0.14)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
 			  else                                                                                                mean = 0.;
