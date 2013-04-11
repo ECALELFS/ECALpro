@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.6 2013/04/10 09:17:12 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.7 2013/04/10 22:33:00 lpernie Exp $
 //
 //
 
@@ -620,17 +620,17 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.116:0.57,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.150:0.65,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.116:0.57,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.150:0.62,"GeV/c^{2}");
     RooRealVar sigma("sigma","#pi^{0} core #sigma",0.013, 0.005,0.020,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.10:0.45, Are_pi0_? 0.140:0.7); // 0.200
-	  mean.setVal(Are_pi0_? 0.120:0.6);
+	  mean.setRange( Are_pi0_? 0.10:0.45, Are_pi0_? 0.140:0.62); // 0.200
+	  mean.setVal(Are_pi0_? 0.120:0.55);
 	  sigma.setRange(0.005, 0.060);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.5, Are_pi0_? 0.155:0.65);
+	  mean.setRange(Are_pi0_? 0.105:0.5, Are_pi0_? 0.155:0.62);
 	  sigma.setRange(0.003, 0.030);
     }
 
@@ -820,12 +820,12 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     lat.DrawLatex(xmin,yhi-5.*ypass, line);
 
     Pi0FitResult fitres = pi0res;
-    if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-0.15)<0.0000001 ) ){
+    if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, is_2011_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, is_2011_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, is_2011_);
     }
-    if(StoreForTest_){
+    if(StoreForTest_ && niter==0){
 	  stringstream ind;
 	  ind << (int) HistoIndex;
 	  TString nameHistofit = "Fit_n_" + ind.str();
