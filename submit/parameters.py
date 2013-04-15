@@ -5,7 +5,7 @@ outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
-Are_pi0  = True # True = using Pi0, False = using Eta
+Are_pi0  = False # True = using Pi0, False = using Eta
 #Pi0
 if(Are_pi0):
    Pi0PtCutEB = '2.1'
@@ -42,6 +42,8 @@ MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
 MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
 MVAEEContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_EE.root'
 MVAEEContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_EE.root'
+MVAEBContainmentCorrections_eta01 = 'JOSH_MVA_eta1_Mediumtrain.root'
+MVAEBContainmentCorrections_eta02 = 'JOSH_MVA_eta2_Mediumtrain.root'
 Endc_x_y = 'Endc_x_y_ring.txt'
 EBPHIContainmentCorrections = 'correctionsEB_PHI.root'
 EEContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEE.root'
@@ -55,13 +57,13 @@ ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_2012D_Etaopt_01'
+dirname          = 'ALL_2012D_Eta_03'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = '2012D_'          # Tag to the names to avoid overlap
-queueForDaemon   = '1nw'           # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue            = '1nd'
+NameTag          = '2012D_'              # Tag to the names to avoid overlap
+queueForDaemon   = 'cmscaf1nw'           # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+queue            = 'cmscaf1nd'
 
-nIterations = 1
+nIterations = 10
 
 #-----------------------------------------------------------------------------------
 alphaTagRecord2='';alphaTag2='';alphaDB2=''

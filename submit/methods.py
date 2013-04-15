@@ -102,6 +102,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('" + pwd + "/common/" + MVAEBContainmentCorrections_02 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('" + pwd + "/common/" + MVAEEContainmentCorrections_01 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('" + pwd + "/common/" + MVAEEContainmentCorrections_02 + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta01  = cms.untracked.string('" + pwd + "/common/" + MVAEBContainmentCorrections_eta01 + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta02  = cms.untracked.string('" + pwd + "/common/" + MVAEBContainmentCorrections_eta02 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('" + pwd + "/common/" + Endc_x_y + "')\n")
     outputfile.write("process.analyzerFillEpsilon.EBPHIContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EBPHIContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.EEContainmentCorrections = cms.untracked.string('" + pwd + "/common/" + EEContainmentCorrections + "')\n")
