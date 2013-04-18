@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.10 2013/04/09 12:37:35 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.11 2013/04/10 09:19:57 lpernie Exp $
 //
 //
 
@@ -128,6 +128,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     MVAEBContainmentCorrections_02_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_02");
     MVAEEContainmentCorrections_01_ = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_01");
     MVAEEContainmentCorrections_02_ = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_02");
+    MVAEBContainmentCorrections_eta01_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_eta01");
+    MVAEBContainmentCorrections_eta02_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_eta02");
     Endc_x_y_                       = iConfig.getUntrackedParameter<std::string>("Endc_x_y");
     ebPHIContainmentCorrections_    = iConfig.getUntrackedParameter<std::string>("EBPHIContainmentCorrections");
     eeContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EEContainmentCorrections");
@@ -281,10 +283,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     //noCorrections_ = true;
 
 #ifdef MVA_REGRESSIO
-    EBweight_file_pi01 = TFile::Open( MVAEBContainmentCorrections_01_.c_str() );
-    EBweight_file_pi02 = TFile::Open( MVAEBContainmentCorrections_02_.c_str() );
-    forest_EB_pi01 = (GBRForest *)EBweight_file_pi01->Get("Correction");    
-    forest_EB_pi02 = (GBRForest *)EBweight_file_pi02->Get("Correction");    
+    EBweight_file_1 = TFile::Open( Are_pi0_? MVAEBContainmentCorrections_01_.c_str():MVAEBContainmentCorrections_eta01_.c_str() );
+    EBweight_file_2 = TFile::Open( Are_pi0_? MVAEBContainmentCorrections_02_.c_str():MVAEBContainmentCorrections_eta02_.c_str() );
+    forest_EB_1 = (GBRForest *)EBweight_file_1->Get("Correction");    
+    forest_EB_2 = (GBRForest *)EBweight_file_2->Get("Correction");    
 #endif
 #ifdef MVA_REGRESSIO_EE
     EEweight_file_pi01 = TFile::Open( MVAEEContainmentCorrections_01_.c_str() );
@@ -331,8 +333,8 @@ FillEpsilonPlot::~FillEpsilonPlot()
     //JSON
     //delete myjson;
 #ifdef MVA_REGRESSIO
-    delete forest_EB_pi01;
-    delete forest_EB_pi02;
+    delete forest_EB_1;
+    delete forest_EB_2;
 #endif
 #ifdef MVA_REGRESSIO_EE
     delete forest_EE_pi01;
@@ -963,6 +965,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 			  Inverted=true;
 		    }
 
+float Correct1(1.), Correct2(1.);
+if(Are_pi0_){
 		    float value_pi01[14];
 		    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 		    value_pi01[1] = ( G_Sort_1.Pt() );
@@ -978,7 +982,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi01[11] = ( iPhi1%2 );
 		    value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
 		    value_pi01[13] = ( iPhi1%20 );
-		    float Correct1 = Are_pi0_? forest_EB_pi01->GetResponse(value_pi01) : 1.;
+		    Correct1 = forest_EB_1->GetResponse(value_pi01);
 		    //cout<<"Correction1: "<<Correct1<<" iEta: "<<iEta1<<" iPhi "<<iPhi1<<" E "<<G_Sort_1.E()<<endl;
 		    float value_pi02[14];
 		    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
@@ -995,8 +999,37 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    value_pi02[11] = ( iPhi2%2 );
 		    value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
 		    value_pi02[13] = ( iPhi2%20 );
-		    float Correct2 = Are_pi0_? forest_EB_pi02->GetResponse(value_pi02) : 1.;
+		    Correct2 = forest_EB_2->GetResponse(value_pi02);
 		    //cout<<"Correction2: "<<Correct2<<" iEta: "<<iEta2<<" iPhi "<<iPhi2<<" E "<<G_Sort_2.E()<<endl;
+}
+else{
+		    float value_pi01[10];
+		    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+		    value_pi01[1] = ( G_Sort_1.Pt() );
+		    value_pi01[2] = ( Ncristal_EB[ind1] );
+		    value_pi01[3] = ( iEta1 );
+		    value_pi01[4] = ( iPhi1 );
+		    value_pi01[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+		    value_pi01[6] = ( iEta1%5 );
+		    value_pi01[7] = ( iPhi1%2 );
+		    value_pi01[8] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+		    value_pi01[9] = ( iPhi1%20 );
+		    Correct1 = forest_EB_1->GetResponse(value_pi01);
+		    //cout<<"Correction1: "<<Correct1<<" iEta: "<<iEta1<<" iPhi "<<iPhi1<<" E "<<G_Sort_1.E()<<endl;
+		    float value_pi02[10];
+		    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+		    value_pi02[1] = ( G_Sort_2.Pt() );
+		    value_pi02[2] = ( Ncristal_EB[ind2] );
+		    value_pi02[3] = ( iEta2 );
+		    value_pi02[4] = ( iPhi2 );
+		    value_pi02[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+		    value_pi02[6] = ( iEta2%5 );
+		    value_pi02[7] = ( iPhi2%2 );
+		    value_pi02[8] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
+		    value_pi02[9] = ( iPhi2%20 );
+		    Correct2 = forest_EB_2->GetResponse(value_pi02);
+		    //cout<<"Correction2: "<<Correct2<<" iEta: "<<iEta2<<" iPhi "<<iPhi2<<" E "<<G_Sort_2.E()<<endl;
+}
 
 		    if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 		    else           { Corr1 = Correct2; Corr2 = Correct1; }

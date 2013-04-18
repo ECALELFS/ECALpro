@@ -113,6 +113,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string MVAEBContainmentCorrections_02_;
       std::string MVAEEContainmentCorrections_01_;
       std::string MVAEEContainmentCorrections_02_;
+      std::string MVAEBContainmentCorrections_eta01_;
+      std::string MVAEBContainmentCorrections_eta02_;
       std::string Endc_x_y_;
       std::string ebPHIContainmentCorrections_;
       std::string eeContainmentCorrections_;
@@ -223,10 +225,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
-      TFile *EBweight_file_pi01;
-      TFile *EBweight_file_pi02;
-      const GBRForest *forest_EB_pi01;
-      const GBRForest *forest_EB_pi02;
+      TFile *EBweight_file_1;
+      TFile *EBweight_file_2;
+      const GBRForest *forest_EB_1;
+      const GBRForest *forest_EB_2;
       GBRApply *gbrapply;
       //TTree *TTree_JoshMva;
       //Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
