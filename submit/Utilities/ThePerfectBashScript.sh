@@ -14,6 +14,7 @@ echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMi
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."
 echo "---->                          ResendFillfailed-group-Directory-TagFiles-queue: Resubmit Fill jobs failed."
+echo "---->                          EventInFile-filePath: Total number of events in list of file."
 echo "---->If you are sad use:       IamSad"
 echo "--------------"
 }
@@ -241,6 +242,24 @@ done
 echo "--------------"
 }
 
+EventInFile (){
+E_EventInFile=74
+param=$(echo $1 | tr "-" " ")
+read -a array <<<$param
+list=${array[1]}
+if [ ${#array[@]} -ne "2" ]; then echo "Wrong Use of 'EventInFile'"; usage; exit $E_EventInFile;
+fi
+List_array=`cat $list`
+Tot_Ev=0
+for Line in ${List_array}
+do
+   Events=`edmFileUtil $Line | grep events | awk '{print $6}'`
+   echo $Events
+   Tot_Ev=$(echo "scale=0; $Tot_Ev+$Events" | bc)
+done
+echo "The total numbers of events is: $Tot_Ev"
+echo "--------------"
+}
 
 #-----------------------------------------------------------------------------------
 echo "Hello, I'm \"$0\": The first bash-script who teach you how to make a script in bash!"
@@ -272,6 +291,7 @@ for p in $*;
   elif [ "$p" != "${p/[Cc]opy/}" -a "$p" != "${p/[Ee][Oo][Ss]/}" -a "$p" != "${p/[Ff]older/}" ]; then CopyEosFolder $p;
   elif [ "$p" != "${p/[Rr]/emove}" -a "$p" != "${p/[Hh]add/}" -a "$p" != "${p/[Ff]ailed/}" ]; then RemoveHaddfailed $p;
   elif [ "$p" != "${p/[Rr]/esend}" -a "$p" != "${p/[Ff]ill/}" -a "$p" != "${p/[Ff]ailed/}" ]; then ResendFillfailed $p;
+  elif [ "$p" != "${p/[Ee]/vent}" -a "$p" != "${p/[Ii][Nn]/}" -a "$p" != "${p/[Ff]ile/}" ]; then EventInFile $p;
   else echo "Sorry but $p is not a valid option... use help to see the option I have"
   fi
 done
