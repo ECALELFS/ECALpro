@@ -1,10 +1,3 @@
-//#ifndef __CINT__
-//#include "RooGlobalFunc.h"
-//#else
-//// Refer to a class implemented in libRooFit to force its loading
-//// via the autoloader.
-//class Roo2DKeysPdf;
-//#endif
 #include "RooRealVar.h"
 #include "RooDataSet.h"
 #include "RooGaussian.h"
@@ -58,7 +51,6 @@ static const int MIN_IPHI = 1;
 
 //before: gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
 //5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
-//Usage: .x Convergence.C+("/store/caf/user/lpernie/","ALL_2010ArelevantFiles_NOXTALWRONG_01/",14,"")
 //Usage: .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2010_WithNEWSelection_01",6,"2012Cmerg_")
 void Convergence( string Path_0, string Path, int nIter, string Tag ){
 
