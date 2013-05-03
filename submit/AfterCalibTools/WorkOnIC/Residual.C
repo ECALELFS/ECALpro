@@ -39,8 +39,8 @@ static const int MIN_IPHI = 1;
 //#define DEBUG3
 
 //Usage:
-//.x Residual.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2012B_NormSelect_NormFit_Merged_02", "11", "./2012B/", "2012merg_")
-void Residual( string inputFile0, string inputFile , string Niter,  string OutPath, string Tag )
+//.x Residual.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2012B_NormSelect_NormFit_Merged_02", "11","11", "./2012B/", "2012merg_")
+void Residual( string inputFile0, string inputFile , string NiterEB,string NiterEE,  string OutPath, string Tag )
 {
 
     bool debug = false, debug2 = false, debug3 = false;
@@ -68,25 +68,28 @@ void Residual( string inputFile0, string inputFile , string Niter,  string OutPa
     Final_tree->Branch( "iphi1_", &iphi1_, "iphi1_/I");  
 
     //In File
-    string inputFile_mine = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ Niter + "/" + Tag + "calibMap.root";
-    //string inputFile_mine = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
-    //inputFile             = "root://eoscms//eos/cms/store/caf/user/lpernie/ALL_2010ArelevantFiles_NOXTALWRONG_01/iter_4/calibMap.root";
+    string inputFile_mineEB = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEB + "/" + Tag + "calibMap.root";
+    string inputFile_mineEE = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEE + "/" + Tag + "calibMap.root";
     inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
-    //inputFile             = "root://eoscms//eos/cms/store/caf/user/lpernie/ALL_2010ArelevantFiles_NOXTALWRONG_01/iter_13/calibMap.root";
     TFile* f_base = TFile::Open( inputFile.c_str() );
     if(!f_base) {
 	  cout << "Invalid file: " << inputFile << " .. try again" << endl;
 	  return;
     }
-    TFile* f_mine = TFile::Open( inputFile_mine.c_str() );
-    if(!f_mine) {
-	  cout << "Invalid file: " << inputFile_mine << " .. try again" << endl;
+    TFile* f_mineEB = TFile::Open( inputFile_mineEB.c_str() );
+    if(!f_mineEB) {
+	  cout << "Invalid file: " << inputFile_mineEB << " .. try again" << endl;
+	  return;
+    }
+    TFile* f_mineEE = TFile::Open( inputFile_mineEE.c_str() );
+    if(!f_mineEE) {
+	  cout << "Invalid file: " << inputFile_mineEE << " .. try again" << endl;
 	  return;
     }
     //Histos
     TCanvas* myc1 = new TCanvas("myc1", "CMS", 600, 600);
     gStyle->SetOptStat(0);
-    TH2F* h = (TH2F*) f_mine->Get( "calibMap_EB" );
+    TH2F* h = (TH2F*) f_mineEB->Get( "calibMap_EB" );
     TH2F* h_base = (TH2F*) f_base->Get( "calibMap_EB" );
     TH2F* h_out = new TH2F("calibMap_EB","EB calib coefficients: #eta on x, #phi on y", 2*MAX_IETA+1, -MAX_IETA-0.5, MAX_IETA+0.5, MAX_IPHI, MIN_IPHI-0.5, MAX_IPHI+0.5 );
 
@@ -164,8 +167,8 @@ void Residual( string inputFile0, string inputFile , string Niter,  string OutPa
     if(debug3) cout<<""<<endl;
     //Just Rewrite EE now
     cout<<"Now rewrite EE...  "<<endl;
-    TH2F* hep = (TH2F*) f_mine->Get( "calibMap_EEp" );
-    TH2F* hem = (TH2F*) f_mine->Get( "calibMap_EEm" );
+    TH2F* hep = (TH2F*) f_mineEE->Get( "calibMap_EEp" );
+    TH2F* hem = (TH2F*) f_mineEE->Get( "calibMap_EEm" );
 
     fout->cd();
     h_out->Write();
