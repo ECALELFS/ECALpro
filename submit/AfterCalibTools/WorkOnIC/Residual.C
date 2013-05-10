@@ -39,8 +39,8 @@ static const int MIN_IPHI = 1;
 //#define DEBUG3
 
 //Usage:
-//.x Residual.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2012B_NormSelect_NormFit_Merged_02", "11","11", "./2012B/", "2012merg_")
-void Residual( string inputFile0, string inputFile , string NiterEB,string NiterEE,  string OutPath, string Tag )
+//.x Residual.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2012B_NormSelect_NormFit_Merged_02", "11","11", "./2012B/", "2012merg_",true)
+void Residual( string inputFile0, string inputFile , string NiterEB,string NiterEE,  string OutPath, string Tag, bool isPi0 )
 {
 
     bool debug = false, debug2 = false, debug3 = false;
@@ -70,7 +70,8 @@ void Residual( string inputFile0, string inputFile , string NiterEB,string Niter
     //In File
     string inputFile_mineEB = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEB + "/" + Tag + "calibMap.root";
     string inputFile_mineEE = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEE + "/" + Tag + "calibMap.root";
-    inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
+    if(isPi0) inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
+    else      inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_forResid_01/iter_15/calibMap.root";
     TFile* f_base = TFile::Open( inputFile.c_str() );
     if(!f_base) {
 	  cout << "Invalid file: " << inputFile << " .. try again" << endl;
