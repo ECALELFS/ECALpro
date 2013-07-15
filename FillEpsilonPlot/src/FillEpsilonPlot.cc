@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.11 2013/04/10 09:19:57 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.13 2013/06/17 13:40:18 lpernie Exp $
 //
 //
 
@@ -57,6 +57,8 @@ Implementation:
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
 #include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
+#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
+#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 
 #include "CalibCode/FillEpsilonPlot/interface/FillEpsilonPlot.h"
 #include "CalibCode/CalibTools/interface/GlobalFunctions.h"
@@ -77,7 +79,6 @@ Implementation:
 #include "FWCore/Framework/interface/TriggerNamesService.h"
 #include <FWCore/Common/interface/TriggerNames.h>
 #include <DataFormats/Common/interface/TriggerResults.h>
-
 
 using std::cout;
 using std::endl;
@@ -398,6 +399,11 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	  }
     }
 
+    //Get status from DB
+    //edm::ESHandle<EcalChannelStatus> csHandle;
+    //iSetup.get<EcalChannelStatusRcd>().get(csHandle);
+    //channelStatus_ = csHandle;
+    //Clusters
     if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) fillEBClusters(ebclusters, iEvent);
     if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
 
@@ -506,8 +512,12 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	  {
 
 		EBDetId det(RecHitsInWindow[j]->id());
-		if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
-		if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
+
+		//Check status of Hits
+		//EcalRecHitCollection::const_iterator hit  = hits->find(detid); 
+		//if( ! checkStatusOfEcalRecHit(channelStatus, *hit) ) All_rechit_good = false;
+		//if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
+		//if(!All_rechit_good) cout<<"EB: Is false"<<endl;
 
 		int ieta = det.ieta();
 		int iphi = det.iphi();
@@ -716,8 +726,12 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  for(unsigned int j=0; j<RecHitsInWindow.size();j++)
 	  { 
 		EEDetId det(RecHitsInWindow[j]->id());
-		if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
-            if(!All_rechit_good) cout<<"EE: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
+
+		//Check status of Hits
+		//EcalRecHitCollection::const_iterator hit  = hits->find(detid); 
+		//if( ! checkStatusOfEcalRecHit(channelStatus, *hit) ) All_rechit_good = false;
+		//if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
+		//if(!All_rechit_good) cout<<"EE: Is false"<<endl;
 
 		int ix = det.ix();
 		int iy = det.iy();
@@ -1033,20 +1047,20 @@ else{
 
 		    if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 		    else           { Corr1 = Correct2; Corr2 = Correct1; }
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+		    Correction1_mva = Correct1; Correction2_mva = Correct2;
+		    iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
 
-		    //Correction1_mva = Correct1; Correction2_mva = Correct2;
-		    //iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
+		    TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
+		    TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
 
-		    // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
-		    // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+		    TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
+		    TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
 
-		    //TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
-		    //TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
-
-		    //Mass_mva = (mvag1P4 + mvag2P4).M();
-		    //MassOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
-		    //TTree_JoshMva->Fill();   
-
+		    Mass_mva = (mvag1P4 + mvag2P4).M();
+		    MassOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
+		    TTree_JoshMva->Fill();   
+#endif
 		}
 #endif
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO_EE)
@@ -1300,18 +1314,18 @@ FillEpsilonPlot::beginJob()
     }
 #endif
 
-#ifdef MVA_REGRESSIO
-    // TTree_JoshMva = new TTree("TTree_JoshMva","MVA corrections");
-    // TTree_JoshMva->Branch("Correction1_mva", &Correction1_mva, "Correction1_mva/F");
-    // TTree_JoshMva->Branch("Correction2_mva", &Correction2_mva, "Correction2_mva/F");
-    // TTree_JoshMva->Branch("iEta1_mva", &iEta1_mva, "iEta1_mva/I");
-    // TTree_JoshMva->Branch("iEta2_mva", &iEta2_mva, "iEta2_mva/I");
-    // TTree_JoshMva->Branch("iPhi1_mva", &iPhi1_mva, "iPhi1_mva/I");
-    // TTree_JoshMva->Branch("iPhi2_mva", &iPhi2_mva, "iPhi2_mva/I");
-    // TTree_JoshMva->Branch("Pt1_mva", &Pt1_mva, "Pt1_mva/F");
-    // TTree_JoshMva->Branch("Pt2_mva", &Pt2_mva, "Pt2_mva/F");
-    // TTree_JoshMva->Branch("Mass_mva", &Mass_mva, "Mass_mva/F");
-    // TTree_JoshMva->Branch("MassOr_mva", &MassOr_mva, "MassOr_mva/F");
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+     TTree_JoshMva = new TTree("TTree_JoshMva","MVA corrections");
+     TTree_JoshMva->Branch("Correction1_mva", &Correction1_mva, "Correction1_mva/F");
+     TTree_JoshMva->Branch("Correction2_mva", &Correction2_mva, "Correction2_mva/F");
+     TTree_JoshMva->Branch("iEta1_mva", &iEta1_mva, "iEta1_mva/I");
+     TTree_JoshMva->Branch("iEta2_mva", &iEta2_mva, "iEta2_mva/I");
+     TTree_JoshMva->Branch("iPhi1_mva", &iPhi1_mva, "iPhi1_mva/I");
+     TTree_JoshMva->Branch("iPhi2_mva", &iPhi2_mva, "iPhi2_mva/I");
+     TTree_JoshMva->Branch("Pt1_mva", &Pt1_mva, "Pt1_mva/F");
+     TTree_JoshMva->Branch("Pt2_mva", &Pt2_mva, "Pt2_mva/F");
+     TTree_JoshMva->Branch("Mass_mva", &Mass_mva, "Mass_mva/F");
+     TTree_JoshMva->Branch("MassOr_mva", &MassOr_mva, "MassOr_mva/F");
 #endif
 #ifdef MVA_REGRESSIO_EE
     TTree_JoshMva_EE = new TTree("TTree_JoshMva_EE","EE MVA corrections");
@@ -1430,8 +1444,8 @@ FillEpsilonPlot::endJob()
 {
     outfile_->cd();
 
-#ifdef MVA_REGRESSIO
-    //TTree_JoshMva->Write();
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+    TTree_JoshMva->Write();
 #endif
 #ifdef MVA_REGRESSIO_EE
     TTree_JoshMva_EE->Write();
@@ -1456,8 +1470,8 @@ FillEpsilonPlot::endJob()
     if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
     if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
 
-#ifdef MVA_REGRESSIO
-    //delete TTree_JoshMva;
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+    delete TTree_JoshMva;
 #endif
 #ifdef MVA_REGRESSIO_EE
     delete TTree_JoshMva_EE;

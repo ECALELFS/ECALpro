@@ -18,7 +18,6 @@ GBRApply::~GBRApply()
 
 }
 
-//_______________________________________________________________________
 TTree *GBRApply::ApplyAsFriend(TTree *intree, const GBRForest *forest, const std::vector<std::string> &vars, std::string targetname) const
 {
   

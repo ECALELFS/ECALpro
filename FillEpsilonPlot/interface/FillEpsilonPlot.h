@@ -13,6 +13,8 @@
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
+#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
+#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 
 #include "CalibCode/CalibTools/interface/PosCalcParams.h"
 #include "CalibCode/CalibTools/interface/ECALGeometry.h"
@@ -28,7 +30,9 @@
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
+//#define MVA_REGRESSIO_Tree
 //#define MVA_REGRESSIO_EE
+//#define MVA_REGRESSIO_EE_Tree
 
 //MVA Stuff
 #if not defined(__CINT__) || defined(__MAKECINT__)
@@ -100,7 +104,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::Handle< EBRecHitCollection > ebHandle;
       edm::Handle< EBRecHitCollection > eeHandle;
       edm::Handle< ESRecHitCollection > esHandle;
-
+      //const EcalChannelStatus channelStatus_;
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
 
@@ -230,9 +234,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       const GBRForest *forest_EB_1;
       const GBRForest *forest_EB_2;
       GBRApply *gbrapply;
-      //TTree *TTree_JoshMva;
-      //Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
-      //Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva;
+#endif
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+      TTree *TTree_JoshMva;
+      Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
+      Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva;
 #endif
 #ifdef MVA_REGRESSIO_EE
       vector<iXiYtoRing> VectRing;

@@ -44,9 +44,9 @@ struct iXiYtoRing {
 int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
 //Usage:
-//.x SetIC1toiEta.C+(true?false,"2011/ABSIC_ResidsualFree.root", "./2011/", 0 )
+//.x SetIC1toiEta.C+(true?false,"2011/ABSIC_ResidsualFree.root", "./2011/" "2012D_ETA_ERR/Error_Stat_2012D.root", , 0 )
 //.x SetIC1toiEta.C+(false,"Compare2012B/2012B_GlobalMY_Vs_Caltech.root", "Compare2012B/", 2 ) [0=not for comparison mine-caltech, 1 for comp., is mine, 2 for comp. is clatech]
-void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
+void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutStatError="", int isCal=0 ){
 
     bool debug = false, debug2 = false, debug3 = false, debug4 = false;
 #ifdef DEBUG
@@ -63,31 +63,34 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 #endif
 
     //Out File
-    system( (string("mkdir -p ") + OutPath ).c_str());
+    system( (string("mkdir -p ") + OutPath ).Data());
 
     string fileName = "";    
     if(AllEta){
-      if(isCal==0) fileName = OutPath + "/IC_SetAverageTo1_global.root";
+      if(isCal==0)  fileName = OutPath + "/IC_SetAverageTo1_global.root";
       if(isCal==1)  fileName = OutPath + "/ICForComp_SetAverageTo1_global_Mine.root";
       if(isCal==2)  fileName = OutPath + "/ICForComp_SetAverageTo1_global_Caltech.root";
     }
     else    {  
-      if(isCal==0) fileName = OutPath + "/IC_SetAverageTo1_EtaRing.root";
+      if(isCal==0)  fileName = OutPath + "/IC_SetAverageTo1_EtaRing.root";
       if(isCal==1)  fileName = OutPath + "/ICForComp_SetAverageTo1_EtaRing_Mine.root";
       if(isCal==2)  fileName = OutPath + "/ICForComp_SetAverageTo1_EtaRing_Caltech.root";
     }
     TFile* fout = new TFile(fileName.c_str(),"RECREATE");
     fstream  f_IC;
+    TString NameTxt="";
     if(AllEta){
-       if(isCal==0) f_IC.open( (OutPath + "/IC_Ecal_global.txt").c_str(), ios::out); 
-       if(isCal==1)  f_IC.open( (OutPath + "/ICForComp_Ecal_global_Mine.txt").c_str(), ios::out); 
-       if(isCal==2)  f_IC.open( (OutPath + "/ICForComp_Ecal_global_Caltech.txt").c_str(), ios::out); 
+       if(isCal==0)  NameTxt = "/IC_Ecal_global";
+       if(isCal==1)  NameTxt = "/ICForComp_Ecal_global_Mine";
+       if(isCal==2)  NameTxt = "/ICForComp_Ecal_global_Caltech";
     }
     else  {
-       if(isCal==0) f_IC.open( (OutPath + "/IC_Ecal_EtaRing.txt").c_str(), ios::out); 
-       if(isCal==1)  f_IC.open( (OutPath + "/ICForComp_Ecal_EtaRing_Mine.txt").c_str(), ios::out); 
-       if(isCal==2)  f_IC.open( (OutPath + "/ICForComp_Ecal_EtaRing_Caltech.txt").c_str(), ios::out); 
+       if(isCal==0)  NameTxt = "/IC_Ecal_EtaRing";
+       if(isCal==1)  NameTxt = "/ICForComp_Ecal_EtaRing_Mine";
+       if(isCal==2)  NameTxt = "/ICForComp_Ecal_EtaRing_Caltech";
     }
+    if(PutStatError == "") NameTxt += "_noErr";
+    f_IC.open( (OutPath + NameTxt) + ".txt", ios::out);
     if( !f_IC ){ cout << "Impossible to open file.txt."; exit(1); }
 
     //Open File
@@ -95,6 +98,15 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
     if(!f) {
 	  cout << "Invalid file: " << inputFile << " .. try again" << endl;
 	  return;
+    }
+    //Opern Error File
+    TFile* f_err;
+    if(PutStatError != "" ) f_err = TFile::Open( PutStatError.c_str() );
+    TH2F* h_errEB; TH2F* h_errEEm; TH2F* h_errEEp;
+    if(PutStatError != "" ){
+	  h_errEB  = (TH2F*) f_err->Get( "Sig_EB" );
+	  h_errEEm = (TH2F*) f_err->Get( "Sig_EEm" );
+	  h_errEEp = (TH2F*) f_err->Get( "Sig_EEp" );
     }
 
     if(AllEta){
@@ -137,8 +149,10 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 		for(int j=MIN_IPHI; j<MAX_IPHI+1; j++){
 		    if( h_out->GetBinContent(i,j) != 1 &&  i != MAX_IETA+1){ Ic_tmp1 += h_out->GetBinContent(i,j); Ic_tot1++;  }
 		    if( i != MAX_IETA+1 ){
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEB->GetBinContent(i,j);
 			  if(h_out->GetBinContent(i,j)==1. ){  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << "-1." << " 999."<<endl;}
-			  else                              {  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << h_out->GetBinContent(i,j) << " 0"<<endl;}
+			  else                              {  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << h_out->GetBinContent(i,j) << " " << Error <<endl;}
 		    }
 		}
 	  }
@@ -185,7 +199,9 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 			  Ic_tmpE1+=hmap_EEp->GetBinContent(x+1,y+1); Ic_totE1++;
 		    }
 		    if( hmap_EEp->GetBinContent(x+1,y+1) != 0){
-			  if(hmap_EEp->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " 1 " << hmap_EEp->GetBinContent(x+1,y+1) << " 0"<<endl;}
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEEp->GetBinContent(x+1,y+1);
+			  if(hmap_EEp->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " 1 " << hmap_EEp->GetBinContent(x+1,y+1) << " " << Error <<endl;}
 			  else                                    { f_IC << x+1 << " "<< y+1 << " 1 " << "-1." << " 999."<<endl;}
 		    }
 		}
@@ -229,7 +245,9 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 			  Ic_tmpE1m+=hmap_EEm->GetBinContent(x+1,y+1); Ic_totE1m++;
 		    }
 		    if( hmap_EEm->GetBinContent(x+1,y+1) != 0){
-			  if(hmap_EEm->GetBinContent(x+1,y+1)!=1){ f_IC << x+1 << " "<< y+1 << " -1 " << hmap_EEm->GetBinContent(x+1,y+1) << " 0"<<endl;}
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEEm->GetBinContent(x+1,y+1);
+			  if(hmap_EEm->GetBinContent(x+1,y+1)!=1){ f_IC << x+1 << " "<< y+1 << " -1 " << hmap_EEm->GetBinContent(x+1,y+1) << " " << Error <<endl;}
 			  else                                   { f_IC << x+1 << " "<< y+1 << " -1 " << "-1." << " 999."<<endl;}
 		    }
 		}
@@ -274,8 +292,10 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 		    else                             h_out->SetBinContent( i, j, h->GetBinContent(i,j) );
 		    if(debug) cout<<"NEW IC: iETA "<<i<<" iPHI "<<j<<" =>  "<<h->GetBinContent(i,j)<<" * "<<Ic_tmp<<" = "<<h->GetBinContent(i,j)*Ic_tmp<<endl;
 		    if( i != MAX_IETA+1 ){
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEB->GetBinContent(i,j);
 			  if(h->GetBinContent(i,j)==1 ){ nEB_1++;  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << "-1." << " 999."<<endl;}
-			  else                                  {  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << h->GetBinContent(i,j)*(1/Ic_tmp) << " 0"<<endl;}
+			  else                                  {  f_IC << i-(MAX_IETA+1) << " "<< j << " 0 " << h->GetBinContent(i,j)*(1/Ic_tmp) << " " << Error <<endl;}
 		    }
 		}
 	  }
@@ -368,7 +388,9 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 		    }
 		    else hmap_EEp->SetBinContent( x+1, y+1, hep->GetBinContent(x+1,y+1) );
 		    if( hep->GetBinContent(x+1,y+1) != 0){
-			  if( hep->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " 1 " << hmap_EEp->GetBinContent(x+1,y+1) << " 0"<<endl;}
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEEp->GetBinContent(x+1,y+1);
+			  if( hep->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " 1 " << hmap_EEp->GetBinContent(x+1,y+1) << " " << Error <<endl;}
 			  else                      { nEEp_1++; f_IC << x+1 << " "<< y+1 << " 1 " << "-1." << " 999."<<endl;}
 		    }
 		}
@@ -424,7 +446,9 @@ void SetIC1toiEta( bool AllEta, string inputFile,  string OutPath, int isCal ){
 		    }
 		    else hmap_EEm->SetBinContent( x+1, y+1, hem->GetBinContent(x+1,y+1) );
 		    if( hem->GetBinContent(x+1,y+1) != 0){
-			  if(hem->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " -1 " << hmap_EEm->GetBinContent(x+1,y+1) << " 0"<<endl;}
+			  float Error = 0;
+			  if(PutStatError != "") Error = h_errEEm->GetBinContent(x+1,y+1);
+			  if(hem->GetBinContent(x+1,y+1)!=1 ){ f_IC << x+1 << " "<< y+1 << " -1 " << hmap_EEm->GetBinContent(x+1,y+1) << " " << Error <<endl;}
 			  else                     { nEEm_1++; f_IC << x+1 << " "<< y+1 << " -1 " << "-1." << " 999."<<endl;}
 		    }
 		}

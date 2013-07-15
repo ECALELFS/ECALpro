@@ -16,10 +16,11 @@ def printFillCfg1( outputfile ):
 
     if (overWriteGlobalTag):
         outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
-        outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
-        outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
-        outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
-        outputfile.write('     ),\n')
+        if not(laserTag==''):
+           outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
+           outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
+           outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
+           outputfile.write('     ),\n')
         outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
         outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
         outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")

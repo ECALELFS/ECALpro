@@ -9,7 +9,7 @@ echo "---->To have a lessons try:    man_arg: to know how to use the argument in
 echo "---->                          man_oper: to know how are the operator in bash."
 echo "---->                          man_perl: to know how to use perl language and awk"
 echo "---->To make something useful: iamroot: to know if you are a root user"
-echo "---->                          changeFiles-directory-worlds1-worlds2: to chanhe all the 'worlds1' with 'worlds2' in all the file 'in directory'"
+echo "---->                          SobstituteWords-directory-worlds1-worlds2: to chanhe all the 'worlds1' with 'worlds2' in all the file 'in directory'"
 echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax: to remove all Useless-files in group_Eos/dirName'"
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."

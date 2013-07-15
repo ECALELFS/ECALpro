@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Nov  8 17:18:54 CET 2011
-// $Id: FitEpsilonPlot.cc,v 1.7 2013/04/10 22:33:00 lpernie Exp $
+// $Id: FitEpsilonPlot.cc,v 1.9 2013/06/17 13:40:42 lpernie Exp $
 //
 //
 
@@ -630,7 +630,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  sigma.setRange(0.005, 0.060);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.5, Are_pi0_? 0.155:0.62);
+	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? 0.155:0.62);
 	  sigma.setRange(0.003, 0.030);
     }
 

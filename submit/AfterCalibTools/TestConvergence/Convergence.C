@@ -49,9 +49,10 @@ static const int MAX_IPHI = 360;
 static const int MIN_IETA = 1;
 static const int MIN_IPHI = 1;
 
-//gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
+//before: gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
+//5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
 //Usage: .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2010_WithNEWSelection_01",6,"2012Cmerg_")
-void Convergence( string Path_0, string Path, int nIter, string Tag ){
+void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1 ){
 
     string PathL = "root://eoscms//eos/cms" + Path_0 + Path;
     system( (string("mkdir -p plot_") + Path ).c_str());
@@ -76,7 +77,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 
 		//Iter
 		stringstream ss; ss<<i;
-		stringstream ss1; ss1<<(i+1);
+		stringstream ss1; ss1<<(i+nJump);
 		string Iter = ss.str();
 		string Iter1 = ss1.str();
 		// Input
@@ -149,55 +150,55 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 
 		hmean = h1->GetMean();
 		hrms  = h1->GetRMS();
-//		//Fit Method
-//		RooRealVar x("x","IC distribution",hmean-2.3*hrms, hmean+2.3*hrms, "");
-//		RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h1);
-//		RooRealVar mean("mean","mean",hmean, hmean-1.5*hrms,hmean+1.5*hrms,"");
-//		RooRealVar sigma("sigma","#sigma",hrms, hrms-hrms/40.,hrms+hrms/40.,"");
-//		mean.setRange(hmean-hmean/2.,hmean+hmean/2.);
-//		sigma.setRange(0.,hrms+hrms/2.);
-//		RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
-//		RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
-//		Nsig.setVal( h1->Integral()-h1->Integral()/1000. );
-//		Nsig.setRange(h1->Integral()/50.,h1->Integral());
-//
-//		RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
-//		RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
-//		RooRealVar cb2("cb2","cb2", 0.1, -1.,1.);
-//		RooArgList cbpars(cb0,cb1,cb2);
-//		RooChebychev bkg("bkg","bkg model", x, cbpars );
-//		RooRealVar Nbkg("Nbkg","background yield",h1->Integral()/100.,0.,h1->Integral());
-//		Nbkg.setVal( h1->Integral()/100. );
-//
-//
-//		RooAddPdf model1("model","only_gaus",RooArgList(gaus),RooArgList(Nsig));
-//		RooAddPdf model2("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
-//		RooAbsPdf* model=0; model = &model2;
-//		RooNLLVar nll("nll","log likelihood var",*model,dh);//,Extended());
-//		RooMinuit m(nll);
-//		m.setVerbose(kFALSE);
-//		m.migrad();
-//		RooFitResult* res = m.save();
-//
-//		RooPlot*  xframe = x.frame(h1->GetNbinsX());
-//		xframe->SetTitle("");
-//		dh.plotOn(xframe);
-//		model->plotOn(xframe);
-//		//model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
-//		h1->Draw();
-//		xframe->Draw("same");
-//		myc1->SaveAs(out.Data());
-//		sigma_plot  = sigma.getVal();
-//
-//		TLatex lat;
-//		char line[300];
-//		lat.SetNDC();
-//		lat.SetTextSize(0.030);
-//		lat.SetTextColor(1);
-//		sprintf(line,"SIGMA: %.6f ", sigma_plot );
-//		float xmin(0.55), yhi(0.80);// ypass(0.05);
-//		lat.DrawLatex(xmin,yhi, line);
+		//Fit Method
+		RooRealVar x("x","IC distribution",hmean-2.3*hrms, hmean+2.3*hrms, "");
+		RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h1);
+		RooRealVar mean("mean","mean",hmean, hmean-1.5*hrms,hmean+1.5*hrms,"");
+		RooRealVar sigma("sigma","#sigma",hrms, hrms-hrms/40.,hrms+hrms/40.,"");
+		mean.setRange(hmean-hmean/2.,hmean+hmean/2.);
+		sigma.setRange(0.,hrms+hrms/2.);
+		RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
+		RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
+		Nsig.setVal( h1->Integral()-h1->Integral()/1000. );
+		Nsig.setRange(h1->Integral()/50.,h1->Integral());
 
+		RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
+		RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
+		RooRealVar cb2("cb2","cb2", 0.1, -1.,1.);
+		RooArgList cbpars(cb0,cb1,cb2);
+		RooChebychev bkg("bkg","bkg model", x, cbpars );
+		RooRealVar Nbkg("Nbkg","background yield",h1->Integral()/100.,0.,h1->Integral());
+		Nbkg.setVal( h1->Integral()/100. );
+
+
+		RooAddPdf model1("model","only_gaus",RooArgList(gaus),RooArgList(Nsig));
+		RooAddPdf model2("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
+		RooAbsPdf* model=0; model = &model2;
+		RooNLLVar nll("nll","log likelihood var",*model,dh);//,Extended());
+		RooMinuit m(nll);
+		m.setVerbose(kFALSE);
+		m.migrad();
+		RooFitResult* res = m.save();
+
+		RooPlot*  xframe = x.frame(h1->GetNbinsX());
+		xframe->SetTitle("");
+		dh.plotOn(xframe);
+		model->plotOn(xframe);
+		//model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
+		h1->Draw();
+		xframe->Draw("same");
+		myc1->SaveAs(out.Data());
+		sigma_plot  = sigma.getVal();
+
+		TLatex lat;
+		char line[300];
+		lat.SetNDC();
+		lat.SetTextSize(0.030);
+		lat.SetTextColor(1);
+		sprintf(line,"SIGMA: %.6f ", sigma_plot );
+		float xmin(0.55), yhi(0.80);// ypass(0.05);
+		lat.DrawLatex(xmin,yhi, line);
+//
 //		hmean=mean.getVal();
 //		EB_RMS[i]=sigma_plot;
 		hmean=h1->GetMean();
@@ -214,7 +215,8 @@ void Convergence( string Path_0, string Path, int nIter, string Tag ){
 	  if(isEB==0) Conv->SetTitle("EB) IC Convergence");
 	  if(isEB==1) Conv->SetTitle("EE) IC Convergence");
 	  Conv->GetXaxis()->SetTitle("Iter");
-	  Conv->GetYaxis()->SetTitle("RMS(ICn+1 - IC)");
+	  if(nJump==1) Conv->GetYaxis()->SetTitle("RMS(ICn+1 - IC)");
+	  if(nJump==2) Conv->GetYaxis()->SetTitle("RMS(ICn+2 - IC)");
 	  Conv->Draw("ACP");
 	  myc1->cd();
 	  TString out;
