@@ -103,11 +103,15 @@ folder=${group}${dir}
 tag=${array[3]}
 iter_min=${array[4]}
 iter_max=${array[5]}
+NumMin=0
+NumMax=${array[6]}
 
-if [ ${#array[@]} -ne "6" ]; then echo "Wrong Use of 'RemoveEOS'"; usage; exit $E_SOB;
+if [ ${#array[@]} -ne "7" ]; then echo "Wrong Use of 'RemoveEOS'"; usage; exit $E_SOB;
 fi
-echo "I will REMOVE files in \"$folder\" from iter \"$iter_min\" to iter \"$iter_max\"... continue? [y-n]"
-read var1
+#echo "I will REMOVE files in \"$folder\" from iter \"$iter_min\" to iter \"$iter_max\"... continue? [y-n]"
+#read var1
+var1="y"
+#if [ "$var1" == "y" ]; then
 if [ "$var1" == "y" ]; then
    for Iter in $(eval echo "{$iter_min..$iter_max}")
    do
@@ -122,16 +126,16 @@ if [ "$var1" == "y" ]; then
          cmsRm ${folder}/iter_${Iter}/${tag}Endcap_${Endcap}_calibMap.root
      done
    
-     for EcalNtp in {0..765}
+     for EcalNtp in $(eval echo "{$NumMin..$NumMax}")
      do
          echo "${folder}/iter_${Iter}/${tag}EcalNtp_${EcalNtp}.root"
          cmsRm ${folder}/iter_${Iter}/${tag}EcalNtp_${EcalNtp}.root
      done
-     for Eps in {0..22}
-     do
-         echo "${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root"
-         cmsRm ${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root
-     done  
+     #for Eps in {0..22}
+     #do
+     #    echo "${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root"
+     #    cmsRm ${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root
+     #done  
    done
 fi
 echo "--------------"
