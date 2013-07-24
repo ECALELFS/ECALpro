@@ -13,7 +13,7 @@ echo "---->                          SobstituteWords-directory-worlds1-worlds2: 
 echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax: to remove all Useless-files in group_Eos/dirName'"
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."
-echo "---->                          ResendFillfailed-group-Directory-TagFiles-queue: Resubmit Fill jobs failed."
+echo "---->                          ResendFillfailed-group-Directory-iter-TagFiles-TotNumber-queue: Resubmit Fill jobs failed."
 echo "---->                          EventInFile-filePath: Total number of events in list of file."
 echo "---->If you are sad use:       IamSad"
 echo "--------------"
@@ -216,31 +216,42 @@ param=$(echo $1 | tr "-" " ")
 read -a array <<<$param
 group=${array[1]}
 dir=${array[2]}
-folder=${group}${dir}
-Tag=${array[3]}
-queue=${array[4]}
+iter=${array[3]}
+Tag=${array[4]}
+TotNumber=${array[5]}
+queue=${array[6]}
 mimSize=90000.
 Here=`pwd`
-if [ ${#array[@]} -ne "5" ]; then echo "Wrong Use of 'ResendFillfailed'"; usage; exit $E_Resend;
+if [ ${#array[@]} -ne "7" ]; then echo "Wrong Use of 'ResendFillfailed'"; usage; exit $E_Resend;
 fi
+folder=${group}/${dir}/iter_${iter}
 List=`cmsLs -l ${folder} | awk '{print $2 "-" $5}' | grep "EcalNtp"`
 read -a arrayList <<<$List
-
 maxValue=$(echo "scale=0; ${#arrayList[@]}-1" | bc) #scale=numero cifre decimali
-for file in $(eval echo "{0..${maxValue}}")
+
+#Remove File Incomplete
+for num in $(eval echo "{0..${maxValue}}")
 do
-    Myfile=$(echo ${arrayList[$file]} | tr "-" " ")
-    read -a arrayFinal <<<$Myfile
-    if [ 1 -eq `echo "${arrayFinal[0]} < ${mimSize}" | bc` ]
+    ArrayDimension=$(echo ${arrayList[$num]} | tr "-" " ")
+    dimension=`echo ${ArrayDimension[0]} | awk '{print $1}'`
+    fileStudied=`echo ${ArrayDimension[0]} | awk '{print $2}'`
+    if [ 1 -eq `echo "${dimension} < ${mimSize}" | bc` ]
     then
-       BadList=$(echo ${arrayFinal[1]} | tr "/" " ")
-       read -a arrayBad <<<$BadList
-       Location=`grep ${arrayBad[0]}/${arrayBad[1]}/${arrayBad[2]}/${arrayBad[3]}//${arrayBad[4]}/${arrayBad[5]}/${arrayBad[6]} ${Here}/${arrayBad[4]}/src/Fill/*${arrayBad[5]}*.sh`
-       Location=$(echo ${Location} | tr ":" " ")
-       read -a arrayLocation <<<$Location
-       echo "Is in: ${arrayLocation[0]}"
-       echo "bsub -q ${queue} -o ${Here}/${arrayBad[4]}/log/fillEpsilonPlot_${arrayBad[5]}_job_Resub.log ${arrayLocation[0]}"
-       `bsub -q ${queue} -o ${Here}/${arrayBad[4]}/log/fillEpsilonPlot_${arrayBad[5]}_job_Resub.log ${arrayLocation[0]}`
+       echo "File $fileStudied is corrupted (size $dimension)... I will cancel it!"
+       #`eos rm $fileStudied`
+    fi
+done
+#Relaunce File missing
+for file in $(eval echo "{0..${TotNumber}}")
+do
+    Myfile=$folder/${Tag}EcalNtp_${file}.root
+    echo "Looking for $Myfile"
+    match=$(echo "${arrayList[@]:0}" | grep -o ${Tag}EcalNtp_${file}.root)
+    if [[ $match != ${Tag}* ]]
+    then
+       echo "File Not present... I will relaunch it!";
+       echo "bsub -q ${queue} -o ${Here}/../$dir/log/fillEpsilonPlot_iter_${iter}_job_${file}.log ${Here}/../$dir/src/Fill/submit_iter_${iter}_job_${file}.sh"
+       #`bsub -q ${queue} -o ${Here}/../$dir/log/fillEpsilonPlot_iter_${iter}_job_${file}.log ${Here}/../$dir/src/Fill/submit_iter_${iter}_job_${file}.sh`
     fi
 done
 echo "--------------"
