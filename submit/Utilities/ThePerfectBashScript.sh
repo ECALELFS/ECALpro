@@ -227,7 +227,14 @@ maxValue=$(echo "scale=0; ${#arrayList[@]}-1" | bc) #scale=numero cifre decimali
 
 for file in $(eval echo "{0..${maxValue}}")
 do
-    LogFile="${Here}/../${dir}/log/reHaddCfg_iter_${Iter}_job_${file}.log"
+    realNum=${arrayList[$file]}
+    first=${arrayList[0]}
+    if [ ${#realNum} -eq ${#first} ]; then Num=`echo $realNum | cut -b 135-135`;
+    fi
+    Num_1=$(echo "scale=0; ${#first}+1" | bc)
+    if [ ${#realNum} -eq $Num_1 ]; then Num=`echo $realNum | cut -b 135-136`;
+    fi
+    LogFile="${Here}/../${dir}/log/reHaddCfg_iter_${Iter}_job_${Num}.log"
     echo "bsub -q $Queue -o ${LogFile} bash ${arrayList[$file]}"
     bsub -q $Queue -o ${LogFile} bash ${arrayList[$file]}
 done
