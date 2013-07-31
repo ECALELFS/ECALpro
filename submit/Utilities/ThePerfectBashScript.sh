@@ -13,6 +13,7 @@ echo "---->                          SobstituteWords-directory-worlds1-worlds2: 
 echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax: to remove all Useless-files in group_Eos/dirName'"
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."
+echo "---->                          ResendHaddfailed-Directory-Iter-Queue: Resend Hadd of one iter."
 echo "---->                          ResendFillfailed-group-Directory-iter-TagFiles-TotNumber-queue: Resubmit Fill jobs failed."
 echo "---->                          EventInFile-filePath: Total number of events in list of file."
 echo "---->If you are sad use:       IamSad"
@@ -210,6 +211,29 @@ done
 echo "--------------"
 }
 
+ResendHaddfailed (){
+echo "Resend jobs from hadd lists."
+param=$(echo $1 | tr "-" " ")
+read -a array <<<$param
+dir=${array[1]}
+Iter=${array[2]}
+Queue=${array[3]}
+if [ ${#array[@]} -ne "4" ]; then echo "Wrong Use of 'ResendHaddfailed'"; usage; exit;
+fi
+Here=`pwd`
+List=`ls ${Here}/../${dir}/src/hadd/HaddCfg* | grep iter_${Iter}_job_`
+read -a arrayList <<<$List
+maxValue=$(echo "scale=0; ${#arrayList[@]}-1" | bc) #scale=numero cifre decimali
+
+for file in $(eval echo "{0..${maxValue}}")
+do
+    LogFile="${Here}/../${dir}/log/reHaddCfg_iter_${Iter}_job_${file}.log"
+    echo "bsub -q $Queue -o ${LogFile} bash ${arrayList[$file]}"
+    bsub -q $Queue -o ${LogFile} bash ${arrayList[$file]}
+done
+echo "--------------"
+}
+
 ResendFillfailed (){
 E_Resend=73
 param=$(echo $1 | tr "-" " ")
@@ -304,9 +328,10 @@ for p in $*;
   elif [ "$p" != "${p/[Rr]emove/}" -a "$p" != "${p/[Ee][Oo][Ss]/}" ]; then removeEOS $p;
   elif [ "$p" == "IamSad" ]; then Smile;
   elif [ "$p" != "${p/[Cc]opy/}" -a "$p" != "${p/[Ee][Oo][Ss]/}" -a "$p" != "${p/[Ff]older/}" ]; then CopyEosFolder $p;
-  elif [ "$p" != "${p/[Rr]/emove}" -a "$p" != "${p/[Hh]add/}" -a "$p" != "${p/[Ff]ailed/}" ]; then RemoveHaddfailed $p;
-  elif [ "$p" != "${p/[Rr]/esend}" -a "$p" != "${p/[Ff]ill/}" -a "$p" != "${p/[Ff]ailed/}" ]; then ResendFillfailed $p;
-  elif [ "$p" != "${p/[Ee]/vent}" -a "$p" != "${p/[Ii][Nn]/}" -a "$p" != "${p/[Ff]ile/}" ]; then EventInFile $p;
+  elif [ "$p" != "${p/[Rr]emove}" -a "$p" != "${p/[Hh]add/}" -a "$p" != "${p/[Ff]ailed/}" ]; then RemoveHaddfailed $p;
+  elif [ "$p" != "${p/[Rr]esend}" -a "$p" != "${p/[Hh]add/}" -a "$p" != "${p/[Ff]ailed/}" ]; then ResendHaddfailed $p;
+  elif [ "$p" != "${p/[Rr]esend}" -a "$p" != "${p/[Ff]ill/}" -a "$p" != "${p/[Ff]ailed/}" ]; then ResendFillfailed $p;
+  elif [ "$p" != "${p/[Ee]vent}" -a "$p" != "${p/[Ii][Nn]/}" -a "$p" != "${p/[Ff]ile/}" ]; then EventInFile $p;
   else echo "Sorry but $p is not a valid option... use help to see the option I have"
   fi
 done
