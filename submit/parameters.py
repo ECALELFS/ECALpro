@@ -1,6 +1,6 @@
 nEventsPerJob = '-1' # default -1
-eosPath = '/store/group/alca_ecalcalib/lpernie/'
-#eosPath = '/store/caf/user/lpernie'
+#eosPath = '/store/group/alca_ecalcalib/lpernie/'
+eosPath = '/store/caf/user/lpernie'
 outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
@@ -52,18 +52,18 @@ EBContCorr = 'correctionsEB.root'
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
-inputlist_n      = 'ALL_2012C_good.list' # list of the input files
+inputlist_n      = 'ALL_2012B_good.list' # list of the input files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_2012C_pi0_NewTag_01'
+dirname          = 'ALL_2012B_pi0_NewTag_01'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = '2012C_'              # Tag to the names to avoid overlap
-queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue            = 'cmscaf1nd'
+NameTag          = '2012B_'              # Tag to the names to avoid overlap
+queueForDaemon   = '2nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+queue            = '2nd'
 
-nIterations = 20
+nIterations = 16
 
 #-----------------------------------------------------------------------------------
 laserTagRecord='';laserTag='';laserDB=''
@@ -76,13 +76,17 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 ##2012D
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208686_8TeV_PromptReco_Collisions12_JSON.txt
 #json_file ='goodrunlist_json2012D.txt'
+#isNewTag=True
 #HLTResults = 'True'
 #is2012 = True
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
-#globaltag='GR_P_V40::All'
+#if not(isNewTag):
+#   globaltag='GR_P_V40::All'
+#else:
+#   globaltag='FT_R_53_V21::All'
 #if(Are_pi0): 
 #   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
 #   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
@@ -96,23 +100,69 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #doEnenerScale='True'
 #doIC='True'
 #doLaserCorr="True"
-#GeVTagRecord='EcalADCToGeVConstantRcd'
-#GeVTag='EcalADCToGeVConstant_Bon_V20111129'
-#GeVDB='frontier://FrontierProd/CMS_COND_31X_ECAL'
-#laserTagRecord='EcalIntercalibConstantsRcd'
-#laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-#laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-#alphaTagRecord2='EcalLaserAlphasRcd'
-#alphaTag2='EcalLaserAlphas_EB_sic1_btcp152_EE_sic1_btcp116'
-#alphaDB2='frontier://FrontierInt/CMS_COND_ECAL'
-#alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-#alphaTag='EcalLaserAPDPNRatios_20130124_447_p1_v2'
-#alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#if not(isNewTag):
+#   GeVTagRecord='EcalADCToGeVConstantRcd'
+#   GeVTag='EcalADCToGeVConstant_Bon_V20111129'
+#   GeVDB='frontier://FrontierProd/CMS_COND_31X_ECAL'
+#   laserTagRecord='EcalIntercalibConstantsRcd'
+#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord2='EcalLaserAlphasRcd'
+#   alphaTag2='EcalLaserAlphas_EB_sic1_btcp152_EE_sic1_btcp116'
+#   alphaDB2='frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20130124_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#else:
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+
+
 ##############
 #2012C
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-isNewTag=True
+#isNewTag=True
+#json_file ='goodrunlist_json2012C.txt'
+#HLTResults = 'True'
+#is2012 = True
+#is_2011 = 'True' #Just for the fit, put true 
+#useHLTFilter="True"
+#correctHits='True'
+#overWriteGlobalTag = True
+#if not(isNewTag):
+#   globaltag='GR_P_V42::All'
+#else:
+#   globaltag='FT_R_53_V21::All'
+#if(Are_pi0): 
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalPi0*' 
+#else:
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalEta*'
+#doEnenerScale='True'
+#doIC='True'
+#doLaserCorr="True"
+#if not(isNewTag):
+#   laserTagRecord='EcalIntercalibConstantsRcd'
+#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#else:
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+##############
+##2012B
+###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
 json_file ='goodrunlist_json2012C.txt'
+isNewTag=True
 HLTResults = 'True'
 is2012 = True
 is_2011 = 'True' #Just for the fit, put true 
@@ -120,7 +170,7 @@ useHLTFilter="True"
 correctHits='True'
 overWriteGlobalTag = True
 if not(isNewTag):
-   globaltag='GR_P_V42::All'
+   globaltag='FT_R_53_V6::All'
 else:
    globaltag='FT_R_53_V21::All'
 if(Are_pi0): 
@@ -147,36 +197,6 @@ else:
    alphaTagRecord='EcalLaserAPDPNRatiosRcd'
    alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
    alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-##############
-##2012B
-###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
-#json_file ='goodrunlist_json2012C.txt'
-#HLTResults = 'True'
-#is2012 = True
-#is_2011 = 'True' #Just for the fit, put true 
-#useHLTFilter="True"
-#correctHits='True'
-#overWriteGlobalTag = True
-#globaltag='FT_R_53_V6::All'
-#if(Are_pi0): 
-#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-#   HLTPaths='AlCa_EcalPi0*' 
-#else:
-#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
-#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
-#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
-#   HLTPaths='AlCa_EcalEta*'
-#doEnenerScale='True'
-#doIC='True'
-#doLaserCorr="True"
-#laserTagRecord='EcalIntercalibConstantsRcd'
-#laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-#laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-#alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-#alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
-#alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
 
 ##############
 ##2011 AlcaRAW

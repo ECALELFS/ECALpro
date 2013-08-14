@@ -13,7 +13,7 @@ Implementation:
 //
 // Original Author:  Marco Grassi, CMS
 //         Created:  Tue Sep 27 15:07:49 CEST 2011
-// $Id: FillEpsilonPlot.cc,v 1.13 2013/06/17 13:40:18 lpernie Exp $
+// $Id: FillEpsilonPlot.cc,v 1.14 2013/06/19 13:42:19 lpernie Exp $
 //
 //
 
@@ -57,8 +57,6 @@ Implementation:
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
 #include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
-#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
-#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 
 #include "CalibCode/FillEpsilonPlot/interface/FillEpsilonPlot.h"
 #include "CalibCode/CalibTools/interface/GlobalFunctions.h"
@@ -66,6 +64,8 @@ Implementation:
 //@#include "CalibCode/CalibTools/interface/PreshowerCluster.h"
 #include "CalibCode/CalibTools/interface/PreshowerTools.h"
 #include "CalibCode/CalibTools/interface/GeometryService.h"
+#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
+#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 //Geom
 #include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
@@ -398,14 +398,13 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 		EE_HLT = GetHLTResults(iEvent, "AlCa_EcalEtaEEonly_*");
 	  }
     }
+    //get status from DB
+    edm::ESHandle<EcalChannelStatus> csHandle;
+    iSetup.get<EcalChannelStatusRcd>().get(csHandle);
+    const EcalChannelStatus &channelStatus = *csHandle; 
 
-    //Get status from DB
-    //edm::ESHandle<EcalChannelStatus> csHandle;
-    //iSetup.get<EcalChannelStatusRcd>().get(csHandle);
-    //channelStatus_ = csHandle;
-    //Clusters
-    if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) fillEBClusters(ebclusters, iEvent);
-    if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
+    if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) fillEBClusters(ebclusters, iEvent, channelStatus);
+    if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);
 
     if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters,EcalBarrel);
     if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot,EcalEndcap);
@@ -415,7 +414,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 
 /*===============================================================*/
-void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent)
+void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus)
     /*===============================================================*/
 {
 
@@ -512,12 +511,10 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	  {
 
 		EBDetId det(RecHitsInWindow[j]->id());
-
-		//Check status of Hits
-		//EcalRecHitCollection::const_iterator hit  = hits->find(detid); 
-		//if( ! checkStatusOfEcalRecHit(channelStatus, *hit) ) All_rechit_good = false;
-		//if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
-		//if(!All_rechit_good) cout<<"EB: Is false"<<endl;
+		//if( ! checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+		//OR
+		//if(RecHitsInWindow[j]->checkFlag()==0 ) cout<<"FLAG bad"<<endl;
+		//if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
 
 		int ieta = det.ieta();
 		int iphi = det.iphi();
@@ -609,7 +606,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 }
 
 /*===============================================================*/
-void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent)
+void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus)
     /*===============================================================*/
 {
     PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle);
@@ -726,12 +723,10 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  for(unsigned int j=0; j<RecHitsInWindow.size();j++)
 	  { 
 		EEDetId det(RecHitsInWindow[j]->id());
-
-		//Check status of Hits
-		//EcalRecHitCollection::const_iterator hit  = hits->find(detid); 
-		//if( ! checkStatusOfEcalRecHit(channelStatus, *hit) ) All_rechit_good = false;
-		//if(RecHitsInWindow[j]->recoFlag()!=0 ) All_rechit_good = false;
-		//if(!All_rechit_good) cout<<"EE: Is false"<<endl;
+		//if( ! checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+		//OR
+		//if(RecHitsInWindow[j]->checkFlag()==0 ) cout<<"FLAG bad"<<endl;
+		//if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
 
 		int ix = det.ix();
 		int iy = det.iy();
@@ -1564,6 +1559,15 @@ FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup)
 	  areLabelsSet_ = true;
 	  cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
     }
+}
+
+bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh){
+
+    int status =  int(channelStatus[rh.id().rawId()].getStatusCode()); 
+    //cout<<"Status "<<status<<endl; //0 or 1
+    if ( status > 0/*statusLevelRecHitsToUsea_*/ ) return false; 
+
+    return true; 
 }
 
 // ------------ method called when ending the processing of a run  ------------

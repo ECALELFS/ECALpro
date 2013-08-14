@@ -13,8 +13,6 @@
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
-#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
-#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 
 #include "CalibCode/CalibTools/interface/PosCalcParams.h"
 #include "CalibCode/CalibTools/interface/ECALGeometry.h"
@@ -24,6 +22,8 @@
 #include "CalibCode/CalibTools/interface/EcalPreshowerHardcodedTopology.h"
 #include "Geometry/EcalAlgo/interface/EcalPreshowerGeometry.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
+#include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 //JSON
 //#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
@@ -79,9 +79,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       // ---------- user defined ------------------------
-      void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent);
-      void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent);
+      void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
+      void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
+      bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
       float DeltaPhi(float phi1, float phi2);
       double min( double a, double b);
@@ -104,7 +105,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::Handle< EBRecHitCollection > ebHandle;
       edm::Handle< EBRecHitCollection > eeHandle;
       edm::Handle< ESRecHitCollection > esHandle;
-      //const EcalChannelStatus channelStatus_;
+
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
 
