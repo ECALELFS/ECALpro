@@ -239,7 +239,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
       TTree *TTree_JoshMva;
       Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
-      Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva;
+      Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva, iSM1_mva, iSM2_mva;
 #endif
 #ifdef MVA_REGRESSIO_EE
       vector<iXiYtoRing> VectRing;

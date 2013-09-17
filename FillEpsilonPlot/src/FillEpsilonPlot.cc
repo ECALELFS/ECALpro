@@ -957,8 +957,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 		    TLorentzVector G_Sort_1, G_Sort_2;
 		    int ind1 = i, ind2 = j;
-		    EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
-		    EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
+		    EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi(); int iSMod_1 = id_1.ism();
+		    EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi(); int iSMod_2 = id_2.ism();
 		    bool Inverted=false;
 
 		    if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
@@ -970,6 +970,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 			  G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
 			  iEta1=id_2.ieta(); iEta2 = id_1.ieta();
 			  iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
+			  iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
 			  ind1=j; ind2=i;
 			  Inverted=true;
 		    }
@@ -1043,8 +1044,10 @@ else{
 		    if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 		    else           { Corr1 = Correct2; Corr2 = Correct1; }
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+		    //In case ES give same posizion for different clusters
 		    Correction1_mva = Correct1; Correction2_mva = Correct2;
 		    iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
+		    iSM1_mva = iSMod_1; iSM2_mva = iSMod_2;
 
 		    TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
 		    TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
@@ -1054,10 +1057,10 @@ else{
 
 		    Mass_mva = (mvag1P4 + mvag2P4).M();
 		    MassOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
-		    TTree_JoshMva->Fill();   
 #endif
 		}
 #endif
+
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO_EE)
 		if( subDetId==EcalEndcap && (g1->seed().subdetId()==2) && (g2->seed().subdetId()==2) ){
 
@@ -1201,6 +1204,14 @@ else{
 		cout << "---- pi0 mass: " << pi0P4.mass() << endl;
 		cout << "---------------------------------------" << endl;
 #endif
+
+//Check the Conteinment correction for Barrel
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+if( pi0P4.mass()>0.11 && pi0P4.mass()<0.17 ){
+		if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) TTree_JoshMva->Fill();
+}
+#endif
+
 		// compute region weights
 		RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
 		RegionWeightVector w2 = regionalCalibration_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
@@ -1317,6 +1328,8 @@ FillEpsilonPlot::beginJob()
      TTree_JoshMva->Branch("iEta2_mva", &iEta2_mva, "iEta2_mva/I");
      TTree_JoshMva->Branch("iPhi1_mva", &iPhi1_mva, "iPhi1_mva/I");
      TTree_JoshMva->Branch("iPhi2_mva", &iPhi2_mva, "iPhi2_mva/I");
+     TTree_JoshMva->Branch("iSM1_mva", &iSM1_mva, "iSM1_mva/I");
+     TTree_JoshMva->Branch("iSM2_mva", &iSM2_mva, "iSM2_mva/I");
      TTree_JoshMva->Branch("Pt1_mva", &Pt1_mva, "Pt1_mva/F");
      TTree_JoshMva->Branch("Pt2_mva", &Pt2_mva, "Pt2_mva/F");
      TTree_JoshMva->Branch("Mass_mva", &Mass_mva, "Mass_mva/F");
