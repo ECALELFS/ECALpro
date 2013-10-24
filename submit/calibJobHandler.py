@@ -135,12 +135,12 @@ for iters in range(nIterations):
     print 'Done with staging the final epsilonPlots.root'
 
 #    # removing useles file
-    for nRm in range(Nlist):
-        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
-        print '[Removed] :: ' + remove_s
-        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
-        nFilesRemoved = 0
-        filesRemoved = (removeFile.communicate()[0]).splitlines()
+#    for nRm in range(Nlist):
+#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
+#        print '[Removed] :: ' + remove_s
+#        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
+#        nFilesRemoved = 0
+#        filesRemoved = (removeFile.communicate()[0]).splitlines()
 
     # N of Fit to send
     nEB = 61199/nFit

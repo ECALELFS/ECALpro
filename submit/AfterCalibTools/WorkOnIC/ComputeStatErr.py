@@ -95,6 +95,7 @@ for iEta in range(MIN_ETA,2*MAX_ETA+2):
        ic_odd  = EBIC_odd.GetBinContent(iEta,iPhi)
        if( iEta!=MAX_ETA+1 ):
            Sig_EB.SetBinContent(iEta,iPhi, ic_even-ic_odd)
+           print str(ic_even) + "  " + str(ic_odd)
            t.iC_eve=float(ic_even); t.iC_odd=float(ic_odd); t.eta=int(iEta-86); t.phi=int(iPhi);
            mytree_EB.Fill()
 #EEm

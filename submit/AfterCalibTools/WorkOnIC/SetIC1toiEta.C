@@ -310,7 +310,7 @@ void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutSt
 
 	  //PARSING
 	  ifstream file;
-	  file.open("InputFile/Endc_x_y_ring.txt", ifstream::in);
+	  file.open("/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_5_3_6/src/CalibCode/submit/AfterCalibTools/WorkOnIC/InputFile/Endc_x_y_ring.txt", ifstream::in);
 	  vector<iXiYtoRing> VectRing;
 
 	  while ( !file.eof() ) {
