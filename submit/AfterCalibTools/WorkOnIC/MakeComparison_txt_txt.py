@@ -141,7 +141,7 @@ for find_EB1 in range(len(IC_EB_1)):
            t.iC_1=float(IC_EB_1[find_EB1][2]); t.iC_2=float(IC_EB_2[find_EB2][2])
            mytree.Fill()
            if(float(IC_EB_1[find_EB1][2])!=-1. and float(IC_EB_2[find_EB2][2])!=-1. ):
-              print 'Eta: ' + str(IC_EB_1[find_EB1][0]) + ', Phi = ' + str(IC_EB_1[find_EB1][1]) + ': ' + str(IC_EB_1[find_EB1][2]) + ' vs ' + str(IC_EB_2[find_EB2][2])
+              #print 'Eta: ' + str(IC_EB_1[find_EB1][0]) + ', Phi = ' + str(IC_EB_1[find_EB1][1]) + ': ' + str(IC_EB_1[find_EB1][2]) + ' vs ' + str(IC_EB_2[find_EB2][2])
               Ratio1D_EB.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
               if( abs(int(IC_EB_1[find_EB1][0]))<45. ): Ratio1D_EB_eta1.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
               if( int(IC_EB_1[find_EB1][0])<0 ): Ratio1D_EBm.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
@@ -155,7 +155,7 @@ for find_EB1 in range(len(IC_EB_1)):
            else:
               cal_EBMap1.SetBinContent(int(IC_EB_1[find_EB1][0])+86, int(IC_EB_1[find_EB1][1]), 1.)
               cal_EBMap2.SetBinContent(int(IC_EB_2[find_EB2][0])+86, int(IC_EB_2[find_EB2][1]), 1.)
-              print 'No: ' + str(IC_EB_1[find_EB1][2]) + ' ' + str(IC_EB_2[find_EB2][2])
+              #print 'No: ' + str(IC_EB_1[find_EB1][2]) + ' ' + str(IC_EB_2[find_EB2][2])
            finded=True
            break
     if not(finded):

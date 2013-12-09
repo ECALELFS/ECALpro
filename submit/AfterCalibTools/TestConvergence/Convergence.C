@@ -124,7 +124,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 		for(Long64_t iEntry=0; iEntry<nentries; iEntry++){
 		    Tree->GetEntry(iEntry);
 		    Tree1->GetEntry(iEntry);
-		    if( coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && Ndof>10 && Ndof1>10){
+		    if( coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && coeff1!=0 && Ndof>10 && Ndof1>10){
 			  if(isEB==0 )                              h1->Fill((coeff1-coeff));
 			  if(isEB==1 && coeff>0.97 && coeff1>0.97 ) h1->Fill((coeff1-coeff));
 		    }
@@ -215,6 +215,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 	  if(isEB==0) Conv->SetTitle("EB) IC Convergence");
 	  if(isEB==1) Conv->SetTitle("EE) IC Convergence");
 	  Conv->GetXaxis()->SetTitle("Iter");
+	  //Conv->GetYaxis()->SetOffset(1.);
 	  if(nJump==1) Conv->GetYaxis()->SetTitle("RMS(ICn+1 - IC)");
 	  if(nJump==2) Conv->GetYaxis()->SetTitle("RMS(ICn+2 - IC)");
 	  Conv->Draw("ACP");

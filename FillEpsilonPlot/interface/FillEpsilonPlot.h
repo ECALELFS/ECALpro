@@ -241,8 +241,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
       Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva, iSM1_mva, iSM2_mva;
 #endif
-#ifdef MVA_REGRESSIO_EE
       vector<iXiYtoRing> VectRing;
+#ifdef MVA_REGRESSIO_EE
       vector<float> vs4s9EE;
       vector<float> vs1s9EE;
       vector<float> vs2s9EE;

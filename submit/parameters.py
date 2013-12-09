@@ -5,7 +5,7 @@ outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
-Are_pi0  = True # True = using Pi0, False = using Eta
+Are_pi0  = False # True = using Pi0, False = using Eta
 #Pi0
 if(Are_pi0):
    Pi0PtCutEB = '2.1'
@@ -52,14 +52,14 @@ EBContCorr = 'correctionsEB.root'
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
-inputlist_n      = 'ALL_2012C_good.list' # list of the input files
+inputlist_n      = 'ALL_2012A_good.list' # list of the input files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_2012C_pi0_NewTag_01'
+dirname          = 'ALL_2012A_eta_NewTag_01'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = '2012C_'              # Tag to the names to avoid overlap
+NameTag          = '2012A_'              # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 
@@ -122,42 +122,42 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 ##############
 #2012C
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Reprocessing/Cert_190456-196531_8TeV_13Jul2012ReReco_Collisions12_JSON_v2.txt
-isNewTag=True
-json_file ='goodrunlist_json2012C.txt'
-HLTResults = 'True'
-is2012 = True
-is_2011 = 'True' #Just for the fit, put true 
-useHLTFilter="True"
-correctHits='True'
-overWriteGlobalTag = True
-if not(isNewTag):
-   globaltag='GR_P_V42::All'
-else:
-   globaltag='FT_R_53_V21::All'
-if(Are_pi0): 
-   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-   HLTPaths='AlCa_EcalPi0*' 
-else:
-   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
-   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
-   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
-   HLTPaths='AlCa_EcalEta*'
-doEnenerScale='True'
-doIC='True'
-doLaserCorr="True"
-if not(isNewTag):
-   laserTagRecord='EcalIntercalibConstantsRcd'
-   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
-   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-else:
-   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
-   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#isNewTag=True
+#json_file ='goodrunlist_json2012C.txt'
+#HLTResults = 'True'
+#is2012 = True
+#is_2011 = 'True' #Just for the fit, put true 
+#useHLTFilter="True"
+#correctHits='True'
+#overWriteGlobalTag = True
+#if not(isNewTag):
+#   globaltag='GR_P_V42::All'
+#else:
+#   globaltag='FT_R_53_V21::All'
+#if(Are_pi0): 
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalPi0*' 
+#else:
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalEta*'
+#doEnenerScale='True'
+#doIC='True'
+#doLaserCorr="True"
+#if not(isNewTag):
+#   laserTagRecord='EcalIntercalibConstantsRcd'
+#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+#else:
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
 ##############
 ##2012B
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
@@ -197,6 +197,46 @@ else:
 #   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
 #   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
 #   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+
+##############
+#2012A
+##/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
+json_file ='goodrunlist_json2012C.txt'
+isNewTag=True
+HLTResults = 'True'
+is2012 = True
+is_2011 = 'True' #Just for the fit, put true 
+useHLTFilter="True"
+correctHits='True'
+overWriteGlobalTag = True
+if not(isNewTag):
+   globaltag='FT_R_53_V6::All'
+else:
+   globaltag='FT_R_53_V21::All'
+if(Are_pi0): 
+   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalPi0*' 
+else:
+   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalEta*'
+doEnenerScale='True'
+doIC='True'
+doLaserCorr="True"
+if not(isNewTag):
+   laserTagRecord='EcalIntercalibConstantsRcd'
+   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+else:
+   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
+   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
 
 ##############
 ##2011 AlcaRAW
