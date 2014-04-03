@@ -44,11 +44,6 @@ using std::map;
 using std::pair;
 using std::stringstream;
 
-static const int MAX_IETA = 85;
-static const int MAX_IPHI = 360;
-static const int MIN_IETA = 1;
-static const int MIN_IPHI = 1;
-
 //before: gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
 //5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
 //Usage: .x Convergence.C+("/store/group/alca_ecalcalib/lpernie/","ALL_2010_WithNEWSelection_01",6,"2012C_")
@@ -151,7 +146,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 		hmean = h1->GetMean();
 		hrms  = h1->GetRMS();
 		//Fit Method
-		RooRealVar x("x","IC distribution",hmean-2.3*hrms, hmean+2.3*hrms, "");
+		RooRealVar x("x","IC distribution",hmean-2.3*hrms, hmean+2.3*hrms,"");
 		RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h1);
 		RooRealVar mean("mean","mean",hmean, hmean-1.5*hrms,hmean+1.5*hrms,"");
 		RooRealVar sigma("sigma","#sigma",hrms, hrms-hrms/40.,hrms+hrms/40.,"");

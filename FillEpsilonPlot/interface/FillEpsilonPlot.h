@@ -155,6 +155,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double nXtal_2_cut_[3];
       double S4S9_cut_[3];
       double SystOrNot_;
+      bool isMC_;
 
       /// all the three options have to be instantiated to allow the
       //choice at runtime
@@ -173,6 +174,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<int> Ncristal_EE;
       std::vector<int> Ncristal_EB;
 
+      TH1F *EventFlow_EB;
+      TH1F *EventFlow_EE;
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
       TH1F *allEpsilon_EE; 
@@ -238,7 +241,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #endif
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
       TTree *TTree_JoshMva;
-      Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva;
+      Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva, pi0Eta;
       Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva, iSM1_mva, iSM2_mva;
 #endif
       vector<iXiYtoRing> VectRing;
@@ -257,4 +260,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #endif
       //JSON
       //JSON* myjson;
+      int Num_Fail_Sel;
+      int Num_Fail_tot;
+      TH1F *Selec_Efficiency;
+      //Preselection
+      //int Num_Fail_Presel;
+      //bool FailPreselEB;
+      //bool FailPreselEE;
+      //std::map<int,bool>  PassPreselection;
 };

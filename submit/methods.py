@@ -15,31 +15,32 @@ def printFillCfg1( outputfile ):
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
 
     if (overWriteGlobalTag):
-        outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
-        if not(laserTag==''):
-           outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
-           outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
-           outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
-           outputfile.write('     ),\n')
-        outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
-        outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
-        outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-        if(GeVTagRecord=='' and alphaTag2==''):
-           outputfile.write('     )\n')
-        if not(GeVTagRecord==''):
-           outputfile.write('     ),\n')
-           outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
-           outputfile.write("             tag = cms.string('" + GeVTag + "'),\n")
-           outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
-           if(alphaTag2==''):
+        if not( alphaTagRecord=='' and alphaTag=='' and alphaDB=='' ):        
+           outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+           if not(laserTag==''):
+              outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
+              outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
+              outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
+              outputfile.write('     ),\n')
+           outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
+           outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
+           outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
+           if(GeVTagRecord=='' and alphaTag2==''):
               outputfile.write('     )\n')
-        if not(alphaTag2==''):
-           outputfile.write('     ),\n')
-           outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord2 + "'),\n")
-           outputfile.write("             tag = cms.string('" + alphaTag2 + "'),\n")
-           outputfile.write("             connect = cms.untracked.string('" + alphaDB2 + "')\n")
-           outputfile.write('     )\n')
-        outputfile.write(')\n\n')
+           if not(GeVTagRecord==''):
+              outputfile.write('     ),\n')
+              outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
+              outputfile.write("             tag = cms.string('" + GeVTag + "'),\n")
+              outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
+              if(alphaTag2==''):
+                 outputfile.write('     )\n')
+           if not(alphaTag2==''):
+              outputfile.write('     ),\n')
+              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord2 + "'),\n")
+              outputfile.write("             tag = cms.string('" + alphaTag2 + "'),\n")
+              outputfile.write("             connect = cms.untracked.string('" + alphaDB2 + "')\n")
+              outputfile.write('     )\n')
+           outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')
@@ -148,7 +149,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.S4S9_EE = cms.untracked.double(" + S4S9_EE + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     outputfile.write("process.analyzerFillEpsilon.AlcaL1TrigNames = cms.untracked.vstring('L1_SingleIsoEG5','L1_SingleIsoEG8','L1_SingleIsoEG10','L1_SingleIsoEG12','L1_SingleIsoEG15','L1_SingleEG2','L1_SingleEG5','L1_SingleEG8','L1_SingleEG10','L1_SingleEG12','L1_SingleEG15','L1_SingleEG20','L1_SingleJet6U','L1_SingleJet10U','L1_SingleJet20U','L1_SingleJet30U','L1_SingleJet40U','L1_SingleJet50U','L1_DoubleJet30U','L1_DoubleEG5','L1_DoubleEG2')\n\n")
-
+    if isMC:
+       outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
     outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
