@@ -7,6 +7,7 @@ ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
 Are_pi0  = True # True = using Pi0, False = using Eta
 isMC = False
+MakeNtuple4optimization = False
 #Pi0
 if(Are_pi0):
    Pi0PtCutEB = '2.1'
@@ -21,6 +22,19 @@ if(Are_pi0):
    nXtal_2_EE = '4'
    S4S9_EB = '0.7'
    S4S9_EE = '0.85'
+   if(isMC and MakeNtuple4optimization):
+      Pi0PtCutEB = '1.'
+      Pi0PtCutEE = '1.'
+      gPtCutEB = '0.4'
+      gPtCutEE = '0.4'
+      Pi0IsoCutEB = '0.'
+      Pi0IsoCutEE = '0.'
+      nXtal_1_EB = '0'
+      nXtal_2_EB = '0'
+      nXtal_1_EE = '0'
+      nXtal_2_EE = '0'
+      S4S9_EB = '0.6'
+      S4S9_EE = '0.6'
 #ETA
 else:
    Pi0PtCutEB = '3.2'
@@ -35,12 +49,25 @@ else:
    nXtal_2_EE = '5'
    S4S9_EB = '0.9'
    S4S9_EE = '0.9'
+   if(isMC and MakeNtuple4optimization):
+      Pi0PtCutEB = '1.'
+      Pi0PtCutEE = '1.'
+      gPtCutEB = '0.4'
+      gPtCutEE = '0.4'
+      Pi0IsoCutEB = '0.'
+      Pi0IsoCutEE = '0.'
+      nXtal_1_EB = '0'
+      nXtal_2_EB = '0'
+      nXtal_1_EE = '0'
+      nXtal_2_EE = '0'
+      S4S9_EB = '0.6'
+      S4S9_EE = '0.6'
 #containment corrections
 useEBContainmentCorrections = 'True'
 useEEContainmentCorrections = 'False'
 EBContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEB.root'
-MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_4module.root'
-MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_4module.root'
+MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
+MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
 MVAEEContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_EE.root'
 MVAEEContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_EE.root'
 MVAEBContainmentCorrections_eta01 = 'JOSH_MVA_eta1_Mediumtrain.root'
@@ -298,19 +325,39 @@ else:
 
 ##2010 AlcaRECO
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/StreamExpress/goodrunlist_json.txt
-HLTResults = 'False'
-json_file = ''
-is_2011 = 'False'
-is2012 = False
-overWriteGlobalTag = False
-doEnenerScale='False'
-doIC='False'
-doLaserCorr="True"
-ebInputTag = "InputTag('ecalRecHit','EcalRecHitsEB','RECO')"
-eeInputTag = "InputTag('ecalRecHit','EcalRecHitsEE','RECO')"
-esInputTag = "InputTag('ecalPreshowerRecHit','EcalRecHitsES')"
-useHLTFilter = "False"
-correctHits = 'False'
-globaltag='GR_R_42_V21B::All'
-HLTPaths='AlCa_EcalPi0_*'
-isMC = True
+#HLTResults = 'False'
+#json_file = ''
+#is_2011 = 'False'
+#is2012 = False
+#overWriteGlobalTag = False
+#doEnenerScale='False'
+#doIC='False'
+#doLaserCorr="True"
+#ebInputTag = "InputTag('ecalRecHit','EcalRecHitsEB','RECO')"
+#eeInputTag = "InputTag('ecalRecHit','EcalRecHitsEE','RECO')"
+#esInputTag = "InputTag('ecalPreshowerRecHit','EcalRecHitsES')"
+#useHLTFilter = "False"
+#correctHits = 'False'
+#globaltag='GR_R_42_V21B::All'
+#HLTPaths='AlCa_EcalPi0_*'
+#isMC = True
+
+##MC 2010 AlcaRECO
+###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions10/7TeV/StreamExpress/goodrunlist_json.txt
+#HLTResults = 'False'
+#json_file = ''
+#is_2011 = 'False'
+#is2012 = False
+#overWriteGlobalTag = False
+#doEnenerScale='False'
+#doIC='False'
+#doLaserCorr="True"
+#ebInputTag = "InputTag('ecalRecHit','EcalRecHitsEB','RECO')"
+#eeInputTag = "InputTag('ecalRecHit','EcalRecHitsEE','RECO')"
+#esInputTag = "InputTag('ecalPreshowerRecHit','EcalRecHitsES')"
+#useHLTFilter = "False"
+#correctHits = 'False'
+#globaltag='GR_R_42_V21B::All'
+#HLTPaths='AlCa_EcalPi0_*'
+#isMC = True
+

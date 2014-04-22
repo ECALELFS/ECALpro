@@ -157,6 +157,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     S4S9_cut_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE");
     SystOrNot_ = iConfig.getUntrackedParameter<double>("SystOrNot",0);
     isMC_ = iConfig.getUntrackedParameter<bool>("isMC",false);
+    MakeNtuple4optimization_ = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
 
     cout<<"Cus used: EB)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_[EcalBarrel]<<", Iso: "<<pi0IsoCut_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_[EcalBarrel]<<", S4S9: "<<S4S9_cut_[EcalBarrel]<<endl;
@@ -242,6 +243,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EventFlow_EE->GetXaxis()->SetBinLabel(3,"Initial Comb."); EventFlow_EE->GetXaxis()->SetBinLabel(4,"Final Comb.");
     allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
     entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
 
@@ -252,6 +254,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     pi0MassVsETEB->GetXaxis()->SetTitle("E_{T}(pi^{0})");
     pi0MassVsETEB->GetYaxis()->SetTitle("#pi^{0} mass");
 
+    // output file
+    char fileName[200];
+    sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
+    outfile_ = new TFile(fileName,"RECREATE");
+    if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
 #ifdef SELECTION_TREE
     CutVariables_EB = new TTree("CutVariables_EB","(EB) Variables used at first cuts");
     CutVariables_EB->Branch("NSeeds_EB", &NSeeds_EB, "NSeeds_EB/F");
@@ -283,7 +290,26 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     Pi0Info_EE->Branch("Phipi0_EE", &Phipi0_EE, "Phipi0_EE/F");
     Pi0Info_EE->Branch("Epsilon_EE", &Epsilon_EE, "Epsilon_EE/F");
 #endif
-
+    if(isMC_ && MakeNtuple4optimization_){
+	Tree_Optim = new TTree("Tree_Optim","Output TTree");
+	Tree_Optim->Branch( "Op_NPi0_rec",      &Op_NPi0_rec,       "Op_NPi0_rec/I");
+	Tree_Optim->Branch( "Op_Pi0recIsEB",    &Op_Pi0recIsEB,     "Op_Pi0recIsEB[Op_NPi0_rec]/I");
+	Tree_Optim->Branch( "Op_IsoPi0_rec",    &Op_IsoPi0_rec,     "Op_IsoPi0_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_n1CrisPi0_rec", &Op_n1CrisPi0_rec,  "Op_n1CrisPi0_rec[Op_NPi0_rec]/I");
+	Tree_Optim->Branch( "Op_n2CrisPi0_rec", &Op_n2CrisPi0_rec,  "Op_n2CrisPi0_rec[Op_NPi0_rec]/I");
+	Tree_Optim->Branch( "Op_mPi0_rec",      &Op_mPi0_rec,       "Op_mPi0_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_ptG1_rec",      &Op_ptG1_rec,       "Op_ptG1_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_ptG2_rec",      &Op_ptG2_rec,       "Op_ptG2_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_etaPi0_rec",    &Op_etaPi0_rec,     "Op_etaPi0_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_ptPi0_rec",     &Op_ptPi0_rec,      "Op_ptPi0_rec[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_DeltaRG1G2",    &Op_DeltaRG1G2,     "Op_DeltaRG1G2[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_Es_e1_1",       &Op_Es_e1_1,        "Op_Es_e1_1[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_Es_e1_2",       &Op_Es_e1_2,        "Op_Es_e1_2[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_Es_e2_1",       &Op_Es_e2_1,        "Op_Es_e2_1[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_Es_e2_2",       &Op_Es_e2_2,        "Op_Es_e2_2[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_S4S9_1",        &Op_S4S9_1,         "Op_S4S9_1[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "Op_S4S9_2",        &Op_S4S9_2,         "Op_S4S9_2[Op_NPi0_rec]/F");
+    }
     /// trigger histo
     triggerComposition = new TH1F("triggerComposition", "Trigger Composition",128,-0.5,127.5);
     areLabelsSet_ = false;
@@ -317,6 +343,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
   delete allEpsilon_EB;
   delete allEpsilon_EE;
+  delete allEpsilon_EEnw;
   delete entries_EEp;
   delete entries_EEm;
   delete pi0MassVsIetaEB;
@@ -342,18 +369,21 @@ FillEpsilonPlot::~FillEpsilonPlot()
   //JSON
   //delete myjson;
 #ifdef MVA_REGRESSIO
-  delete forest_EB_1;
-  delete forest_EB_2;
+  // if the analyzer did not run it crash because you do not create it
+  if(!isMC_){
+    delete forest_EB_1;
+    delete forest_EB_2;
+  }
 #endif
 #ifdef MVA_REGRESSIO_EE
   delete forest_EE_pi01;
   delete forest_EE_pi02;
 #endif
-    //if( calibMapPath_.find("iter_-1")!=std::string::npos ){
-	//Write the PassPreselection Map
-	//cout<<"Preselection:: Siamo al primo iter: Scrivo le correzioni"<<endl;
-	//PassPreselection
-    //}
+  //if( calibMapPath_.find("iter_-1")!=std::string::npos ){
+  //Write the PassPreselection Map
+  //cout<<"Preselection:: Siamo al primo iter: Scrivo le correzioni"<<endl;
+  //PassPreselection
+  //}
 }
 
 
@@ -373,8 +403,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //  PassPreselection[iEvent.id().event()] = true;
   //}
   //if( calibMapPath_.find("iter_-1")==std::string::npos && !PassPreselection.find(iEvent.id().event())->second ) return;
-
   using namespace edm;
+  nPi0=0;
   //For Syst error SystOrNot_=1 or 2, for normal calib is 0
   if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
   else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
@@ -396,11 +426,12 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //JSON FILE
   //if ( !myjson->isGoodLS( iEvent.id().run() , iEvent.luminosityBlock() ) ) return;
   //Vectors
-  std::vector< CaloCluster > ebclusters; // contains the output clusters
+  std::vector< CaloCluster > ebclusters;
   ebclusters.clear();
   vs4s9.clear(); vs2s9.clear(); vs2s9.clear();
+  vs4s9EE.clear(); Es_1.clear(); Es_2.clear();
 #ifdef MVA_REGRESSIO_EE
-  vs4s9EE.clear(); vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
+  vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
 #endif
   std::vector< CaloCluster > eseeclusters; eseeclusters.clear();
   std::vector< CaloCluster > eseeclusters_tot; eseeclusters_tot.clear();
@@ -638,8 +669,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     vs2s9.push_back( (maxEne+maxEne2)/e3x3 );
 #endif
     Ncristal_EB.push_back(RecHitsInWindow.size() );
-    ebclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL),
-	    enFracs, CaloCluster::undefined, seed_id ) );
+    ebclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL), enFracs, CaloCluster::undefined, seed_id ) );
   } //loop over seeds to make EB clusters
 
 }
@@ -914,8 +944,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 		math::XYZPoint posit(posClu.x(),posClu.y(),posClu.z());
 		eseeclusters_tot.push_back( CaloCluster( tempenergy, posit, CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
 		Nxtal_tot.push_back(Ncristal_EE[ind]);
-#ifdef MVA_REGRESSIO_EE
 		vs4s9EE.push_back( eeclusterS4S9[ind] );
+		Es_1.push_back( e1 ); Es_2.push_back( e2 );
+#ifdef MVA_REGRESSIO_EE
 		vs1s9EE.push_back( eeclusterS1S9[ind] );
 		vs2s9EE.push_back( eeclusterS2S9[ind] );
 		ESratio.push_back( deltaE/eeclus_iter->energy() );
@@ -924,12 +955,12 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  }
 	}
     }
-
     else{
 	eseeclusters_tot.push_back( CaloCluster( eeclus_iter->energy(), eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
 	Nxtal_tot.push_back(Ncristal_EE[ind]);
-#ifdef MVA_REGRESSIO_EE
 	vs4s9EE.push_back( eeclusterS4S9[ind] );
+	Es_1.push_back( -999. ); Es_2.push_back( -999. );
+#ifdef MVA_REGRESSIO_EE
 	vs1s9EE.push_back( eeclusterS1S9[ind] );
 	vs2s9EE.push_back( eeclusterS2S9[ind] );
 	ESratio.push_back( (-1998.)/eeclus_iter->energy() );
@@ -1247,20 +1278,37 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( Nxtal_EnergGamma < nXtal_1_cut_[subDetId] ) continue;
 	if( Nxtal_EnergGamma2 < nXtal_2_cut_[subDetId] ) continue;
 
-	/// debug
 	if(subDetId==EcalBarrel)
 	{
 	  pi0MassVsIetaEB->Fill( fabs(pi0P4.eta())/0.0174, pi0P4.mass());
 	  pi0MassVsETEB->Fill(pi0P4.Pt(), pi0P4.mass());
 	}
-
-#ifdef DEBUG
-	cout << "---------------------------------------" << endl;
-	cout << "---- pi0 mass: " << pi0P4.mass() << endl;
-	cout << "---------------------------------------" << endl;
-#endif
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(3.);
 	else                       EventFlow_EE->Fill(3.);
+	//Fill Optimization
+	if(isMC_ && MakeNtuple4optimization_){
+	  int ind1 = i,  ind2 = j;
+	  if( g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ){ ind1 = j; ind2 = i;}
+	  Op_NPi0_rec            = nPi0; 
+	  Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
+	  Op_IsoPi0_rec[nPi0]    = nextClu;  
+	  Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
+	  Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
+	  Op_mPi0_rec[nPi0]      = pi0P4.mass();
+	  Op_ptG1_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g1P4.Pt() : g2P4.Pt();
+	  Op_ptG2_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g2P4.Pt() : g1P4.Pt();
+	  Op_etaPi0_rec[nPi0]    = pi0P4.eta();
+	  Op_ptPi0_rec[nPi0]     = pi0P4.Pt();
+	  Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1P4.eta(), g2P4.eta(), g1P4.phi(), g2P4.phi() );
+	  Op_Es_e1_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind1];
+	  Op_Es_e1_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind2];
+	  Op_Es_e2_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind1];
+	  Op_Es_e2_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind2];
+	  Op_S4S9_1[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind1] : vs4s9EE[ind1];
+	  Op_S4S9_2[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind2] : vs4s9EE[ind2];
+	  nPi0++;
+	  Tree_Optim->Fill();
+	}
 	//Check the Conteinment correction for Barrel
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
 	if( pi0P4.mass()>0.11 && pi0P4.mass()<0.17 ){
@@ -1279,8 +1327,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	r2 = r2*r2;
 	//average <eps> for cand k
 	float eps_k = 0.5 * ( r2 - 1. );
-
 	// compute quantities needed for <eps>_j in each region j
+	if(subDetId!=EcalBarrel) allEpsilon_EEnw->Fill( pi0P4.mass() );
 	for(RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 	  const uint32_t& iR = (*it).iRegion;
 	  const float& w = (*it).value;
@@ -1315,10 +1363,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 FillEpsilonPlot::beginJob()
 {
   // output file
-  char fileName[200];
-  sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
-  outfile_ = new TFile(fileName,"RECREATE");
-  if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
+  //char fileName[200];
+  //sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
+  //outfile_ = new TFile(fileName,"RECREATE");
+  //if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
 
   /// testing the EE eta ring
   TH2F eep("eep","EE+",102,0.5,101.5,102,-0.5,101.5);
@@ -1370,19 +1418,19 @@ FillEpsilonPlot::beginJob()
     }
     delete[] cstr;
   }
-//  //###########
-//  fstream  file_Ix;
-//  file_Ix.open( "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_5_3_6/src/CalibCode/submit/common/ix_iy_iz_EtaRing_Eta.txt", ios::out);
-//  for(int x=0; x<100;x++){
-//    for(int y=0; y<100;y++){
-//	int ring = GetRing( x, y, VectRing, false);
-//	if(ring!=-1){
-//	  EEDetId EE_id(x, y, 1, 0);
-//	  file_Ix << x << " "<< y << " " << ring << " " <<endl;
-//	}
-//    }
-//  }
-//  file_Ix.close();
+  //  //###########
+  //  fstream  file_Ix;
+  //  file_Ix.open( "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_5_3_6/src/CalibCode/submit/common/ix_iy_iz_EtaRing_Eta.txt", ios::out);
+  //  for(int x=0; x<100;x++){
+  //    for(int y=0; y<100;y++){
+  //	int ring = GetRing( x, y, VectRing, false);
+  //	if(ring!=-1){
+  //	  EEDetId EE_id(x, y, 1, 0);
+  //	  file_Ix << x << " "<< y << " " << ring << " " <<endl;
+  //	}
+  //    }
+  //  }
+  //  file_Ix.close();
 
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
   TTree_JoshMva = new TTree("TTree_JoshMva","MVA corrections");
@@ -1529,6 +1577,9 @@ FillEpsilonPlot::endJob()
   Pi0Info_EB->Write();
   Pi0Info_EE->Write();
 #endif
+  if( isMC_ && MakeNtuple4optimization_ ){
+    Tree_Optim->Write();
+  }
   //JSON
   //hev_TOT->SetBinContent(1,ev_TOT); hev_TOT->Write();
   //hev_JSON->SetBinContent(1,ev_JSON); hev_JSON->Write();
@@ -1536,6 +1587,7 @@ FillEpsilonPlot::endJob()
   EventFlow_EE->Write();
   allEpsilon_EB->Write();
   allEpsilon_EE->Write();
+  allEpsilon_EEnw->Write();
   entries_EEp->Write();
   entries_EEm->Write();
   pi0MassVsIetaEB->Write();
@@ -1596,49 +1648,49 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
   void 
 FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup)
 {
-if(!isMC_){
-  edm::ESHandle<L1GtTriggerMenu> menuRcd;
-  iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-  const L1GtTriggerMenu* menu = menuRcd.product();
+  if(!isMC_){
+    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+    const L1GtTriggerMenu* menu = menuRcd.product();
 
 
-  std::map< std::string, int >::iterator currentTrigger;
+    std::map< std::string, int >::iterator currentTrigger;
 
-  if(l1TrigNames_.size()>0) {
-    bool triggerChanged = false;
-    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-	currentTrigger = l1TrigNames_.find((algo->second).algoName());
-	if (currentTrigger == l1TrigNames_.end() || currentTrigger->second != (algo->second).algoBitNumber()) {
-	  triggerChanged = true;
-	  break;
+    if(l1TrigNames_.size()>0) {
+	bool triggerChanged = false;
+	for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+	  currentTrigger = l1TrigNames_.find((algo->second).algoName());
+	  if (currentTrigger == l1TrigNames_.end() || currentTrigger->second != (algo->second).algoBitNumber()) {
+	    triggerChanged = true;
+	    break;
+	  }
+	  // if(l1TrigNames_[(algo->second).algoName()] != (algo->second).algoBitNumber()) {
+	  //     cout << "Trigger numbering has changed" << endl;
+	  //     l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
+	  // }
 	}
-	// if(l1TrigNames_[(algo->second).algoName()] != (algo->second).algoBitNumber()) {
-	//     cout << "Trigger numbering has changed" << endl;
-	//     l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
-	// }
+	if(!triggerChanged) return;
+	cout << "beginRun:: Trigger names / ordering changed" << endl;
     }
-    if(!triggerChanged) return;
-    cout << "beginRun:: Trigger names / ordering changed" << endl;
-  }
 
-  cout << "beginRun:: Filling trigger names" << endl;
+    cout << "beginRun:: Filling trigger names" << endl;
 
-  /// filling trigger map
-  l1TrigNames_.clear();
-  for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-    l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
+    /// filling trigger map
+    l1TrigNames_.clear();
+    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+	l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
 
-    /// using same loop to set trigger histogram labels
+	/// using same loop to set trigger histogram labels
+	if(!areLabelsSet_)
+	  triggerComposition->GetXaxis()->SetBinLabel((algo->second).algoBitNumber()+1,(algo->second).algoName().c_str());
+    }
+
     if(!areLabelsSet_)
-	triggerComposition->GetXaxis()->SetBinLabel((algo->second).algoBitNumber()+1,(algo->second).algoName().c_str());
+    {
+	areLabelsSet_ = true;
+	cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
+    }
   }
-
-  if(!areLabelsSet_)
-  {
-    areLabelsSet_ = true;
-    cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
-  }
-}
 }
 
 bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh){

@@ -27,6 +27,7 @@
 //JSON
 //#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
+#define NPI0MAX 15000
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
@@ -156,6 +157,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double S4S9_cut_[3];
       double SystOrNot_;
       bool isMC_;
+      bool MakeNtuple4optimization_;
 
       /// all the three options have to be instantiated to allow the
       //choice at runtime
@@ -179,6 +181,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
       TH1F *allEpsilon_EE; 
+      TH1F *allEpsilon_EEnw; 
       TH1F *allEpsilon_EB;
       TH2F *entries_EEp;
       TH2F *entries_EEm;
@@ -221,6 +224,27 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void Fill_Epsilon_EE(float eps ){ Epsilon_EE=eps; };
       TTree *Pi0Info_EE;
 #endif
+      TTree*  Tree_Optim;
+      Int_t   nPi0;
+      Int_t   Op_NPi0_rec;
+      Int_t   Op_Pi0recIsEB[NPI0MAX];
+      Float_t Op_IsoPi0_rec[NPI0MAX];
+      Int_t   Op_n1CrisPi0_rec[NPI0MAX];
+      Int_t   Op_n2CrisPi0_rec[NPI0MAX];
+      Float_t Op_mPi0_rec[NPI0MAX];
+      Float_t Op_ptG1_rec[NPI0MAX];
+      Float_t Op_ptG2_rec[NPI0MAX];
+      Float_t Op_etaPi0_rec[NPI0MAX];
+      Float_t Op_ptPi0_rec[NPI0MAX];
+      Float_t Op_DeltaRG1G2[NPI0MAX];
+      Float_t Op_Es_e1_1[NPI0MAX];
+      Float_t Op_Es_e1_2[NPI0MAX];
+      Float_t Op_Es_e2_1[NPI0MAX];
+      Float_t Op_Es_e2_2[NPI0MAX];
+      Float_t Op_S4S9_1[NPI0MAX];
+      Float_t Op_S4S9_2[NPI0MAX];
+      vector<float> Es_1;
+      vector<float> Es_2;
 
       std::string ContCorr_EB_;
       TH1F *triggerComposition;
@@ -245,8 +269,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva, iSM1_mva, iSM2_mva;
 #endif
       vector<iXiYtoRing> VectRing;
-#ifdef MVA_REGRESSIO_EE
       vector<float> vs4s9EE;
+#ifdef MVA_REGRESSIO_EE
       vector<float> vs1s9EE;
       vector<float> vs2s9EE;
       vector<float> ESratio;
