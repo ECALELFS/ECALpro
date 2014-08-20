@@ -131,6 +131,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    process.analyzerFillEpsilon.EBRecHitCollectionTag = cms.untracked." + ebInputTag + "\n")
     outputfile.write("    process.analyzerFillEpsilon.EERecHitCollectionTag = cms.untracked." + eeInputTag + "\n")
     outputfile.write("process.analyzerFillEpsilon.ESRecHitCollectionTag = cms.untracked." + esInputTag + "\n")
+    outputfile.write("process.analyzerFillEpsilon.l1InputTag = cms.untracked." + l1InputTag + "\n")
 
     outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked.InputTag('hltGtDigis')\n")
     outputfile.write("process.analyzerFillEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
@@ -153,6 +154,19 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
        if MakeNtuple4optimization:
           outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
+    if not( L1Seed=='' ):       
+       outputfile.write("process.L1SeedSele = cms.EDFilter( 'HLTLevel1GTSeed',\n")
+       outputfile.write("    L1SeedsLogicalExpression = cms.string( '" + L1Seed + "' ), #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')\n")
+       outputfile.write("    saveTags = cms.bool( True ),\n")
+       outputfile.write("    L1MuonCollectionTag = cms.InputTag( 'hltL1extraParticles' ),\n")
+       outputfile.write("    L1UseL1TriggerObjectMaps = cms.bool( True ),\n")
+       outputfile.write("    L1UseAliasesForSeeding = cms.bool( True ),\n")
+       outputfile.write("    L1GtReadoutRecordTag = cms.InputTag( 'hltGtDigis' ),\n")
+       outputfile.write("    L1CollectionsTag = cms.InputTag( 'hltL1extraParticles' ),\n")
+       outputfile.write("    L1NrBxInEvent = cms.int32( 3 ),\n")
+       outputfile.write("    L1GtObjectMapTag = cms.InputTag( 'hltL1GtObjectMap' ),\n")
+       outputfile.write("    L1TechTriggerSeeding = cms.bool( False )\n")
+       outputfile.write(")\n")
     outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
@@ -162,9 +176,9 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
     outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
+    if not( L1Seed=='' ):
+       outputfile.write("process.p *= process.L1SeedSele\n")
     outputfile.write("process.p *= process.analyzerFillEpsilon\n")
-
-
 
 
 def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
@@ -238,7 +252,7 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
 def printParallelHadd(outputfile, outFile, list, destination, pwd):
     outputfile.write("#!/bin/bash\n")
     if(is2012):
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/pi0/Calibration/CMSSW_4_2_4/src\n")
+         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
@@ -252,7 +266,7 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
 def printFinalHadd(outputfile, list, destination, pwd):
     outputfile.write("#!/bin/bash\n")
     if(is2012):
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/pi0/Calibration/CMSSW_4_2_4/src\n")
+         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")

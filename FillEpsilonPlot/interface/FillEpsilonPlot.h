@@ -94,6 +94,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       bool getTriggerByName( std::string s );
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
+      //bool CheckL1Seed(const edm::Event& iEvent, std::string s);
 
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
       void  EBPHI_Cont_Corr_load(std::string FileName );
@@ -130,12 +131,14 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useOnlyEEClusterMatchedWithES_;
       bool Is2012_;
       bool HLTResults_;
+      //std::string L1Seed_;
       bool Are_pi0_;
       edm::InputTag EBRecHitCollectionTag_;
       edm::InputTag EERecHitCollectionTag_;
       edm::InputTag ESRecHitCollectionTag_;
       edm::InputTag l1TriggerTag_;
       edm::InputTag triggerTag_;
+      edm::InputTag l1InputTag_;
 
       PosCalcParams PCparams_;
       //const double preshowerStartEta_ =  1.653;

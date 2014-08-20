@@ -80,18 +80,22 @@ EBContCorr = 'correctionsEB.root'
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
+#L1 Request for L1 sudies
+#L1Seed = "L1_SingleJet16" #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')
+L1Seed = ""
+
 inputlist_n      = 'ALL_2012C_good.list' # list of the input files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_2012C_0Cut_efficiency_01'
+dirname          = 'ALL_2012C_L1Studies_01'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 NameTag          = '2012C_'              # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 
-nIterations = 1
+nIterations = 15
 
 #-----------------------------------------------------------------------------------
 laserTagRecord='';laserTag='';laserDB=''
@@ -111,6 +115,7 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #if not(isNewTag):
 #   globaltag='GR_P_V40::All'
 #else:
@@ -152,13 +157,14 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
 ###(_2): https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt
 isNewTag=True
-json_file ='goodrunlist_json2012C_2.txt'
+json_file ='goodrunlist_json2012C.txt'
 HLTResults = 'True'
 is2012 = True
 is_2011 = 'True' #Just for the fit, put true 
 useHLTFilter="True"
 correctHits='True'
 overWriteGlobalTag = True
+l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 if not(isNewTag):
    globaltag='GR_P_V42::All'
 else:
@@ -203,6 +209,7 @@ else:
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #if not(isNewTag):
 #   globaltag='FT_R_53_V6::All'
 #else:
@@ -242,6 +249,7 @@ else:
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = True
 #if not(isNewTag):
 #   globaltag='FT_R_53_V6::All'
@@ -305,6 +313,7 @@ else:
 #HLTResults = 'False'
 #is_2011 = 'False'
 #is2012 = False
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -329,6 +338,7 @@ else:
 #json_file = ''
 #is_2011 = 'False'
 #is2012 = False
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -348,6 +358,7 @@ else:
 #json_file = ''
 #is_2011 = 'False'
 #is2012 = False
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'

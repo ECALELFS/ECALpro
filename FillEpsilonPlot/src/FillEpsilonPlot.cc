@@ -54,6 +54,7 @@ Implementation:
 
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
 #include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
 #include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
@@ -120,9 +121,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EERecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
     ESRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
     HLTResults_             = iConfig.getUntrackedParameter<bool>("HLTResults",false);
+    //L1Seed_                 = iConfig.getUntrackedParameter<std::string>("L1Seed");
     Are_pi0_                = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
     l1TriggerTag_           = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerTag_             = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
+    l1InputTag_             = iConfig.getUntrackedParameter<edm::InputTag>("l1InputTag",edm::InputTag("hltGtDigis"));
     outfilename_            = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
     MVAEBContainmentCorrections_01_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
@@ -450,6 +453,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	EE_HLT = GetHLTResults(iEvent, "AlCa_EcalEtaEEonly_*");
     }
   }
+  //bool L1Flag=true;
+  //if( L1Seed_!="" ){ L1Flag = CheckL1Seed(iEvent, L1Seed_); }
   //get status from DB
   edm::ESHandle<EcalChannelStatus> csHandle;
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
@@ -1507,12 +1512,83 @@ FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
     //cout<<"Trigger: "<<hltName_tstr<<endl;
     std::string hltName_str(HLTNames.triggerName(i));
     if ( hltName_tstr.Contains(reg) ){
-	//    cout<<hltTriggerResultHandle->accept(i)<<endl;
+	//cout<<hltTriggerResultHandle->accept(i)<<endl;
 	return hltTriggerResultHandle->accept(i);
     }
   }
   return false;
 } // HLT isValid
+
+//bool
+//FillEpsilonPlot::CheckL1Seed(const edm::Event& iEvent, std::string s){
+//
+//  edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
+//  iEvent.getByLabel(triggerTag_, hltTriggerResultHandle);
+//  //Algo and Technical L1 bits
+//  edm::TriggerNames HLTNames;
+//  HLTNames = iEvent.triggerNames(*hltTriggerResultHandle);
+//  unsigned npaths = hltTriggerResultHandle->size();
+//
+//  TBits * hltBits = new TBits( npaths );
+//  for( unsigned ipath=0; ipath<npaths; ipath++ )
+//  {
+//    string pathName=HLTNames.triggerName(ipath);
+//    bool accept = hltTriggerResultHandle->accept(ipath);
+//    const edm::HLTPathStatus & status = hltTriggerResultHandle->at(ipath);
+//    int state = status.state();
+////cout<<"L1::Name: "<<pathName<<" Status: "<<state<<endl;
+////    if( true ){
+////	cout << "\tpath[" << status.index() << "," << pathName << "]=";
+////	cout << ( (accept) ? "ok" : "not ok" );
+////	switch( state )
+////	{
+////	  case edm::hlt::Ready: cout << "\t---> Not Run Yet" ; break;
+////	  case edm::hlt::Pass: cout << "\t---> Passed" ; break;
+////	  case edm::hlt::Fail: cout << "\t---> Failed" ; break;
+////	  case edm::hlt::Exception: cout << "\t---> Error" ; break;
+////	  default: cout << "\t---> Unknown State" ;
+////	}
+////	cout << endl;
+////    }
+//    hltBits->SetBitNumber( ipath, accept );
+//  }
+//  delete hltBits;
+//  //L1 trigger
+//  edm::Handle < L1GlobalTriggerReadoutRecord > l1GtReadoutRecord;
+//  iEvent.getByLabel(l1InputTag_, l1GtReadoutRecord);
+//  assert( l1GtReadoutRecord.isValid() );
+//  //prova form Josh
+////  const L1GlobalTriggerReadoutRecord *l1trig = l1GtReadoutRecord.product();
+////  //vector<int> l1_vector; l1_vector.clear();
+////  for(int i=0; i<128; i++ ){
+////    const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
+////    cout<<"a "<<trg->algoBitNumber()<<" b "<<trg->algoName()<<" c "<<trg->algoGtlResult()<<endl;
+////    //if ( trg.algoGtlResult() ) l1_vector.push_back(1);
+////    //else                       l1_vector.push_back(0);
+////  }
+//  //prova
+//  //std::ostream& myCout;
+//  //l1GtReadoutRecord->printGtDecision(std::cout);
+//  DecisionWord algoWord = l1GtReadoutRecord->decisionWord();
+//  TechnicalTriggerWord techWord = l1GtReadoutRecord->technicalTriggerWord();
+//  TBits * l1TechBits = new TBits( techWord.size() );
+//  // Loop over the technical bits
+//  for (size_t ibit = 0; ibit < techWord.size(); ++ibit)
+//  {
+//    l1TechBits->SetBitNumber( ibit, techWord[ibit] );
+//    cout<<"Printing n "<<ibit<<" on "<<techWord.size()<<endl;
+//    l1GtReadoutRecord->printGtDecision(std::cout,ibit);
+//  }
+//  TBits * l1AlgoBits = new TBits( algoWord.size() );
+//  // Loop over the algo bits
+//  for (size_t ibit = 0; ibit < algoWord.size(); ++ibit)
+//  {
+//    l1AlgoBits->SetBitNumber( ibit, algoWord[ibit] );
+//  }
+//  delete l1TechBits;
+//  delete l1AlgoBits;
+//  return false;
+//}
 
 bool
 FillEpsilonPlot::getTriggerByName( std::string s ) {
@@ -1544,10 +1620,7 @@ FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetu
     if( gtDecisionWord.at(thisBit) )  
 	triggerComposition->Fill(thisBit);
   }
-
-
   /// referece
-
   // edm::ESHandle<L1GtTriggerMenu> menuRcd;
   // iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
   // const L1GtTriggerMenu* menu = menuRcd.product();

@@ -78,6 +78,59 @@ for iters in range(nIterations):
         Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
         Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
         Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
+        #Before each HADD we need ot check if the all the files in the list are present
+        Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $4}'"
+        myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
+        FoutGrep = myGrep.communicate()
+        FoutGrep_2 = str(FoutGrep)[3:]
+        FoutGrep_2 = str(FoutGrep_2)[:-10]
+        print 'Checking ' + str(FoutGrep_2)
+        #Chech The size for each line
+        f = open( str(FoutGrep_2) )
+        lines = f.readlines()
+        f.close()
+        NumToRem = 0
+        for filetoCheck in lines:
+            if( NumToRem!=0 ):
+               Num = NumToRem - 1
+               f2 = open(str(FoutGrep_2) + str(Num))
+               lines = f2.readlines()
+               f2.close()
+            filetoCheck2 = str(filetoCheck)[22:]
+            CheckComm = 'cmsLs -l ' + str(filetoCheck2)
+            myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
+            Check_output = myCheck.communicate()
+            #If file is not present, remove it from the list
+            if "No such" in str(Check_output):
+               print 'HADD::MISSING: ' + str(filetoCheck2)
+               print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
+               f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+               NumToRem = NumToRem + 1
+               for line in lines:
+                   if line!=str(filetoCheck):
+                        f1.write(line)
+               f1.close()
+            else:
+               Splitted =  str(Check_output).split( );
+               print "size: " + str(Splitted[1])
+               #If is corrupted (size too small), remove it from the list
+               if( int(Splitted[1])<10000 ):
+                    print 'HADD::Bad size for: ' + str(filetoCheck2)
+                    print 'removing from Hadd'
+                    f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                    NumToRem = NumToRem + 1
+                    lines1 = f1.readlines()
+                    for line in lines:
+                        if line!=str(filetoCheck):
+                             f1.write(line)
+                    f1.close()
+        #moving the .list to the correct one
+        if( NumToRem!=0 ):
+            NumToRem = NumToRem - 1
+            MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
+            MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
+            mvOut = MoveC.communicate()
+        #End of the check
         subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
         outJobs = subJobs.communicate()
         print outJobs

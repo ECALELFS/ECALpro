@@ -249,7 +249,7 @@ else:
    env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
 
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-env_script_f.write(pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "python " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
 env_script_f.close()
 
 # make the source file executable
@@ -260,7 +260,7 @@ debugout = changePermission.communicate()
 print "[calib] Number of jobs created = " + str(njobs)
 print "[calib] Submitting calibration handler"
 #submit_s = "bsub -q " + queue + " -o " + workdir + "/calibration.log " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue
-submit_s = "bsub -q " + queueForDaemon + " -o " + workdir + "/calibration.log " + env_script_n
+submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
 print "[calib]  '-- " + submit_s
 
 # submitting calibration handler
