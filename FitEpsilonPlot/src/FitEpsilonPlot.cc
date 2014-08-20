@@ -826,7 +826,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, is_2011_);
     }
     if(StoreForTest_ && niter==0){
-	  stringstream ind;
+	  std::stringstream ind;
 	  ind << (int) HistoIndex;
 	  TString nameHistofit = "Fit_n_" + ind.str();
 	  xframe->SetName(nameHistofit.Data());

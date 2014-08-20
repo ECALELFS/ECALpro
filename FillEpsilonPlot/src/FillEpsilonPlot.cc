@@ -1047,8 +1047,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
-	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi(); int iSMod_1 = id_1.ism();
-	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi(); int iSMod_2 = id_2.ism();
+	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi(); //int iSMod_1 = id_1.ism();
+	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi(); //int iSMod_2 = id_2.ism();
 	  bool Inverted=false;
 
 	  if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
@@ -1060,7 +1060,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
 	    iEta1=id_2.ieta(); iEta2 = id_1.ieta();
 	    iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
-	    iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
+	    //iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
 	    ind1=j; ind2=i;
 	    Inverted=true;
 	  }
@@ -1403,7 +1403,7 @@ FillEpsilonPlot::beginJob()
     string Line;
     getline( file, Line);
     string value;
-    stringstream MyLine(Line);
+    std::stringstream MyLine(Line);
 
     char * cstr, *p;
     cstr = new char [Line.size()+1];
