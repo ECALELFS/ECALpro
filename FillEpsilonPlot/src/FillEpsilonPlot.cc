@@ -146,26 +146,42 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     jsonFile_                       = iConfig.getUntrackedParameter<std::string>("json_file");
     calibMapPath_                   = iConfig.getUntrackedParameter<std::string>("calibMapPath");
     Barrel_orEndcap_                = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
-    pi0PtCut_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB");
-    pi0PtCut_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE");
-    gPtCut_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB");
-    gPtCut_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE");
-    pi0IsoCut_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB");
-    pi0IsoCut_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE");
-    nXtal_1_cut_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_1_EE");
-    nXtal_2_cut_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_2_EE");
-    nXtal_1_cut_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_1_EB");
-    nXtal_2_cut_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_2_EB");
-    S4S9_cut_[EcalBarrel] = iConfig.getUntrackedParameter<double>("S4S9_EB");
-    S4S9_cut_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE");
+    pi0PtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
+    pi0PtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_high");
+    pi0PtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_low");
+    pi0PtCut_high_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_high");
+    gPtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB_low");
+    gPtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
+    gPtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
+    gPtCut_high_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
+    pi0IsoCut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_low");
+    pi0IsoCut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_high");
+    pi0IsoCut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_low");
+    pi0IsoCut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_high");
+    nXtal_1_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_1_EE_low");
+    nXtal_1_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_1_EE_high");
+    nXtal_2_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_2_EE_low");
+    nXtal_2_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_2_EE_high");
+    nXtal_1_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_1_EB_low");
+    nXtal_1_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_1_EB_high");
+    nXtal_2_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_2_EB_low");
+    nXtal_2_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_2_EB_high");
+    S4S9_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("S4S9_EB_low");
+    S4S9_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("S4S9_EB_high");
+    S4S9_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE_low");
+    S4S9_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE_high");
     SystOrNot_ = iConfig.getUntrackedParameter<double>("SystOrNot",0);
     isMC_ = iConfig.getUntrackedParameter<bool>("isMC",false);
     MakeNtuple4optimization_ = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
 
-    cout<<"Cus used: EB)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_[EcalBarrel]<<", Iso: "<<pi0IsoCut_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_[EcalBarrel]<<", S4S9: "<<S4S9_cut_[EcalBarrel]<<endl;
-    cout<<"Cus used: EE)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_[EcalEndcap]<<", Iso: "<<pi0IsoCut_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_[EcalEndcap]<<", S4S9: "<<S4S9_cut_[EcalEndcap]<<endl;
+    cout<<"Cus used: EB LOW)"<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_low_[EcalBarrel]<<", Iso: "<<pi0IsoCut_low_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalBarrel]<<", S4S9: "<<S4S9_cut_low_[EcalBarrel]<<endl;
+    cout<<"Cus used: EB HIGH)"<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_high_[EcalBarrel]<<", Iso: "<<pi0IsoCut_high_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalBarrel]<<", S4S9: "<<S4S9_cut_high_[EcalBarrel]<<endl;
+    cout<<"Cus used: EE LOW)"<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_low_[EcalEndcap]<<", Iso: "<<pi0IsoCut_low_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalEndcap]<<", S4S9: "<<S4S9_cut_low_[EcalEndcap]<<endl;
+    cout<<"Cus used: EE HIGH)"<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_high_[EcalEndcap]<<", Iso: "<<pi0IsoCut_high_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalEndcap]<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
     cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat computation, 1 = yes only even events, 2 = yes only odd events]"<<endl;
 
     alcaL1TrigNames_ = iConfig.getUntrackedParameter< std::vector<std::string> >("AlcaL1TrigNames"); 
@@ -649,7 +665,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     //    if(s4s9<S4S9_cut_[EcalBarrel]-S4S9_cut_[EcalBarrel]*(28.3/100) || e3x3/cosh(clusPos.eta())<gPtCut_[EcalBarrel]-gPtCut_[EcalBarrel]*(28.3/100)) FailPreselEB=true;
     //  }
     //}
-    if(s4s9<S4S9_cut_[EcalBarrel]) continue;
+    if( fabs( clusPos.eta() )<1. ){ if(s4s9<S4S9_cut_low_[EcalBarrel]) continue;}
+    else                          { if(s4s9<S4S9_cut_high_[EcalBarrel]) continue;}
 
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEBContainmentCorrections_) 
@@ -662,7 +679,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     // compute pt of gamma and cut
     float ptClus = e3x3/cosh(clusPos.eta());
 
-    if(ptClus<gPtCut_[EcalBarrel]) continue;
+    if( fabs( clusPos.eta() )<1. ){ if( ptClus<gPtCut_low_[EcalBarrel]) continue; }
+    else                          { if( ptClus<gPtCut_high_[EcalBarrel]) continue; }
 
     // make calo clusters
 #ifdef MVA_REGRESSIO
@@ -867,12 +885,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     //    if(s4s9<S4S9_cut_[EcalEndcap]-S4S9_cut_[EcalEndcap]*(42.5/100) || e3x3/cosh(clusPos.eta())<gPtCut_[EcalEndcap]-gPtCut_[EcalEndcap]*(42.5/100)) FailPreselEE=true;
     //  }
     //}
-    if(s4s9<S4S9_cut_[EcalEndcap]) continue; //original cut 0.95
-
+    if( fabs( clusPos.eta() )<1.8 ){ if(s4s9<S4S9_cut_low_[EcalEndcap]) continue; }
+    else                           { if(s4s9<S4S9_cut_high_[EcalEndcap]) continue; }
+ 
     float ptClus = e3x3/cosh(clusPos.eta());
 
-    if(ptClus<gPtCut_[EcalEndcap]) continue;  //original cut 0.6
-
+    if( fabs( clusPos.eta() )<1.8 ){ if(ptClus<gPtCut_low_[EcalEndcap]) continue; }
+    else                           { if(ptClus<gPtCut_high_[EcalEndcap]) continue; }
     // make calo clusters
     for(unsigned int j=0; j<RecHitsInWindow.size();j++){
 	EEXisUsed [RecHitsInWindow[j]->id()] = true;
@@ -1028,7 +1047,6 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
 
 void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
 {
-
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
     throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
 
@@ -1254,7 +1272,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}
 #endif
 
-	if(pi0P4.Pt() < pi0PtCut_[subDetId]) continue;
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( pi0P4.Pt() < pi0PtCut_low_[subDetId]) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( pi0P4.Pt() < pi0PtCut_high_[subDetId]) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( pi0P4.Pt() < pi0PtCut_low_[subDetId]) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( pi0P4.Pt() < pi0PtCut_high_[subDetId]) continue; }
 	if( g1P4.eta() == g2P4.eta() && g1P4.phi() == g2P4.phi() ) continue;
 
 	float nextClu = 999., Drtmp = 999.;
@@ -1267,7 +1288,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Drtmp = nextClu;
 	  }
 	}
-	if( nextClu<pi0IsoCut_[subDetId] ) continue;
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 
 	int Nxtal_EnergGamma=0;
 	int Nxtal_EnergGamma2=0;
@@ -1280,8 +1304,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  else                           {  Nxtal_EnergGamma = Ncristal_EB[j]; Nxtal_EnergGamma2 = Ncristal_EB[i]; }
 	}
 
-	if( Nxtal_EnergGamma < nXtal_1_cut_[subDetId] ) continue;
-	if( Nxtal_EnergGamma2 < nXtal_2_cut_[subDetId] ) continue;
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue; }
 
 	if(subDetId==EcalBarrel)
 	{
@@ -1292,27 +1322,28 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	else                       EventFlow_EE->Fill(3.);
 	//Fill Optimization
 	if(isMC_ && MakeNtuple4optimization_){
-	  int ind1 = i,  ind2 = j;
-	  if( g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ){ ind1 = j; ind2 = i;}
-	  Op_NPi0_rec            = nPi0; 
-	  Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
-	  Op_IsoPi0_rec[nPi0]    = nextClu;  
-	  Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
-	  Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
-	  Op_mPi0_rec[nPi0]      = pi0P4.mass();
-	  Op_ptG1_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g1P4.Pt() : g2P4.Pt();
-	  Op_ptG2_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g2P4.Pt() : g1P4.Pt();
-	  Op_etaPi0_rec[nPi0]    = pi0P4.eta();
-	  Op_ptPi0_rec[nPi0]     = pi0P4.Pt();
-	  Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1P4.eta(), g2P4.eta(), g1P4.phi(), g2P4.phi() );
-	  Op_Es_e1_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind1];
-	  Op_Es_e1_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind2];
-	  Op_Es_e2_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind1];
-	  Op_Es_e2_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind2];
-	  Op_S4S9_1[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind1] : vs4s9EE[ind1];
-	  Op_S4S9_2[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind2] : vs4s9EE[ind2];
-	  nPi0++;
-	  Tree_Optim->Fill();
+	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
+	  else{
+	    int ind1 = i,  ind2 = j;
+	    if( g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ){ ind1 = j; ind2 = i;}
+	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
+	    Op_IsoPi0_rec[nPi0]    = nextClu;  
+	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
+	    Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
+	    Op_mPi0_rec[nPi0]      = pi0P4.mass();
+	    Op_ptG1_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g1P4.Pt() : g2P4.Pt();
+	    Op_ptG2_rec[nPi0]      = g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ? g2P4.Pt() : g1P4.Pt();
+	    Op_etaPi0_rec[nPi0]    = pi0P4.eta();
+	    Op_ptPi0_rec[nPi0]     = pi0P4.Pt();
+	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1P4.eta(), g2P4.eta(), g1P4.phi(), g2P4.phi() );
+	    Op_Es_e1_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind1];
+	    Op_Es_e1_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[ind2];
+	    Op_Es_e2_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind1];
+	    Op_Es_e2_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[ind2];
+	    Op_S4S9_1[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind1] : vs4s9EE[ind1];
+	    Op_S4S9_2[nPi0]        = subDetId==EcalBarrel ? vs4s9[ind2] : vs4s9EE[ind2];
+	    nPi0++;
+	  }
 	}
 	//Check the Conteinment correction for Barrel
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
@@ -1360,6 +1391,11 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}
     } // loop over clusters (g2)
   } // loop over clusters to make pi0 
+  if(isMC_ && MakeNtuple4optimization_){
+    Op_NPi0_rec            = nPi0; 
+    Tree_Optim->Fill();
+  }
+
 }
 
 

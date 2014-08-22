@@ -27,7 +27,7 @@
 //JSON
 //#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
-#define NPI0MAX 15000
+#define NPI0MAX 30000
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
@@ -152,12 +152,18 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       calibGranularity calibTypeNumber_;
 
       // selection criteria
-      double gPtCut_[3];
-      double pi0PtCut_[3];
-      double pi0IsoCut_[3];
-      double nXtal_1_cut_[3];
-      double nXtal_2_cut_[3];
-      double S4S9_cut_[3];
+      double gPtCut_low_[3];
+      double gPtCut_high_[3];
+      double pi0PtCut_low_[3];
+      double pi0PtCut_high_[3];
+      double pi0IsoCut_low_[3];
+      double pi0IsoCut_high_[3];
+      double nXtal_1_cut_low_[3];
+      double nXtal_1_cut_high_[3];
+      double nXtal_2_cut_low_[3];
+      double nXtal_2_cut_high_[3];
+      double S4S9_cut_low_[3];
+      double S4S9_cut_high_[3];
       double SystOrNot_;
       bool isMC_;
       bool MakeNtuple4optimization_;
