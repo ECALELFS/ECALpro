@@ -244,6 +244,9 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     else:       
         outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
+    outputfile.write("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.csh\n")
+    outputfile.write("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.csh\n")
+    outputfile.write("setenv X509_USER_PROXY /afs/cern.ch/user/l/lpernie/private/x509up_u12147\n")
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
