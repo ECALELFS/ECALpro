@@ -1310,7 +1310,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// This isolation is written to match which is implemented at HLT:
 	// CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
 	// A loop over the clusters is performed summing 3x3 custers within a given 
-	// deltaR but outside a "jurassic band" isolation. For more information
+	// deltaR but inside a "jurassic band" isolation. For more information
 	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
 	// geometric factors are hard-coded (dr_size, deta_size) as well as
 	// the min pt for inclusion in the isolation
@@ -1341,7 +1341,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  // cluster must be outside of an eta strip 
 	  // .05 (.1) for pizero (eta)
 	  double deta = fabs(Gtmp->eta() - pi0P4.eta()); 
-	  if (deta < ((Are_pi0_) ? 0.05:0.1)) continue;
+	  if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;
 
 	  // include in isolation sum if passing all the requirements
 	  hlt_iso += GtmpP4.Pt();	  
