@@ -309,25 +309,25 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     Pi0Info_EE->Branch("Phipi0_EE", &Phipi0_EE, "Phipi0_EE/F");
     Pi0Info_EE->Branch("Epsilon_EE", &Epsilon_EE, "Epsilon_EE/F");
 #endif
-    if(isMC_ && MakeNtuple4optimization_){
+    if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
-	Tree_Optim->Branch( "Op_NPi0_rec",      &Op_NPi0_rec,       "Op_NPi0_rec/I");
-	Tree_Optim->Branch( "Op_Pi0recIsEB",    &Op_Pi0recIsEB,     "Op_Pi0recIsEB[Op_NPi0_rec]/I");
-	Tree_Optim->Branch( "Op_IsoPi0_rec",    &Op_IsoPi0_rec,     "Op_IsoPi0_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_n1CrisPi0_rec", &Op_n1CrisPi0_rec,  "Op_n1CrisPi0_rec[Op_NPi0_rec]/I");
-	Tree_Optim->Branch( "Op_n2CrisPi0_rec", &Op_n2CrisPi0_rec,  "Op_n2CrisPi0_rec[Op_NPi0_rec]/I");
-	Tree_Optim->Branch( "Op_mPi0_rec",      &Op_mPi0_rec,       "Op_mPi0_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_ptG1_rec",      &Op_ptG1_rec,       "Op_ptG1_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_ptG2_rec",      &Op_ptG2_rec,       "Op_ptG2_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_etaPi0_rec",    &Op_etaPi0_rec,     "Op_etaPi0_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_ptPi0_rec",     &Op_ptPi0_rec,      "Op_ptPi0_rec[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_DeltaRG1G2",    &Op_DeltaRG1G2,     "Op_DeltaRG1G2[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_Es_e1_1",       &Op_Es_e1_1,        "Op_Es_e1_1[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_Es_e1_2",       &Op_Es_e1_2,        "Op_Es_e1_2[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_Es_e2_1",       &Op_Es_e2_1,        "Op_Es_e2_1[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_Es_e2_2",       &Op_Es_e2_2,        "Op_Es_e2_2[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_S4S9_1",        &Op_S4S9_1,         "Op_S4S9_1[Op_NPi0_rec]/F");
-	Tree_Optim->Branch( "Op_S4S9_2",        &Op_S4S9_2,         "Op_S4S9_2[Op_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,       "STr2_NPi0_rec/I");
+	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,     "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,     "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_n1CrisPi0_rec", &Op_n1CrisPi0_rec,  "STr2_n1CrisPi0_rec[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_n2CrisPi0_rec", &Op_n2CrisPi0_rec,  "STr2_n2CrisPi0_rec[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_mPi0_rec",      &Op_mPi0_rec,       "STr2_mPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG1_rec",      &Op_ptG1_rec,       "STr2_ptG1_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG2_rec",      &Op_ptG2_rec,       "STr2_ptG2_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_etaPi0_rec",    &Op_etaPi0_rec,     "STr2_etaPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptPi0_rec",     &Op_ptPi0_rec,      "STr2_ptPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,     "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,        "STr2_Es_e1_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,        "STr2_Es_e1_2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e2_1",       &Op_Es_e2_1,        "STr2_Es_e2_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e2_2",       &Op_Es_e2_2,        "STr2_Es_e2_2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_S4S9_1",        &Op_S4S9_1,         "STr2_S4S9_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_S4S9_2",        &Op_S4S9_2,         "STr2_S4S9_2[STr2_NPi0_rec]/F");
     }
     /// trigger histo
     triggerComposition = new TH1F("triggerComposition", "Trigger Composition",128,-0.5,127.5);
@@ -1253,6 +1253,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	//In case ES give same posizion for different clusters
 	if( pi0P4.mass()<0.03 ) continue;
+
 #ifdef SELECTION_TREE
 	if( subDetId == EcalBarrel ){ 
 	  Fill_PtPi0_EB( pi0P4.Pt() );
@@ -1321,9 +1322,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(3.);
 	else                       EventFlow_EE->Fill(3.);
 	//Fill Optimization
-	if(isMC_ && MakeNtuple4optimization_){
+	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.35) && pi0P4.mass() < ((Are_pi0_)?0.25:0.7) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
+
 	    int ind1 = i,  ind2 = j;
 	    if( g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ){ ind1 = j; ind2 = i;}
 	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
@@ -1391,7 +1393,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}
     } // loop over clusters (g2)
   } // loop over clusters to make pi0 
-  if(isMC_ && MakeNtuple4optimization_){
+  if(MakeNtuple4optimization_){
     Op_NPi0_rec            = nPi0; 
     Tree_Optim->Fill();
   }
@@ -1686,7 +1688,7 @@ FillEpsilonPlot::endJob()
   Pi0Info_EB->Write();
   Pi0Info_EE->Write();
 #endif
-  if( isMC_ && MakeNtuple4optimization_ ){
+  if(MakeNtuple4optimization_){
     Tree_Optim->Write();
   }
   //JSON
