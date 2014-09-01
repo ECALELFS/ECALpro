@@ -154,6 +154,13 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     gPtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
     gPtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
     gPtCut_high_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
+
+    //HLT Iso cuts added Sept 1, 2014
+    pi0HLTIsoCut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_low");
+    pi0HLTIsoCut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_high");
+    pi0HLTIsoCut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_low");
+    pi0HLTIsoCut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_high");
+
     pi0IsoCut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_low");
     pi0IsoCut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_high");
     pi0IsoCut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_low");
@@ -314,6 +321,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,       "STr2_NPi0_rec/I");
 	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,     "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,     "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_HLTIsoPi0_rec",    &Op_HLTIsoPi0_rec,     "STr2_HLTIsoPi0_rec[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_n1CrisPi0_rec", &Op_n1CrisPi0_rec,  "STr2_n1CrisPi0_rec[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_n2CrisPi0_rec", &Op_n2CrisPi0_rec,  "STr2_n2CrisPi0_rec[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_mPi0_rec",      &Op_mPi0_rec,       "STr2_mPi0_rec[STr2_NPi0_rec]/F");
@@ -480,8 +488,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ){ EventFlow_EB->Fill(1.); fillEBClusters(ebclusters, iEvent, channelStatus);}
   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ){ EventFlow_EE->Fill(1.); fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);}
 
-  if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters,EcalBarrel);
-  if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot,EcalEndcap);
+  if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters, EcalBarrel);
+  if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot, EcalEndcap);
 
   delete estopology_;
 
@@ -1059,7 +1067,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(2.);
 	else                       EventFlow_EE->Fill(2.);
+
 	float Corr1 = 1., Corr2 = 1.;
+
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO)
 	if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
 
@@ -1294,8 +1304,62 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 
-	int Nxtal_EnergGamma=0;
-	int Nxtal_EnergGamma2=0;
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	// Implementation of HLT Filter Isolation - Jurrasic Isolation 
+	//
+	// This isolation is written to match which is implemented at HLT:
+	// CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
+	// A loop over the clusters is performed summing 3x3 custers within a given 
+	// deltaR but outside a "jurassic band" isolation. For more information
+	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
+	// geometric factors are hard-coded (dr_size, deta_size) as well as
+	// the min pt for inclusion in the isolation
+	// - Joshua Hardenbrook -- Sept 1, 2014
+
+	float hlt_iso = 0;
+	//loop over clusters
+	for(size_t ind=0; ind < clusters.size(); ++ind){
+	  
+	  // these are the candidate clusters, do not include in isolation
+	  if( ind == i || ind == j ) continue;
+				       
+	  // candidate cluster for isolation
+	  const CaloCluster* Gtmp = &(clusters[ind]);
+	  
+	  // corresponding 4 vector do candidate cluster
+	  TLorentzVector GtmpP4; 
+	  GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
+
+	  // minimum cluster pt in GeV to be included in isolation
+	  if (GtmpP4.Pt() < 0.5) continue;
+
+	  // delta R from the pi0 candidates
+	  // .2 (.3) for pizero (eta)
+	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4.eta(), Gtmp->phi(), pi0P4.phi());
+	  if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
+
+	  // cluster must be outside of an eta strip 
+	  // .05 (.1) for pizero (eta)
+	  double deta = fabs(Gtmp->eta() - pi0P4.eta()); 
+	  if (deta < ((Are_pi0_) ? 0.05:0.1)) continue;
+
+	  // include in isolation sum if passing all the requirements
+	  hlt_iso += GtmpP4.Pt();	  
+	}	
+
+	// the cut is taken relative to the pi0 pt
+	hlt_iso /= pi0P4.Pt();
+
+	//category break down of cuts
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) < 1 )                          { if( hlt_iso > pi0HLTIsoCut_low_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) > 1. && fabs(pi0P4.eta())<1.5 ){ if( hlt_iso > pi0HLTIsoCut_high_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) < 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_low_[subDetId] ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) > 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] ) continue; }
+
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+
+	int Nxtal_EnergGamma = 0;
+	int Nxtal_EnergGamma2 = 0;
 	if(subDetId==EcalEndcap){
 	  if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE[i]; Nxtal_EnergGamma2 = Ncristal_EE[j]; }
 	  else                           {  Nxtal_EnergGamma = Ncristal_EE[j]; Nxtal_EnergGamma2 = Ncristal_EE[i]; }
@@ -1325,11 +1389,11 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.35) && pi0P4.mass() < ((Are_pi0_)?0.25:0.7) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
-
 	    int ind1 = i,  ind2 = j;
 	    if( g1P4.energy()/cosh(g1P4.eta())>g2P4.energy()/cosh(g2P4.eta()) ){ ind1 = j; ind2 = i;}
 	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
 	    Op_IsoPi0_rec[nPi0]    = nextClu;  
+	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
 	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
 	    Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
 	    Op_mPi0_rec[nPi0]      = pi0P4.mass();

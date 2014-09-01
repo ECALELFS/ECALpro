@@ -156,8 +156,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double gPtCut_high_[3];
       double pi0PtCut_low_[3];
       double pi0PtCut_high_[3];
+
       double pi0IsoCut_low_[3];
       double pi0IsoCut_high_[3];
+      double pi0HLTIsoCut_low_[3];
+      double pi0HLTIsoCut_high_[3];
+
       double nXtal_1_cut_low_[3];
       double nXtal_1_cut_high_[3];
       double nXtal_2_cut_low_[3];
@@ -238,6 +242,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   Op_NPi0_rec;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
       Float_t Op_IsoPi0_rec[NPI0MAX];
+      Float_t Op_HLTIsoPi0_rec[NPI0MAX];
       Int_t   Op_n1CrisPi0_rec[NPI0MAX];
       Int_t   Op_n2CrisPi0_rec[NPI0MAX];
       Float_t Op_mPi0_rec[NPI0MAX];
