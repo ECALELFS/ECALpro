@@ -1305,12 +1305,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
-	// Implementation of HLT Filter Isolation - Jurrasic Isolation 
+	// Implementation of HLT Filter Isolation - Eta Band Isolation 
 	//
 	// This isolation is written to match which is implemented at HLT:
 	// CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
 	// A loop over the clusters is performed summing 3x3 custers within a given 
-	// deltaR but inside a "jurassic band" isolation. For more information
+	// deltaR and inside a "jurassic" band. For more information
 	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
 	// geometric factors are hard-coded (dr_size, deta_size) as well as
 	// the min pt for inclusion in the isolation
@@ -1338,7 +1338,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4.eta(), Gtmp->phi(), pi0P4.phi());
 	  if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
 
-	  // cluster must be outside of an eta strip 
+	  // cluster must be inside of an eta strip 
 	  // .05 (.1) for pizero (eta)
 	  double deta = fabs(Gtmp->eta() - pi0P4.eta()); 
 	  if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;

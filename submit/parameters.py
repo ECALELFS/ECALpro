@@ -6,7 +6,7 @@ calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
 Are_pi0  = True # True = using Pi0, False = using Eta
-isMC = False
+isMC = True
 MakeNtuple4optimization = True
 #Pi0
 if(Are_pi0):
@@ -44,38 +44,38 @@ if(Are_pi0):
 
    ######################data ntuplization 
    if MakeNtuple4optimization:
-   #inner barrel
-      Pi0PtCutEB_low = '1.0'
+      #inner barrel
+      Pi0PtCutEB_low = '1'
       gPtCutEB_low = '.4'
       Pi0IsoCutEB_low = '0.0'
-      Pi0HLTIsoCutEB_low = "1000"
+      Pi0HLTIsoCutEB_low = "999"
       nXtal_1_EB_low = '3'
       nXtal_2_EB_low = '3'
       S4S9_EB_low = '0.6'
       
-   #outer barrel
+      #outer barrel
       Pi0PtCutEB_high = '1.0'
       gPtCutEB_high = '.4'
       Pi0IsoCutEB_high = '0.0'
-      Pi0HLTIsoCutEB_high = '0.0'
+      Pi0HLTIsoCutEB_high = '999'
       nXtal_1_EB_high = '3'
       nXtal_2_EB_high = '3'
       S4S9_EB_high = '0.6'
       
-   #low eta EE
+      #low eta EE
       Pi0PtCutEE_low = '1.0'
       gPtCutEE_low = '.4'
       Pi0IsoCutEE_low = '.0'
-      Pi0HLTIsoCutEE_low = '.0'
+      Pi0HLTIsoCutEE_low = '999'
       nXtal_1_EE_low = '3'
       nXtal_2_EE_low = '2'
       S4S9_EE_low = '0.6'
       
-   #high eta EE
+      #high eta EE
       Pi0PtCutEE_high = '1.0'
       gPtCutEE_high = '0.4'
       Pi0IsoCutEE_high = '0.0'
-      Pi0HLTIsoCutEE_high = '0.0'
+      Pi0HLTIsoCutEE_high = '999'
       nXtal_1_EE_high = '3'
       nXtal_2_EE_high = '2'
       S4S9_EE_high = '0.6'
@@ -108,58 +108,41 @@ if(Are_pi0):
       #S4S9_EE_low = '0.6'
       #S4S9_EE_high = '0.6'
 
-
-      Pi0PtCutEB_low = '1.'
-      Pi0PtCutEB_high = '1.'
-      Pi0PtCutEE_low = '1.'
-      Pi0PtCutEE_high = '1.'
-      gPtCutEB_low = '0.4'
-      gPtCutEB_high = '0.4'
-      gPtCutEE_low = '0.4'
-      gPtCutEE_high = '0.4'
-      Pi0IsoCutEB_low = '0.'
-      Pi0IsoCutEB_high = '0.'
-      Pi0IsoCutEE_low = '0.'
-      Pi0IsoCutEE_high = '0.'
-      nXtal_1_EB_low = '0.'
-      nXtal_1_EB_high = '0.'
-      nXtal_2_EB_low = '0.'
-      nXtal_2_EB_high = '0.'
-      nXtal_1_EE_low = '0.'
-      nXtal_1_EE_high = '0.'
-      nXtal_2_EE_low = '0.'
-      nXtal_2_EE_high = '0.'
+      #inner barrel
+      Pi0PtCutEB_low = '1'
+      gPtCutEB_low = '.4'
+      Pi0IsoCutEB_low = '0.0'
+      Pi0HLTIsoCutEB_low = "999"
+      nXtal_1_EB_low = '0'
+      nXtal_2_EB_low = '0'
       S4S9_EB_low = '0.6'
+      
+      #outer barrel
+      Pi0PtCutEB_high = '1.0'
+      gPtCutEB_high = '.4'
+      Pi0IsoCutEB_high = '0.0'
+      Pi0HLTIsoCutEB_high = '999'
+      nXtal_1_EB_high = '0'
+      nXtal_2_EB_high = '0'
       S4S9_EB_high = '0.6'
+      
+      #low eta EE
+      Pi0PtCutEE_low = '1.0'
+      gPtCutEE_low = '.4'
+      Pi0IsoCutEE_low = '.0'
+      Pi0HLTIsoCutEE_low = '999'
+      nXtal_1_EE_low = '0'
+      nXtal_2_EE_low = '0'
       S4S9_EE_low = '0.6'
+      
+      #high eta EE
+      Pi0PtCutEE_high = '1.0'
+      gPtCutEE_high = '0.4'
+      Pi0IsoCutEE_high = '0.0'
+      Pi0HLTIsoCutEE_high = '999'
+      nXtal_1_EE_high = '0'
+      nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
-
-
-      #2015
-      # Pi0PtCutEB_low = '1.8'
-      # Pi0PtCutEB_high = '1.8'
-      # Pi0PtCutEE_low = '3.'
-      # Pi0PtCutEE_high = '3.'
-      # gPtCutEB_low = '1.5'
-      # gPtCutEB_high = '1.5'
-      # gPtCutEE_low = '1.5'
-      # gPtCutEE_high = '1.5'
-      # Pi0IsoCutEB_low = '0.'
-      # Pi0IsoCutEB_high = '0.'
-      # Pi0IsoCutEE_low = '0.'
-      # Pi0IsoCutEE_high = '0.'
-      # nXtal_1_EB_low = '7'
-      # nXtal_1_EB_high = '8'
-      # nXtal_2_EB_low = '7'
-      # nXtal_2_EB_high = '7'
-      # nXtal_1_EE_low = '6'
-      # nXtal_1_EE_high = '7'
-      # nXtal_2_EE_low = '4'
-      # nXtal_2_EE_high = '2'
-      # S4S9_EB_low = '0.9'
-      # S4S9_EB_high = '0.9'
-      # S4S9_EE_low = '0.9'
-      # S4S9_EE_high = '0.9'
 #ETA
 else:
    Pi0PtCutEB = '3.2'
@@ -209,14 +192,14 @@ useOnlyEEClusterMatchedWithES = 'True'
 #L1Seed = "L1_SingleJet16" #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')
 L1Seed = ""
 
-inputlist_n      = 'ALL_2012C_good_very_small.list' # list of the input files
-ijobmax          = 1                     # 5 number of files per job
+inputlist_n      = 'ALL_NeuPt2_20_PU40x25.list' # list of the input files
+ijobmax          = 100                     # 5 number of files per job
 nHadd            = 10                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ONLY_ENDCAP'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = '2012C_EE_NTUP_ALCARECO_very_small'
+Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+dirname          = 'MINBIAS_40bx25_EB_CFGBUILD'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = '2012C_JOSH_H_'              # Tag to the names to avoid overlap
+NameTag          = 'MINBIAS_40bx25_EB'              # Tag to the names to avoid overlap
 queueForDaemon   = '2nd'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = '1nd'
 
@@ -281,44 +264,44 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #2012C
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
 ###(_2): https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt
-isNewTag=True
-json_file ='goodrunlist_json2012C.txt'
-HLTResults = 'True'
-is2012 = True
-is_2011 = 'True' #Just for the fit, put true 
-useHLTFilter="True"
-correctHits='True'
-overWriteGlobalTag = True
-l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-if not(isNewTag):
-  globaltag='GR_P_V42::All'
-else:
-  globaltag='FT_R_53_V21::All'
-  globaltag='FT_53_V21_AN6::All'
-if(Are_pi0): 
-  esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-  ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-  eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-  HLTPaths='AlCa_EcalPi0*' 
-else:
-  esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
-  ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
-  eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
-  HLTPaths='AlCa_EcalEta*'
-doEnenerScale='True'
-doIC='True'
-doLaserCorr="True"
-if not(isNewTag):
-  laserTagRecord='EcalIntercalibConstantsRcd'
-  laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-  laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-  alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-  alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
-  alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-else:
-  alphaTagRecord=''
-  alphaTag=''
-  alphaDB=''
+# isNewTag=True
+# json_file ='goodrunlist_json2012C.txt'
+# HLTResults = 'True'
+# is2012 = True
+# is_2011 = 'True' #Just for the fit, put true 
+# useHLTFilter="True"
+# correctHits='True'
+# overWriteGlobalTag = True
+# l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+# if not(isNewTag):
+#   globaltag='GR_P_V42::All'
+# else:
+#   globaltag='FT_R_53_V21::All'
+#   globaltag='FT_53_V21_AN6::All'
+# if(Are_pi0): 
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalPi0*' 
+# else:
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalEta*'
+# doEnenerScale='True'
+# doIC='True'
+# doLaserCorr="True"
+# if not(isNewTag):
+#   laserTagRecord='EcalIntercalibConstantsRcd'
+#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+# else:
+#   alphaTagRecord=''
+#   alphaTag=''
+#   alphaDB=''
 
 ###else:
 ###   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
@@ -497,21 +480,21 @@ else:
 #HLTPaths='AlCa_EcalPi0_*'
 #isMC = True
 
-##MC 2010 AlcaRECO
-#HLTResults = 'False'
-#json_file = ''
-#is_2011 = 'False'
-#is2012 = False
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-#overWriteGlobalTag = False
-#doEnenerScale='False'
-#doIC='False'
-#doLaserCorr="True"
-#ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
-#eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
-#esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
-#useHLTFilter = "False"
-#correctHits = 'False'
-#globaltag='POSTLS162_V2::All'
-#HLTPaths='AlCa_EcalPi0_*'
-#isMC = True
+# MC 2010 AlcaRECO
+HLTResults = 'False'
+json_file = ''
+is_2011 = 'False'
+is2012 = False
+l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+overWriteGlobalTag = False
+doEnenerScale='False'
+doIC='False'
+doLaserCorr="True"
+ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
+eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
+esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
+useHLTFilter = "False"
+correctHits = 'False'
+globaltag='POSTLS162_V2::All'
+HLTPaths='AlCa_EcalPi0_*'
+isMC = True
