@@ -30,7 +30,7 @@
 #define NPI0MAX 30000
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
-#define MVA_REGRESSIO
+//#define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
 //#define MVA_REGRESSIO_EE
 //#define MVA_REGRESSIO_EE_Tree
@@ -42,11 +42,11 @@
 #include "TMVA/Reader.h"
 #endif
 
-#ifdef MVA_REGRESSIO
+//#ifdef MVA_REGRESSIO
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
 #include "Cintex/Cintex.h"
-#endif
+//#endif
 
 enum calibGranularity{ xtal, tt, etaring };
 //enum subdet{ thisIsEE, thisIsEB }; 
@@ -267,7 +267,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<std::string> alcaL1TrigNames_;
       std::map< std::string, int > l1TrigNames_;
       bool l1TrigBit_[128];
-#ifdef MVA_REGRESSIO
+      //#ifdef MVA_REGRESSIO
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
@@ -276,7 +276,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       const GBRForest *forest_EB_1;
       const GBRForest *forest_EB_2;
       GBRApply *gbrapply;
-#endif
+      //#endif
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
       TTree *TTree_JoshMva;
       Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva, pi0Eta;

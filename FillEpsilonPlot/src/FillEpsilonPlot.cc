@@ -97,12 +97,12 @@ using std::max;
 #include "TMVA/Reader.h"
 #endif
 
-#ifdef MVA_REGRESSIO
+//#ifdef MVA_REGRESSIO
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
 #include "Cintex/Cintex.h"
 #include "TLorentzVector.h"
-#endif
+//#endif
 
 using namespace TMVA;
 
@@ -592,7 +592,10 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     float T0 = PCparams_.param_T0_barl_;
     float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
     float maxToFront = geom_->getPosition(seed_id).mag(); // to front face
+
+#ifdef MVA_REGRESSIO
     double EnergyCristals[9] = {0.};
+#endif
 
     bool All_rechit_good=true;
 
@@ -614,7 +617,10 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
 	int dx = diff_neta_s(seed_ieta,ieta);
 	int dy = diff_nphi_s(seed_iphi,iphi);
+
+#ifdef MVA_REGRESSIO
 	EnergyCristals[j] = en;
+#endif
 
 	if(abs(dx)<=1 && abs(dy)<=1) 
 	{

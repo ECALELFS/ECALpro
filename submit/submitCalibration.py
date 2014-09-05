@@ -266,7 +266,7 @@ submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "s
 print "[calib]  '-- " + submit_s
 
 # submitting calibration handler
-print "SUBMISSION COMMAND"
+print "\nSUBMISSION COMMAND"
 print submit_s
 #submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
 #output = (submitJobs.communicate()[0]).splitlines()
