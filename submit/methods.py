@@ -273,9 +273,9 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
 def printParallelHadd(outputfile, outFile, list, destination, pwd):
     outputfile.write("#!/bin/bash\n")
     if(is2012):
-         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n"
+         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n")
     else:
-         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n"
+         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n")
          outputfile.write("cd " + pwd + "\n")
     #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
@@ -288,7 +288,7 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
 def printFinalHadd(outputfile, list, destination, pwd):
     outputfile.write("#!/bin/bash\n")
     if(is2012):
-         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n"
+         outputfile.write("cd /afs/cern.ch/work/h/hardenbr/2014/PIZERO/EPRO/CMSSW_6_2_5/\n")
     else:
          outputfile.write("cd " + pwd + "\n")
     #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
