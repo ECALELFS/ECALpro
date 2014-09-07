@@ -252,15 +252,17 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     }
 
     /// epsilon histograms
-    if(useMassInsteadOfEpsilon_)
-    {
+    if(!MakeNtuple4optimization_){
+      if(useMassInsteadOfEpsilon_ )
+	{
 	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","#pi^{0} Mass distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","#pi^{0} Mass distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
-    }
-    else
-    {
+	}
+      else
+	{
 	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","Epsilon distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","Epsilon distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	}
     }
 
     EventFlow_EB  = new TH1F("EventFlow_EB", "EventFlow EB", 4, -0.5, 3.5 );
@@ -318,6 +320,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     Pi0Info_EE->Branch("Phipi0_EE", &Phipi0_EE, "Phipi0_EE/F");
     Pi0Info_EE->Branch("Epsilon_EE", &Epsilon_EE, "Epsilon_EE/F");
 #endif
+
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
 	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,       "STr2_NPi0_rec/I");
@@ -368,8 +371,8 @@ FillEpsilonPlot::~FillEpsilonPlot()
   outfile_->Write();
   outfile_->Close();
 
-  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
-  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
   delete allEpsilon_EB;
   delete allEpsilon_EE;
   delete allEpsilon_EEnw;
@@ -1211,9 +1214,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
-	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy(); int iZ1 = id_1.zside();
-	  EEDetId  id_2(g2->seed()); int iX2 = id_2.ix(); int iY2 = id_2.iy(); int iZ2 = id_2.zside();
-	  bool Inverted=false;
+	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy(); //int iZ1 = id_1.zside();
+	  EEDetId  id_2(g2->seed()); int iX2 = id_2.ix(); int iY2 = id_2.iy(); //int iZ2 = id_2.zside();
+	  //bool Inverted=false;
 
 	  if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
 	    G_Sort_1.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
@@ -1224,9 +1227,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
 	    iX1=id_2.ix(); iX2 = id_1.ix();
 	    iY1=id_2.iy(); iY2 = id_1.iy();
-	    iZ1=id_2.zside(); iZ2 = id_1.zside();
+	    //iZ1=id_2.zside(); iZ2 = id_1.zside();
 	    ind1=j; ind2=i;
-	    Inverted=true;
+	    //Inverted=true;
 	  }
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
@@ -1859,8 +1862,8 @@ FillEpsilonPlot::endJob()
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
   triggerComposition->Write();
-  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
-  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+  if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
 
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
   delete TTree_JoshMva;

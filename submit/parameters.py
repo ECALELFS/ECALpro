@@ -172,7 +172,7 @@ else:
       S4S9_EE = '0.6'
 #containment corrections
 useEBContainmentCorrections = 'True'
-useEEContainmentCorrections = 'False'
+useEEContainmentCorrections = 'True'
 EBContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEB.root'
 MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
 MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
