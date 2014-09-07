@@ -32,7 +32,7 @@
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
-#define MVA_REGRESSIO_EE
+//#define MVA_REGRESSIO_EE
 //#define MVA_REGRESSIO_EE_Tree
 
 //MVA Stuff
@@ -257,6 +257,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_Es_e2_2[NPI0MAX];
       Float_t Op_S4S9_1[NPI0MAX];
       Float_t Op_S4S9_2[NPI0MAX];
+
+      Float_t Op_ptG1_nocor[NPI0MAX];
+      Float_t Op_ptG2_nocor[NPI0MAX];
+      Float_t Op_ptPi0_nocor[NPI0MAX];
+      Float_t Op_mPi0_nocor[NPI0MAX];
+
       vector<float> Es_1;
       vector<float> Es_2;
 

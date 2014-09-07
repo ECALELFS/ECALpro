@@ -334,6 +334,13 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_ptG2_rec",      &Op_ptG2_rec,       "STr2_ptG2_rec[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_etaPi0_rec",    &Op_etaPi0_rec,     "STr2_etaPi0_rec[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_ptPi0_rec",     &Op_ptPi0_rec,      "STr2_ptPi0_rec[STr2_NPi0_rec]/F");
+
+	//uncorrected values of pt
+	Tree_Optim->Branch( "STr2_ptPi0_nocor",     &Op_ptPi0_nocor,      "STr2_ptPi0_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG1_nocor",      &Op_ptG1_nocor,       "STr2_ptG1_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG2_nocor",      &Op_ptG2_nocor,       "STr2_ptG2_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_mPi0_nocor",      &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
+
 	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,     "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,        "STr2_Es_e1_1[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,        "STr2_Es_e1_2[STr2_NPi0_rec]/F");
@@ -1292,6 +1299,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	math::PtEtaPhiMLorentzVector pi0P4 = g1P4 + g2P4;
 
+	// uncorrected versions of photons
+	math::PtEtaPhiMLorentzVector g1P4_nocor( (g1->energy())/cosh(g1->eta()), g1->eta(), g1->phi(), 0. );
+	math::PtEtaPhiMLorentzVector g2P4_nocor( (g2->energy())/cosh(g2->eta()), g2->eta(), g2->phi(), 0. );
+	math::PtEtaPhiMLorentzVector pi0P4_nocor = g1P4_nocor + g2P4_nocor;
+
+
+
 	//In case ES give same posizion for different clusters
 	if( pi0P4.mass()<0.03 ) continue;
 
@@ -1474,6 +1488,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_etaPi0_rec[nPi0]    = pi0P4.eta();
 	    Op_ptPi0_rec[nPi0]     = pi0P4.Pt();
 	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1P4.eta(), g2P4.eta(), g1P4.phi(), g2P4.phi() );
+
+	    // uncorrected values of kinematics
+	    Op_ptG1_nocor[nPi0]      = g1P4_nocor.energy()/cosh(g1P4_nocor.eta())>g2P4_nocor.energy()/cosh(g2P4_nocor.eta()) ? g1P4_nocor.Pt() : g2P4_nocor.Pt();
+	    Op_ptG2_nocor[nPi0]      = g1P4_nocor.energy()/cosh(g1P4_nocor.eta())>g2P4_nocor.energy()/cosh(g2P4_nocor.eta()) ? g2P4_nocor.Pt() : g1P4_nocor.Pt();
+	    Op_ptPi0_nocor[nPi0]     = pi0P4_nocor.Pt();
+	    Op_mPi0_nocor[nPi0]      = pi0P4_nocor.mass();
 #ifdef DEBUG
 	    cout << "[DEBUG] Accessing Preshower Arrays" << endl;
 #endif
