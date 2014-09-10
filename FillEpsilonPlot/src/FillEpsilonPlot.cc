@@ -535,7 +535,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
   //bool founded=false;
   for(EBRecHitCollection::const_iterator itb= ebHandle->begin(); itb != ebHandle->end(); ++itb, ++dc) 
   {
-    if(itb->energy() > 0.200)  ebseeds.push_back( *itb );
+    if(itb->energy() > 0.500)  ebseeds.push_back( *itb );
     ////Preselection
     //if(itb->energy() > 0.200-0.200*(28.3/100)) founded=true;
   }
@@ -1307,7 +1307,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 
 	//In case ES give same posizion for different clusters
-	if( pi0P4.mass()<0.03 ) continue;
+	if( pi0P4_nocor.mass()<0.03 && pi0P4.mass() < 0.03 ) continue;
 
 #ifdef SELECTION_TREE
 	if( subDetId == EcalBarrel ){ 
@@ -1332,10 +1332,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	cout << "[DEBUG] Apply kinematic selection cuts" << endl;
 #endif
 
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( pi0P4.Pt() < pi0PtCut_low_[subDetId]) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( pi0P4.Pt() < pi0PtCut_high_[subDetId]) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( pi0P4.Pt() < pi0PtCut_low_[subDetId]) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( pi0P4.Pt() < pi0PtCut_high_[subDetId]) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( pi0P4_nocor.Pt() < pi0PtCut_low_[subDetId]) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( pi0P4_nocor.Pt() < pi0PtCut_high_[subDetId]) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( pi0P4_nocor.Pt() < pi0PtCut_low_[subDetId]) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( pi0P4_nocor.Pt() < pi0PtCut_high_[subDetId]) continue; }
 	if( g1P4.eta() == g2P4.eta() && g1P4.phi() == g2P4.phi() ) continue;
 
 	float nextClu = 999., Drtmp = 999.;
@@ -1402,7 +1402,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}	
 
 	// the cut is taken relative to the pi0 pt
-	hlt_iso /= pi0P4.Pt();
+	hlt_iso /= pi0P4_nocor.Pt();
 
 #ifdef DEBUG
 	cout << "[DEBUG] Apply HLT Isolation" << endl;
