@@ -84,6 +84,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
+      bool isInDeadMap( bool isEB, const EcalRecHit &rh );
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
       float DeltaPhi(float phi1, float phi2);
       double min( double a, double b);
@@ -98,6 +99,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
       void  EBPHI_Cont_Corr_load(std::string FileName );
+      TFile* DeadMap;
+      TH2F * EBMap_DeadXtal;
+      TH2F * EEmMap_DeadXtal;
+      TH2F * EEpMap_DeadXtal;
       TH1F * EBPHI_ConCorr_p;
       TH1F * EBPHI_ConCorr_m;
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
@@ -131,6 +136,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useOnlyEEClusterMatchedWithES_;
       bool Is2012_;
       bool HLTResults_;
+      bool RemoveDead_Flag_;
+      TString RemoveDead_Map_;
+
       //std::string L1Seed_;
       bool Are_pi0_;
       edm::InputTag EBRecHitCollectionTag_;

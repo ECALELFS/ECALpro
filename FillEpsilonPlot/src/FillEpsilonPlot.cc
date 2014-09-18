@@ -21,7 +21,6 @@ Implementation:
 // system include files
 #include <memory>
 #include <vector>
-#include<iostream>
 #include <map>
 #include <algorithm>
 
@@ -121,6 +120,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EERecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
     ESRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
     HLTResults_             = iConfig.getUntrackedParameter<bool>("HLTResults",false);
+    RemoveDead_Flag_        = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
+    RemoveDead_Map_         = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
     //L1Seed_                 = iConfig.getUntrackedParameter<std::string>("L1Seed");
     Are_pi0_                = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
     l1TriggerTag_           = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
@@ -139,11 +140,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     eeContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EEContainmentCorrections");
     useEBContainmentCorrections_    = iConfig.getUntrackedParameter<bool>("useEBContainmentCorrections");
     useEEContainmentCorrections_    = iConfig.getUntrackedParameter<bool>("useEEContainmentCorrections");
-    ContCorr_EB_                    = iConfig.getUntrackedParameter<std::string>("ContCorr_EB");
     externalGeometry_               = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
     currentIteration_               = iConfig.getUntrackedParameter<int>("CurrentIteration");
     outputDir_                      = iConfig.getUntrackedParameter<std::string>("OutputDir");
-    jsonFile_                       = iConfig.getUntrackedParameter<std::string>("json_file");
     calibMapPath_                   = iConfig.getUntrackedParameter<std::string>("calibMapPath");
     Barrel_orEndcap_                = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     pi0PtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
@@ -206,7 +205,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     cout << "crosscheck: selected type: " << regionalCalibration_->printType() << endl;
 
     /// external hardcoded geometry
-    externalGeometryFile_ = TFile::Open(externalGeometry_.c_str());
+    externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
     if(!externalGeometryFile_) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
     GeometryService::setGeometryName(externalGeometry_);
@@ -215,10 +214,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     /// containment corrections
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEEContainmentCorrections_)
-	  containmentCorrections_.loadContainmentPointCorrectionsEE(eeContainmentCorrections_.c_str());
+	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath() );
     if(useEBContainmentCorrections_){
-	  containmentCorrections_.loadContainmentCorrectionsEB(ebContainmentCorrections_.c_str());
-	  EBPHI_Cont_Corr_load( ebPHIContainmentCorrections_.c_str() );
+	  containmentCorrections_.loadContainmentCorrectionsEB( edm::FileInPath( ebContainmentCorrections_.c_str() ).fullPath(); );
+	  EBPHI_Cont_Corr_load( edm::FileInPath( ebPHIContainmentCorrections_.c_str() ).fullPath() );
     }
 #endif
 
@@ -236,7 +235,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     else if(currentIteration_ > 0)
     {
 	  char fileName[200];
-	  //sprintf(fileName,"%s/iter_%d/calibMap.root", outputDir_.c_str(), currentIteration_-1);
 	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
 	  sprintf(fileName,"%s", calibMapPath_.c_str());
 	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
@@ -273,9 +271,16 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     pi0MassVsETEB->GetXaxis()->SetTitle("E_{T}(pi^{0})");
     pi0MassVsETEB->GetYaxis()->SetTitle("#pi^{0} mass");
 
+    //DeadXtal from Map
+    if( RemoveDead_Map_!="" ){
+      DeadMap         = TFile::Open( RemoveDead_Map_.Data() );
+      EBMap_DeadXtal  = (TH2F*) DeadMap->Get("rms_EB");
+      EEmMap_DeadXtal = (TH2F*) DeadMap->Get("rms_EEm");
+      EEpMap_DeadXtal = (TH2F*) DeadMap->Get("rms_EEp");
+    }
     // output file
     char fileName[200];
-    sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
+    sprintf(fileName,"%s%s", outputDir_.c_str(), outfilename_.c_str());
     outfile_ = new TFile(fileName,"RECREATE");
     if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
 #ifdef SELECTION_TREE
@@ -336,20 +341,17 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     //noCorrections_ = true;
 
 #ifdef MVA_REGRESSIO
-    EBweight_file_1 = TFile::Open( Are_pi0_? MVAEBContainmentCorrections_01_.c_str():MVAEBContainmentCorrections_eta01_.c_str() );
-    EBweight_file_2 = TFile::Open( Are_pi0_? MVAEBContainmentCorrections_02_.c_str():MVAEBContainmentCorrections_eta02_.c_str() );
+    EBweight_file_1 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_01_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta01_.c_str() ).fullPath().c_str() );
+    EBweight_file_2 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_02_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta02_.c_str() ).fullPath().c_str() );
     forest_EB_1 = (GBRForest *)EBweight_file_1->Get("Correction");    
     forest_EB_2 = (GBRForest *)EBweight_file_2->Get("Correction");    
 #endif
 #ifdef MVA_REGRESSIO_EE
-    EEweight_file_pi01 = TFile::Open( MVAEEContainmentCorrections_01_.c_str() );
-    EEweight_file_pi02 = TFile::Open( MVAEEContainmentCorrections_02_.c_str() );
+    EEweight_file_pi01 = TFile::Open( edm::FileInPath( MVAEEContainmentCorrections_01_.c_str() ).fullPath().c_str() );
+    EEweight_file_pi02 = TFile::Open( edm::FileInPath( MVAEEContainmentCorrections_02_.c_str() ).fullPath().c_str() );
     forest_EE_pi01 = (GBRForest *)EEweight_file_pi01->Get("Correction");
     forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
 #endif
-
-    //JSON
-    //myjson = new JSON(jsonFile_.c_str());
 }
 
 FillEpsilonPlot::~FillEpsilonPlot()
@@ -484,10 +486,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot,EcalEndcap);
 
   delete estopology_;
-
-  //Preselection
-  //if( calibMapPath_.find("iter_-1")!=std::string::npos && FailPreselEB && FailPreselEE ) PassPreselection[iEvent.id().event()] = false;
-  //if( FailPreselEB && FailPreselEE)                    Num_Fail_Presel++;
 }
 
 
@@ -562,7 +560,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     //cout << "seed #" << seed_c << "RecHitsInWindow.size() = " << RecHitsInWindow.size() << endl;
 
     if(simple_energy <= 0) { 
-	cout << "skipping cluster with negative energy " << simple_energy << endl; 
+	//cout << "skipping cluster with negative energy " << simple_energy << endl; 
 	continue;
     }
 
@@ -593,10 +591,13 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     {
 
 	EBDetId det(RecHitsInWindow[j]->id());
-	//if( ! checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] ) ) All_rechit_good = false;
-	//OR
-	//if(RecHitsInWindow[j]->checkFlag()==0 ) cout<<"FLAG bad"<<endl;
-	//if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
+
+	if( RemoveDead_Flag_){
+	  if(!checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) All_rechit_good = false; 
+	}
+	if( RemoveDead_Map_!="" ){
+	  if( isInDeadMap( true, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+	}
 
 	int ieta = det.ieta();
 	int iphi = det.iphi();
@@ -820,10 +821,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     for(unsigned int j=0; j<RecHitsInWindow.size();j++)
     { 
 	EEDetId det(RecHitsInWindow[j]->id());
-	//if( ! checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] ) ) All_rechit_good = false;
-	//OR
-	//if(RecHitsInWindow[j]->checkFlag()==0 ) cout<<"FLAG bad"<<endl;
-	//if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
+
+	if( RemoveDead_Flag_ ){
+	  if( !checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) All_rechit_good = false;
+	}
+	if( RemoveDead_Map_!="" ){
+	  if( isInDeadMap( false, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+	}
 
 	int ix = det.ix();
 	int iy = det.iy();
@@ -1403,12 +1407,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
   void 
 FillEpsilonPlot::beginJob()
 {
-  // output file
-  //char fileName[200];
-  //sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
-  //outfile_ = new TFile(fileName,"RECREATE");
-  //if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
-
   /// testing the EE eta ring
   TH2F eep("eep","EE+",102,0.5,101.5,102,-0.5,101.5);
   TH2F eem("eem","EE-",102,0.5,101.5,102,-0.5,101.5);
@@ -1433,7 +1431,7 @@ FillEpsilonPlot::beginJob()
   eem.Write();
 
   ifstream file;
-  file.open(Endc_x_y_.c_str(), ifstream::in);
+  file.open( edm::FileInPath ( Endc_x_y_.c_str() ).fullPath().c_str(), ifstream::in);
   VectRing.clear();
   while ( !file.eof() ) {
     string Line;
@@ -1807,8 +1805,32 @@ bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelSt
   int status =  int(channelStatus[rh.id().rawId()].getStatusCode()); 
   //cout<<"Status "<<status<<endl; //0 or 1
   if ( status > 0/*statusLevelRecHitsToUsea_*/ ) return false; 
-
   return true; 
+  //OR
+  //if(RecHitsInWindow[j]->checkFlag()==0 ) cout<<"FLAG bad"<<endl;
+  //if(!All_rechit_good) cout<<"EB: "<<(int)RecHitsInWindow[j]->recoFlag()<<endl;
+}
+bool FillEpsilonPlot::isInDeadMap( bool isEB, const EcalRecHit &rh ){
+  bool isBad=false;
+  if(isEB){
+    EBDetId det(rh.id());
+    int ieta = det.ieta();
+    int iphi = det.iphi();
+    if( EBMap_DeadXtal->GetBinContent( iphi+1, ieta+86 ) == 1 ) isBad=true;
+  }
+  else{
+    EEDetId det(rh.id());
+    int ix = det.ix();
+    int iy = det.iy();
+    int iz = det.zside();
+    if( iz==-1 ){
+	if( EEmMap_DeadXtal->GetBinContent( ix+1, iy+1 ) == 1 ) isBad=true;
+    }
+    else{
+	if( EEpMap_DeadXtal->GetBinContent( ix+1, iy+1 ) == 1 ) isBad=true;
+    }
+  }
+  return isBad;
 }
 
 // ------------ method called when ending the processing of a run  ------------

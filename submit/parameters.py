@@ -1,14 +1,45 @@
-nEventsPerJob = '-1' # default -1
-#eosPath = '/store/group/alca_ecalcalib/lpernie/'
-eosPath = '/store/caf/user/lpernie'
+#Do not modify these
+nEventsPerJob = '-1'
 outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
+
+#Are Pi0
 Are_pi0  = True # True = using Pi0, False = using Eta
+#IS CRAB
+isCRAB = True
+CRAB_Data_Path = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
+events_per_job = '5000'
+total_number_of_events = '-1'
+#MC and TTree
 isMC = True
 MakeNtuple4optimization = False
-#Pi0
+#PATH
+eosPath = '/store/caf/user/lpernie'
+#eosPath = '/store/group/alca_ecalcalib/lpernie/'
+if(isCRAB):
+   eosPath = '/store/group/alca_ecalcalib/lpernie/'
+inputlist_n      = 'ALL_NeuPt2_20_PU40x25_reduced.list' # list of the input files
+dirname          = 'ALL_NeuPt2_20_PU40x25_02'
+Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
+#TAG, QUEUE and ITERS
+NameTag          = 'MC13_'              # Tag to the names to avoid overlap
+queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+queue            = 'cmscaf1nd'
+nIterations = 13
+#N files
+ijobmax          = 5                     # 5 number of files per job
+nHadd            = 35                    # 50 number of files per hadd
+nFit             = 2000                  # number of fits done in parallel
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+#Remove Xtral Dead
+RemoveDead_Flag = "False"
+RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
+#L1Seeds
+L1Seed = "" #You can ask "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
+
+#Selection
 if(Are_pi0):
    Pi0PtCutEB_low = '2.1'
    Pi0PtCutEB_high = '2.1'
@@ -129,23 +160,6 @@ EBContCorr = 'correctionsEB.root'
 
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
-
-#L1 Request for L1 sudies
-#L1Seed = "L1_SingleJet16" #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')
-L1Seed = ""
-
-inputlist_n      = 'ALL_NeuPt2_20_PU40x25_reduced.list' # list of the input files
-ijobmax          = 5                     # 5 number of files per job
-nHadd            = 35                    # 50 number of files per hadd
-nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = 'ALL_NeuPt2_20_PU40x25_01'
-Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = 'MC13_'              # Tag to the names to avoid overlap
-queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue            = 'cmscaf1nd'
-
-nIterations = 1
 
 #-----------------------------------------------------------------------------------
 laserTagRecord='';laserTag='';laserDB=''
