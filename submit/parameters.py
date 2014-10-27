@@ -39,6 +39,12 @@ RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/sr
 #L1Seeds
 L1Seed = "" #You can ask "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
+#Seeds (Comment if you want the std ones)
+#EB_Seed_E    = '0.5'
+#useEE_EtSeed = 'False'
+#EE_Seed_Et   = '0.5'
+#EE_Seed_E    = '1.5'
+
 #Selection
 if(Are_pi0):
    Pi0PtCutEB_low = '2.1'
@@ -435,21 +441,40 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTPaths='AlCa_EcalPi0_*'
 #isMC = True
 
-##MC 2010 AlcaRECO
-HLTResults = 'False'
+###MC 2010 AlcaRECO
+#HLTResults = 'False'
+#json_file = ''
+#is_2011 = 'False'
+#is2012 = False
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+#overWriteGlobalTag = False
+#doEnenerScale='False'
+#doIC='False'
+#doLaserCorr="True"
+#ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
+#eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
+#esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
+#useHLTFilter = "False"
+#correctHits = 'False'
+#globaltag='POSTLS162_V2::All'
+#HLTPaths='AlCa_EcalPi0_*'
+#isMC = True
+
+##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
+HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 json_file = ''
-is_2011 = 'False'
-is2012 = False
-l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-overWriteGlobalTag = False
+is_2011 = 'False'                                             # Fit Parameter Range
+is2012 = True                                                 # Scram evironment, Hadd on 424 if True,
+l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
+overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale='False'
-doIC='False'
-doLaserCorr="True"
-ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
-eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
-esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
-useHLTFilter = "False"
+doIC='False'                                                  # Member of Recalibration Module
+doLaserCorr="True"                                            # Member of Recalibration Module
+ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
+esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits = 'False'
-globaltag='POSTLS162_V2::All'
-HLTPaths='AlCa_EcalPi0_*'
+globaltag='MCRUN2_72_V1A::All'
+HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
 isMC = True
