@@ -192,14 +192,14 @@ useOnlyEEClusterMatchedWithES = 'True'
 #L1Seed = "L1_SingleJet16" #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')
 L1Seed = ""
 
-inputlist_n      = 'ALL_NeuPt2_20_PU40x25.list' # list of the input files
-ijobmax          = 100                     # 5 number of files per job
+inputlist_n      = 'MINBIAS_40bx25_ALCARAW_NOL1.list' # list of the input files
+ijobmax          = 1                     # 5 number of files per job
 nHadd            = 10                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-dirname          = '2012C_EB_CFGBUILD'
+dirname          = 'MINBIAS_40bx25_ALCARAW'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
-NameTag          = 'MINBIAS_40bx25_EB'              # Tag to the names to avoid overlap
+NameTag          = 'MINBIAS_40bx25'              # Tag to the names to avoid overlap
 queueForDaemon   = '2nd'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = '1nd'
 
@@ -264,44 +264,44 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #2012C
 #/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
 #(_2): https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt
-isNewTag=True
-json_file ='goodrunlist_json2012C.txt'
-HLTResults = 'True'
-is2012 = True
-is_2011 = 'True' #Just for the fit, put true 
-useHLTFilter="True"
-correctHits='True'
-overWriteGlobalTag = True
-l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-if not(isNewTag):
-  globaltag='GR_P_V42::All'
-else:
-  globaltag='FT_R_53_V21::All'
-  globaltag='FT_53_V21_AN6::All'
-if(Are_pi0): 
-  esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-  ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-  eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-  HLTPaths='AlCa_EcalPi0*' 
-else:
-  esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
-  ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
-  eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
-  HLTPaths='AlCa_EcalEta*'
-doEnenerScale='True'
-doIC='True'
-doLaserCorr="True"
-if not(isNewTag):
-  laserTagRecord='EcalIntercalibConstantsRcd'
-  laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-  laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
-  alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-  alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
-  alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-else:
-  alphaTagRecord=''
-  alphaTag=''
-  alphaDB=''
+# isNewTag=True
+# json_file ='goodrunlist_json2012C.txt'
+# HLTResults = 'True'
+# is2012 = True
+# is_2011 = 'True' #Just for the fit, put true 
+# useHLTFilter="True"
+# correctHits='True'
+# overWriteGlobalTag = True
+# l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+# if not(isNewTag):
+#   globaltag='GR_P_V42::All'
+# else:
+#   globaltag='FT_R_53_V21::All'
+#   globaltag='FT_53_V21_AN6::All'
+# if(Are_pi0): 
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalPi0*' 
+# else:
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+#   HLTPaths='AlCa_EcalEta*'
+# doEnenerScale='True'
+# doIC='True'
+# doLaserCorr="True"
+# if not(isNewTag):
+#   laserTagRecord='EcalIntercalibConstantsRcd'
+#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+#   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+#   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+# else:
+#   alphaTagRecord=''
+#   alphaTag=''
+#   alphaDB=''
 
 ###else:
 ###   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
@@ -498,3 +498,26 @@ else:
 # globaltag='POSTLS162_V2::All'
 # HLTPaths='AlCa_EcalPi0_*'
 # isMC = True
+
+# MC 40bx25 HLT ALCARAW
+HLTResults = 'False'
+json_file = ''
+is_2011 = 'False'
+is2012 = False
+l1InputTag =  "InputTag('hltGtDigis','', 'HLT')" #doesnt do anything
+overWriteGlobalTag = False
+doEnenerScale='False'
+doIC='False'
+doLaserCorr="False"
+#ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
+#eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
+#esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
+ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
+esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+useHLTFilter = "False"
+correctHits = 'False'
+globaltag='POSTLS162_V2::All'
+HLTPaths='AlCa_EcalPi0_*' #does nothing?
+isMC = True
+

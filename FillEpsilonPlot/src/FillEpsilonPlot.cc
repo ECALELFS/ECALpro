@@ -1375,7 +1375,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	for(size_t ind=0; ind < clusters.size(); ++ind){
 	  
 	  // these are the candidate clusters, do not include in isolation
-	  if( ind == i || ind == j ) continue;
+	  if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
 				       
 	  // candidate cluster for isolation
 	  const CaloCluster* Gtmp = &(clusters[ind]);
