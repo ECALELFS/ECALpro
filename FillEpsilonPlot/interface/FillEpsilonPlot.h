@@ -134,7 +134,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool useEBContainmentCorrections_;
       bool useEEContainmentCorrections_;
       bool useOnlyEEClusterMatchedWithES_;
-      bool Is2012_;
       bool HLTResults_;
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
@@ -159,6 +158,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string calibTypeString_;
       calibGranularity calibTypeNumber_;
 
+      // Seeds
+      double EB_Seed_E_;
+      bool useEE_EtSeed_;
+      double EE_Seed_E_;
+      double EE_Seed_Et_;
       // selection criteria
       double gPtCut_low_[3];
       double gPtCut_high_[3];

@@ -116,7 +116,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.EBPHIContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBPHIContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.EEContainmentCorrections    = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EEContainmentCorrections + "')\n")
     outputfile.write("process.analyzerFillEpsilon.ContCorr_EB                 = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContCorr + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.json_file                   = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
+    #outputfile.write("process.analyzerFillEpsilon.json_file                   = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
     outputfile.write("process.analyzerFillEpsilon.HLTResults                  = cms.untracked.bool(" + HLTResults + ")\n")
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(" + RemoveDead_Flag + ")\n")
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('" + RemoveDead_Map + "')\n")
@@ -124,11 +124,6 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(False)\n")
-    if(is2012):
-        outputfile.write("process.analyzerFillEpsilon.Is2012               = cms.untracked.bool(True)\n")
-    else:
-        outputfile.write("process.analyzerFillEpsilon.Is2012               = cms.untracked.bool(False)\n")
-
     outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
 
     outputfile.write("### choosing proper input tag (recalibration module changes the collection names)\n")
@@ -144,6 +139,14 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked.InputTag('hltGtDigis')\n")
     outputfile.write("process.analyzerFillEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
     outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
+    if( EB_Seed_E!='' ):
+        outputfile.write("process.analyzerFillEpsilon.EB_Seed_E = cms.untracked.double(" + EB_Seed_E + ")\n")
+    if( useEE_EtSeed!='' ):
+        outputfile.write("process.analyzerFillEpsilon.useEE_EtSeed = cms.untracked.bool(" + useEE_EtSeed + ")\n")
+    if( EE_Seed_E!='' ):
+        outputfile.write("process.analyzerFillEpsilon.EE_Seed_E = cms.untracked.double(" + EE_Seed_E + ")\n")
+    if( EE_Seed_Et!='' ):
+        outputfile.write("process.analyzerFillEpsilon.EE_Seed_Et = cms.untracked.double(" + EE_Seed_Et + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_low = cms.untracked.double(" + Pi0PtCutEB_low + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_high = cms.untracked.double(" + Pi0PtCutEB_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEE_low = cms.untracked.double(" + Pi0PtCutEE_low + ")\n")

@@ -116,35 +116,39 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     useMassInsteadOfEpsilon_ = 1;
 
     /// parameters from python
-    EBRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag");
-    EERecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
-    ESRecHitCollectionTag_  = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
-    HLTResults_             = iConfig.getUntrackedParameter<bool>("HLTResults",false);
-    RemoveDead_Flag_        = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
-    RemoveDead_Map_         = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
-    //L1Seed_                 = iConfig.getUntrackedParameter<std::string>("L1Seed");
-    Are_pi0_                = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
-    l1TriggerTag_           = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
-    triggerTag_             = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
-    l1InputTag_             = iConfig.getUntrackedParameter<edm::InputTag>("l1InputTag",edm::InputTag("hltGtDigis"));
-    outfilename_            = iConfig.getUntrackedParameter<std::string>("OutputFile");
-    ebContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
-    MVAEBContainmentCorrections_01_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
-    MVAEBContainmentCorrections_02_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_02");
-    MVAEEContainmentCorrections_01_ = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_01");
-    MVAEEContainmentCorrections_02_ = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_02");
+    EBRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag");
+    EERecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
+    ESRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
+    HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
+    RemoveDead_Flag_                   = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
+    RemoveDead_Map_                    = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
+    //L1Seed_                            = iConfig.getUntrackedParameter<std::string>("L1Seed");
+    Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
+    l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
+    triggerTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
+    l1InputTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("l1InputTag",edm::InputTag("hltGtDigis"));
+    outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
+    ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
+    MVAEBContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
+    MVAEBContainmentCorrections_02_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_02");
+    MVAEEContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_01");
+    MVAEEContainmentCorrections_02_    = iConfig.getUntrackedParameter<std::string>("MVAEEContainmentCorrections_02");
     MVAEBContainmentCorrections_eta01_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_eta01");
     MVAEBContainmentCorrections_eta02_ = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_eta02");
-    Endc_x_y_                       = iConfig.getUntrackedParameter<std::string>("Endc_x_y");
-    ebPHIContainmentCorrections_    = iConfig.getUntrackedParameter<std::string>("EBPHIContainmentCorrections");
-    eeContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EEContainmentCorrections");
-    useEBContainmentCorrections_    = iConfig.getUntrackedParameter<bool>("useEBContainmentCorrections");
-    useEEContainmentCorrections_    = iConfig.getUntrackedParameter<bool>("useEEContainmentCorrections");
-    externalGeometry_               = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
-    currentIteration_               = iConfig.getUntrackedParameter<int>("CurrentIteration");
-    outputDir_                      = iConfig.getUntrackedParameter<std::string>("OutputDir");
-    calibMapPath_                   = iConfig.getUntrackedParameter<std::string>("calibMapPath");
-    Barrel_orEndcap_                = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
+    Endc_x_y_                          = iConfig.getUntrackedParameter<std::string>("Endc_x_y");
+    ebPHIContainmentCorrections_       = iConfig.getUntrackedParameter<std::string>("EBPHIContainmentCorrections");
+    eeContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EEContainmentCorrections");
+    useEBContainmentCorrections_       = iConfig.getUntrackedParameter<bool>("useEBContainmentCorrections");
+    useEEContainmentCorrections_       = iConfig.getUntrackedParameter<bool>("useEEContainmentCorrections");
+    externalGeometry_                  = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
+    currentIteration_                  = iConfig.getUntrackedParameter<int>("CurrentIteration");
+    outputDir_                         = iConfig.getUntrackedParameter<std::string>("OutputDir");
+    calibMapPath_                      = iConfig.getUntrackedParameter<std::string>("calibMapPath");
+    Barrel_orEndcap_                   = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
+    EB_Seed_E_                         = iConfig.getUntrackedParameter<double>("EB_Seed_E",0.2);
+    useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed","True");
+    EE_Seed_E_                         = iConfig.getUntrackedParameter<double>("EE_Seed_E",0.5);
+    EE_Seed_Et_                        = iConfig.getUntrackedParameter<double>("EE_Seed_Et",0.5);
     pi0PtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
     pi0PtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_high");
     pi0PtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_low");
@@ -173,13 +177,15 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     isMC_ = iConfig.getUntrackedParameter<bool>("isMC",false);
     MakeNtuple4optimization_ = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
 
-    cout<<"Cus used: EB LOW)"<<endl;
+    if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
+    else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
+    cout<<"Cut used: EB LOW)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_low_[EcalBarrel]<<", Iso: "<<pi0IsoCut_low_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalBarrel]<<", S4S9: "<<S4S9_cut_low_[EcalBarrel]<<endl;
-    cout<<"Cus used: EB HIGH)"<<endl;
+    cout<<"Cut used: EB HIGH)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_high_[EcalBarrel]<<", Iso: "<<pi0IsoCut_high_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalBarrel]<<", S4S9: "<<S4S9_cut_high_[EcalBarrel]<<endl;
-    cout<<"Cus used: EE LOW)"<<endl;
+    cout<<"Cut used: EE LOW)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_low_[EcalEndcap]<<", Iso: "<<pi0IsoCut_low_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalEndcap]<<", S4S9: "<<S4S9_cut_low_[EcalEndcap]<<endl;
-    cout<<"Cus used: EE HIGH)"<<endl;
+    cout<<"Cut used: EE HIGH)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_high_[EcalEndcap]<<", Iso: "<<pi0IsoCut_high_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalEndcap]<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
     cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat computation, 1 = yes only even events, 2 = yes only odd events]"<<endl;
 
@@ -433,7 +439,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
   iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);
   iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);
-
   //ES
   edm::ESHandle<CaloGeometry> geoHandle;
   iSetup.get<CaloGeometryRecord>().get(geoHandle);
@@ -505,7 +510,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
   //bool founded=false;
   for(EBRecHitCollection::const_iterator itb= ebHandle->begin(); itb != ebHandle->end(); ++itb, ++dc) 
   {
-    if(itb->energy() > 0.200)  ebseeds.push_back( *itb );
+    if(itb->energy() > EB_Seed_E_)  ebseeds.push_back( *itb );
     ////Preselection
     //if(itb->energy() > 0.200-0.200*(28.3/100)) founded=true;
   }
@@ -727,7 +732,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     float maxToFront = geom_->getPosition(idXtal).mag(); // to front face
     float depth = maxDepth + maxToFront - geom_->getPosition(idXtal).mag() ;
     GlobalPoint posThis = geom_->getPosition(idXtal,depth);
-    if(ite->energy()/cosh(posThis.eta()) > 0.5)                   eeseeds.push_back( *ite );
+    if( useEE_EtSeed_ ){ if(ite->energy()/cosh(posThis.eta()) > EE_Seed_Et_ )              eeseeds.push_back( *ite ); }
+    else               { if(ite->energy()                     > EE_Seed_E_  )              eeseeds.push_back( *ite ); }
     //if(ite->energy()/cosh(posThis.eta()) > 0.5-0.5*(42.5/100))    found=true;
   } // loop over xtals
   //Preselection
