@@ -118,7 +118,7 @@ for iter in range(nIterations):
     Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
     printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     Fhadd_cfg_f.close()
-        # loop over the whole list
+    # loop over the whole list
     while (len(inputlist_v) > 0):
 
         # create cfg file
@@ -239,6 +239,7 @@ env_script_n = workdir + "/submit.sh"
 env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
+env_script_f.write("ulimit -c 0\n")
 if(is2012):
    env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
 else:
@@ -246,6 +247,7 @@ else:
 
 env_script_f.write("eval `scramv1 runtime -sh`\n")
 env_script_f.write( "python " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "rm core.*")
 env_script_f.close()
 
 # make the source file executable

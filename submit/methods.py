@@ -159,6 +159,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEB_high = cms.untracked.double(" + Pi0IsoCutEB_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_low = cms.untracked.double(" + Pi0IsoCutEE_low + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_high = cms.untracked.double(" + Pi0IsoCutEE_high + ")\n")
+    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_low = cms.untracked.double(" + Pi0HLTIsoCutEB_low + ")\n")
+    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_high = cms.untracked.double(" + Pi0HLTIsoCutEB_high + ")\n")
+    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_low = cms.untracked.double(" + Pi0HLTIsoCutEE_low + ")\n")
+    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_high = cms.untracked.double(" + Pi0HLTIsoCutEE_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_low = cms.untracked.double(" +  nXtal_1_EB_low+ ")\n")
     outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_high = cms.untracked.double(" +  nXtal_1_EB_high+ ")\n")
     outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_low = cms.untracked.double(" +  nXtal_2_EB_low+ ")\n")
@@ -175,8 +179,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.AlcaL1TrigNames = cms.untracked.vstring('L1_SingleIsoEG5','L1_SingleIsoEG8','L1_SingleIsoEG10','L1_SingleIsoEG12','L1_SingleIsoEG15','L1_SingleEG2','L1_SingleEG5','L1_SingleEG8','L1_SingleEG10','L1_SingleEG12','L1_SingleEG15','L1_SingleEG20','L1_SingleJet6U','L1_SingleJet10U','L1_SingleJet20U','L1_SingleJet30U','L1_SingleJet40U','L1_SingleJet50U','L1_DoubleJet30U','L1_DoubleEG5','L1_DoubleEG2')\n\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
-       if MakeNtuple4optimization:
-          outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
+    if MakeNtuple4optimization:
+       outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
     if not( L1Seed=='' ):       
        outputfile.write("process.L1SeedSele = cms.EDFilter( 'HLTLevel1GTSeed',\n")
        outputfile.write("    L1SeedsLogicalExpression = cms.string( '" + L1Seed + "' ), #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')\n")
@@ -311,7 +315,7 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")
-    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+    #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("echo 'hadd -f /tmp/" + outFile + " @" + list + "'\n")
     outputfile.write("hadd -f /tmp/" + outFile + " @" + list  + "\n")
@@ -325,7 +329,7 @@ def printFinalHadd(outputfile, list, destination, pwd):
          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")
-    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+    #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("echo 'hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
     outputfile.write("hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
