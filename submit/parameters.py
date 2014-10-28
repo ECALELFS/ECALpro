@@ -40,88 +40,107 @@ RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/sr
 L1Seed = "" #You can ask "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
 #Seeds (Comment if you want the std ones)
-#EB_Seed_E    = '0.5'
-#useEE_EtSeed = 'False'
-#EE_Seed_Et   = '0.5'
-#EE_Seed_E    = '1.5'
+EB_Seed_E    = '0.5'
+useEE_EtSeed = 'False'
+EE_Seed_Et   = '0.5'
+EE_Seed_E    = '1.5'
 
 #Selection
 if(Are_pi0):
+   #inner barrel
    Pi0PtCutEB_low = '2.1'
-   Pi0PtCutEB_high = '2.1'
-   Pi0PtCutEE_low = '2.1'
-   Pi0PtCutEE_high = '2.1'
    gPtCutEB_low = '0.8'
-   gPtCutEB_high = '0.8'
-   gPtCutEE_low = '0.8'
-   gPtCutEE_high = '0.8'
    Pi0IsoCutEB_low = '0.'
-   Pi0IsoCutEB_high = '0.'
-   Pi0IsoCutEE_low = '0.25'
-   Pi0IsoCutEE_high = '0.25'
    nXtal_1_EB_low = '6'
-   nXtal_1_EB_high = '6'
    nXtal_2_EB_low = '4'
-   nXtal_2_EB_high = '4'
-   nXtal_1_EE_low = '6'
-   nXtal_1_EE_high = '6'
-   nXtal_2_EE_low = '4'
-   nXtal_2_EE_high = '4'
    S4S9_EB_low = '0.7'
+   #outer barrel
+   Pi0PtCutEB_high = '2.1'
+   gPtCutEB_high = '0.8'
+   Pi0IsoCutEB_high = '0.8'
+   nXtal_1_EB_high = '6'
+   nXtal_2_EB_high = '4'
    S4S9_EB_high = '0.7'
-   S4S9_EE_low = '0.85'
+   #low eta EE
+   Pi0PtCutEE_low = '2.1'
+   gPtCutEE_low = '0.8'
+   Pi0IsoCutEE_low = '0.25'
+   nXtal_1_EE_low = '6'
+   nXtal_2_EE_low = '4'
+   S4S9_EE_low = '0.85'   
+   #high eta EE
+   Pi0PtCutEE_high = '2.1'
+   gPtCutEE_high = '0.8'
+   Pi0IsoCutEE_high = '0.25'
+   nXtal_1_EE_high = '6'
+   nXtal_2_EE_high = '4'
    S4S9_EE_high = '0.85'
-   if(isMC and MakeNtuple4optimization):
-      #2012
-      #Pi0PtCutEB_low = '1.'
-      #Pi0PtCutEB_high = '1.'
-      #Pi0PtCutEE_low = '1.'
-      #Pi0PtCutEE_high = '1.'
-      #gPtCutEB_low = '0.4'
-      #gPtCutEB_high = '0.4'
-      #gPtCutEE_low = '0.4'
-      #gPtCutEE_high = '0.4'
-      #Pi0IsoCutEB_low = '0.'
-      #Pi0IsoCutEB_high = '0.'
-      #Pi0IsoCutEE_low = '0.'
-      #Pi0IsoCutEE_high = '0.'
-      #nXtal_1_EB_low = '0.'
-      #nXtal_1_EB_high = '0.'
-      #nXtal_2_EB_low = '0.'
-      #nXtal_2_EB_high = '0.'
-      #nXtal_1_EE_low = '0.'
-      #nXtal_1_EE_high = '0.'
-      #nXtal_2_EE_low = '0.'
-      #nXtal_2_EE_high = '0.'
-      #S4S9_EB_low = '0.6'
-      #S4S9_EB_high = '0.6'
-      #S4S9_EE_low = '0.6'
-      #S4S9_EE_high = '0.6'
-      #2015
-      Pi0PtCutEB_low = '1.8'
-      Pi0PtCutEB_high = '1.8'
-      Pi0PtCutEE_low = '3.'
-      Pi0PtCutEE_high = '3.'
-      gPtCutEB_low = '1.5'
-      gPtCutEB_high = '1.5'
-      gPtCutEE_low = '1.5'
-      gPtCutEE_high = '1.5'
-      Pi0IsoCutEB_low = '0.'
-      Pi0IsoCutEB_high = '0.'
-      Pi0IsoCutEE_low = '0.'
-      Pi0IsoCutEE_high = '0.'
-      nXtal_1_EB_low = '7'
-      nXtal_1_EB_high = '8'
-      nXtal_2_EB_low = '7'
-      nXtal_2_EB_high = '7'
-      nXtal_1_EE_low = '6'
-      nXtal_1_EE_high = '7'
-      nXtal_2_EE_low = '4'
+   if MakeNtuple4optimization:
+      #inner barrel
+      Pi0PtCutEB_low = '1'
+      gPtCutEB_low = '.4'
+      Pi0IsoCutEB_low = '0.0'
+      Pi0HLTIsoCutEB_low = "2"
+      nXtal_1_EB_low = '0'
+      nXtal_2_EB_low = '0'
+      S4S9_EB_low = '0.6'
+      #outer barrel
+      Pi0PtCutEB_high = '1.0'
+      gPtCutEB_high = '.4'
+      Pi0IsoCutEB_high = '0.0'
+      Pi0HLTIsoCutEB_high = '2'
+      nXtal_1_EB_high = '0'
+      nXtal_2_EB_high = '0'
+      S4S9_EB_high = '0.6'
+      #low eta EE
+      Pi0PtCutEE_low = '1.0'
+      gPtCutEE_low = '.4'
+      Pi0IsoCutEE_low = '.0'
+      Pi0HLTIsoCutEE_low = '999'
+      nXtal_1_EE_low = '3'
+      nXtal_2_EE_low = '2'
+      S4S9_EE_low = '0.6'
+      #high eta EE
+      Pi0PtCutEE_high = '1.0'
+      gPtCutEE_high = '0.4'
+      Pi0IsoCutEE_high = '0.0'
+      Pi0HLTIsoCutEE_high = '999'
+      nXtal_1_EE_high = '3'
       nXtal_2_EE_high = '2'
-      S4S9_EB_low = '0.9'
-      S4S9_EB_high = '0.9'
-      S4S9_EE_low = '0.9'
-      S4S9_EE_high = '0.9'
+      S4S9_EE_high = '0.6'
+   if(isMC and MakeNtuple4optimization):
+      #inner barrel
+      Pi0PtCutEB_low = '1'
+      gPtCutEB_low = '.4'
+      Pi0IsoCutEB_low = '0.0'
+      Pi0HLTIsoCutEB_low = "999"
+      nXtal_1_EB_low = '0'
+      nXtal_2_EB_low = '0'
+      S4S9_EB_low = '0.6'
+      #outer barrel
+      Pi0PtCutEB_high = '1.0'
+      gPtCutEB_high = '.4'
+      Pi0IsoCutEB_high = '0.0'
+      Pi0HLTIsoCutEB_high = '999'
+      nXtal_1_EB_high = '0'
+      nXtal_2_EB_high = '0'
+      S4S9_EB_high = '0.6'
+      #low eta EE
+      Pi0PtCutEE_low = '1.0'
+      gPtCutEE_low = '.4'
+      Pi0IsoCutEE_low = '.0'
+      Pi0HLTIsoCutEE_low = '999'
+      nXtal_1_EE_low = '0'
+      nXtal_2_EE_low = '0'
+      S4S9_EE_low = '0.6'
+      #high eta EE
+      Pi0PtCutEE_high = '1.0'
+      gPtCutEE_high = '0.4'
+      Pi0IsoCutEE_high = '0.0'
+      Pi0HLTIsoCutEE_high = '999'
+      nXtal_1_EE_high = '0'
+      nXtal_2_EE_high = '0'
+      S4S9_EE_high = '0.6'
 #ETA
 else:
    Pi0PtCutEB = '3.2'
@@ -441,24 +460,41 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTPaths='AlCa_EcalPi0_*'
 #isMC = True
 
-###MC 2010 AlcaRECO
-#HLTResults = 'False'
+##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
+#HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 #json_file = ''
-#is_2011 = 'False'
-#is2012 = False
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-#overWriteGlobalTag = False
+#is_2011 = 'False'                                             # Fit Parameter Range
+#is2012 = True                                                 # Scram evironment, Hadd on 424 if True,
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
+#overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 #doEnenerScale='False'
-#doIC='False'
-#doLaserCorr="True"
-#ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
-#eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
-#esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
-#useHLTFilter = "False"
+#doIC='False'                                                  # Member of Recalibration Module
+#doLaserCorr="True"                                            # Member of Recalibration Module
+#ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+#eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
+#esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+#useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 #correctHits = 'False'
-#globaltag='POSTLS162_V2::All'
-#HLTPaths='AlCa_EcalPi0_*'
-#isMC = True
+#globaltag='MCRUN2_72_V1A::All'
+#HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
+
+# MC 40bx25 HLT ALCARAW
+HLTResults = 'False'
+json_file = ''
+is_2011 = 'False'
+is2012 = False
+l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+overWriteGlobalTag = False
+doEnenerScale='False'
+doIC='False'
+doLaserCorr="False"
+ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
+esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+useHLTFilter = "False"
+correctHits = 'False'
+globaltag='POSTLS162_V2::All'
+HLTPaths='AlCa_EcalPi0_*'
 
 ##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
 HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
@@ -478,3 +514,30 @@ correctHits = 'False'
 globaltag='MCRUN2_72_V1A::All'
 HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
 isMC = True
+
+##2012 Selection
+      #2012
+      #Pi0PtCutEB_low = '1.'
+      #Pi0PtCutEB_high = '1.'
+      #Pi0PtCutEE_low = '1.'
+      #Pi0PtCutEE_high = '1.'
+      #gPtCutEB_low = '0.4'
+      #gPtCutEB_high = '0.4'
+      #gPtCutEE_low = '0.4'
+      #gPtCutEE_high = '0.4'
+      #Pi0IsoCutEB_low = '0.'
+      #Pi0IsoCutEB_high = '0.'
+      #Pi0IsoCutEE_low = '0.'
+      #Pi0IsoCutEE_high = '0.'
+      #nXtal_1_EB_low = '0.'
+      #nXtal_1_EB_high = '0.'
+      #nXtal_2_EB_low = '0.'
+      #nXtal_2_EB_high = '0.'
+      #nXtal_1_EE_low = '0.'
+      #nXtal_1_EE_high = '0.'
+      #nXtal_2_EE_low = '0.'
+      #nXtal_2_EE_high = '0.'
+      #S4S9_EB_low = '0.6'
+      #S4S9_EB_high = '0.6'
+      #S4S9_EE_low = '0.6'
+      #S4S9_EE_high = '0.6'

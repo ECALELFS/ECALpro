@@ -24,7 +24,6 @@
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
 #include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
 #include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
-//JSON
 //#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
 #define NPI0MAX 30000
@@ -41,12 +40,9 @@
 #include "TMVA/Factory.h"
 #include "TMVA/Reader.h"
 #endif
-
-#ifdef MVA_REGRESSIO
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
 #include "Cintex/Cintex.h"
-#endif
 
 enum calibGranularity{ xtal, tt, etaring };
 //enum subdet{ thisIsEE, thisIsEB }; 
@@ -168,8 +164,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double gPtCut_high_[3];
       double pi0PtCut_low_[3];
       double pi0PtCut_high_[3];
+
       double pi0IsoCut_low_[3];
       double pi0IsoCut_high_[3];
+      double pi0HLTIsoCut_low_[3];
+      double pi0HLTIsoCut_high_[3];
+
       double nXtal_1_cut_low_[3];
       double nXtal_1_cut_high_[3];
       double nXtal_2_cut_low_[3];
@@ -250,6 +250,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   Op_NPi0_rec;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
       Float_t Op_IsoPi0_rec[NPI0MAX];
+      Float_t Op_HLTIsoPi0_rec[NPI0MAX];
       Int_t   Op_n1CrisPi0_rec[NPI0MAX];
       Int_t   Op_n2CrisPi0_rec[NPI0MAX];
       Float_t Op_mPi0_rec[NPI0MAX];
@@ -264,6 +265,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_Es_e2_2[NPI0MAX];
       Float_t Op_S4S9_1[NPI0MAX];
       Float_t Op_S4S9_2[NPI0MAX];
+
+      Float_t Op_ptG1_nocor[NPI0MAX];
+      Float_t Op_ptG2_nocor[NPI0MAX];
+      Float_t Op_ptPi0_nocor[NPI0MAX];
+      Float_t Op_mPi0_nocor[NPI0MAX];
+
       vector<float> Es_1;
       vector<float> Es_2;
 
@@ -274,7 +281,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<std::string> alcaL1TrigNames_;
       std::map< std::string, int > l1TrigNames_;
       bool l1TrigBit_[128];
-#ifdef MVA_REGRESSIO
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
@@ -283,7 +289,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       const GBRForest *forest_EB_1;
       const GBRForest *forest_EB_2;
       GBRApply *gbrapply;
-#endif
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
       TTree *TTree_JoshMva;
       Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva, pi0Eta;
