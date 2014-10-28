@@ -46,6 +46,7 @@ EE_Seed_Et   = '0.5'
 EE_Seed_E    = '1.5'
 
 #Selection
+CutOnHLTIso = "False"
 if(Are_pi0):
    #inner barrel
    Pi0PtCutEB_low = '2.1'

@@ -167,6 +167,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       double pi0IsoCut_low_[3];
       double pi0IsoCut_high_[3];
+      bool   CutOnHLTIso_;
       double pi0HLTIsoCut_low_[3];
       double pi0HLTIsoCut_high_[3];
 

@@ -144,38 +144,38 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed","True");
     EE_Seed_E_                         = iConfig.getUntrackedParameter<double>("EE_Seed_E",0.5);
     EE_Seed_Et_                        = iConfig.getUntrackedParameter<double>("EE_Seed_Et",0.5);
-    pi0PtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
-    pi0PtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_high");
-    pi0PtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_low");
-    pi0PtCut_high_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_high");
-    gPtCut_low_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB_low");
-    gPtCut_high_[EcalBarrel]  = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
-    gPtCut_low_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
-    gPtCut_high_[EcalEndcap]  = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
-    //HLT Iso cuts added Sept 1, 2014
-    pi0HLTIsoCut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_low");
-    pi0HLTIsoCut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_high");
-    pi0HLTIsoCut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_low");
-    pi0HLTIsoCut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_high");
-    pi0IsoCut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_low");
-    pi0IsoCut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_high");
-    pi0IsoCut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_low");
-    pi0IsoCut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_high");
-    nXtal_1_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_1_EE_low");
-    nXtal_1_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_1_EE_high");
-    nXtal_2_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_2_EE_low");
-    nXtal_2_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("nXtal_2_EE_high");
-    nXtal_1_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_1_EB_low");
-    nXtal_1_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_1_EB_high");
-    nXtal_2_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_2_EB_low");
-    nXtal_2_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("nXtal_2_EB_high");
-    S4S9_cut_low_[EcalBarrel] = iConfig.getUntrackedParameter<double>("S4S9_EB_low");
-    S4S9_cut_high_[EcalBarrel] = iConfig.getUntrackedParameter<double>("S4S9_EB_high");
-    S4S9_cut_low_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE_low");
-    S4S9_cut_high_[EcalEndcap] = iConfig.getUntrackedParameter<double>("S4S9_EE_high");
-    SystOrNot_ = iConfig.getUntrackedParameter<double>("SystOrNot",0);
-    isMC_ = iConfig.getUntrackedParameter<bool>("isMC",false);
-    MakeNtuple4optimization_ = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
+    pi0PtCut_low_[EcalBarrel]          = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
+    pi0PtCut_high_[EcalBarrel]         = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_high");
+    pi0PtCut_low_[EcalEndcap]          = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_low");
+    pi0PtCut_high_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("Pi0PtCutEE_high");
+    gPtCut_low_[EcalBarrel]            = iConfig.getUntrackedParameter<double>("gPtCutEB_low");
+    gPtCut_high_[EcalBarrel]           = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
+    gPtCut_low_[EcalEndcap]            = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
+    gPtCut_high_[EcalEndcap]           = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
+    CutOnHLTIso_                       = iConfig.getUntrackedParameter<bool>("CutOnHLTIso");
+    pi0HLTIsoCut_low_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_low");
+    pi0HLTIsoCut_high_[EcalBarrel]     = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_high");
+    pi0HLTIsoCut_low_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_low");
+    pi0HLTIsoCut_high_[EcalEndcap]     = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_high");
+    pi0IsoCut_low_[EcalBarrel]         = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_low");
+    pi0IsoCut_high_[EcalBarrel]        = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_high");
+    pi0IsoCut_low_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_low");
+    pi0IsoCut_high_[EcalEndcap]        = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_high");
+    nXtal_1_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<double>("nXtal_1_EE_low");
+    nXtal_1_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("nXtal_1_EE_high");
+    nXtal_2_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<double>("nXtal_2_EE_low");
+    nXtal_2_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("nXtal_2_EE_high");
+    nXtal_1_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<double>("nXtal_1_EB_low");
+    nXtal_1_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("nXtal_1_EB_high");
+    nXtal_2_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<double>("nXtal_2_EB_low");
+    nXtal_2_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("nXtal_2_EB_high");
+    S4S9_cut_low_[EcalBarrel]          = iConfig.getUntrackedParameter<double>("S4S9_EB_low");
+    S4S9_cut_high_[EcalBarrel]         = iConfig.getUntrackedParameter<double>("S4S9_EB_high");
+    S4S9_cut_low_[EcalEndcap]          = iConfig.getUntrackedParameter<double>("S4S9_EE_low");
+    S4S9_cut_high_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("S4S9_EE_high");
+    SystOrNot_                         = iConfig.getUntrackedParameter<double>("SystOrNot",0);
+    isMC_                              = iConfig.getUntrackedParameter<bool>("isMC",false);
+    MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
 
     if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
     else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
@@ -1327,43 +1327,27 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	cout << "[DEBUG] Running HLT Isolation" << endl;
 #endif
 	float hlt_iso = 0;
-	//loop over clusters
 	for(size_t ind=0; ind < clusters.size(); ++ind){
-	  
-	  // these are the candidate clusters, do not include in isolation
 	  if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
-				       
-	  // candidate cluster for isolation
 	  const CaloCluster* Gtmp = &(clusters[ind]);
-	  
-	  // corresponding 4 vector do candidate cluster
-	  TLorentzVector GtmpP4; 
+	  TLorentzVector GtmpP4;  
 	  GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
-
-	  // minimum cluster pt in GeV to be included in isolation
 	  if (GtmpP4.Pt() < 0.5) continue;
-
 	  // delta R from the pi0 candidates
-	  // .2 (.3) for pizero (eta)
 	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4.eta(), Gtmp->phi(), pi0P4.phi());
 	  if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
-
 	  // cluster must be inside of an eta strip 
-	  // .05 (.1) for pizero (eta)
 	  double deta = fabs(Gtmp->eta() - pi0P4.eta()); 
 	  if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;
-
-	  // include in isolation sum if passing all the requirements
-	  hlt_iso += GtmpP4.Pt();	  
-	}	
-
+	  hlt_iso += GtmpP4.Pt();
+	}
 	// the cut is taken relative to the pi0 pt
 	hlt_iso /= pi0P4_nocor.Pt();
 	//category break down of cuts
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) < 1 )                          { if( hlt_iso > pi0HLTIsoCut_low_[subDetId] ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) > 1. && fabs(pi0P4.eta())<1.5 ){ if( hlt_iso > pi0HLTIsoCut_high_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) < 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_low_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) > 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) < 1 )                          { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) > 1. && fabs(pi0P4.eta())<1.5 ){ if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) < 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) > 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
