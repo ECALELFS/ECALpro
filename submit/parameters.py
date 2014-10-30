@@ -8,26 +8,28 @@ CalibType  = 'xtal'
 #Are Pi0
 Are_pi0  = True # True = using Pi0, False = using Eta
 #IS CRAB
-isCRAB = True
+isCRAB = False
 CRAB_Data_Path = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
+CRAB_CopyCert  = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
+CRAB_Storage   = 'group/alca_ecalcalib/lpernie/' #the absence of the beginning slash is mandatory
 events_per_job = '5000'
 total_number_of_events = '-1'
 #MC and TTree
 isMC = True
-MakeNtuple4optimization = False
+MakeNtuple4optimization = True
 #PATH
 eosPath = '/store/caf/user/lpernie'
 #eosPath = '/store/group/alca_ecalcalib/lpernie/'
 if(isCRAB):
    eosPath = '/store/group/alca_ecalcalib/lpernie/'
-inputlist_n      = 'ALL_NeuPt2_20_PU40x25_reduced.list' # list of the input files
-dirname          = 'ALL_NeuPt2_20_PU40x25_02'
+inputlist_n      = 'ALL_NEUT_GUN_Josh_MINBIAS_PIZERO_ALCARAW_NOL1_v2.list' # list of the input files
+dirname          = 'ALL_Josh_MINBIAS_PIZERO_ALCARAW_NOL1_01'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'MC13_'              # Tag to the names to avoid overlap
-queueForDaemon   = 'cmscaf1nw'                 # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
+NameTag          = 'MC_'                # Tag to the names to avoid overlap
+queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations = 13
+nIterations = 1
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
@@ -200,7 +202,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file ='goodrunlist_json2012D.txt'
 #isNewTag=True
 #HLTResults = 'True'
-#is2012 = True
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
@@ -249,7 +250,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #isNewTag=True
 #json_file ='goodrunlist_json2012C.txt'
 #HLTResults = 'True'
-#is2012 = True
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
@@ -294,7 +294,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file ='goodrunlist_json2012C.txt'
 #isNewTag=True
 #HLTResults = 'True'
-#is2012 = True
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
@@ -335,7 +334,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file ='goodrunlist_json2012C.txt'
 #isNewTag=True
 #HLTResults = 'True'
-#is2012 = True
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
@@ -376,7 +374,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file ='goodrunlist_json2011.txt'
 #HLTResults = 'False'
 #is_2011 = 'True'
-#is2012 = False
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -402,7 +399,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file = 'goodrunlist_json2010.txt'
 #HLTResults = 'False'
 #is_2011 = 'False'
-#is2012 = False
 #l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
@@ -427,7 +423,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'
 #json_file = ''
 #is_2011 = 'False'
-#is2012 = False
 #l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
@@ -446,7 +441,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'
 #json_file = ''
 #is_2011 = 'False'
-#is2012 = False
 #l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
@@ -465,7 +459,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 #json_file = ''
 #is_2011 = 'False'                                             # Fit Parameter Range
-#is2012 = True                                                 # Scram evironment, Hadd on 424 if True,
 #l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
 #overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 #doEnenerScale='False'
@@ -479,34 +472,32 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #globaltag='MCRUN2_72_V1A::All'
 #HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
 
-# MC 40bx25 HLT ALCARAW
-HLTResults = 'False'
-json_file = ''
-is_2011 = 'False'
-is2012 = False
-l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
-overWriteGlobalTag = False
-doEnenerScale='False'
-doIC='False'
-doLaserCorr="False"
-ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
-eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
-esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
-useHLTFilter = "False"
-correctHits = 'False'
-globaltag='POSTLS162_V2::All'
-HLTPaths='AlCa_EcalPi0_*'
+## MC 40bx25 HLT ALCARAW
+#HLTResults = 'False'
+#json_file = ''
+#is_2011 = 'False'
+#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
+#overWriteGlobalTag = False
+#doEnenerScale='False'
+#doIC='False'
+#doLaserCorr="False"
+#ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+#eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
+#esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+#useHLTFilter = "False"
+#correctHits = 'False'
+#globaltag='POSTLS162_V2::All'
+#HLTPaths='AlCa_EcalPi0_*'
 
 ##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
 HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 json_file = ''
 is_2011 = 'False'                                             # Fit Parameter Range
-is2012 = True                                                 # Scram evironment, Hadd on 424 if True,
-l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
+l1InputTag = "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
 overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale='False'
 doIC='False'                                                  # Member of Recalibration Module
-doLaserCorr="True"                                            # Member of Recalibration Module
+doLaserCorr="False"                                           # Member of Recalibration Module
 ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
 eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
 esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"

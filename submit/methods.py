@@ -5,12 +5,14 @@ def printFillCfg1( outputfile ):
     outputfile.write("correctHits = " + correctHits + "\n\n")
     outputfile.write('import FWCore.ParameterSet.Config as cms\n')
     outputfile.write('import RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi\n')
+    outputfile.write("import os, sys, imp, re\n")
+    outputfile.write('CMSSW_VERSION=os.getenv("CMSSW_VERSION")\n')
     outputfile.write('process = cms.Process("analyzerFillEpsilon")\n')
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
-    if(is2012):
-        outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n\n')
-    else:
-        outputfile.write('process.load("Configuration.StandardSequences.GeometryIdeal_cff")\n\n')
+    outputfile.write('if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):\n')
+    outputfile.write('   process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
+    outputfile.write('else:\n')
+    outputfile.write('   process.load("Configuration.StandardSequences.GeometryIdeal_cff")\n\n')
     outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
 
@@ -80,23 +82,21 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    )\n")
     outputfile.write(")\n")
     outputfile.write("\n")
-    outputfile.write("import os, sys, imp, re\n")
-    outputfile.write('CMSSW_VERSION=os.getenv("CMSSW_VERSION")\n')
-    outputfile.write("if(len('" + json_file + "')>0):\n")
-    outputfile.write('   if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):\n')
-    outputfile.write("      import FWCore.PythonUtilities.LumiList as LumiList\n")
-    if (isCRAB):
-        outputfile.write("      process.source.lumisToProcess = LumiList.LumiList(filename = 'CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
-    else:
-        outputfile.write("      process.source.lumisToProcess = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
-    outputfile.write("   else:\n")
-    outputfile.write("      import PhysicsTools.PythonAnalysis.LumiList as LumiList\n")
-    if (isCRAB):
-        outputfile.write("      myLumis = LumiList.LumiList(filename = 'CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
-    else:
-        outputfile.write("      myLumis = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
-    outputfile.write("      process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
-    outputfile.write("      process.source.lumisToProcess.extend(myLumis)\n")
+    if(len(json_file)>0):
+       outputfile.write('if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):\n')
+       outputfile.write("   import FWCore.PythonUtilities.LumiList as LumiList\n")
+       if (isCRAB):
+           outputfile.write("   process.source.lumisToProcess = LumiList.LumiList(filename = 'CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
+       else:
+           outputfile.write("   process.source.lumisToProcess = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
+       outputfile.write("else:\n")
+       outputfile.write("   import PhysicsTools.PythonAnalysis.LumiList as LumiList\n")
+       if (isCRAB):
+           outputfile.write("   myLumis = LumiList.LumiList(filename = 'CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
+       else:
+           outputfile.write("   myLumis = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
+       outputfile.write("   process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
+       outputfile.write("   process.source.lumisToProcess.extend(myLumis)\n")
     outputfile.write("\n")
     outputfile.write("process.analyzerFillEpsilon = cms.EDAnalyzer('FillEpsilonPlot')\n")
     outputfile.write("process.analyzerFillEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
@@ -238,10 +238,10 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
-    if(is2012):
-        outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-    else:       
-        outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+    #if(is2012):
+    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
+    #else:       
+    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
     outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
@@ -255,14 +255,14 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
-    if(is2012):
-        outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-    else:       
-        outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+    #if(is2012):
+    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
+    #else:       
+    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.csh\n")
     outputfile.write("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.csh\n")
-    outputfile.write("setenv X509_USER_PROXY /afs/cern.ch/user/l/lpernie/private/x509up_u12147\n")
+    outputfile.write("setenv X509_USER_PROXY " + CRAB_CopyCert + "\n")
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
@@ -294,7 +294,7 @@ def printCrab(outputfile, iter):
     outputfile.write("copy_data=1\n")
     outputfile.write("storage_element = srm-eoscms.cern.ch\n")
     outputfile.write("storage_path=/srm/v2/server?SFN=/eos/cms/store\n")
-    outputfile.write("user_remote_dir=group/alca_ecalcalib/lpernie/" + dirname + "/iter_" + str(iter) + "\n")
+    outputfile.write("user_remote_dir=" + CRAB_Storage + dirname + "/iter_" + str(iter) + "\n")
     outputfile.write("check_user_remote_dir=0\n")
     outputfile.write("\n")
     outputfile.write("[CRAB]\n")
@@ -305,14 +305,18 @@ def printCrab(outputfile, iter):
 def printCrabHadd(outputfile, iter, pwd):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
-    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+    #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("echo 'python calibJobHandler.py CRAB " + iter + " " + queue + "'\n")
     outputfile.write("python calibJobHandler.py CRAB " + iter + " " + queue + "\n")
 
 def printParallelHadd(outputfile, outFile, list, destination, pwd):
+    import os, sys, imp, re
+    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(is2012):
+    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
+         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
+         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")
@@ -325,8 +329,12 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
     outputfile.write("rm -f /tmp/" + outFile + "\n")
 
 def printFinalHadd(outputfile, list, destination, pwd):
+    import os, sys, imp, re
+    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(is2012):
+    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
+         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
+         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
     else:
          outputfile.write("cd " + pwd + "\n")

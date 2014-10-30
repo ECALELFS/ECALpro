@@ -240,10 +240,10 @@ env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("ulimit -c 0\n")
-if(is2012):
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-else:
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+#if(is2012):
+#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
+#else:
+#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
 
 env_script_f.write("eval `scramv1 runtime -sh`\n")
 env_script_f.write( "python " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
