@@ -6,7 +6,7 @@ ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
 
 #Are Pi0
-Are_pi0  = True # True = using Pi0, False = using Eta
+Are_pi0  = False # True = using Pi0, False = using Eta
 #IS CRAB
 isCRAB = False
 CRAB_Data_Path = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
@@ -22,8 +22,9 @@ eosPath = '/store/caf/user/lpernie'
 #eosPath = '/store/group/alca_ecalcalib/lpernie/'
 if(isCRAB):
    eosPath = '/store/group/alca_ecalcalib/lpernie/'
-inputlist_n      = 'ALL_NEUT_GUN_Josh_MINBIAS_PIZERO_ALCARAW_NOL1_v2.list' # list of the input files
-dirname          = 'ALL_Josh_MINBIAS_PIZERO_ALCARAW_NOL1_01'
+inputlist_n      = 'ALL_MINBIAS_PIZERO_ALCARAW_NO_UNCAL.list' # list of the input files
+dirname          = 'ALL_MINBIAS_ETA_ALCARAW_NO_UNCAL_01'
+
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = 'MC_'                # Tag to the names to avoid overlap
@@ -83,7 +84,7 @@ if(Are_pi0):
       Pi0PtCutEB_low = '1'
       gPtCutEB_low = '.4'
       Pi0IsoCutEB_low = '0.0'
-      Pi0HLTIsoCutEB_low = "2"
+      Pi0HLTIsoCutEB_low = "999"
       nXtal_1_EB_low = '0'
       nXtal_2_EB_low = '0'
       S4S9_EB_low = '0.6'
@@ -91,7 +92,7 @@ if(Are_pi0):
       Pi0PtCutEB_high = '1.0'
       gPtCutEB_high = '.4'
       Pi0IsoCutEB_high = '0.0'
-      Pi0HLTIsoCutEB_high = '2'
+      Pi0HLTIsoCutEB_high = '999'
       nXtal_1_EB_high = '0'
       nXtal_2_EB_high = '0'
       S4S9_EB_high = '0.6'
@@ -100,18 +101,48 @@ if(Are_pi0):
       gPtCutEE_low = '.4'
       Pi0IsoCutEE_low = '.0'
       Pi0HLTIsoCutEE_low = '999'
-      nXtal_1_EE_low = '3'
-      nXtal_2_EE_low = '2'
+      nXtal_1_EE_low = '0'
+      nXtal_2_EE_low = '0'
       S4S9_EE_low = '0.6'
       #high eta EE
       Pi0PtCutEE_high = '1.0'
       gPtCutEE_high = '0.4'
       Pi0IsoCutEE_high = '0.0'
       Pi0HLTIsoCutEE_high = '999'
-      nXtal_1_EE_high = '3'
-      nXtal_2_EE_high = '2'
+      nXtal_1_EE_high = '0'
+      nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
-   if(isMC and MakeNtuple4optimization):
+#ETA
+else:
+   #inner barrel
+   Pi0PtCutEB_low = '3.2'
+   gPtCutEB_low = '1.4'
+   Pi0IsoCutEB_low = '0.'
+   nXtal_1_EB_low = '6'
+   nXtal_2_EB_low = '4'
+   S4S9_EB_low = '0.8'
+   #outer barrel
+   Pi0PtCutEB_high = '3.2'
+   gPtCutEB_high = '1.4'
+   Pi0IsoCutEB_high = '0.8'
+   nXtal_1_EB_high = '6'
+   nXtal_2_EB_high = '4'
+   S4S9_EB_high = '0.8'
+   #low eta EE
+   Pi0PtCutEE_low = '3.2'
+   gPtCutEE_low = '1.4'
+   Pi0IsoCutEE_low = '0.25'
+   nXtal_1_EE_low = '6'
+   nXtal_2_EE_low = '4'
+   S4S9_EE_low = '0.85'   
+   #high eta EE
+   Pi0PtCutEE_high = '3.2'
+   gPtCutEE_high = '1.4'
+   Pi0IsoCutEE_high = '0.25'
+   nXtal_1_EE_high = '6'
+   nXtal_2_EE_high = '4'
+   S4S9_EE_high = '0.85'
+   if MakeNtuple4optimization:
       #inner barrel
       Pi0PtCutEB_low = '1'
       gPtCutEB_low = '.4'
@@ -144,33 +175,6 @@ if(Are_pi0):
       nXtal_1_EE_high = '0'
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
-#ETA
-else:
-   Pi0PtCutEB = '3.2'
-   Pi0PtCutEE = '3.2'
-   gPtCutEB = '1.4'
-   gPtCutEE = '1.4'
-   Pi0IsoCutEB = '0.1'
-   Pi0IsoCutEE = '0.25'
-   nXtal_1_EB = '5'
-   nXtal_2_EB = '4'
-   nXtal_1_EE = '7'
-   nXtal_2_EE = '5'
-   S4S9_EB = '0.9'
-   S4S9_EE = '0.9'
-   if(isMC and MakeNtuple4optimization):
-      Pi0PtCutEB = '1.'
-      Pi0PtCutEE = '1.'
-      gPtCutEB = '0.4'
-      gPtCutEE = '0.4'
-      Pi0IsoCutEB = '0.'
-      Pi0IsoCutEE = '0.'
-      nXtal_1_EB = '0'
-      nXtal_2_EB = '0'
-      nXtal_1_EE = '0'
-      nXtal_2_EE = '0'
-      S4S9_EB = '0.6'
-      S4S9_EE = '0.6'
 #containment corrections
 useEBContainmentCorrections = 'True'
 useEEContainmentCorrections = 'False'
@@ -492,15 +496,20 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 ##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
 HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 json_file = ''
-is_2011 = 'False'                                             # Fit Parameter Range
+is_2011 = 'False'                                            # Fit Parameter Range
 l1InputTag = "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
 overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale='False'
 doIC='False'                                                  # Member of Recalibration Module
-doLaserCorr="False"                                           # Member of Recalibration Module
-ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
-eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEB','TEST')"
-esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+doLaserCorr="False"
+if(Are_pi0):                                           # Member of Recalibration Module
+   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
+   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','TEST')"
+   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+else:
+   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
+   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
+   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
 useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits = 'False'
 globaltag='MCRUN2_72_V1A::All'

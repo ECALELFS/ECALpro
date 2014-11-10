@@ -1091,8 +1091,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
-	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi(); //int iSMod_1 = id_1.ism();
-	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi(); //int iSMod_2 = id_2.ism();
+	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
+	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
+#ifdef MVA_REGRESSIO_Tree
+int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
+#endif
+
 	  bool Inverted=false;
 
 	  if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
@@ -1104,14 +1108,16 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
 	    iEta1=id_2.ieta(); iEta2 = id_1.ieta();
 	    iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
-	    //iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
+#ifdef MVA_REGRESSIO_Tree
+	    iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
+#endif
 	    ind1=j; ind2=i;
 	    Inverted=true;
 	  }
 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
-	    float value_pi01[14];//#
+	    float value_pi01[14];
 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB[ind1] );
@@ -1420,7 +1426,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #endif
 	//Check the Conteinment correction for Barrel
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
-	if( pi0P4.mass()>0.11 && pi0P4.mass()<0.17 ){
+	if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.28:0.75) ){
 	  if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) TTree_JoshMva->Fill();
 	}
 #endif
