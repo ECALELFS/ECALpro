@@ -2,6 +2,7 @@
 nEventsPerJob = '-1'
 outputFile    = 'EcalNtp' # without .root suffix
 calibMapName = 'calibMap.root'
+GeometryFromFile = False
 ExternalGeometry = 'caloGeometry.root'
 CalibType  = 'xtal'
 
@@ -23,7 +24,7 @@ eosPath = '/store/caf/user/lpernie'
 if(isCRAB):
    eosPath = '/store/group/alca_ecalcalib/lpernie/'
 inputlist_n      = 'ALL_MINBIAS_PIZERO_ALCARAW_NO_UNCAL.list' # list of the input files
-dirname          = 'ALL_MINBIAS_ETA_ALCARAW_NO_UNCAL_01'
+dirname          = 'ALL_MINBIAS_ETA_ALCARAW_NO_UNCAL_01_TryL1Geom'
 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
@@ -39,8 +40,10 @@ Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','
 #Remove Xtral Dead
 RemoveDead_Flag = "False"
 RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
-#L1Seeds
-L1Seed = "" #You can ask "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
+#L1 Bit Collection
+L1TriggerInfo = False;                     # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != "")
+hltGtDigis = 'InputTag("hltGtDigis")'     # To take the info to Fill the L1 Bit histo
+L1Seed = ""                               # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
 #Seeds (Comment if you want the std ones)
 EB_Seed_E    = '0.5'
@@ -510,6 +513,7 @@ else:
    ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
    eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
    esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
+hltGtDigis = "InputTag('TriggerResults','','TEST')"
 useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits = 'False'
 globaltag='MCRUN2_72_V1A::All'

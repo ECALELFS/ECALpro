@@ -86,12 +86,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double min( double a, double b);
 
       TH1F** initializeEpsilonHistograms(const char *name, const char *title, int size );
-      void  deleteEpsilonPlot(TH1F **h, int size);
-      void  writeEpsilonPlot(TH1F **h, const char *folder, int size);
+      void deleteEpsilonPlot(TH1F **h, int size);
+      void writeEpsilonPlot(TH1F **h, const char *folder, int size);
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       bool getTriggerByName( std::string s );
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
-      //bool CheckL1Seed(const edm::Event& iEvent, std::string s);
 
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
       void  EBPHI_Cont_Corr_load(std::string FileName );
@@ -111,6 +110,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
+      bool GeometryFromFile_;
 
       std::string outfilename_;
       std::string externalGeometry_;
@@ -133,9 +133,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool HLTResults_;
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
+      TString L1_Bit_Sele_;
 
       //std::string L1Seed_;
       bool Are_pi0_;
+      bool L1TriggerInfo_;
       edm::InputTag EBRecHitCollectionTag_;
       edm::InputTag EERecHitCollectionTag_;
       edm::InputTag ESRecHitCollectionTag_;

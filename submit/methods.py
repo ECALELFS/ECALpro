@@ -137,7 +137,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.ESRecHitCollectionTag = cms.untracked." + esInputTag + "\n")
     outputfile.write("process.analyzerFillEpsilon.l1InputTag = cms.untracked." + l1InputTag + "\n")
 
-    outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked.InputTag('hltGtDigis')\n")
+    outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked." + hltGtDigis + "\n")
     outputfile.write("process.analyzerFillEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
     outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
     if( EB_Seed_E!='' ):
@@ -179,23 +179,29 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.S4S9_EE_high = cms.untracked.double(" + S4S9_EE_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     outputfile.write("process.analyzerFillEpsilon.AlcaL1TrigNames = cms.untracked.vstring('L1_SingleIsoEG5','L1_SingleIsoEG8','L1_SingleIsoEG10','L1_SingleIsoEG12','L1_SingleIsoEG15','L1_SingleEG2','L1_SingleEG5','L1_SingleEG8','L1_SingleEG10','L1_SingleEG12','L1_SingleEG15','L1_SingleEG20','L1_SingleJet6U','L1_SingleJet10U','L1_SingleJet20U','L1_SingleJet30U','L1_SingleJet40U','L1_SingleJet50U','L1_DoubleJet30U','L1_DoubleEG5','L1_DoubleEG2')\n\n")
+    if GeometryFromFile:
+       outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
     if MakeNtuple4optimization:
        outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
-    if not( L1Seed=='' ):       
-       outputfile.write("process.L1SeedSele = cms.EDFilter( 'HLTLevel1GTSeed',\n")
-       outputfile.write("    L1SeedsLogicalExpression = cms.string( '" + L1Seed + "' ), #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')\n")
-       outputfile.write("    saveTags = cms.bool( True ),\n")
-       outputfile.write("    L1MuonCollectionTag = cms.InputTag( 'hltL1extraParticles' ),\n")
-       outputfile.write("    L1UseL1TriggerObjectMaps = cms.bool( True ),\n")
-       outputfile.write("    L1UseAliasesForSeeding = cms.bool( True ),\n")
-       outputfile.write("    L1GtReadoutRecordTag = cms.InputTag( 'hltGtDigis' ),\n")
-       outputfile.write("    L1CollectionsTag = cms.InputTag( 'hltL1extraParticles' ),\n")
-       outputfile.write("    L1NrBxInEvent = cms.int32( 3 ),\n")
-       outputfile.write("    L1GtObjectMapTag = cms.InputTag( 'hltL1GtObjectMap' ),\n")
-       outputfile.write("    L1TechTriggerSeeding = cms.bool( False )\n")
-       outputfile.write(")\n")
+    if( L1TriggerInfo ):
+        outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
+    if not( L1Seed=='' ):
+        outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
+    #if not( L1Seed=='' ):       
+    #   outputfile.write("process.L1SeedSele = cms.EDFilter( 'HLTLevel1GTSeed',\n")
+    #   outputfile.write("    L1SeedsLogicalExpression = cms.string( '" + L1Seed + "' ), #You can also request a OR ('L1_SingleJet16 OR L1_SingleJet36')\n")
+    #   outputfile.write("    saveTags = cms.bool( True ),\n")
+    #   outputfile.write("    L1MuonCollectionTag = cms.InputTag( 'hltL1extraParticles' ),\n")
+    #   outputfile.write("    L1UseL1TriggerObjectMaps = cms.bool( True ),\n")
+    #   outputfile.write("    L1UseAliasesForSeeding = cms.bool( True ),\n")
+    #   outputfile.write("    L1GtReadoutRecordTag = cms.InputTag( 'hltGtDigis' ),\n")
+    #   outputfile.write("    L1CollectionsTag = cms.InputTag( 'hltL1extraParticles' ),\n")
+    #   outputfile.write("    L1NrBxInEvent = cms.int32( 3 ),\n")
+    #   outputfile.write("    L1GtObjectMapTag = cms.InputTag( 'hltL1GtObjectMap' ),\n")
+    #   outputfile.write("    L1TechTriggerSeeding = cms.bool( False )\n")
+    #   outputfile.write(")\n")
     outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
@@ -205,8 +211,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
     outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
-    if not( L1Seed=='' ):
-       outputfile.write("process.p *= process.L1SeedSele\n")
+    #if not( L1Seed=='' ):
+    #   outputfile.write("process.p *= process.L1SeedSele\n")
     outputfile.write("process.p *= process.analyzerFillEpsilon\n")
 
 

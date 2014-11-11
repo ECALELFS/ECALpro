@@ -117,8 +117,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     RemoveDead_Flag_                   = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
     RemoveDead_Map_                    = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
-    //L1Seed_                            = iConfig.getUntrackedParameter<std::string>("L1Seed");
+    L1_Bit_Sele_                       = iConfig.getUntrackedParameter<std::string>("L1_Bit_Sele","");
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
+    L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
     l1InputTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("l1InputTag",edm::InputTag("hltGtDigis"));
@@ -176,6 +177,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     SystOrNot_                         = iConfig.getUntrackedParameter<double>("SystOrNot",0);
     isMC_                              = iConfig.getUntrackedParameter<bool>("isMC",false);
     MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
+    GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
 
     if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
     else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
@@ -195,7 +197,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// shower shape parameters
     PCparams_.param_LogWeighted_ = true;
-    //PCparams_.param_T0_barl_     = 5.7;
     PCparams_.param_T0_barl_     = 7.4;
     PCparams_.param_T0_endc_     = 3.1;
     PCparams_.param_T0_endcES_   = 1.2;
@@ -211,13 +212,13 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     cout << "crosscheck: selected type: " << regionalCalibration_->printType() << endl;
 
     /// external hardcoded geometry
+
     externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
     if(!externalGeometryFile_) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
     GeometryService::setGeometryName(externalGeometry_);
     GeometryService::setGeometryPtr(geom_);
-
-    /// containment corrections
+    // containment corrections
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEEContainmentCorrections_)
 	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath() );
@@ -431,13 +432,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 #ifdef DEBUG
   cout << "\n --------------- [DEBUG] Beginning New Event ------------------"<< endl;
 #endif
-  //Preselection
-  //if( calibMapPath_.find("iter_-1")!=std::string::npos ){
-  //  FailPreselEB = true;
-  //  FailPreselEE = true;
-  //  PassPreselection[iEvent.id().event()] = true;
-  //}
-  //if( calibMapPath_.find("iter_-1")==std::string::npos && !PassPreselection.find(iEvent.id().event())->second ) return;
   using namespace edm;
   nPi0=0;
   //For Syst error SystOrNot_=1 or 2, for normal calib is 0
@@ -447,18 +441,15 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
   iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);
   iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);
-  //ES
+  //Internal Geometry
   edm::ESHandle<CaloGeometry> geoHandle;
   iSetup.get<CaloGeometryRecord>().get(geoHandle);
   geometry = geoHandle.product();
   estopology_ = new EcalPreshowerTopology(geoHandle);
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
+  //L1 Trigget bit list (and cut if L1_Bit_Sele_ is not empty)
+  if( L1TriggerInfo_ ){ if( !getTriggerResult(iEvent, iSetup) ) return; }
 
-  /// ------ EB CLUSTERS -------
-  //if( !getTriggerResult(iEvent, iSetup)) return;
-
-  //JSON FILE
-  //if ( !myjson->isGoodLS( iEvent.id().run() , iEvent.luminosityBlock() ) ) return;
   //Vectors
   std::vector< CaloCluster > ebclusters;
   ebclusters.clear();
@@ -484,8 +475,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	EE_HLT = GetHLTResults(iEvent, "AlCa_EcalEtaEEonly_*");
     }
   }
-  //bool L1Flag=true;
-  //if( L1Seed_!="" ){ L1Flag = CheckL1Seed(iEvent, L1Seed_); }
   //get status from DB
   edm::ESHandle<EcalChannelStatus> csHandle;
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
@@ -594,7 +583,13 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     // Calculate shower depth
     float T0 = PCparams_.param_T0_barl_;
     float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
-    float maxToFront = geom_->getPosition(seed_id).mag(); // to front face
+    float maxToFront;
+    if( GeometryFromFile_ ) maxToFront = geom_->getPosition(seed_id).mag(); // to front face
+    else                  {
+	const CaloCellGeometry* cell=geometry->getGeometry( seed_id );
+	GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+	maxToFront = posit.mag();
+    }
 #ifdef MVA_REGRESSIO
     double EnergyCristals[9] = {0.};
 #endif
@@ -643,9 +638,20 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	if(en>0.) 
 	{
 	  float weight = std::max( float(0.), PCparams_.param_W0_ + log(en/posTotalEnergy) );
-
-	  float depth = maxDepth + maxToFront - geom_->getPosition(det).mag() ;
-	  GlobalPoint posThis = geom_->getPosition(det,depth);
+	  float pos_geo;
+	  if( GeometryFromFile_ ) pos_geo = geom_->getPosition(det).mag(); // to front face
+	  else                  {
+	    const CaloCellGeometry* cell=geometry->getGeometry(det);
+	    GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+	    pos_geo = posit.mag();
+	  }
+	  float depth = maxDepth + maxToFront - pos_geo;
+	  GlobalPoint posThis;
+	  if( GeometryFromFile_ ) posThis = geom_->getPosition(det,depth);
+	  else{
+	    const CaloCellGeometry* cell=geometry->getGeometry(det);
+	    posThis = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( depth );
+	  }
 
 	  xclu += weight*posThis.x(); 
 	  yclu += weight*posThis.y(); 
@@ -737,20 +743,16 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
   // sort by energy and find the eeseeds
   //bool found=false;
   for(EERecHitCollection::const_iterator ite= eeHandle->begin(); ite != eeHandle->end(); ++ite, ++dc) {
-    int idXtal= ite->id();
-    float posTotalEnergy(ite->energy());
-    float T0 = PCparams_.param_T0_barl_;
-    float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
-    float maxToFront = geom_->getPosition(idXtal).mag(); // to front face
-    float depth = maxDepth + maxToFront - geom_->getPosition(idXtal).mag() ;
-    GlobalPoint posThis = geom_->getPosition(idXtal,depth);
+    EEDetId idXtal( ite->id() );
+    GlobalPoint posThis;
+    if( GeometryFromFile_ ) posThis = geom_->getPosition(idXtal,0.);
+    else{
+	const CaloCellGeometry* cell=geometry->getGeometry(idXtal);
+	posThis = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+    }
     if( useEE_EtSeed_ ){ if(ite->energy()/cosh(posThis.eta()) > EE_Seed_Et_ )              eeseeds.push_back( *ite ); }
     else               { if(ite->energy()                     > EE_Seed_E_  )              eeseeds.push_back( *ite ); }
-    //if(ite->energy()/cosh(posThis.eta()) > 0.5-0.5*(42.5/100))    found=true;
   } // loop over xtals
-  //Preselection
-  //if(found) FailPreselEE = false;
-  //else      FailPreselEE = true;
 
 #ifdef SELECTION_TREE
   Fill_NSeeds_EE(eeseeds.size());
@@ -830,7 +832,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     // Calculate shower depth
     float T0 = PCparams_.param_T0_endc_;
     float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
-    float maxToFront = geom_->getPosition(eeseed_id).mag(); // to front face
+    float maxToFront;
+    if( GeometryFromFile_ ) maxToFront = geom_->getPosition(eeseed_id).mag(); // to front face
+    else                   {
+	const CaloCellGeometry* cell=geometry->getGeometry( eeseed_id );
+	GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+	maxToFront = posit.mag();
+    }
 #ifdef MVA_REGRESSIO_EE
     double EnergyCristals[9] = {0.};
 #endif
@@ -871,10 +879,20 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	if(en>0.) 
 	{
 	  float weight = std::max( float(0.), PCparams_.param_W0_ + log(en/posTotalEnergy) );
-
-	  float depth = maxDepth + maxToFront - geom_->getPosition(det).mag() ;
-	  GlobalPoint posThis = geom_->getPosition(det,depth);
-
+	  float pos_geo;
+	  if( GeometryFromFile_ ) pos_geo = geom_->getPosition(det).mag();
+	  else                   {
+	    const CaloCellGeometry* cell=geometry->getGeometry(det);
+	    GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+	    pos_geo = posit.mag();
+	  }
+	  float depth = maxDepth + maxToFront - pos_geo;
+	  GlobalPoint posThis;
+	  if( GeometryFromFile_ ) posThis = geom_->getPosition(det,depth);
+	  else{
+	    const CaloCellGeometry* cell=geometry->getGeometry(det);
+	    posThis = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( depth );
+	  }
 	  xclu += weight*posThis.x(); 
 	  yclu += weight*posThis.y(); 
 	  zclu += weight*posThis.z(); 
@@ -1389,7 +1407,7 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(3.);
 	else                       EventFlow_EE->Fill(3.);
 #ifdef DEBUG
-	cout << "[DEBUG] Fill Optimization Variables...?" << endl;
+	cout << "[DEBUG] Fill Optimization Variables..." << endl;
 #endif
 	//Fill Optimization
 	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.35) && pi0P4.mass() < ((Are_pi0_)?0.25:0.7) ){
@@ -1493,6 +1511,9 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
   void 
 FillEpsilonPlot::beginJob()
 {
+#ifdef DEBUG
+	cout << "[DEBUG] beginJob" << endl;
+#endif
   /// testing the EE eta ring
   TH2F eep("eep","EE+",102,0.5,101.5,102,-0.5,101.5);
   TH2F eem("eem","EE-",102,0.5,101.5,102,-0.5,101.5);
@@ -1614,8 +1635,7 @@ FillEpsilonPlot::DeltaPhi(float phi1, float phi2){
 
 }
 
-bool
-FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
+bool FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
 
   edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
   iEvent.getByLabel(triggerTag_, hltTriggerResultHandle);
@@ -1639,125 +1659,40 @@ FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
   return false;
 } // HLT isValid
 
-//bool
-//FillEpsilonPlot::CheckL1Seed(const edm::Event& iEvent, std::string s){
-//
-//  edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
-//  iEvent.getByLabel(triggerTag_, hltTriggerResultHandle);
-//  //Algo and Technical L1 bits
-//  edm::TriggerNames HLTNames;
-//  HLTNames = iEvent.triggerNames(*hltTriggerResultHandle);
-//  unsigned npaths = hltTriggerResultHandle->size();
-//
-//  TBits * hltBits = new TBits( npaths );
-//  for( unsigned ipath=0; ipath<npaths; ipath++ )
-//  {
-//    string pathName=HLTNames.triggerName(ipath);
-//    bool accept = hltTriggerResultHandle->accept(ipath);
-//    const edm::HLTPathStatus & status = hltTriggerResultHandle->at(ipath);
-//    int state = status.state();
-////cout<<"L1::Name: "<<pathName<<" Status: "<<state<<endl;
-////    if( true ){
-////	cout << "\tpath[" << status.index() << "," << pathName << "]=";
-////	cout << ( (accept) ? "ok" : "not ok" );
-////	switch( state )
-////	{
-////	  case edm::hlt::Ready: cout << "\t---> Not Run Yet" ; break;
-////	  case edm::hlt::Pass: cout << "\t---> Passed" ; break;
-////	  case edm::hlt::Fail: cout << "\t---> Failed" ; break;
-////	  case edm::hlt::Exception: cout << "\t---> Error" ; break;
-////	  default: cout << "\t---> Unknown State" ;
-////	}
-////	cout << endl;
-////    }
-//    hltBits->SetBitNumber( ipath, accept );
-//  }
-//  delete hltBits;
-//  //L1 trigger
-//  edm::Handle < L1GlobalTriggerReadoutRecord > l1GtReadoutRecord;
-//  iEvent.getByLabel(l1InputTag_, l1GtReadoutRecord);
-//  assert( l1GtReadoutRecord.isValid() );
-//  //prova form Josh
-////  const L1GlobalTriggerReadoutRecord *l1trig = l1GtReadoutRecord.product();
-////  //vector<int> l1_vector; l1_vector.clear();
-////  for(int i=0; i<128; i++ ){
-////    const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
-////    cout<<"a "<<trg->algoBitNumber()<<" b "<<trg->algoName()<<" c "<<trg->algoGtlResult()<<endl;
-////    //if ( trg.algoGtlResult() ) l1_vector.push_back(1);
-////    //else                       l1_vector.push_back(0);
-////  }
-//  //prova
-//  //std::ostream& myCout;
-//  //l1GtReadoutRecord->printGtDecision(std::cout);
-//  DecisionWord algoWord = l1GtReadoutRecord->decisionWord();
-//  TechnicalTriggerWord techWord = l1GtReadoutRecord->technicalTriggerWord();
-//  TBits * l1TechBits = new TBits( techWord.size() );
-//  // Loop over the technical bits
-//  for (size_t ibit = 0; ibit < techWord.size(); ++ibit)
-//  {
-//    l1TechBits->SetBitNumber( ibit, techWord[ibit] );
-//    cout<<"Printing n "<<ibit<<" on "<<techWord.size()<<endl;
-//    l1GtReadoutRecord->printGtDecision(std::cout,ibit);
-//  }
-//  TBits * l1AlgoBits = new TBits( algoWord.size() );
-//  // Loop over the algo bits
-//  for (size_t ibit = 0; ibit < algoWord.size(); ++ibit)
-//  {
-//    l1AlgoBits->SetBitNumber( ibit, algoWord[ibit] );
-//  }
-//  delete l1TechBits;
-//  delete l1AlgoBits;
-//  return false;
-//}
-
-bool
-FillEpsilonPlot::getTriggerByName( std::string s ) {
+bool FillEpsilonPlot::getTriggerByName( std::string s ) {
   std::map< std::string, int >::iterator currentTrigger;
   currentTrigger = l1TrigNames_.find(s);
   if(currentTrigger != l1TrigNames_.end())
     return l1TrigBit_[currentTrigger->second];
   else 
     std::cout << "Trigger Name not found" << std::endl;
-
   return false;
 }
 
-bool 
-FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // trigger Handles
   edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
   iEvent.getByLabel( l1TriggerTag_, gtReadoutRecord);
-
   const DecisionWord& gtDecisionWord = gtReadoutRecord->decisionWord();
-
-  //int nL1bits = int( gtDecisionWord.size() );
-
   int thisBit =0;
-
   for (std::vector<bool>::const_iterator itBit = gtDecisionWord.begin(); itBit != gtDecisionWord.end(); ++itBit, ++thisBit) {
-    //l1TrigBit_[thisBit] = gtDecisionWord.at(thisBit);
     if( gtDecisionWord.at(thisBit) )  
 	triggerComposition->Fill(thisBit);
   }
-  /// referece
-  // edm::ESHandle<L1GtTriggerMenu> menuRcd;
-  // iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-  // const L1GtTriggerMenu* menu = menuRcd.product();
-
-  //bool l1SingleEG2 = menu->gtAlgorithmResult("L1_SingleEG2", gtDecisionWord);
-
-  //return gtDecisionWord.at(l1TrigNames_["L1_SingleEG20"]);
-  return true;
+  if( !L1_Bit_Sele_.Contains("") ){
+    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+    //const L1GtTriggerMenu* menu = menuRcd.product();
+    //bool l1SingleEG2 = menu->gtAlgorithmResult("L1_SingleEG2", gtDecisionWord);
+    return gtDecisionWord.at(l1TrigNames_[L1_Bit_Sele_.Data()]);
+  }
+  else{ return true;}
 }
 
+void FillEpsilonPlot::endJob(){
 
-// ------------ method called once each job just after ending the event loop  ------------
-  void 
-FillEpsilonPlot::endJob() 
-{
   outfile_->cd();
-
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
   TTree_JoshMva->Write();
 #endif
@@ -1773,9 +1708,6 @@ FillEpsilonPlot::endJob()
   if(MakeNtuple4optimization_){
     Tree_Optim->Write();
   }
-  //JSON
-  //hev_TOT->SetBinContent(1,ev_TOT); hev_TOT->Write();
-  //hev_JSON->SetBinContent(1,ev_JSON); hev_JSON->Write();
   EventFlow_EB->Write();
   EventFlow_EE->Write();
   allEpsilon_EB->Write();
@@ -1788,14 +1720,12 @@ FillEpsilonPlot::endJob()
   triggerComposition->Write();
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
-
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
   delete TTree_JoshMva;
 #endif
 #ifdef MVA_REGRESSIO_EE
   delete TTree_JoshMva_EE;
 #endif
-
 }
 
 // ------------ EBPHI LOAD Containment correction  ------------
@@ -1839,14 +1769,11 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
 
 // ------------ method called when starting to processes a run  ------------
   void 
-FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup)
-{
-  if(!isMC_){
+FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
+
     edm::ESHandle<L1GtTriggerMenu> menuRcd;
     iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
     const L1GtTriggerMenu* menu = menuRcd.product();
-
-
     std::map< std::string, int >::iterator currentTrigger;
 
     if(l1TrigNames_.size()>0) {
@@ -1857,33 +1784,23 @@ FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup)
 	    triggerChanged = true;
 	    break;
 	  }
-	  // if(l1TrigNames_[(algo->second).algoName()] != (algo->second).algoBitNumber()) {
-	  //     cout << "Trigger numbering has changed" << endl;
-	  //     l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
-	  // }
 	}
 	if(!triggerChanged) return;
 	cout << "beginRun:: Trigger names / ordering changed" << endl;
     }
-
     cout << "beginRun:: Filling trigger names" << endl;
-
-    /// filling trigger map
+    // filling trigger map
     l1TrigNames_.clear();
     for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
 	l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
-
-	/// using same loop to set trigger histogram labels
+	// using same loop to set trigger histogram labels
 	if(!areLabelsSet_)
 	  triggerComposition->GetXaxis()->SetBinLabel((algo->second).algoBitNumber()+1,(algo->second).algoName().c_str());
     }
-
-    if(!areLabelsSet_)
-    {
+    if(!areLabelsSet_){
 	areLabelsSet_ = true;
 	cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
     }
-  } // ends isMC
 }
 
 bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh){
