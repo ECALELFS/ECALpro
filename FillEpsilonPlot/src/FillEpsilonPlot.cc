@@ -111,6 +111,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     useMassInsteadOfEpsilon_ = 1;
 
     /// parameters from python
+    Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
     EBRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag");
     EERecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
     ESRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
@@ -118,11 +119,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     RemoveDead_Flag_                   = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
     RemoveDead_Map_                    = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
     L1_Bit_Sele_                       = iConfig.getUntrackedParameter<std::string>("L1_Bit_Sele","");
-    Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
-    l1InputTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("l1InputTag",edm::InputTag("hltGtDigis"));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
     MVAEBContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
@@ -190,8 +189,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     cout<<"Cut used: EE HIGH)"<<endl;
     cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_high_[EcalEndcap]<<", Iso: "<<pi0IsoCut_high_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalEndcap]<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
     cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat computation, 1 = yes only even events, 2 = yes only odd events]"<<endl;
-
-    alcaL1TrigNames_ = iConfig.getUntrackedParameter< std::vector<std::string> >("AlcaL1TrigNames"); 
 
     useOnlyEEClusterMatchedWithES_ = iConfig.getUntrackedParameter<bool>("useOnlyEEClusterMatchedWithES"); 
 
@@ -323,35 +320,34 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 #endif
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
-	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,       "STr2_NPi0_rec/I");
-	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,     "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,     "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_HLTIsoPi0_rec",    &Op_HLTIsoPi0_rec,     "STr2_HLTIsoPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_n1CrisPi0_rec", &Op_n1CrisPi0_rec,  "STr2_n1CrisPi0_rec[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_n2CrisPi0_rec", &Op_n2CrisPi0_rec,  "STr2_n2CrisPi0_rec[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_mPi0_rec",      &Op_mPi0_rec,       "STr2_mPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptG1_rec",      &Op_ptG1_rec,       "STr2_ptG1_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptG2_rec",      &Op_ptG2_rec,       "STr2_ptG2_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_etaPi0_rec",    &Op_etaPi0_rec,     "STr2_etaPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptPi0_rec",     &Op_ptPi0_rec,      "STr2_ptPi0_rec[STr2_NPi0_rec]/F");
-	//uncorrected values of pt
-	Tree_Optim->Branch( "STr2_ptPi0_nocor",     &Op_ptPi0_nocor,      "STr2_ptPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptG1_nocor",      &Op_ptG1_nocor,       "STr2_ptG1_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptG2_nocor",      &Op_ptG2_nocor,       "STr2_ptG2_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_mPi0_nocor",      &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,     "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,        "STr2_Es_e1_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,        "STr2_Es_e1_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e2_1",       &Op_Es_e2_1,        "STr2_Es_e2_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e2_2",       &Op_Es_e2_2,        "STr2_Es_e2_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S4S9_1",        &Op_S4S9_1,         "STr2_S4S9_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S4S9_2",        &Op_S4S9_2,         "STr2_S4S9_2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           "STr2_L1Seed[400]/I");
+	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,         "STr2_NPi0_rec/I");
+	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,       "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,       "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_HLTIsoPi0_rec", &Op_HLTIsoPi0_rec,    "STr2_HLTIsoPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_n1CrisPi0_rec", &Op_n1CrisPi0_rec,    "STr2_n1CrisPi0_rec[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_n2CrisPi0_rec", &Op_n2CrisPi0_rec,    "STr2_n2CrisPi0_rec[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "STr2_mPi0_rec",      &Op_mPi0_rec,         "STr2_mPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG1_rec",      &Op_ptG1_rec,         "STr2_ptG1_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG2_rec",      &Op_ptG2_rec,         "STr2_ptG2_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_etaPi0_rec",    &Op_etaPi0_rec,       "STr2_etaPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptPi0_rec",     &Op_ptPi0_rec,        "STr2_ptPi0_rec[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptPi0_nocor",   &Op_ptPi0_nocor,      "STr2_ptPi0_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG1_nocor",    &Op_ptG1_nocor,       "STr2_ptG1_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_ptG2_nocor",    &Op_ptG2_nocor,       "STr2_ptG2_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_mPi0_nocor",    &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,       "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,          "STr2_Es_e1_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,          "STr2_Es_e1_2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e2_1",       &Op_Es_e2_1,          "STr2_Es_e2_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_Es_e2_2",       &Op_Es_e2_2,          "STr2_Es_e2_2[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_S4S9_1",        &Op_S4S9_1,           "STr2_S4S9_1[STr2_NPi0_rec]/F");
+	Tree_Optim->Branch( "STr2_S4S9_2",        &Op_S4S9_2,           "STr2_S4S9_2[STr2_NPi0_rec]/F");
     }
     /// trigger histo
-    triggerComposition = new TH1F("triggerComposition", "Trigger Composition",128,-0.5,127.5);
+    triggerComposition = new TH1F("triggerComposition", "Trigger Composition", NL1SEED, -0.5, NL1SEED-0.5);
     areLabelsSet_ = false;
-
-    //noCorrections_ = true;
+    for(int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
 
 #ifdef MVA_REGRESSIO
     EBweight_file_1 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_01_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta01_.c_str() ).fullPath().c_str() );
@@ -441,12 +437,14 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
   iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);
   iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);
+
   //Internal Geometry
   edm::ESHandle<CaloGeometry> geoHandle;
   iSetup.get<CaloGeometryRecord>().get(geoHandle);
   geometry = geoHandle.product();
   estopology_ = new EcalPreshowerTopology(geoHandle);
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
+
   //L1 Trigget bit list (and cut if L1_Bit_Sele_ is not empty)
   if( L1TriggerInfo_ ){ if( !getTriggerResult(iEvent, iSetup) ) return; }
 
@@ -1500,7 +1498,8 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 	cout << "[DEBUG] Filling Tree" << endl; 
 #endif
   if(MakeNtuple4optimization_){
-    Op_NPi0_rec            = nPi0; 
+    for(int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
+    Op_NPi0_rec = nPi0; 
     Tree_Optim->Fill();
   }
 
@@ -1649,10 +1648,8 @@ bool FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
 
   for (int i = 0 ; i != hltCount; ++i) {
     TString hltName_tstr(HLTNames.triggerName(i));
-    //cout<<"Trigger: "<<hltName_tstr<<endl;
     std::string hltName_str(HLTNames.triggerName(i));
     if ( hltName_tstr.Contains(reg) ){
-	//cout<<hltTriggerResultHandle->accept(i)<<endl;
 	return hltTriggerResultHandle->accept(i);
     }
   }
@@ -1671,20 +1668,17 @@ bool FillEpsilonPlot::getTriggerByName( std::string s ) {
 
 bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  // trigger Handles
   edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
   iEvent.getByLabel( l1TriggerTag_, gtReadoutRecord);
   const DecisionWord& gtDecisionWord = gtReadoutRecord->decisionWord();
   int thisBit =0;
   for (std::vector<bool>::const_iterator itBit = gtDecisionWord.begin(); itBit != gtDecisionWord.end(); ++itBit, ++thisBit) {
-    if( gtDecisionWord.at(thisBit) )  
-	triggerComposition->Fill(thisBit);
+    L1BitCollection_[thisBit] = gtDecisionWord.at(thisBit);
+    if( gtDecisionWord.at(thisBit) ) triggerComposition->Fill(thisBit);
   }
   if( !L1_Bit_Sele_.Contains("") ){
     edm::ESHandle<L1GtTriggerMenu> menuRcd;
     iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-    //const L1GtTriggerMenu* menu = menuRcd.product();
-    //bool l1SingleEG2 = menu->gtAlgorithmResult("L1_SingleEG2", gtDecisionWord);
     return gtDecisionWord.at(l1TrigNames_[L1_Bit_Sele_.Data()]);
   }
   else{ return true;}

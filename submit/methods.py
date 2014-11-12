@@ -138,7 +138,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.l1InputTag = cms.untracked." + l1InputTag + "\n")
 
     outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked." + hltGtDigis + "\n")
-    outputfile.write("process.analyzerFillEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
+    outputfile.write("process.analyzerFillEpsilon.triggerTag   = cms.untracked." + triggerTag + "\n")
+    outputfile.write("process.analyzerFillEpsilon.CalibType    = cms.untracked.string('" + CalibType + "')\n")
     outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
     if( EB_Seed_E!='' ):
         outputfile.write("process.analyzerFillEpsilon.EB_Seed_E = cms.untracked.double(" + EB_Seed_E + ")\n")
@@ -178,7 +179,6 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.S4S9_EE_low = cms.untracked.double(" + S4S9_EE_low + ")\n")
     outputfile.write("process.analyzerFillEpsilon.S4S9_EE_high = cms.untracked.double(" + S4S9_EE_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.AlcaL1TrigNames = cms.untracked.vstring('L1_SingleIsoEG5','L1_SingleIsoEG8','L1_SingleIsoEG10','L1_SingleIsoEG12','L1_SingleIsoEG15','L1_SingleEG2','L1_SingleEG5','L1_SingleEG8','L1_SingleEG10','L1_SingleEG12','L1_SingleEG15','L1_SingleEG20','L1_SingleJet6U','L1_SingleJet10U','L1_SingleJet20U','L1_SingleJet30U','L1_SingleJet40U','L1_SingleJet50U','L1_DoubleJet30U','L1_DoubleEG5','L1_DoubleEG2')\n\n")
     if GeometryFromFile:
        outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
     if isMC:

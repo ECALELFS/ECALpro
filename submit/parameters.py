@@ -41,16 +41,16 @@ Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','
 RemoveDead_Flag = "False"
 RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
 #L1 Bit Collection
-L1TriggerInfo = False;                     # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != "")
-hltGtDigis = 'InputTag("hltGtDigis")'     # To take the info to Fill the L1 Bit histo
-L1Seed = ""                               # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
+L1TriggerInfo = False;                          # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != "")
+hltGtDigis = 'InputTag("simGtDigis")'     # To take the info to Fill the L1 Bit histo
+triggerTag = 'InputTag("TriggerResults")'
+L1Seed = ""                                     # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
-#Seeds (Comment if you want the std ones)
+#Seeds (Comment if you want the standard cuts ones)
 EB_Seed_E    = '0.5'
 useEE_EtSeed = 'False'
 EE_Seed_Et   = '0.5'
 EE_Seed_E    = '1.5'
-
 #Selection
 CutOnHLTIso = "False"
 if(Are_pi0):
@@ -213,7 +213,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #if not(isNewTag):
 #   globaltag='GR_P_V40::All'
 #else:
@@ -261,7 +260,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #if not(isNewTag):
 #   globaltag='GR_P_V42::All'
 #else:
@@ -305,7 +303,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #useHLTFilter="True"
 #correctHits='True'
 #overWriteGlobalTag = True
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #if not(isNewTag):
 #   globaltag='FT_R_53_V6::All'
 #else:
@@ -344,7 +341,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #is_2011 = 'True' #Just for the fit, put true 
 #useHLTFilter="True"
 #correctHits='True'
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = True
 #if not(isNewTag):
 #   globaltag='FT_R_53_V6::All'
@@ -406,7 +402,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #json_file = 'goodrunlist_json2010.txt'
 #HLTResults = 'False'
 #is_2011 = 'False'
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -430,7 +425,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'
 #json_file = ''
 #is_2011 = 'False'
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -448,7 +442,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'
 #json_file = ''
 #is_2011 = 'False'
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -466,7 +459,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 #json_file = ''
 #is_2011 = 'False'                                             # Fit Parameter Range
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
 #overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 #doEnenerScale='False'
 #doIC='False'                                                  # Member of Recalibration Module
@@ -483,7 +475,6 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTResults = 'False'
 #json_file = ''
 #is_2011 = 'False'
-#l1InputTag =  "InputTag('hltGtDigis','', 'HLT')"
 #overWriteGlobalTag = False
 #doEnenerScale='False'
 #doIC='False'
@@ -499,8 +490,7 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 ##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
 HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 json_file = ''
-is_2011 = 'False'                                            # Fit Parameter Range
-l1InputTag = "InputTag('hltGtDigis','', 'HLT')"              # L1 Studies Now all commented
+is_2011 = 'False'                                             # Fit Parameter Range
 overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale='False'
 doIC='False'                                                  # Member of Recalibration Module
@@ -513,7 +503,8 @@ else:
    ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
    eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
    esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
-hltGtDigis = "InputTag('TriggerResults','','TEST')"
+hltGtDigis = "InputTag('simGtDigis','','TEST')"
+triggerTag = 'InputTag("TriggerResults","","TEST")'
 useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits = 'False'
 globaltag='MCRUN2_72_V1A::All'

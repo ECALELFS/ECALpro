@@ -27,6 +27,7 @@
 //#include "CalibCode/FillEpsilonPlot/interface/JSON.h"
 
 #define NPI0MAX 30000
+#define NL1SEED 128
 //#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
@@ -134,8 +135,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
       TString L1_Bit_Sele_;
+      float L1BitCollection_[NL1SEED];
 
-      //std::string L1Seed_;
       bool Are_pi0_;
       bool L1TriggerInfo_;
       edm::InputTag EBRecHitCollectionTag_;
@@ -250,6 +251,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #endif
       TTree*  Tree_Optim;
       Int_t   nPi0;
+      Int_t   Op_L1Seed[NL1SEED];
       Int_t   Op_NPi0_rec;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
       Float_t Op_IsoPi0_rec[NPI0MAX];
@@ -268,7 +270,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_Es_e2_2[NPI0MAX];
       Float_t Op_S4S9_1[NPI0MAX];
       Float_t Op_S4S9_2[NPI0MAX];
-
       Float_t Op_ptG1_nocor[NPI0MAX];
       Float_t Op_ptG2_nocor[NPI0MAX];
       Float_t Op_ptPi0_nocor[NPI0MAX];
@@ -281,7 +282,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F *triggerComposition;
       bool areLabelsSet_;
 
-      std::vector<std::string> alcaL1TrigNames_;
       std::map< std::string, int > l1TrigNames_;
       bool l1TrigBit_[128];
       vector<float> vs4s9;
