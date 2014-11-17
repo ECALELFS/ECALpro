@@ -139,6 +139,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked." + hltGtDigis + "\n")
     outputfile.write("process.analyzerFillEpsilon.triggerTag   = cms.untracked." + triggerTag + "\n")
+    outputfile.write("process.analyzerFillEpsilon.hltL1GtObjectMap   = cms.untracked." + hltL1GtObjectMap + "\n")
     outputfile.write("process.analyzerFillEpsilon.CalibType    = cms.untracked.string('" + CalibType + "')\n")
     outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
     if( EB_Seed_E!='' ):

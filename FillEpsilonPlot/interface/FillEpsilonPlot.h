@@ -144,8 +144,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::InputTag ESRecHitCollectionTag_;
       edm::InputTag l1TriggerTag_;
       edm::InputTag triggerTag_;
+      edm::InputTag hltL1GtObjectMap_;
       edm::InputTag l1InputTag_;
-
+      std::map<string,int> L1_nameAndNumb;
+      
       PosCalcParams PCparams_;
       //const double preshowerStartEta_ =  1.653;
 

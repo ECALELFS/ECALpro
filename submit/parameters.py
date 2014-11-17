@@ -44,6 +44,7 @@ RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/sr
 L1TriggerInfo = False;                          # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != "")
 hltGtDigis = 'InputTag("simGtDigis")'     # To take the info to Fill the L1 Bit histo
 triggerTag = 'InputTag("TriggerResults")'
+hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'
 L1Seed = ""                                     # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
 #Seeds (Comment if you want the standard cuts ones)
@@ -505,6 +506,7 @@ else:
    esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
 hltGtDigis = "InputTag('simGtDigis','','TEST')"
 triggerTag = 'InputTag("TriggerResults","","TEST")'
+hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
 useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits = 'False'
 globaltag='MCRUN2_72_V1A::All'

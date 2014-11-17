@@ -122,6 +122,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
+    hltL1GtObjectMap_                  = iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap"));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
     MVAEBContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
@@ -347,6 +348,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     /// trigger histo
     triggerComposition = new TH1F("triggerComposition", "Trigger Composition", NL1SEED, -0.5, NL1SEED-0.5);
     areLabelsSet_ = false;
+    L1_nameAndNumb.clear();
     for(int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
 
 #ifdef MVA_REGRESSIO
@@ -425,6 +427,23 @@ FillEpsilonPlot::~FillEpsilonPlot()
   void
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+  //Trigger Histo
+  if( !areLabelsSet_ ){
+    edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+    iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
+    const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
+    for( int i=0; i<NL1SEED; i++ ){
+	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
+	if(trg){
+	  L1_nameAndNumb[trg->algoName()] = trg->algoBitNumber();
+	  triggerComposition->GetXaxis()->SetBinLabel(trg->algoBitNumber()+1,trg->algoName().c_str());
+	}
+    }
+    if(!areLabelsSet_){
+	areLabelsSet_ = true;
+	cout << "setting labels of triggerComposition histogram" << endl;
+    }
+  }
 #ifdef DEBUG
   cout << "\n --------------- [DEBUG] Beginning New Event ------------------"<< endl;
 #endif
@@ -925,7 +944,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     //}
     if( fabs( clusPos.eta() )<1.8 ){ if(s4s9<S4S9_cut_low_[EcalEndcap]) continue; }
     else                           { if(s4s9<S4S9_cut_high_[EcalEndcap]) continue; }
- 
+
     float ptClus = e3x3/cosh(clusPos.eta());
 
     if( fabs( clusPos.eta() )<1.8 ){ if(ptClus<gPtCut_low_[EcalEndcap]) continue; }
@@ -1097,7 +1116,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
     size_t j=i+1;
     for(std::vector<CaloCluster>::const_iterator g2 = g1+1; g2 != clusters.end(); ++g2, ++j ) {
 #ifdef DEBUG
-      cout << "\n[DEBUG] New Pair of Clusters"<< endl;
+	cout << "\n[DEBUG] New Pair of Clusters"<< endl;
 #endif
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(2.);
 	else                       EventFlow_EE->Fill(2.);
@@ -1110,7 +1129,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
 	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
 #ifdef MVA_REGRESSIO_Tree
-int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
+	  int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 #endif
 
 	  bool Inverted=false;
@@ -1454,10 +1473,10 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 	  // compute region weights
 	  RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
 	  RegionWeightVector w2 = regionalCalibration_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
-	  
+
 	  // append w2 to w1
 	  w1.insert( w1.end(), w2.begin(), w2.end() );
-	  
+
 	  float r2 = pi0P4.mass()/PI0MASS;
 	  r2 = r2*r2;
 	  //average <eps> for cand k
@@ -1467,12 +1486,12 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 	  for(RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 	    const uint32_t& iR = (*it).iRegion;
 	    const float& w = (*it).value;
-	    
+
 	    if(subDetId==EcalBarrel){
-	      if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.23:0.7) ){
-		epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w );
-		allEpsilon_EB->Fill( pi0P4.mass(), w );
-	      }
+		if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.23:0.7) ){
+		  epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w );
+		  allEpsilon_EB->Fill( pi0P4.mass(), w );
+		}
 	    }
 	    else {
 		if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.28:0.75) ){
@@ -1495,7 +1514,7 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
     } // loop over clusters (g2)
   } // loop over clusters to make pi0 
 #ifdef DEBUG
-	cout << "[DEBUG] Filling Tree" << endl; 
+  cout << "[DEBUG] Filling Tree" << endl; 
 #endif
   if(MakeNtuple4optimization_){
     for(int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
@@ -1511,7 +1530,7 @@ int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
 FillEpsilonPlot::beginJob()
 {
 #ifdef DEBUG
-	cout << "[DEBUG] beginJob" << endl;
+  cout << "[DEBUG] beginJob" << endl;
 #endif
   /// testing the EE eta ring
   TH2F eep("eep","EE+",102,0.5,101.5,102,-0.5,101.5);
@@ -1668,20 +1687,44 @@ bool FillEpsilonPlot::getTriggerByName( std::string s ) {
 
 bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
-  iEvent.getByLabel( l1TriggerTag_, gtReadoutRecord);
-  const DecisionWord& gtDecisionWord = gtReadoutRecord->decisionWord();
-  int thisBit =0;
-  for (std::vector<bool>::const_iterator itBit = gtDecisionWord.begin(); itBit != gtDecisionWord.end(); ++itBit, ++thisBit) {
-    L1BitCollection_[thisBit] = gtDecisionWord.at(thisBit);
-    if( gtDecisionWord.at(thisBit) ) triggerComposition->Fill(thisBit);
+  edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+  iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
+  const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
+  for( int i=0; i<NL1SEED; i++ ){
+    const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
+	if(trg){
+	  L1BitCollection_[trg->algoBitNumber()] = trg->algoGtlResult();
+	  if( trg->algoGtlResult() ){
+	    triggerComposition->Fill( trg->algoBitNumber() );
+	  }
+	}
   }
-  if( !L1_Bit_Sele_.Contains("") ){
-    edm::ESHandle<L1GtTriggerMenu> menuRcd;
-    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-    return gtDecisionWord.at(l1TrigNames_[L1_Bit_Sele_.Data()]);
+  if( L1_Bit_Sele_!="" ){
+	if ( L1_nameAndNumb.find(L1_Bit_Sele_.Data()) != L1_nameAndNumb.end() ){
+	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap( L1_nameAndNumb[L1_Bit_Sele_.Data()] );
+	return trg->algoGtlResult();
+    }
+    else{
+	cout<<"WARNING!! L1_Bit_Sele_ is not in the list, I will return true!"<<endl;
+	return true;
+    }
   }
-  else{ return true;}
+  else{ return true;}  
+
+//  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
+//  iEvent.getByLabel( l1TriggerTag_, gtReadoutRecord);
+//  const DecisionWord& gtDecisionWord = gtReadoutRecord->decisionWord();
+//  int thisBit =0;
+//  for (std::vector<bool>::const_iterator itBit = gtDecisionWord.begin(); itBit != gtDecisionWord.end(); ++itBit, ++thisBit) {
+//    L1BitCollection_[thisBit] = gtDecisionWord.at(thisBit);
+//    if( gtDecisionWord.at(thisBit) ) triggerComposition->Fill(thisBit);
+//  }
+//  if( !L1_Bit_Sele_.Contains("") ){
+//    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+//    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+//    return gtDecisionWord.at(l1TrigNames_[L1_Bit_Sele_.Data()]);
+//  }
+//  else{ return true;}
 }
 
 void FillEpsilonPlot::endJob(){
@@ -1762,39 +1805,38 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
 }
 
 // ------------ method called when starting to processes a run  ------------
-  void 
-FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
-
-    edm::ESHandle<L1GtTriggerMenu> menuRcd;
-    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-    const L1GtTriggerMenu* menu = menuRcd.product();
-    std::map< std::string, int >::iterator currentTrigger;
-
-    if(l1TrigNames_.size()>0) {
-	bool triggerChanged = false;
-	for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-	  currentTrigger = l1TrigNames_.find((algo->second).algoName());
-	  if (currentTrigger == l1TrigNames_.end() || currentTrigger->second != (algo->second).algoBitNumber()) {
-	    triggerChanged = true;
-	    break;
-	  }
-	}
-	if(!triggerChanged) return;
-	cout << "beginRun:: Trigger names / ordering changed" << endl;
-    }
-    cout << "beginRun:: Filling trigger names" << endl;
-    // filling trigger map
-    l1TrigNames_.clear();
-    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-	l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
-	// using same loop to set trigger histogram labels
-	if(!areLabelsSet_)
-	  triggerComposition->GetXaxis()->SetBinLabel((algo->second).algoBitNumber()+1,(algo->second).algoName().c_str());
-    }
-    if(!areLabelsSet_){
-	areLabelsSet_ = true;
-	cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
-    }
+void FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
+  //    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+  //    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+  //    const L1GtTriggerMenu* menu = menuRcd.product();
+  //    std::map< std::string, int >::iterator currentTrigger;
+  //
+  //    if(l1TrigNames_.size()>0) {
+  //	bool triggerChanged = false;
+  //	for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+  //	  currentTrigger = l1TrigNames_.find((algo->second).algoName());
+  //	  if (currentTrigger == l1TrigNames_.end() || currentTrigger->second != (algo->second).algoBitNumber()) {
+  //	    triggerChanged = true;
+  //	    break;
+  //	  }
+  //	}
+  //	if(!triggerChanged) return;
+  //	cout << "beginRun:: Trigger names / ordering changed" << endl;
+  //    }
+  //    cout << "beginRun:: Filling trigger names" << endl;
+  //    // filling trigger map
+  //    l1TrigNames_.clear();
+  //    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+  //	l1TrigNames_[(algo->second).algoName()] = (algo->second).algoBitNumber();
+  //	// using same loop to set trigger histogram labels
+  //	if(!areLabelsSet_)
+  ////cout<<"NAME "<<(algo->second).algoBitNumber()+1<<" "<<(algo->second).algoName().c_str()<<endl;
+  //	  triggerComposition->GetXaxis()->SetBinLabel((algo->second).algoBitNumber()+1,(algo->second).algoName().c_str());
+  //    }
+  //    if(!areLabelsSet_){
+  //	areLabelsSet_ = true;
+  //	cout << "beginRun:: setting labels of triggerComposition histogram" << endl;
+  //    }
 }
 
 bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh){
