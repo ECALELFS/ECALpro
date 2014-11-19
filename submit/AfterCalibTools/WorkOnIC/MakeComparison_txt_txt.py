@@ -79,6 +79,10 @@ f = TFile(str(sys.argv[3]) + "/" + str(sys.argv[4]) , 'recreate')
 text_file = open(str(sys.argv[3]) + "/Different_xTal.txt", "w")
 Ratio1D_EB = TH1F("Ratio1D_EB", "Ratio IC EB", 100, 0.95, 1.05)
 Ratio1D_EB_eta1 = TH1F("Ratio1D_EB_eta1", "Ratio IC EB", 100, 0.95, 1.05)
+Ratio1D_EBm = TH1F("Ratio1D_EBm", "Ratio IC EB -", 100, 0.95, 1.05)
+Ratio1D_EBp = TH1F("Ratio1D_EBp", "Ratio IC EB +", 100, 0.95, 1.05)
+Ratio1D_EBm_eta1 = TH1F("Ratio1D_EBm_eta1", "Ratio IC EB_eta1 -", 100, 0.95, 1.05)
+Ratio1D_EBp_eta1 = TH1F("Ratio1D_EBp_eta1", "Ratio IC EB_eta1 +", 100, 0.95, 1.05)
 Ratio1D_EEm = TH1F("Ratio1D_EEm", "Ratio IC EEm", 100, 0.7, 1.3)
 Ratio1D_EEp = TH1F("Ratio1D_EEp", "Ratio IC EEp", 100, 0.7, 1.3)
 Ratio_EBMap = TH2F("Ratio_EBMap","Ratio EB Map #phi on x, #eta on y", 360,0.5,360.5,171,-85.5,85.5)
@@ -137,9 +141,13 @@ for find_EB1 in range(len(IC_EB_1)):
            t.iC_1=float(IC_EB_1[find_EB1][2]); t.iC_2=float(IC_EB_2[find_EB2][2])
            mytree.Fill()
            if(float(IC_EB_1[find_EB1][2])!=-1. and float(IC_EB_2[find_EB2][2])!=-1. ):
-              print 'Eta: ' + str(IC_EB_1[find_EB1][0]) + ', Phi = ' + str(IC_EB_1[find_EB1][1]) + ': ' + str(IC_EB_1[find_EB1][2]) + ' vs ' + str(IC_EB_2[find_EB2][2])
+              #print 'Eta: ' + str(IC_EB_1[find_EB1][0]) + ', Phi = ' + str(IC_EB_1[find_EB1][1]) + ': ' + str(IC_EB_1[find_EB1][2]) + ' vs ' + str(IC_EB_2[find_EB2][2])
               Ratio1D_EB.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
               if( abs(int(IC_EB_1[find_EB1][0]))<45. ): Ratio1D_EB_eta1.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
+              if( int(IC_EB_1[find_EB1][0])<0 ): Ratio1D_EBm.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
+              if( int(IC_EB_1[find_EB1][0])<0 and abs(int(IC_EB_1[find_EB1][0]))<45. ): Ratio1D_EBm_eta1.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
+              if( int(IC_EB_1[find_EB1][0])>0 ): Ratio1D_EBp.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
+              if( int(IC_EB_1[find_EB1][0])>0 and abs(int(IC_EB_1[find_EB1][0]))<45. ): Ratio1D_EBp_eta1.Fill(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
               if( abs(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))>1.02 ): text_file.write( "iEta: " + str(int(IC_EB_1[find_EB1][0])+86) + " iPhi " + (str(IC_EB_1[find_EB1][1])) + " IC1/IC2: " + str(abs(float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))) + "\n")
               Ratio_EBMap.SetBinContent(int(IC_EB_1[find_EB1][1]), int(IC_EB_1[find_EB1][0])+86, float(IC_EB_1[find_EB1][2])/float(IC_EB_2[find_EB2][2]))
               cal_EBMap1.SetBinContent(int(IC_EB_1[find_EB1][0])+86, int(IC_EB_1[find_EB1][1]), float(IC_EB_1[find_EB1][2]))
@@ -147,7 +155,7 @@ for find_EB1 in range(len(IC_EB_1)):
            else:
               cal_EBMap1.SetBinContent(int(IC_EB_1[find_EB1][0])+86, int(IC_EB_1[find_EB1][1]), 1.)
               cal_EBMap2.SetBinContent(int(IC_EB_2[find_EB2][0])+86, int(IC_EB_2[find_EB2][1]), 1.)
-              print 'No: ' + str(IC_EB_1[find_EB1][2]) + ' ' + str(IC_EB_2[find_EB2][2])
+              #print 'No: ' + str(IC_EB_1[find_EB1][2]) + ' ' + str(IC_EB_2[find_EB2][2])
            finded=True
            break
     if not(finded):

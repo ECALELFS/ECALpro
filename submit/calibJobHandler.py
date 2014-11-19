@@ -2,18 +2,33 @@
 
 import subprocess, time, sys, os
 from methods import *
+from parameters import *
 
 if len(sys.argv) != 4:
-    print "usage thisPyton.py pwd njobs queue"
+    print "usage thisPyton.py pwd nITER queue"
+    print "or"
+    print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+    print "or"
+    print "Change CRAB with CRAB_RESU_FinalHadd in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
     sys.exit(1)
 
-pwd = sys.argv[1]
-njobs = int(sys.argv[2])
+#if ( sys.argv[1] == 'CRAB' or sys.argv[1] == 'CRAB_RESU_FinalHadd' ):
+if ( str(sys.argv[1]).find('CRAB') != -1 ):
+    pwd = os.getcwd()
+    nIterations = 1
+    njobs = 0
+else:
+    pwd = sys.argv[1]
+    njobs = int(sys.argv[2])
 queue = sys.argv[3]
 
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
 srcPath  = outputdir + '/src'
+
+workdir = pwd+'/'+dirname
+cfgHaddPath  = workdir + '/src/hadd'
+
 
 # To compute the num of hadd
 inputlist_f = open( inputlist_n )
@@ -21,88 +36,206 @@ inputlist_f = open( inputlist_n )
 inputlistbase_v = inputlist_f.readlines()
 
 for iters in range(nIterations):
-    print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
-    for ijob in range(njobs):
+    #if ( sys.argv[1] == 'CRAB' ):
+    if ( str(sys.argv[1]).find('CRAB') != -1 ):
+        iters = int(sys.argv[2])
+    #if ( sys.argv[1] != 'CRAB' ):
+    if ( str(sys.argv[1]).find('CRAB') == -1 ):
+        print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
+        for ijob in range(njobs):
 
-        # preparing submission of filling tasks
-        fill_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".log"
-        fill_src_n = srcPath + "/Fill/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
-        submit_s=""
-        if not(Silent):
-             submit_s = "bsub -q " + queue + " -o " + fill_log_n + " " + fill_src_n
-        else:
-             submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fill_src_n
+            # preparing submission of filling tasks
+            fill_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".log"
+            fill_src_n = srcPath + "/Fill/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
+            submit_s=""
+            if not(Silent):
+                 submit_s = "bsub -q " + queue + " -o " + fill_log_n + " " + fill_src_n
+            else:
+                 submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fill_src_n
 
-        print '\n[job #' + str(ijob) + '] :: ' + submit_s
+            print '\n[job #' + str(ijob) + '] :: ' + submit_s
 
-        # actually submitting filling tasks
-        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = submitJobs.communicate()
-        print output
+            # actually submitting filling tasks
+            submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+            output = submitJobs.communicate()
+            print output
 
-        # avoid overlapping submission
-        time.sleep(1)
-
-    checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-    datalines = (checkJobs.communicate()[0]).splitlines()
-
-    print 'Waiting for filling jobs to be finished...'
-
-    # Daemon cheking running jobs
-    while len(datalines)>=2 :
-        for entry in datalines:
-            entry = entry.rstrip()
-            entry = entry.split()[0]
-            #print entry
-            if(entry.find('JOBID')!=-1): continue
-            i = int(entry)
-
-        time.sleep(1)
+            # avoid overlapping submission
+            time.sleep(1)
 
         checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
         datalines = (checkJobs.communicate()[0]).splitlines()
 
-    print 'Done with loop'
-    print 'Now adding files...'
+        print 'Waiting for filling jobs to be finished...'
 
-    # Computing Nunber of hadd
-    inputlist_v = inputlistbase_v[:]
-    NrelJob = float(len(inputlist_v)) / float(ijobmax)
-    if( float(int(NrelJob) - NrelJob) < 0. ):
-        NrelJob = int(NrelJob) + 1
-    Nlist_flo = float(NrelJob/nHadd) + 1.
-    Nlist = int(Nlist_flo)
-    print Nlist
-    # hadd to sum the epsilon histograms
-    for nHadds in range(Nlist):
-        Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
-        Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
-        Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
-        subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
-        outJobs = subJobs.communicate()
-        print outJobs
-        time.sleep(1)
+        # Daemon cheking running jobs
+        while len(datalines)>=2 :
+            for entry in datalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
 
-    checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-    datalines = (checkJobs.communicate()[0]).splitlines()
+            time.sleep(1)
 
-    print 'Waiting for all the hadd...'
+            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            datalines = (checkJobs.communicate()[0]).splitlines()
 
-    # Daemon cheking running jobs
-    while len(datalines)>=2 :
-        for entry in datalines:
-            entry = entry.rstrip()
-            entry = entry.split()[0]
-            #print entry
-            if(entry.find('JOBID')!=-1): continue
-            i = int(entry)
+        print 'Done with loop'
+        # Computing Nunber of hadd
+        inputlist_v = inputlistbase_v[:]
+        NrelJob = float(len(inputlist_v)) / float(ijobmax)
+        if( float(int(NrelJob) - NrelJob) < 0. ):
+            NrelJob = int(NrelJob) + 1
+        Nlist_flo = float(NrelJob/nHadd) + 1.
+        Nlist = int(Nlist_flo)
+        print "Number of Hadd in parallel: " + str(Nlist)
+    if ( sys.argv[1] == 'CRAB' ):
+        #Crab start here, but it have to rebuild the list of files. First the total mumber of jobs
+        getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + " | awk '{print $5}'" ], stdout=subprocess.PIPE, shell=True)
+        getGoodfile_c = getGoodfile.communicate()
 
-        time.sleep(1)
+        getGoodfile_str = str(getGoodfile_c)
+        getGoodfile_str = getGoodfile_str.replace("\\n", " ")
+        getGoodfile_str = getGoodfile_str.replace("'", "")
+        getGoodfile_str = getGoodfile_str.replace("(", "")
+        getGoodfile_str = getGoodfile_str.replace(")", "")
+        getGoodfile_str = getGoodfile_str.replace("None", "")
+        getGoodfile_str = getGoodfile_str.replace(",", "")
+        getGoodfile_list = getGoodfile_str.split()
+
+        NrelJob = float(len(getGoodfile_list))
+        if( float(int(NrelJob) - NrelJob) < 0. ):
+            NrelJob = int(NrelJob) + 1
+        Nlist_flo = float(NrelJob/nHadd) + 1.
+        Nlist = int(Nlist_flo)
+        print "Number of Hadds in parallel: " + str(Nlist)
+        #Remove Old .list and create new ones
+        rmOLDlist = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_*.list" ], stdout=subprocess.PIPE, shell=True)
+        rmOLDlist_c = rmOLDlist.communicate()
+        rmOLDlist1 = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_final.list" ], stdout=subprocess.PIPE, shell=True)
+        rmOLDlist1_c = rmOLDlist1.communicate()
+        haddSrc_n_s = list()
+        haddSrc_f_s = list()
+        haddSrc_final_n_s = srcPath + "/hadd/hadd_iter_" + str(iters) + "_final.list"
+        haddSrc_final_f_s = open(  haddSrc_final_n_s, 'w')
+        for num_list in range(Nlist):
+            haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_" + str(num_list)+ ".list")
+            haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
+            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+            for nj in range(nHadd):
+                nEff = num_list*nHadd+nj
+                if( nEff < len(getGoodfile_list) ):
+                    fileToAdd_n_s = 'root://eoscms//eos/cms' + str(getGoodfile_list[nEff]) + '\n'
+                    haddSrc_f_s[num_list].write(fileToAdd_n_s)
+            haddSrc_final_f_s.write(fileToAdd_final_n_s)
+            haddSrc_f_s[num_list].close()
+        haddSrc_final_f_s.close()
+        #Remove Old .sh and create new ones
+        rmOLDsh = subprocess.Popen(["rm -rf " + srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_*.sh" ], stdout=subprocess.PIPE, shell=True)
+        rmOLDsh_c = rmOLDsh.communicate()
+        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/'
+        for num_list in range(Nlist):   
+            hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(num_list) + ".sh"
+            hadd_cfg_f = open( hadd_cfg_n, 'w' )
+            HaddOutput = NameTag + "epsilonPlots_" + str(num_list) + ".root"
+            printParallelHadd(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd )
+            hadd_cfg_f.close()
+            changePermission = subprocess.Popen(['chmod 777 ' + hadd_cfg_n], stdout=subprocess.PIPE, shell=True);
+            debugout = changePermission.communicate()
+        # print Final hadd
+        Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iters) + ".sh"
+        Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
+        printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+        Fhadd_cfg_f.close()
+
+    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' ):
+        #Now common for EAO and crab
+        # hadd to sum the epsilon histograms
+        print 'Now adding files...'
+        for nHadds in range(Nlist):
+            Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
+            Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
+            Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
+            #Before each HADD we need ot check if the all the files in the list are present
+            Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $4}'"
+            myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
+            FoutGrep = myGrep.communicate()
+            FoutGrep_2 = str(FoutGrep)[3:]
+            FoutGrep_2 = str(FoutGrep_2)[:-10]
+            print 'Checking ' + str(FoutGrep_2)
+            #Chech The size for each line
+            f = open( str(FoutGrep_2) )
+            lines = f.readlines()
+            f.close()
+            NumToRem = 0
+            for filetoCheck in lines:
+                if( NumToRem!=0 ):
+                   Num = NumToRem - 1
+                   f2 = open(str(FoutGrep_2) + str(Num))
+                   lines = f2.readlines()
+                   f2.close()
+                filetoCheck2 = str(filetoCheck)[22:]
+                CheckComm = 'cmsLs -l ' + str(filetoCheck2)
+                myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
+                Check_output = myCheck.communicate()
+                #If file is not present, remove it from the list
+                if "No such" in str(Check_output):
+                   print 'HADD::MISSING: ' + str(filetoCheck2)
+                   print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
+                   f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                   NumToRem = NumToRem + 1
+                   for line in lines:
+                       if line!=str(filetoCheck):
+                            f1.write(line)
+                   f1.close()
+                else:
+                   Splitted =  str(Check_output).split( );
+                   print "size: " + str(Splitted[1])
+                   #If is corrupted (size too small), remove it from the list
+                   if( int(Splitted[1])<10000 ):
+                        print 'HADD::Bad size for: ' + str(filetoCheck2)
+                        print 'removing from Hadd'
+                        f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                        NumToRem = NumToRem + 1
+                        lines1 = f1.readlines()
+                        for line in lines:
+                            if line!=str(filetoCheck):
+                                 f1.write(line)
+                        f1.close()
+            #moving the .list to the correct one
+            if( NumToRem!=0 ):
+                NumToRem = NumToRem - 1
+                MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
+                MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
+                mvOut = MoveC.communicate()
+            #End of the check
+            subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
+            outJobs = subJobs.communicate()
+            print outJobs
+            time.sleep(1)
 
         checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
         datalines = (checkJobs.communicate()[0]).splitlines()
 
-    print 'Done with various hadd'
+        print 'Waiting for all the hadd...'
+
+        # Daemon cheking running jobs
+        while len(datalines)>=2 :
+            for entry in datalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
+
+            time.sleep(1)
+
+            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            datalines = (checkJobs.communicate()[0]).splitlines()
+
+        print 'Done with various hadd'
 
     print 'Now The Final One...'
     FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
@@ -135,12 +268,12 @@ for iters in range(nIterations):
     print 'Done with staging the final epsilonPlots.root'
 
 #    # removing useles file
-    for nRm in range(Nlist):
-        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
-        print '[Removed] :: ' + remove_s
-        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
-        nFilesRemoved = 0
-        filesRemoved = (removeFile.communicate()[0]).splitlines()
+#    for nRm in range(Nlist):
+#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
+#        print '[Removed] :: ' + remove_s
+#        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
+#        nFilesRemoved = 0
+#        filesRemoved = (removeFile.communicate()[0]).splitlines()
 
     # N of Fit to send
     nEB = 61199/nFit

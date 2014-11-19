@@ -85,7 +85,7 @@ PreshowerCluster PreshowerTools::makeOnePreshowerCluster(int stripwindow, ESDetI
      if(!goodStrip(strip_it)) continue;
 
      DetId nonblindstripid (itID->rawId());
-     GlobalPoint position = geom_->getPosition(nonblindstripid);
+     //GlobalPoint position = geom_->getPosition(nonblindstripid);
      //if (position.z() > 0.)eventCont->hist("nonBlindstripPositionZpos")->Fill(position.x(),position.y());
      //if (position.z() < 0.)eventCont->hist("nonBlindstripPositionZneg")->Fill(position.x(),position.y());
 
@@ -101,7 +101,7 @@ PreshowerCluster PreshowerTools::makeOnePreshowerCluster(int stripwindow, ESDetI
 
            for (itID = esroad_2d.begin(); itID != esroad_2d.end(); itID++) {
                DetId blindstripid (itID->rawId());
-               GlobalPoint position = geom_->getPosition(blindstripid);
+               //GlobalPoint position = geom_->getPosition(blindstripid);
                //cout << "X Position: " << position.x() << "Y Position: " << position.y() << "Z Position: " << position.z() << endl;
                //if (position.z() > 0.)eventCont->hist("BlindstripPositionZpos")->Fill(position.x(),position.y());
                //if (position.z() < 0.)eventCont->hist("BlindstripPositionZneg")->Fill(position.x(),position.y());    

@@ -1,0 +1,17 @@
+To write down the IC in a GT:
+
+cmsRun testReaddbWriteXML_201X.py; where X is the year you need
+
+it will give you an xml output like EcalIntercalibConstants_GR_H_V22.xml.
+
+The .py you use need to have:
+
+1) The GT, ex: GR_H_V22::All
+2) The Run number of a good event, ex: firstValue = cms.uint64(177730), lastValue = cms.uint64(177731),
+3) And of course take care all the other variable are setted in the right way.
+
+N.B. It has to be done in the DB release, so probably the CMSSW version you use for the Intercalibration wont work.
+
+For more questions: luca.pernie @ cern.ch
+
+Best, LP

@@ -10,7 +10,7 @@ echo "---->                          man_oper: to know how are the operator in b
 echo "---->                          man_perl: to know how to use perl language and awk"
 echo "---->To make something useful: iamroot: to know if you are a root user"
 echo "---->                          SobstituteWords-directory-worlds1-worlds2: to chanhe all the 'worlds1' with 'worlds2' in all the file 'in directory'"
-echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax: to remove all Useless-files in group_Eos/dirName'"
+echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax-NumMax: to remove all Useless-files in group_Eos/dirName'"
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."
 echo "---->                          ResendHaddfailed-Directory-Iter-Queue: Resend Hadd of one iter."
@@ -107,12 +107,13 @@ iter_max=${array[5]}
 NumMin=0
 NumMax=${array[6]}
 
-if [ ${#array[@]} -ne "7" ]; then echo "Wrong Use of 'RemoveEOS'"; usage; exit $E_SOB;
+if [ tag=="notag" ]; then tag="";
+fi
+if [ ${#array[@]} -ne "7" ]; then echo "Wrong Use of 'RemoveEOS, you use ${#array[@]} parameters and you need 7'"; usage; exit $E_SOB;
 fi
 #echo "I will REMOVE files in \"$folder\" from iter \"$iter_min\" to iter \"$iter_max\"... continue? [y-n]"
 #read var1
 var1="y"
-#if [ "$var1" == "y" ]; then
 if [ "$var1" == "y" ]; then
    for Iter in $(eval echo "{$iter_min..$iter_max}")
    do
@@ -132,11 +133,11 @@ if [ "$var1" == "y" ]; then
          echo "${folder}/iter_${Iter}/${tag}EcalNtp_${EcalNtp}.root"
          cmsRm ${folder}/iter_${Iter}/${tag}EcalNtp_${EcalNtp}.root
      done
-     #for Eps in {0..22}
-     #do
-     #    echo "${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root"
-     #    cmsRm ${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root
-     #done  
+     for Eps in {0..13}
+     do
+         echo "${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root"
+         cmsRm ${folder}/iter_${Iter}/${tag}epsilonPlots_${Eps}.root
+     done  
    done
 fi
 echo "--------------"

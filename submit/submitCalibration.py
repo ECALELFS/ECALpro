@@ -3,17 +3,7 @@
 import subprocess, time, sys, os
 from methods import *
 
-#if len(sys.argv) != 6:
-#    print "usage thisPyton.py inputFile nfilePerJob dirname queue nIterations"
-#    sys.exit(1)
-
-#inputlist_n = sys.argv[1]
-#ijobmax     = int(sys.argv[2])
-#dirname     = sys.argv[3]
-#queue       = sys.argv[4]
-#nIterations = int(sys.argv[5])
 pwd         = os.getcwd()
-
 
 #-------- check if you have right access to queues --------#
 checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
@@ -23,7 +13,6 @@ if(output.find('command not found')==-1):
 else:
     print "[calib] Missing access to queues"
     sys.exit(1)
-
 
 #print pwd
 
@@ -40,6 +29,8 @@ print "[calib] Creating local folders (" + dirname + ")"
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/cfgFile/'], stdout=subprocess.PIPE, shell=True);
+folderCreation.communicate()
+folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/CRAB_files/'], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + cfgFillPath], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
@@ -61,12 +52,14 @@ folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname ], stdo
 folderCreation.communicate()
 
 for iter in range(nIterations):
-    print "[calib]  '-- folder for iteration ", iter
+    print "[calib]  ---  cmsMkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
     folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
     folderCreation.communicate()
 
 
 #-------- fill cfg files --------#
+if( isCRAB ):
+    print "--------------This inter-calibration will use CRAB: Good Luck!------------------------"
 
 # open list of input files
 inputlist_f = open( inputlist_n )
@@ -125,7 +118,7 @@ for iter in range(nIterations):
     Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
     printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     Fhadd_cfg_f.close()
-        # loop over the whole list
+    # loop over the whole list
     while (len(inputlist_v) > 0):
 
         # create cfg file
@@ -147,7 +140,10 @@ for iter in range(nIterations):
                     fill_cfg_f.write("        '" + ntpfile + "'\n")
 
         # print the last part of the cfg file
-        printFillCfg2( fill_cfg_f, pwd, iter , "/tmp", ijob )
+        if( isCRAB ):
+            printFillCfg2( fill_cfg_f, pwd, iter , "", ijob )
+        else: 
+            printFillCfg2( fill_cfg_f, pwd, iter , "/tmp/", ijob )
         fill_cfg_f.close()
 
         # print source file for batch submission of FillEpsilonPlot task
@@ -243,29 +239,50 @@ env_script_n = workdir + "/submit.sh"
 env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
-if(is2012):
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-else:
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
+env_script_f.write("ulimit -c 0\n")
+#if(is2012):
+#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
+#else:
+#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
 
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-env_script_f.write(pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "python " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "rm core.*")
 env_script_f.close()
 
 # make the source file executable
 changePermission = subprocess.Popen(['chmod 777 ' + env_script_n], stdout=subprocess.PIPE, shell=True);
 debugout = changePermission.communicate()
 
-# configuring calibration handler
-print "[calib] Number of jobs created = " + str(njobs)
-print "[calib] Submitting calibration handler"
-#submit_s = "bsub -q " + queue + " -o " + workdir + "/calibration.log " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue
-submit_s = "bsub -q " + queueForDaemon + " -o " + workdir + "/calibration.log " + env_script_n
-print "[calib]  '-- " + submit_s
+if( isCRAB ):
+    for iter in range(nIterations):
+        CRAB1_n =  workdir + "/CRAB_files/crab_eos_" + str(iter) + ".cfg"
+        CRAB1_f = open( CRAB1_n, 'w' )
+        printCrab( CRAB1_f, iter )
+        CopyFill = subprocess.Popen(['cp ' +cfgFillPath + '/fillEpsilonPlot_iter_' + str(iter) + '_job_0.py ' + workdir + '/CRAB_files/fillEpsilonPlot_iter_' + str(iter) + '.py' ], stdout=subprocess.PIPE, shell=True);
+        CopyFill.communicate()
+        CrabSendHadd_n =  workdir + "/CRAB_files/HaddSendafterCrab_" + str(iter) + ".sh"
+        CrabSendHadd_f = open( CrabSendHadd_n, 'w' )
+        printCrabHadd( CrabSendHadd_f, str(iter), pwd)
+    #Instructions
+    print "---------------------------------"
+    print "Here it is how it works with CRAB:"
+    print "--> 1) You will run the crab_eos_0.cfg I wrote for you in: " + workdir + "/CRAB_files/crab_eos.cfg"
+    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command: (bsub -q " + queueForDaemon + " 'source " + pwd + "/ALL_NeuPt2_20_PU40x25_01/CRAB_files/HaddSendafterCrab_XXX.sh')"
+    print "--> 3) Once it has finished you will re-run CRAB importing the constant you produced" #!!! this part is not clear.
+    print "--> 4) Then you repeat all these steps for all the iterations you need. Good luck."
+    # in the futur launch a script that send crab automatically
 
-# submitting calibration handler
-submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-output = (submitJobs.communicate()[0]).splitlines()
-print "[calib]  '-- " + output[0]
-
-#    print "usage thisPyton.py pwd njobs queue"
+else:
+    # configuring calibration handler
+    print "[calib] Number of jobs created = " + str(njobs)
+    print "[calib] Submitting calibration handler"
+    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+    print "[calib]  '-- " + submit_s
+    
+    # submitting calibration handler
+    submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+    output = (submitJobs.communicate()[0]).splitlines()
+    print "[calib]  '-- " + output[0]
+    
+    #    print "usage thisPyton.py pwd njobs queue"

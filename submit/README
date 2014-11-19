@@ -9,13 +9,16 @@ To get IC you basically need only to do 2 things:
 
 ------
 
-1) parameters.py
+1a) parameters.py
 It contains all parameters define yout IC, divided id:
  a) Calib parameter: Name of directories, output names, how to split jobs, the queues.
        This is the first part of the file. in general is commnted the meaning of the variable, so it is easy to understand.
  b) IC parameter: selection cuts, Name of the dataset, json files, Global Tag, Laser correction, adcToGev Tag ecc...
        This is easy to choose, because they are in the last part of the file, and just decommenting the part of the dataset you need you will have all consistent values.
 
+1b) Purify_List.py
+It take the list of input root file and using the json file it creates a purified list of files.
+>python Purify_List.py
 ------
 
 2) submitCalibration.py

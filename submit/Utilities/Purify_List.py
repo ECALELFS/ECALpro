@@ -10,10 +10,10 @@ import subprocess, time, sys, os, string
 ######
 
 #file name
-fileRun = 'ALL_2012D_RUN.list'
-fileList = 'ALL_2012D.list'
-fileJson = 'common/goodrunlist_json2012D.txt'
-fileNEW = 'ALL_2012D_good.list'
+fileRun = '../ALL_2012A_RUN.list'
+fileList = '../ALL_2012A.list'
+fileJson = '../common/goodrunlist_json2012D.txt'
+fileNEW = '../ALL_2012A_good.list'
 #open
 Runlist_f = open( fileRun )
 Filelist_f = open( fileList )

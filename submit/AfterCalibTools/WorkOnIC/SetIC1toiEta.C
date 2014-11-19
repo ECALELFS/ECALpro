@@ -46,7 +46,7 @@ int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 //Usage:
 //.x SetIC1toiEta.C+(true?false,"2011/ABSIC_ResidsualFree.root", "./2011/" "2012D_ETA_ERR/Error_Stat_2012D.root", , 0 )
 //.x SetIC1toiEta.C+(false,"Compare2012B/2012B_GlobalMY_Vs_Caltech.root", "Compare2012B/", 2 ) [0=not for comparison mine-caltech, 1 for comp., is mine, 2 for comp. is clatech]
-void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutStatError="", int isCal=0 ){
+void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutStatError="", int isCal=0 , string IOV=""){
 
     bool debug = false, debug2 = false, debug3 = false, debug4 = false;
 #ifdef DEBUG
@@ -90,6 +90,7 @@ void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutSt
        if(isCal==2)  NameTxt = "/ICForComp_Ecal_EtaRing_Caltech";
     }
     if(PutStatError == "") NameTxt += "_noErr";
+    if(IOV != "") NameTxt += "_" + IOV;
     f_IC.open( (OutPath + NameTxt) + ".txt", ios::out);
     if( !f_IC ){ cout << "Impossible to open file.txt."; exit(1); }
 
@@ -309,7 +310,7 @@ void SetIC1toiEta( bool AllEta, string inputFile,  TString OutPath, string PutSt
 
 	  //PARSING
 	  ifstream file;
-	  file.open("InputFile/Endc_x_y_ring.txt", ifstream::in);
+	  file.open("/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_5_3_6/src/CalibCode/submit/AfterCalibTools/WorkOnIC/InputFile/Endc_x_y_ring.txt", ifstream::in);
 	  vector<iXiYtoRing> VectRing;
 
 	  while ( !file.eof() ) {

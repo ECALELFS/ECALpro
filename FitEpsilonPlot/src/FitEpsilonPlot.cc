@@ -468,7 +468,6 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		    int iMin = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.08:0.4 ); 
 		    int iMax = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.18:0.65 );
 		    double integral = epsilon_EB_h[j]->Integral(iMin, iMax);  
-
 		    if(integral>60.)
 		    {
 			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
@@ -826,7 +825,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, is_2011_);
     }
     if(StoreForTest_ && niter==0){
-	  stringstream ind;
+	  std::stringstream ind;
 	  ind << (int) HistoIndex;
 	  TString nameHistofit = "Fit_n_" + ind.str();
 	  xframe->SetName(nameHistofit.Data());
