@@ -49,8 +49,8 @@ static const int MAX_IPHI = 360;
 static const int MIN_IETA = 1;
 static const int MIN_IPHI = 1;
 
-//before: gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_ia32_gcc434/lcg/roofit/5.26.00-cms5/include")
 //5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
+//7_1_0:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc6_amd64_gcc481/lcg/roofit/5.34.22-cms2/include/")
 //Usage: .x Gaussian_fit.C+("Compare2012DMINECCnot","2012D_EtaRingMY_Vs_MYnoCC.root")
 void Gaussian_fit( string Dir, string File ){
 

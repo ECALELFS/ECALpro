@@ -428,7 +428,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   //Trigger Histo
-  if( !areLabelsSet_ ){
+  if( !areLabelsSet_ && L1TriggerInfo_ ){
     edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
     iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
     const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();

@@ -62,15 +62,21 @@ except:
     sys.exit(1)
 #outPut
 f = TFile(Output, 'recreate')
-Sig_EB = TH2F("Sig_EB","EB IC Sigma #eta on x, #phi on y",171,-85.5,85.5, 360,0.5,360.5)
-Sig_EEm = TH2F("Sig_EEm","EEm IC Sigma iX on x, iY on y", 100,0.5,100.5, 100,0.5,100.5)
-Sig_EEp = TH2F("Sig_EEp","EEp IC Sigma iX on x, iY on y", 100,0.5,100.5, 100,0.5,100.5)
-Sig_EB_Diff_iEta = TH2F("Sig_EB_Diff_iEta","#iEta on x, #IC-IC2 on y",171,-85.5,85.5, 100,-0.02,0.02)
+Sig_EB            = TH2F("Sig_EB","EB IC Sigma #eta on x, #phi on y",171,-85.5,85.5, 360,0.5,360.5)
+Sig_EEm           = TH2F("Sig_EEm","EEm IC Sigma iX on x, iY on y", 100,0.5,100.5, 100,0.5,100.5)
+Sig_EEp           = TH2F("Sig_EEp","EEp IC Sigma iX on x, iY on y", 100,0.5,100.5, 100,0.5,100.5)
+Sig_EB_Diff_iEta  = TH2F("Sig_EB_Diff_iEta","#iEta on x, #IC-IC2 on y",171,-85.5,85.5, 100,-0.02,0.02)
 Sig_EEm_Diff_iEta = TH2F("Sig_EEm_Diff_iEta","#eta on x, #IC-IC2 on y",15,1.5,3, 100,-0.05,0.05)
 Sig_EEp_Diff_iEta = TH2F("Sig_EEp_Diff_iEta","#eta on x, #IC-IC2 on y",15,1.5,3, 100,-0.05,0.05)
-Sig_EE_Diff_iEta = TH2F("Sig_EE_Diff_iEta","#eta on x, #IC-IC2 on y",15,1.5,3, 100,-0.05,0.05)
+Sig_EE_Diff_iEta  = TH2F("Sig_EE_Diff_iEta","#eta on x, #IC-IC2 on y",15,1.5,3, 100,-0.05,0.05)
+EB_StatErr        = TH1F("EB_StatErr","#eta on x, Stat. Err. on y",171,-85.5,85.5)
+EB_StatErr.GetXaxis().SetTitle("iEta"); EB_StatErr.GetXaxis().SetTitle("#sigma");
+EEm_StatErr       = TH1F("EEm_StatErr","#eta on x, Stat. Err. on y",15,1.5,3)
+EEm_StatErr.GetXaxis().SetTitle("#eta") EEm_StatErr.GetXaxis().SetTitle("#sigma");
+EEp_StatErr       = TH1F("EEp_StatErr","#eta on x, Stat. Err. on y",15,1.5,3)
+EEp_StatErr.GetXaxis().SetTitle("#eta") EEp_StatErr.GetXaxis().SetTitle("#sigma");
 #eta
-GeoFile = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_5_3_6/src/CalibCode/submit/common/geometry_ietaix_iphiiy_0iz_eta.dat"
+GeoFile = "../../../../CalibCode/submit/common/geometry_ietaix_iphiiy_0iz_eta.dat"
 GeoFile_r = open(GeoFile,'r')
 GeoFile_v = GeoFile_r.readlines()
 GeoFile_v1 = GeoFile_v[:]
@@ -151,6 +157,17 @@ for ix in range(1,101):
            Sig_EE_Diff_iEta.Fill(fabs(float(FindEtaBin(int(ix),int(iy),1,GeoFile_v1))),ic_even-ic_odd)
            s.iC_eve=float(ic_even); s.iC_odd=float(ic_odd); s.iX=int(ix); s.iY=int(iy); s.iZ=int(1);  s.Eta=float(FindEtaBin(int(ix),int(iy),1,GeoFile_v1));
            mytree_EE.Fill()
+
+print 'Now Histos with the Stat. Unc. Look for: EB_StatErr, EEm_StatErr and EEp_StatErr'
+for i in range(Sig_EB_Diff_iEta.GetNbinsX()):
+   h1 = Sig_EB_Diff_iEta.ProjectionY("",i,i)
+   EB_StatErr.SetBinContent(i,h1.GetRMS()*sqrt(2)/2)
+for j in range(Sig_EEm_Diff_iEta.GetNbinsX()):
+   h2 = Sig_EEm_Diff_iEta.ProjectionY("",j,j)
+   EEm_StatErr.SetBinContent(j,h2.GetRMS()*sqrt(2)/2)
+for k in range(Sig_EEp_Diff_iEta.GetNbinsX()):
+   h3 = Sig_EEp_Diff_iEta.ProjectionY("",k,k)
+   EEp_StatErr.SetBinContent(k,h3.GetRMS()*sqrt(2)/2)
 
 print 'Finish!!!'
 
