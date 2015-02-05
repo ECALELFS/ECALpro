@@ -430,7 +430,6 @@ FillEpsilonPlot::~FillEpsilonPlot()
   void
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-cout<<"ANALYZE BEG"<<endl;//####
   //Trigger Histo
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
@@ -510,7 +509,6 @@ cout<<"ANALYZE BEG"<<endl;//####
 
   delete estopology_;
 
-cout<<"ANALYZE END"<<endl;//####
 }
 
 
