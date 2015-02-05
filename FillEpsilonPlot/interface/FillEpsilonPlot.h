@@ -184,6 +184,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double S4S9_cut_high_[3];
       double SystOrNot_;
       bool isMC_;
+      bool isCRAB_;
       bool MakeNtuple4optimization_;
 
       /// all the three options have to be instantiated to allow the

@@ -2,21 +2,26 @@
 
 import subprocess, time, sys, os
 from methods import *
-from parameters import *
 
-if len(sys.argv) != 4:
-    print "usage thisPyton.py pwd nITER queue"
-    print "or"
-    print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
-    print "or"
-    print "Change CRAB with CRAB_RESU_FinalHadd in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
-    sys.exit(1)
+if ( str(sys.argv[1]).find('CRAB') == -1 ):
+   if len(sys.argv) != 4:
+       print "usage thisPyton.py pwd nITER queue"
+       sys.exit(1)
+else:
+    if len(sys.argv) != 5:
+       print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       print "or"
+       print "Change CRAB with CRAB_RESU_FinalHadd in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       print "or"
+       print "Change CRAB with CRAB_RESU_FitOnly in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       sys.exit(1)
 
-#if ( sys.argv[1] == 'CRAB' or sys.argv[1] == 'CRAB_RESU_FinalHadd' ):
+Add_path = ''
 if ( str(sys.argv[1]).find('CRAB') != -1 ):
     pwd = os.getcwd()
     nIterations = 1
     njobs = 0
+    Add_path = sys.argv[4]
 else:
     pwd = sys.argv[1]
     njobs = int(sys.argv[2])
@@ -36,10 +41,8 @@ inputlist_f = open( inputlist_n )
 inputlistbase_v = inputlist_f.readlines()
 
 for iters in range(nIterations):
-    #if ( sys.argv[1] == 'CRAB' ):
     if ( str(sys.argv[1]).find('CRAB') != -1 ):
         iters = int(sys.argv[2])
-    #if ( sys.argv[1] != 'CRAB' ):
     if ( str(sys.argv[1]).find('CRAB') == -1 ):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         for ijob in range(njobs):
@@ -83,7 +86,7 @@ for iters in range(nIterations):
             datalines = (checkJobs.communicate()[0]).splitlines()
 
         print 'Done with loop'
-        # Computing Nunber of hadd
+        # Computing Number of hadd
         inputlist_v = inputlistbase_v[:]
         NrelJob = float(len(inputlist_v)) / float(ijobmax)
         if( float(int(NrelJob) - NrelJob) < 0. ):
@@ -93,9 +96,9 @@ for iters in range(nIterations):
         print "Number of Hadd in parallel: " + str(Nlist)
     if ( sys.argv[1] == 'CRAB' ):
         #Crab start here, but it have to rebuild the list of files. First the total mumber of jobs
-        getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + " | awk '{print $5}'" ], stdout=subprocess.PIPE, shell=True)
+        print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + " | awk '{print $5}' | grep root"
+        getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path +  " | awk '{print $5}' | grep root" ], stdout=subprocess.PIPE, shell=True)
         getGoodfile_c = getGoodfile.communicate()
-
         getGoodfile_str = str(getGoodfile_c)
         getGoodfile_str = getGoodfile_str.replace("\\n", " ")
         getGoodfile_str = getGoodfile_str.replace("'", "")
@@ -104,13 +107,12 @@ for iters in range(nIterations):
         getGoodfile_str = getGoodfile_str.replace("None", "")
         getGoodfile_str = getGoodfile_str.replace(",", "")
         getGoodfile_list = getGoodfile_str.split()
-
         NrelJob = float(len(getGoodfile_list))
         if( float(int(NrelJob) - NrelJob) < 0. ):
             NrelJob = int(NrelJob) + 1
         Nlist_flo = float(NrelJob/nHadd) + 1.
         Nlist = int(Nlist_flo)
-        print "Number of Hadds in parallel: " + str(Nlist)
+        print "Number of Hadds in parallel (CRAB): " + str(Nlist)
         #Remove Old .list and create new ones
         rmOLDlist = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_*.list" ], stdout=subprocess.PIPE, shell=True)
         rmOLDlist_c = rmOLDlist.communicate()
@@ -123,7 +125,7 @@ for iters in range(nIterations):
         for num_list in range(Nlist):
             haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_" + str(num_list)+ ".list")
             haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
-            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
             for nj in range(nHadd):
                 nEff = num_list*nHadd+nj
                 if( nEff < len(getGoodfile_list) ):
@@ -135,7 +137,7 @@ for iters in range(nIterations):
         #Remove Old .sh and create new ones
         rmOLDsh = subprocess.Popen(["rm -rf " + srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_*.sh" ], stdout=subprocess.PIPE, shell=True)
         rmOLDsh_c = rmOLDsh.communicate()
-        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/'
+        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path
         for num_list in range(Nlist):   
             hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(num_list) + ".sh"
             hadd_cfg_f = open( hadd_cfg_n, 'w' )
@@ -150,9 +152,8 @@ for iters in range(nIterations):
         printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
 
-    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' ):
-        #Now common for EAO and crab
-        # hadd to sum the epsilon histograms
+    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' and sys.argv[1] != 'CRAB_RESU_FitOnly' ):
+        #Now common for EAO and crab: hadd to sum the epsilon histograms
         print 'Now adding files...'
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
@@ -237,39 +238,38 @@ for iters in range(nIterations):
 
         print 'Done with various hadd'
 
-    print 'Now The Final One...'
-    FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
-    FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
-    FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
-    FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
-    FoutJobs = FsubJobs.communicate()
-    print FoutJobs
-    time.sleep(3)
-
-    FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-    Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
-    print 'Waiting for the Final hadd...'
-    # Daemon cheking running jobs
-    while len(Fdatalines)>=2 :
-        for entry in Fdatalines:
-            entry = entry.rstrip()
-            entry = entry.split()[0]
-            #print entry
-            if(entry.find('JOBID')!=-1): continue
-            i = int(entry)
-
-        time.sleep(1)
+    if ( sys.argv[1] != 'CRAB_RESU_FitOnly' ):
+        print 'Now The Final One...'
+        FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
+        FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
+        FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
+        FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
+        FoutJobs = FsubJobs.communicate()
+        print FoutJobs
+        time.sleep(3)
 
         FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
         Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+        print 'Waiting for the Final hadd...'
+        # Daemon cheking running jobs
+        while len(Fdatalines)>=2 :
+            for entry in Fdatalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
 
-    print 'Done with final hadd'
+            time.sleep(1)
 
-    print 'Done with staging the final epsilonPlots.root'
+            FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+
+        print 'Done with final hadd'
 
 #    # removing useles file
 #    for nRm in range(Nlist):
-#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
+#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
 #        print '[Removed] :: ' + remove_s
 #        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
 #        nFilesRemoved = 0
@@ -287,13 +287,27 @@ for iters in range(nIterations):
     # preparing submission of fit tasks (EB)
     print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
     for inteb in range(nEB):
-        #fit_log_n = logPath + "/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".log"
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
-        #submit_s = "bsub -q " + queue + " -o " + fit_log_n + " source " + fit_src_n
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
+        #if isCRAB change the path of the files
+        if(isCRAB):
+            #Correct path into the cfg
+            with open(fit_cfg_n, 'a') as file:
+                 file.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + "/" + NameTag + "epsilonPlots.root')\n")
+                 file.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters-1) + "/" + Add_path + "/" + NameTag + calibMapName + "')\n")
+            #Correct path into the src
+            destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Barrel_" + str(inteb)+ "_" + calibMapName
+            logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".log"
+            tmpsource = "/tmp/" + NameTag + "Barrel_" + str(inteb) + "_" + calibMapName
+            with open(fit_src_n, 'a') as file2:
+                 file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                 file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                 file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
+                 file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         print 'About to EB fit:'
-        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         print submit_s
         # actually submitting fit tasks (EB)
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
@@ -302,14 +316,28 @@ for iters in range(nIterations):
 
     # preparing submission of fit tasks (EE)
     print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
-    for inte in range(nEE):
-        #fit_log_n = logPath + "/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".log"
+    for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-        # redirecting output on /dev/null is required to avoid LSF directory to be created automatically
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
+        #if isCRAB change the path of the files
+        if(isCRAB):
+            #Correct path into the cfg
+            with open(fit_cfg_n, 'a') as file:
+                 file.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + "/" + NameTag + "epsilonPlots.root')\n")
+                 file.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters-1) + "/" + Add_path + "/" + NameTag + calibMapName + "')\n")
+            #Correct path into the src
+            destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Endcap_" + str(inte)+ "_" + calibMapName
+            logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".log"
+            tmpsource = "/tmp/" + NameTag + "Endcap_" + str(inte) + "_" + calibMapName
+            with open(fit_src_n, 'a') as file2:
+                 file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                 file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                 file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
+                 file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         print 'About to EE fit:'
-        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
         print submit_s
         # actually submitting fit tasks (EE)
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
@@ -653,11 +681,17 @@ for iters in range(nIterations):
     f.Close()
 
     print 'Now staging calibMap.root on EOS'
-    stage_s_fin = 'cmsStage /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    stage_s_fin = 'cmsStage /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     print stage_s_fin
     stageCalibFile = subprocess.Popen([stage_s_fin], stdout=subprocess.PIPE, shell=True);
     print stageCalibFile.communicate()
-    print 'Done with staging the final calibMap.root'
+    if ( str(sys.argv[1]).find('CRAB') != -1 ):
+        print 'Since we are in CRAB mode I will also copy ' + NameTag + calibMapName + 'on data/ to be accessible from CRAB' 
+        stage_s_fin2 = 'cp /tmp/' + NameTag + calibMapName + " " + str(os.getcwd()) + "../FillEpsilonPlot/data/"
+        print stage_s_fin2
+        stageCalibFile2 = subprocess.Popen([stage_s_fin2], stdout=subprocess.PIPE, shell=True);
+        print stageCalibFile2.communicate()
+    print 'Done with staging the final ' + NameTag + calibMapName
 
     # checking that calibMap.root is actually available on EOS
     print "Checking availabilty of " + NameTag + calibMapName

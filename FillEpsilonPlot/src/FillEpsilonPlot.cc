@@ -139,6 +139,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     externalGeometry_                  = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
     currentIteration_                  = iConfig.getUntrackedParameter<int>("CurrentIteration");
     outputDir_                         = iConfig.getUntrackedParameter<std::string>("OutputDir");
+    isCRAB_                            = iConfig.getUntrackedParameter<bool>("isCRAB","False");
     calibMapPath_                      = iConfig.getUntrackedParameter<std::string>("calibMapPath");
     Barrel_orEndcap_                   = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     EB_Seed_E_                         = iConfig.getUntrackedParameter<double>("EB_Seed_E",0.2);
@@ -241,7 +242,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     {
 	  char fileName[200];
 	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
-	  sprintf(fileName,"%s", calibMapPath_.c_str());
+	  if( isCRAB_ ) sprintf(fileName,"%s",  edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str() );
+	  else          sprintf(fileName,"%s", calibMapPath_.c_str());
 	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
     }
 
@@ -363,6 +365,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     forest_EE_pi01 = (GBRForest *)EEweight_file_pi01->Get("Correction");
     forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
 #endif
+
 }
 
 FillEpsilonPlot::~FillEpsilonPlot()
@@ -427,6 +430,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   void
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+cout<<"ANALYZE BEG"<<endl;//####
   //Trigger Histo
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
@@ -505,6 +509,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot, EcalEndcap);
 
   delete estopology_;
+
+cout<<"ANALYZE END"<<endl;//####
 }
 
 

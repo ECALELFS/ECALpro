@@ -1,4 +1,5 @@
 from parameters import *
+####from parameters_NEWESTCRAB import *
 
 def printFillCfg1( outputfile ):
     outputfile.write("useHLTFilter = " + useHLTFilter + "\n")
@@ -9,10 +10,8 @@ def printFillCfg1( outputfile ):
     outputfile.write('CMSSW_VERSION=os.getenv("CMSSW_VERSION")\n')
     outputfile.write('process = cms.Process("analyzerFillEpsilon")\n')
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
-    outputfile.write('if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):\n')
-    outputfile.write('   process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
-    outputfile.write('else:\n')
-    outputfile.write('   process.load("Configuration.StandardSequences.GeometryIdeal_cff")\n\n')
+    #outputfile.write('if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):\n')
+    outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
     outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
 
@@ -103,7 +102,11 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
     outputfile.write("process.analyzerFillEpsilon.OutputFile = cms.untracked.string('" + NameTag +  outputFile + "_" + str(ijob) + ".root')\n")
     outputfile.write("process.analyzerFillEpsilon.ExternalGeometry = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + ExternalGeometry + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + "calibMap.root')\n")
+    if (isCRAB):
+        outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + NameTag + calibMapName + "')\n")
+        outputfile.write("process.analyzerFillEpsilon.isCRAB  = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
     outputfile.write("process.analyzerFillEpsilon.useEBContainmentCorrections = cms.untracked.bool(" + useEBContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.useEEContainmentCorrections = cms.untracked.bool(" + useEEContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContainmentCorrections + "')\n")
@@ -238,38 +241,31 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( False )\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( False )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
-    outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
-    outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + "calibMap.root')\n")
+    if not(isCRAB): #If CRAB you have to put the correct path, anbd you do it on calibJobHandler.py, not on ./submitCalibration.py
+        outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
+        outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
     outputfile.write("process.p = cms.Path(process.fitEpsilon)\n")
 
 
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
-    #if(is2012):
-    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-    #else:       
-    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
     outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-    outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")
-    outputfile.write("cmsStage -f " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
-    outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+    if not(isCRAB): #If CRAB you have to put the correct path, anbd you do it on calibJobHandler.py, not on ./submitCalibration.py
+       outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")
+       outputfile.write("cmsStage -f " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+       outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
+       outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
-    #if(is2012):
-    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-    #else:       
-    #    outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("source /afs/cern.ch/cms/ccs/wm/scripts/Crab/crab.csh\n")
-    outputfile.write("source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.csh\n")
+    outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.csh\n")
     outputfile.write("setenv X509_USER_PROXY " + CRAB_CopyCert + "\n")
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
@@ -289,34 +285,54 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
 
 def printCrab(outputfile, iter):
-    outputfile.write("[CMSSW]\n")
-    outputfile.write("pset=fillEpsilonPlot_iter_" + str(iter) + ".py\n")
-    outputfile.write("events_per_job=" + events_per_job + "\n")
-    outputfile.write("total_number_of_events="+ total_number_of_events +"\n")
-    outputfile.write("datasetpath=" + CRAB_Data_Path + "\n")
-    outputfile.write("output_file=" + NameTag + outputFile + "_0.root\n")
-    outputfile.write("\n")
-    outputfile.write("[USER]\n")
-    outputfile.write("ui_working_dir=" + dirname + "_iter_" + str(iter) + "_CRAB\n")
-    outputfile.write("return_data=0\n")
-    outputfile.write("copy_data=1\n")
-    outputfile.write("storage_element = srm-eoscms.cern.ch\n")
-    outputfile.write("storage_path=/srm/v2/server?SFN=/eos/cms/store\n")
-    outputfile.write("user_remote_dir=" + CRAB_Storage + dirname + "/iter_" + str(iter) + "\n")
-    outputfile.write("check_user_remote_dir=0\n")
-    outputfile.write("\n")
-    outputfile.write("[CRAB]\n")
-    outputfile.write("\n")
-    outputfile.write("scheduler=remoteGlidein\n")
-    outputfile.write("jobtype=cmssw\n")
+    #outputfile.write("[CMSSW]\n")
+    #outputfile.write("pset=fillEpsilonPlot_iter_" + str(iter) + ".py\n")
+    #outputfile.write("events_per_job=" + events_per_job + "\n")
+    #outputfile.write("total_number_of_events="+ total_number_of_events +"\n")
+    #outputfile.write("datasetpath=" + CRAB_Data_Path + "\n")
+    #outputfile.write("output_file=" + NameTag + outputFile + "_0.root\n")
+    #outputfile.write("\n")
+    #outputfile.write("[USER]\n")
+    #outputfile.write("ui_working_dir=" + dirname + "_iter_" + str(iter) + "_CRAB\n")
+    #outputfile.write("return_data=0\n")
+    #outputfile.write("copy_data=1\n")
+    #outputfile.write("storage_element = srm-eoscms.cern.ch\n")
+    #outputfile.write("storage_path=/srm/v2/server?SFN=/eos/cms/store\n")
+    #outputfile.write("user_remote_dir=" + CRAB_Storage + dirname + "/iter_" + str(iter) + "\n")
+    #outputfile.write("check_user_remote_dir=0\n")
+    #outputfile.write("\n")
+    #outputfile.write("[CRAB]\n")
+    #outputfile.write("\n")
+    #outputfile.write("scheduler=remoteGlidein\n")
+    #outputfile.write("jobtype=cmssw\n")
+    outputfile.write("from CRABClient.client_utilities import getBasicConfig\n")
+    outputfile.write("config = getBasicConfig()\n")
+    outputfile.write("config.General.requestName = 'CRAB_Folder'\n")
+    outputfile.write("config.General.workArea = 'crab_projects'\n")
+    outputfile.write("config.General.transferLogs = True\n")
+    outputfile.write("config.JobType.pluginName = 'Analysis'\n")
+    outputfile.write("config.JobType.psetName = 'fillEpsilonPlot_iter_" + str(iter) + ".py'\n")
+    outputfile.write("config.Data.inputDataset = '" + CRAB_Data_Path + "'\n")
+    outputfile.write("config.Data.inputDBS = 'global'\n")
+    outputfile.write("config.Data.splitting = 'FileBased'\n")
+    outputfile.write("config.Data.unitsPerJob = " + str(unitsPerJob) + "\n")
+    outputfile.write("config.Data.outLFN = '" + eosPath + "/" + dirname + "/" + "iter_" + str(iter) + "/'\n")
+    outputfile.write("config.JobType.outputFiles = ['EcalNtp_0.root']\n")
+    outputfile.write("config.Data.publication = False\n")
+    outputfile.write("config.Site.storageSite = 'T2_CH_CERN'\n")
 
 def printCrabHadd(outputfile, iter, pwd):
     outputfile.write("#!/bin/bash\n")
+    outputfile.write("#bsub -q " + queueForDaemon + " 'bash " + pwd + "/" + dirname + "/CRAB_files/HaddSendafterCrab_" + iter + ".sh'\n")
     outputfile.write("cd " + pwd + "\n")
-    #outputfile.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("echo 'python calibJobHandler.py CRAB " + iter + " " + queue + "'\n")
-    outputfile.write("python calibJobHandler.py CRAB " + iter + " " + queue + "\n")
+    outputfile.write("AddPath='putPATHhere'\n")
+    outputfile.write("echo 'python calibJobHandler.py CRAB " + iter + " " + queue + "' $AddPath\n")
+    outputfile.write("if [ '$AddPath' == 'putPATHhere' ]; then\n")
+    outputfile.write("   echo 'Wrong Use of HaddSendafterCrab_X.sh, add the additional path of the CRAB output'\n")
+    outputfile.write("else\n")
+    outputfile.write("   python calibJobHandler.py CRAB " + iter + " " + queue + " $AddPath;\n")
+    outputfile.write("fi\n")
 
 def printParallelHadd(outputfile, outFile, list, destination, pwd):
     import os, sys, imp, re

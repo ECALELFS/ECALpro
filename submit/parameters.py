@@ -1,34 +1,32 @@
 #Do not modify these
-nEventsPerJob = '-1'
-outputFile    = 'EcalNtp' # without .root suffix
-calibMapName = 'calibMap.root'
+nEventsPerJob    = '-1'
+outputFile       = 'EcalNtp' # without .root suffix
+calibMapName     = 'calibMap.root'
 GeometryFromFile = False
 ExternalGeometry = 'caloGeometry.root'
-CalibType  = 'xtal'
+CalibType        = 'xtal'
 
 #Are Pi0
-Are_pi0  = False # True = using Pi0, False = using Eta
+Are_pi0          = False # True = using Pi0, False = using Eta
 #IS CRAB
-isCRAB = False
-CRAB_Data_Path = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
-CRAB_CopyCert  = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
-CRAB_Storage   = 'group/alca_ecalcalib/lpernie/' #the absence of the beginning slash is mandatory
-events_per_job = '5000'
-total_number_of_events = '-1'
+isCRAB           = False
+CRAB_Data_Path   = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
+CRAB_CopyCert    = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
+unitsPerJob = 5   #DBS File per Job
 #MC and TTree
-isMC = True
+isMC = False
 MakeNtuple4optimization = True
 #PATH
 eosPath = '/store/caf/user/lpernie'
-#eosPath = '/store/group/alca_ecalcalib/lpernie/'
+#eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie'
 if(isCRAB):
-   eosPath = '/store/group/alca_ecalcalib/lpernie/'
-inputlist_n      = 'ALL_MINBIAS_PIZERO_ALCARAW_NO_UNCAL.list' # list of the input files
-dirname          = 'ALL_MINBIAS_ETA_ALCARAW_NO_UNCAL_01_TryL1Geom'
+   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie/' #For ereason of space is better the group area
+inputlist_n      = 'ALL_2012C_good.list' # list of the input files
+dirname          = 'ALL_2012C_tryOptim2015_etaEB_01'
 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'MC_'                # Tag to the names to avoid overlap
+NameTag          = ''                # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations = 1
@@ -36,13 +34,15 @@ nIterations = 1
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+#Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 #Remove Xtral Dead
-RemoveDead_Flag = "False"
-RemoveDead_Map = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
+RemoveDead_Flag = "True"
+RemoveDead_Map  = ""
+#RemoveDead_Map  = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
 #L1 Bit Collection
 L1TriggerInfo = False;                          # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != "")
-hltGtDigis = 'InputTag("simGtDigis")'     # To take the info to Fill the L1 Bit histo
+hltGtDigis = 'InputTag("simGtDigis")'          # To take the info to Fill the L1 Bit histo
 triggerTag = 'InputTag("TriggerResults")'
 hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'
 L1Seed = ""                                     # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
@@ -59,6 +59,7 @@ if(Are_pi0):
    Pi0PtCutEB_low = '2.1'
    gPtCutEB_low = '0.8'
    Pi0IsoCutEB_low = '0.'
+   Pi0HLTIsoCutEB_low = "999"
    nXtal_1_EB_low = '6'
    nXtal_2_EB_low = '4'
    S4S9_EB_low = '0.7'
@@ -66,6 +67,7 @@ if(Are_pi0):
    Pi0PtCutEB_high = '2.1'
    gPtCutEB_high = '0.8'
    Pi0IsoCutEB_high = '0.8'
+   Pi0HLTIsoCutEB_high = "999"
    nXtal_1_EB_high = '6'
    nXtal_2_EB_high = '4'
    S4S9_EB_high = '0.7'
@@ -73,6 +75,7 @@ if(Are_pi0):
    Pi0PtCutEE_low = '2.1'
    gPtCutEE_low = '0.8'
    Pi0IsoCutEE_low = '0.25'
+   Pi0HLTIsoCutEE_low = "999"
    nXtal_1_EE_low = '6'
    nXtal_2_EE_low = '4'
    S4S9_EE_low = '0.85'   
@@ -80,6 +83,7 @@ if(Are_pi0):
    Pi0PtCutEE_high = '2.1'
    gPtCutEE_high = '0.8'
    Pi0IsoCutEE_high = '0.25'
+   Pi0HLTIsoCutEE_high = "999"
    nXtal_1_EE_high = '6'
    nXtal_2_EE_high = '4'
    S4S9_EE_high = '0.85'
@@ -122,6 +126,7 @@ else:
    Pi0PtCutEB_low = '3.2'
    gPtCutEB_low = '1.4'
    Pi0IsoCutEB_low = '0.'
+   Pi0HLTIsoCutEB_low = "999"
    nXtal_1_EB_low = '6'
    nXtal_2_EB_low = '4'
    S4S9_EB_low = '0.8'
@@ -129,6 +134,7 @@ else:
    Pi0PtCutEB_high = '3.2'
    gPtCutEB_high = '1.4'
    Pi0IsoCutEB_high = '0.8'
+   Pi0HLTIsoCutEB_high = "999"
    nXtal_1_EB_high = '6'
    nXtal_2_EB_high = '4'
    S4S9_EB_high = '0.8'
@@ -136,6 +142,7 @@ else:
    Pi0PtCutEE_low = '3.2'
    gPtCutEE_low = '1.4'
    Pi0IsoCutEE_low = '0.25'
+   Pi0HLTIsoCutEE_low = "999"
    nXtal_1_EE_low = '6'
    nXtal_2_EE_low = '4'
    S4S9_EE_low = '0.85'   
@@ -143,6 +150,7 @@ else:
    Pi0PtCutEE_high = '3.2'
    gPtCutEE_high = '1.4'
    Pi0IsoCutEE_high = '0.25'
+   Pi0HLTIsoCutEE_high = "999"
    nXtal_1_EE_high = '6'
    nXtal_2_EE_high = '4'
    S4S9_EE_high = '0.85'
@@ -252,48 +260,48 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 
 ##############
 #2012C
-###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
-###(_2): https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt
-#isNewTag=True
-#json_file ='goodrunlist_json2012C.txt'
-#HLTResults = 'True'
-#is_2011 = 'True' #Just for the fit, put true 
-#useHLTFilter="True"
-#correctHits='True'
-#overWriteGlobalTag = True
-#if not(isNewTag):
-#   globaltag='GR_P_V42::All'
+##/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
+##(_2): https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions12/8TeV/Reprocessing/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON.txt
+isNewTag=True
+json_file ='goodrunlist_json2012C.txt'
+HLTResults = 'True'
+is_2011 = 'True' #Just for the fit, put true 
+useHLTFilter="True"
+correctHits='False'#!!!! CHANGED
+overWriteGlobalTag = True
+if not(isNewTag):
+   globaltag='GR_P_V42::All'
+else:
+###   globaltag='FT_R_53_V21::All' # FT_53_V21_AN6::All
+   globaltag='GR_R_70_V2::All'
+if(Are_pi0): 
+   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalPi0*' 
+else:
+   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
+   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
+   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
+   HLTPaths='AlCa_EcalEta*'
+doEnenerScale='True'
+doIC='True'
+doLaserCorr="True"
+if not(isNewTag):
+   laserTagRecord='EcalIntercalibConstantsRcd'
+   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
+   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
+   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
+   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
+else:
+   alphaTagRecord=''
+   alphaTag=''
+   alphaDB=''
 #else:
-####   globaltag='FT_R_53_V21::All'
-#   globaltag='FT_53_V21_AN6::All'
-#if(Are_pi0): 
-#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"
-#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','HLT')"
-#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','HLT')"
-#   HLTPaths='AlCa_EcalPi0*' 
-#else:
-#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES', 'HLT')"
-#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','HLT')"
-#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','HLT')"
-#   HLTPaths='AlCa_EcalEta*'
-#doEnenerScale='True'
-#doIC='True'
-#doLaserCorr="True"
-#if not(isNewTag):
-#   laserTagRecord='EcalIntercalibConstantsRcd'
-#   laserTag = 'EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies'
-#   laserDB  = 'frontier://FrontierInt/CMS_COND_ECAL'
 #   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-#   alphaTag='EcalLaserAPDPNRatios_20121020_447_p1_v2'
+#   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
 #   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
-#else:
-#   alphaTagRecord=''
-#   alphaTag=''
-#   alphaDB=''
-###else:
-###   alphaTagRecord='EcalLaserAPDPNRatiosRcd'
-###   alphaTag='EcalLaserAPDPNRatios_20130130_447_p1_v2'
-###   alphaDB='frontier://FrontierProd/CMS_COND_42X_ECAL_LAS'
 ##############
 ##2012B
 ###/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions12/8TeV/Prompt/Cert_190456-208357_8TeV_PromptReco_Collisions12_JSON.txt
@@ -489,29 +497,29 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTPaths='AlCa_EcalPi0_*'
 
 ##MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
-HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
-json_file = ''
-is_2011 = 'False'                                             # Fit Parameter Range
-overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
-doEnenerScale='False'
-doIC='False'                                                  # Member of Recalibration Module
-doLaserCorr="False"
-if(Are_pi0):                                           # Member of Recalibration Module
-   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB','TEST')"
-   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE','TEST')"
-   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
-else:
-   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
-   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
-   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
-hltGtDigis = "InputTag('simGtDigis','','TEST')"
-triggerTag = 'InputTag("TriggerResults","","TEST")'
-hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
-useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
-correctHits = 'False'
-globaltag='MCRUN2_72_V1A::All'
-HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
-isMC = True
+#HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
+#json_file = ''
+#is_2011 = 'False'                                             # Fit Parameter Range
+#overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
+#doEnenerScale='False'
+#doIC='False'                                                  # Member of Recalibration Module
+#doLaserCorr="False"
+#if(Are_pi0):                                           # Member of Recalibration Module
+#   ebInputTag = "InputTag('reducedEcalRecHitsEB','','RECO')"
+#   eeInputTag = "InputTag('reducedEcalRecHitsEE','','RECO')"
+#   esInputTag = "InputTag('reducedEcalRecHitsES','','RECO')"
+#else:
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
+#hltGtDigis = "InputTag('simGtDigis','','TEST')"
+#triggerTag = 'InputTag("TriggerResults","","TEST")'
+#hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
+#useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
+#correctHits = 'False'
+#globaltag='MCRUN2_72_V1A::All'
+#HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
+#isMC = True
 
 ##2012 Selection
       #2012

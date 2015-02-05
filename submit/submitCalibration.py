@@ -256,9 +256,9 @@ debugout = changePermission.communicate()
 
 if( isCRAB ):
     for iter in range(nIterations):
-        CRAB1_n =  workdir + "/CRAB_files/crab_eos_" + str(iter) + ".cfg"
+        CRAB1_n =  workdir + "/CRAB_files/crab_eos_" + str(iter) + ".py"
         CRAB1_f = open( CRAB1_n, 'w' )
-        printCrab( CRAB1_f, iter )
+        printCrab( CRAB1_f, iter)
         CopyFill = subprocess.Popen(['cp ' +cfgFillPath + '/fillEpsilonPlot_iter_' + str(iter) + '_job_0.py ' + workdir + '/CRAB_files/fillEpsilonPlot_iter_' + str(iter) + '.py' ], stdout=subprocess.PIPE, shell=True);
         CopyFill.communicate()
         CrabSendHadd_n =  workdir + "/CRAB_files/HaddSendafterCrab_" + str(iter) + ".sh"
@@ -267,8 +267,8 @@ if( isCRAB ):
     #Instructions
     print "---------------------------------"
     print "Here it is how it works with CRAB:"
-    print "--> 1) You will run the crab_eos_0.cfg I wrote for you in: " + workdir + "/CRAB_files/crab_eos.cfg"
-    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command: (bsub -q " + queueForDaemon + " 'source " + pwd + "/ALL_NeuPt2_20_PU40x25_01/CRAB_files/HaddSendafterCrab_XXX.sh')"
+    print "--> 1) You will run the crab_eos_0.cfg I wrote for you in: " + workdir + "/CRAB_files/crab_eos.cfg: \n  --->crab submit -c crab_eos_X.py"
+    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command:\n  --->bsub -q " + queueForDaemon + " 'bash " + pwd + "/ALL_NeuPt2_20_PU40x25_01/CRAB_files/HaddSendafterCrab_XXX.sh'"
     print "--> 3) Once it has finished you will re-run CRAB importing the constant you produced" #!!! this part is not clear.
     print "--> 4) Then you repeat all these steps for all the iterations you need. Good luck."
     # in the futur launch a script that send crab automatically
