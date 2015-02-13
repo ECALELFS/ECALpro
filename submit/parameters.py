@@ -7,7 +7,7 @@ ExternalGeometry = 'caloGeometry.root'
 CalibType        = 'xtal'
 
 #Are Pi0
-Are_pi0          = False # True = using Pi0, False = using Eta
+Are_pi0          = True # True = using Pi0, False = using Eta
 #IS CRAB
 isCRAB           = False
 CRAB_Data_Path   = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
@@ -22,20 +22,19 @@ eosPath = '/store/caf/user/lpernie'
 if(isCRAB):
    eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie/' #For ereason of space is better the group area
 inputlist_n      = 'ALL_2012C_good.list' # list of the input files
-dirname          = 'ALL_2012C_tryOptim2015_etaEB_01'
+dirname          = 'ALL_2012C_tryOptim2015_pi0_01'
 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = ''                # Tag to the names to avoid overlap
+NameTag          = ''                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations = 1
+nIterations = 2
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
-#Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
@@ -267,12 +266,11 @@ json_file ='goodrunlist_json2012C.txt'
 HLTResults = 'True'
 is_2011 = 'True' #Just for the fit, put true 
 useHLTFilter="True"
-correctHits='False'#!!!! CHANGED
+correctHits='False' #SHOULD be true
 overWriteGlobalTag = True
 if not(isNewTag):
    globaltag='GR_P_V42::All'
 else:
-###   globaltag='FT_R_53_V21::All' # FT_53_V21_AN6::All
    globaltag='GR_R_70_V2::All'
 if(Are_pi0): 
    esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES', 'HLT')"

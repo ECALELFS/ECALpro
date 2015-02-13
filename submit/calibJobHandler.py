@@ -3,11 +3,15 @@
 import subprocess, time, sys, os
 from methods import *
 
-if ( str(sys.argv[1]).find('CRAB') == -1 ):
+if ( str(sys.argv[1]).find('CRAB') == -1 and str(sys.argv[1]).find('BATCH_RESU')==-1 ): # Batch system
    if len(sys.argv) != 4:
        print "usage thisPyton.py pwd nITER queue"
        sys.exit(1)
-else:
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):                                     # Batch Resubmission
+    if len(sys.argv) != 6:
+       print "usage thisPyton.py BATCH_RESU pwd nITER queue nJobs"
+       sys.exit(1)
+else:                                                                                   # CRAB
     if len(sys.argv) != 5:
        print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
        print "or"
@@ -15,6 +19,14 @@ else:
        print "or"
        print "Change CRAB with CRAB_RESU_FitOnly in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
        sys.exit(1)
+#Selec what mode you are running
+RunCRAB = True; RunBatch = True; RunResub = True;
+if ( str(sys.argv[1]).find('CRAB') != -1 ):
+     RunCRAB = True; RunBatch = False; RunResub = False;
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
+     RunCRAB = False; RunBatch = False; RunResub = True;
+else:
+     RunCRAB = False; RunBatch = True; RunResub = False;
 
 Add_path = ''
 if ( str(sys.argv[1]).find('CRAB') != -1 ):
@@ -22,10 +34,16 @@ if ( str(sys.argv[1]).find('CRAB') != -1 ):
     nIterations = 1
     njobs = 0
     Add_path = sys.argv[4]
+    queue = sys.argv[3]
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
+    pwd = os.getcwd()
+    njobs = int(sys.argv[5])
+    queue = sys.argv[4]
+    nIterations = nIterations - int(sys.argv[3])
 else:
     pwd = sys.argv[1]
     njobs = int(sys.argv[2])
-queue = sys.argv[3]
+    queue = sys.argv[3]
 
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
@@ -33,7 +51,6 @@ srcPath  = outputdir + '/src'
 
 workdir = pwd+'/'+dirname
 cfgHaddPath  = workdir + '/src/hadd'
-
 
 # To compute the num of hadd
 inputlist_f = open( inputlist_n )
@@ -43,10 +60,22 @@ inputlistbase_v = inputlist_f.readlines()
 for iters in range(nIterations):
     if ( str(sys.argv[1]).find('CRAB') != -1 ):
         iters = int(sys.argv[2])
+    if ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
+        iters = iters + int(sys.argv[3])
     if ( str(sys.argv[1]).find('CRAB') == -1 ):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         for ijob in range(njobs):
-
+            #In case you want the stat. syst
+            if ( str(sys.argv[1]).find('BATCH_RESU_SYST_1') != -1 ):
+                 env_script_n = open(outputdir + "/cfgFile/Fill/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
+                 SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(1)\n'
+                 env_script_n.write(SystParamLine)
+                 env_script_n.close()
+            if ( str(sys.argv[1]).find('BATCH_RESU_SYST_2') != -1 ):
+                 env_script_n = open(outputdir + "/cfgFile/Fill/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
+                 SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(2)\n'
+                 env_script_n.write(SystParamLine)
+                 env_script_n.close()
             # preparing submission of filling tasks
             fill_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".log"
             fill_src_n = srcPath + "/Fill/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
@@ -70,7 +99,6 @@ for iters in range(nIterations):
         datalines = (checkJobs.communicate()[0]).splitlines()
 
         print 'Waiting for filling jobs to be finished...'
-
         # Daemon cheking running jobs
         while len(datalines)>=2 :
             for entry in datalines:
@@ -80,12 +108,13 @@ for iters in range(nIterations):
                 if(entry.find('JOBID')!=-1): continue
                 i = int(entry)
 
-            time.sleep(1)
+            time.sleep(10)
 
             checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
             datalines = (checkJobs.communicate()[0]).splitlines()
-
-        print 'Done with loop'
+            checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
+            datalines2 = (checkJobs.communicate()[0]).splitlines()
+        print 'Done with the Fill part'
         # Computing Number of hadd
         inputlist_v = inputlistbase_v[:]
         NrelJob = float(len(inputlist_v)) / float(ijobmax)

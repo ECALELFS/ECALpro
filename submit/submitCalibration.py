@@ -163,7 +163,6 @@ for iter in range(nIterations):
 
 njobs = ijob
 
-
 #-------- fit cfg files --------#
     # Fit parallelized
 nEB = 61199/nFit

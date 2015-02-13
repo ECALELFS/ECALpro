@@ -3,42 +3,32 @@
 import subprocess, time, sys, os
 from methods import *
 
-if len(sys.argv) != 5:
-    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) onlyFIT(True,False) onlyFinalHadd(True,False)"
+if len(sys.argv) != 7:
+    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs"
     print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
     sys.exit(1)
 
 iteration_to_resume = int(sys.argv[1])
 SystParam           = int(sys.argv[2])
-OnlyFIT             = str(sys.argv[3])
-onlyFinalHadd       = str(sys.argv[4])
+onlyHadd            = str(sys.argv[3]) #To be implemented
+onlyFinalHadd       = str(sys.argv[4]) #To be implemented
+OnlyFIT             = str(sys.argv[5]) #To be implemented
+nJobs               = str(sys.argv[6])
 pwd                 = os.getcwd()
 
-
-#-------- check if you have right access to queues --------#
-checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
-output = checkAccessToQueues.communicate()[1]
-if(output.find('command not found')==-1):
-    print "[resubmit] Correct setup for batch submission"
-else:
-    print "[resubmit] Missing access to queues"
-    sys.exit(1)
-
 workdir = pwd+'/'+dirname
+
+Mode = "BATCH_RESU"
+if SystParam != 0 :
+    mode = mode + "_SYST_" + str(SystParam)
 
 ### setting environment
 env_script_n = workdir + "/resubmit.sh"
 env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
-if(is2012):
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-else:
-   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-#f=os.popen("wc " + str(inputlist_n) + " | awk '{print $1}'" )
-env_script_f.write(pwd + "/calibJobHandler-resubmission.py " + pwd + " " + queue + " " + str(iteration_to_resume) + " " + str(SystParam) + " " + str(OnlyFIT) + " " + str(onlyFinalHadd) + "\n")
-#env_script_f.write(pwd + "/calibJobHandler-resubmission.py " + pwd + " " + queue + " " + str(iteration_to_resume) + " " + str(f.readline())  + "\n")
+env_script_f.write("python calibJobHandler.py BATCH_RESU " + pwd + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs) + "\n")
 env_script_f.close()
 
 # configuring calibration handler
