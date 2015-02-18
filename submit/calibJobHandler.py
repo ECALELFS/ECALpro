@@ -3,15 +3,15 @@
 import subprocess, time, sys, os
 from methods import *
 
-if ( str(sys.argv[1]).find('CRAB') == -1 and str(sys.argv[1]).find('BATCH_RESU')==-1 ): # Batch system
-   if len(sys.argv) != 4:
+if ( str(sys.argv[1]).find('CRAB')==-1 and str(sys.argv[1]).find('BATCH_RESU')==-1 ): # Batch system
+   if len(sys.argv) != 3:
        print "usage thisPyton.py pwd nITER queue"
        sys.exit(1)
-elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):                                     # Batch Resubmission
-    if len(sys.argv) != 6:
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):                                   # Batch Resubmission
+    if len(sys.argv) != 5:
        print "usage thisPyton.py BATCH_RESU pwd nITER queue nJobs"
        sys.exit(1)
-else:                                                                                   # CRAB
+else:                                                                                 # CRAB
     if len(sys.argv) != 5:
        print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
        print "or"
@@ -27,24 +27,27 @@ elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
      RunCRAB = False; RunBatch = False; RunResub = True;
 else:
      RunCRAB = False; RunBatch = True; RunResub = False;
+ONLYHADD = False; ONLYFIT = False
+if ( str(sys.argv[1]).find('ONLYHADD') != -1 ):
+     ONLYHADD = True;
+if ( str(sys.argv[1]).find('ONLYFIT') != -1 ):
+     ONLYFIT = True;
 
 Add_path = ''
-if ( str(sys.argv[1]).find('CRAB') != -1 ):
-    pwd = os.getcwd()
+if ( RunCRAB ):
     nIterations = 1
     njobs = 0
     Add_path = sys.argv[4]
     queue = sys.argv[3]
-elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
-    pwd = os.getcwd()
-    njobs = int(sys.argv[5])
-    queue = sys.argv[4]
-    nIterations = nIterations - int(sys.argv[3])
-else:
-    pwd = sys.argv[1]
-    njobs = int(sys.argv[2])
+elif ( RunResub ):
+    njobs = int(sys.argv[4])
     queue = sys.argv[3]
+    nIterations = nIterations - int(sys.argv[2])
+else:
+    njobs = int(sys.argv[1])
+    queue = sys.argv[2]
 
+pwd = os.getcwd()
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
 srcPath  = outputdir + '/src'
@@ -58,11 +61,11 @@ inputlist_f = open( inputlist_n )
 inputlistbase_v = inputlist_f.readlines()
 
 for iters in range(nIterations):
-    if ( str(sys.argv[1]).find('CRAB') != -1 ):
+    if ( RunCRAB ):
         iters = int(sys.argv[2])
-    if ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
-        iters = iters + int(sys.argv[3])
-    if ( str(sys.argv[1]).find('CRAB') == -1 ):
+    if ( RunResub ):
+        iters = iters + int(sys.argv[2])
+    if ( not RunCRAB and not ONLYHADD and not ONLYFIT ):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         for ijob in range(njobs):
             #In case you want the stat. syst
@@ -113,18 +116,10 @@ for iters in range(nIterations):
             checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
             datalines = (checkJobs.communicate()[0]).splitlines()
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
-            datalines2 = (checkJobs.communicate()[0]).splitlines()
+            datalines2 = (checkJobs2.communicate()[0]).splitlines()
         print 'Done with the Fill part'
-        # Computing Number of hadd
-        inputlist_v = inputlistbase_v[:]
-        NrelJob = float(len(inputlist_v)) / float(ijobmax)
-        if( float(int(NrelJob) - NrelJob) < 0. ):
-            NrelJob = int(NrelJob) + 1
-        Nlist_flo = float(NrelJob/nHadd) + 1.
-        Nlist = int(Nlist_flo)
-        print "Number of Hadd in parallel: " + str(Nlist)
+    #Crab start from HADD, but it need to rebuild the list of files. So he has this additional part
     if ( sys.argv[1] == 'CRAB' ):
-        #Crab start here, but it have to rebuild the list of files. First the total mumber of jobs
         print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + " | awk '{print $5}' | grep root"
         getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path +  " | awk '{print $5}' | grep root" ], stdout=subprocess.PIPE, shell=True)
         getGoodfile_c = getGoodfile.communicate()
@@ -181,9 +176,16 @@ for iters in range(nIterations):
         printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
 
-    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' and sys.argv[1] != 'CRAB_RESU_FitOnly' ):
-        #Now common for EAO and crab: hadd to sum the epsilon histograms
+    #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
+    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' and sys.argv[1] != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
         print 'Now adding files...'
+        inputlist_v = inputlistbase_v[:]
+        NrelJob = float(len(inputlist_v)) / float(ijobmax)
+        if( float(int(NrelJob) - NrelJob) < 0. ):
+            NrelJob = int(NrelJob) + 1
+        Nlist_flo = float(NrelJob/nHadd) + 1.
+        Nlist = int(Nlist_flo)
+        print "Number of Hadd in parallel: " + str(Nlist)
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
@@ -226,8 +228,8 @@ for iters in range(nIterations):
                    #If is corrupted (size too small), remove it from the list
                    if( int(Splitted[1])<10000 ):
                         print 'HADD::Bad size for: ' + str(filetoCheck2)
-                        print 'removing from Hadd'
-                        f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                        print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
+                        f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
                         NumToRem = NumToRem + 1
                         lines1 = f1.readlines()
                         for line in lines:
@@ -240,7 +242,7 @@ for iters in range(nIterations):
                 MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
                 MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                 mvOut = MoveC.communicate()
-            #End of the check
+            #End of the check, sending the job
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
             outJobs = subJobs.communicate()
             print outJobs
@@ -267,7 +269,7 @@ for iters in range(nIterations):
 
         print 'Done with various hadd'
 
-    if ( sys.argv[1] != 'CRAB_RESU_FitOnly' ):
+    if ( sys.argv[1] != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
         print 'Now The Final One...'
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
         FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"

@@ -10,9 +10,9 @@ if len(sys.argv) != 7:
 
 iteration_to_resume = int(sys.argv[1])
 SystParam           = int(sys.argv[2])
-onlyHadd            = str(sys.argv[3]) #To be implemented
+onlyHadd            = str(sys.argv[3])
 onlyFinalHadd       = str(sys.argv[4]) #To be implemented
-OnlyFIT             = str(sys.argv[5]) #To be implemented
+OnlyFIT             = str(sys.argv[5])
 nJobs               = str(sys.argv[6])
 pwd                 = os.getcwd()
 
@@ -20,7 +20,11 @@ workdir = pwd+'/'+dirname
 
 Mode = "BATCH_RESU"
 if SystParam != 0 :
-    mode = mode + "_SYST_" + str(SystParam)
+    Mode = Mode + "_SYST_" + str(SystParam)
+if onlyHadd=="True" :
+    Mode = Mode + "_ONLYHADD"
+if OnlyFIT=="True" :
+    Mode = Mode + "_ONLYFIT"
 
 ### setting environment
 env_script_n = workdir + "/resubmit.sh"
@@ -28,7 +32,8 @@ env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-env_script_f.write("python calibJobHandler.py BATCH_RESU " + pwd + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs) + "\n")
+print "python calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs)
+env_script_f.write("python calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs) + "\n")
 env_script_f.close()
 
 # configuring calibration handler

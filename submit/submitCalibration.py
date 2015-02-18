@@ -245,8 +245,8 @@ env_script_f.write("ulimit -c 0\n")
 #   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
 
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-env_script_f.write( "python " + pwd + "/calibJobHandler.py " + pwd + " " + str(njobs) + " " + queue + "\n")
-env_script_f.write( "rm core.*")
+env_script_f.write( "python " + pwd + "/calibJobHandler.py " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "rm -rf " + pwd + "/core.*")
 env_script_f.close()
 
 # make the source file executable
