@@ -139,11 +139,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     externalGeometry_                  = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
     currentIteration_                  = iConfig.getUntrackedParameter<int>("CurrentIteration");
     outputDir_                         = iConfig.getUntrackedParameter<std::string>("OutputDir");
-    isCRAB_                            = iConfig.getUntrackedParameter<bool>("isCRAB","False");
+    isCRAB_                            = iConfig.getUntrackedParameter<bool>("isCRAB",false);
     calibMapPath_                      = iConfig.getUntrackedParameter<std::string>("calibMapPath");
     Barrel_orEndcap_                   = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     EB_Seed_E_                         = iConfig.getUntrackedParameter<double>("EB_Seed_E",0.2);
-    useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed","True");
+    useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed",true);
     EE_Seed_E_                         = iConfig.getUntrackedParameter<double>("EE_Seed_E",0.5);
     EE_Seed_Et_                        = iConfig.getUntrackedParameter<double>("EE_Seed_Et",0.5);
     pi0PtCut_low_[EcalBarrel]          = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
@@ -154,7 +154,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     gPtCut_high_[EcalBarrel]           = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
     gPtCut_low_[EcalEndcap]            = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
     gPtCut_high_[EcalEndcap]           = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
-    CutOnHLTIso_                       = iConfig.getUntrackedParameter<bool>("CutOnHLTIso");
+    CutOnHLTIso_                       = iConfig.getUntrackedParameter<bool>("CutOnHLTIso",false);
     pi0HLTIsoCut_low_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_low");
     pi0HLTIsoCut_high_[EcalBarrel]     = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_high");
     pi0HLTIsoCut_low_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_low");
