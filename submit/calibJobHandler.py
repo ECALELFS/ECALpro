@@ -314,7 +314,8 @@ for iters in range(nIterations):
     if (14647%nFit != 0) :
         nEE = int(nEE) +1
     # For final hadd
-    ListFinaHadd = list()
+    ListFinaHaddEB = list()
+    ListFinaHaddEE = list()
     # preparing submission of fit tasks (EB)
     print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
     for inteb in range(nEB):
@@ -336,7 +337,7 @@ for iters in range(nIterations):
                  file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                  file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+        ListFinaHaddEB.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         print 'About to EB fit:'
         print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         print submit_s
@@ -366,7 +367,7 @@ for iters in range(nIterations):
                  file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                  file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+        ListFinaHaddEE.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         print 'About to EE fit:'
         print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
         print submit_s
@@ -403,167 +404,181 @@ for iters in range(nIterations):
     gSystem.Load("libFWCoreFWLite.so")
     AutoLibraryLoader.enable()
     f = TFile('/tmp/' + NameTag + calibMapName, 'recreate')
+    #Run only on EB or EE if needed
+    ListFinaHadd = list()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       ListFinaHadd = ListFinaHaddEB
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       ListFinaHadd = ListFinaHaddEE
+    if (Barrel_or_Endcap=='ONLY_BARREL' and Barrel_or_Endcap=='ONLY_ENDCAP'):
+       ListFinaHadd = ListFinaHaddEB
+       ListFinaHadd = ListFinaHadd + ListFinaHaddEE
 
     # Create a struct
-    gROOT.ProcessLine(\
-      "struct EBStruct{\
-        Int_t rawId_;\
-        Int_t hashedIndex_;\
-        Int_t ieta_;\
-        Int_t iphi_;\
-        Int_t iSM_;\
-        Int_t iMod_;\
-        Int_t iTT_;\
-        Int_t iTTeta_;\
-        Int_t iTTphi_;\
-        Int_t iter_;\
-        Double_t coeff_;\
-        Double_t Signal_;\
-        Double_t Backgr_;\
-        Double_t Chisqu_;\
-        Double_t Ndof_;\
-        Double_t fit_mean_;\
-        Double_t fit_sigma_;\
-        Double_t fit_Snorm_;\
-        Double_t fit_b0_;\
-        Double_t fit_b1_;\
-        Double_t fit_b2_;\
-        Double_t fit_b3_;\
-        Double_t fit_Bnorm_;\
-      };")
-    gROOT.ProcessLine(\
-      "struct EEStruct{\
-        Int_t ix_;\
-        Int_t iy_;\
-        Int_t zside_;\
-        Int_t sc_;\
-        Int_t isc_;\
-        Int_t ic_;\
-        Int_t iquadrant_;\
-        Int_t hashedIndex_;\
-        Int_t iter_;\
-        Double_t coeff_;\
-        Double_t Signal_;\
-        Double_t Backgr_;\
-        Double_t Chisqu_;\
-        Double_t Ndof_;\
-        Double_t fit_mean_;\
-        Double_t fit_sigma_;\
-        Double_t fit_Snorm_;\
-        Double_t fit_b0_;\
-        Double_t fit_b1_;\
-        Double_t fit_b2_;\
-        Double_t fit_b3_;\
-        Double_t fit_Bnorm_;\
-      };")
-    s = EBStruct()
-    t = EEStruct()
-
-    gROOT.ProcessLine(\
-      "struct EB1Struct{\
-        Int_t rawId;\
-        Int_t hashedIndex;\
-        Int_t ieta;\
-        Int_t iphi;\
-        Int_t iSM;\
-        Int_t iMod;\
-        Int_t iTT;\
-        Int_t iTTeta;\
-        Int_t iTTphi;\
-        Int_t iter;\
-        Double_t coeff;\
-        Double_t Signal;\
-        Double_t Backgr;\
-        Double_t Chisqu;\
-        Double_t Ndof;\
-        Double_t fit_mean;\
-        Double_t fit_sigma;\
-        Double_t fit_Snorm;\
-        Double_t fit_b0;\
-        Double_t fit_b1;\
-        Double_t fit_b2;\
-        Double_t fit_b3;\
-        Double_t fit_Bnorm;\
-      };")
-    gROOT.ProcessLine(\
-      "struct EE1Struct{\
-        Int_t ix;\
-        Int_t iy;\
-        Int_t zside;\
-        Int_t sc;\
-        Int_t isc;\
-        Int_t ic;\
-        Int_t iquadrant;\
-        Int_t hashedIndex;\
-        Int_t iter;\
-        Double_t coeff;\
-        Double_t Signal;\
-        Double_t Backgr;\
-        Double_t Chisqu;\
-        Double_t Ndof;\
-        Double_t fit_mean;\
-        Double_t fit_sigma;\
-        Double_t fit_Snorm;\
-        Double_t fit_b0;\
-        Double_t fit_b1;\
-        Double_t fit_b2;\
-        Double_t fit_b3;\
-        Double_t fit_Bnorm;\
-      };")
-    s1 = EB1Struct()
-    t1 = EE1Struct()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       gROOT.ProcessLine(\
+         "struct EBStruct{\
+           Int_t rawId_;\
+           Int_t hashedIndex_;\
+           Int_t ieta_;\
+           Int_t iphi_;\
+           Int_t iSM_;\
+           Int_t iMod_;\
+           Int_t iTT_;\
+           Int_t iTTeta_;\
+           Int_t iTTphi_;\
+           Int_t iter_;\
+           Double_t coeff_;\
+           Double_t Signal_;\
+           Double_t Backgr_;\
+           Double_t Chisqu_;\
+           Double_t Ndof_;\
+           Double_t fit_mean_;\
+           Double_t fit_sigma_;\
+           Double_t fit_Snorm_;\
+           Double_t fit_b0_;\
+           Double_t fit_b1_;\
+           Double_t fit_b2_;\
+           Double_t fit_b3_;\
+           Double_t fit_Bnorm_;\
+         };")
+       s = EBStruct()
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       gROOT.ProcessLine(\
+         "struct EEStruct{\
+           Int_t ix_;\
+           Int_t iy_;\
+           Int_t zside_;\
+           Int_t sc_;\
+           Int_t isc_;\
+           Int_t ic_;\
+           Int_t iquadrant_;\
+           Int_t hashedIndex_;\
+           Int_t iter_;\
+           Double_t coeff_;\
+           Double_t Signal_;\
+           Double_t Backgr_;\
+           Double_t Chisqu_;\
+           Double_t Ndof_;\
+           Double_t fit_mean_;\
+           Double_t fit_sigma_;\
+           Double_t fit_Snorm_;\
+           Double_t fit_b0_;\
+           Double_t fit_b1_;\
+           Double_t fit_b2_;\
+           Double_t fit_b3_;\
+           Double_t fit_Bnorm_;\
+         };")
+       t = EEStruct()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       gROOT.ProcessLine(\
+         "struct EB1Struct{\
+           Int_t rawId;\
+           Int_t hashedIndex;\
+           Int_t ieta;\
+           Int_t iphi;\
+           Int_t iSM;\
+           Int_t iMod;\
+           Int_t iTT;\
+           Int_t iTTeta;\
+           Int_t iTTphi;\
+           Int_t iter;\
+           Double_t coeff;\
+           Double_t Signal;\
+           Double_t Backgr;\
+           Double_t Chisqu;\
+           Double_t Ndof;\
+           Double_t fit_mean;\
+           Double_t fit_sigma;\
+           Double_t fit_Snorm;\
+           Double_t fit_b0;\
+           Double_t fit_b1;\
+           Double_t fit_b2;\
+           Double_t fit_b3;\
+           Double_t fit_Bnorm;\
+         };")
+       s1 = EB1Struct()
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       gROOT.ProcessLine(\
+         "struct EE1Struct{\
+           Int_t ix;\
+           Int_t iy;\
+           Int_t zside;\
+           Int_t sc;\
+           Int_t isc;\
+           Int_t ic;\
+           Int_t iquadrant;\
+           Int_t hashedIndex;\
+           Int_t iter;\
+           Double_t coeff;\
+           Double_t Signal;\
+           Double_t Backgr;\
+           Double_t Chisqu;\
+           Double_t Ndof;\
+           Double_t fit_mean;\
+           Double_t fit_sigma;\
+           Double_t fit_Snorm;\
+           Double_t fit_b0;\
+           Double_t fit_b1;\
+           Double_t fit_b2;\
+           Double_t fit_b3;\
+           Double_t fit_Bnorm;\
+         };")
+       t1 = EE1Struct()
 
     calibMap_EB = TH2F("calibMap_EB", "EB calib coefficients: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
     calibMap_EEm = TH2F("calibMap_EEm", "EE- calib coefficients", 100,0.5,100.5,100,0.5,100.5)
     calibMap_EEp = TH2F("calibMap_EEp", "EE+ calib coefficients", 100,0.5,100.5,100,0.5,100.5)
     TreeEB = TTree("calibEB", "Tree of EB Inter-calibration constants")
-    TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
-    TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
-    TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
-    TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
-    TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
-    TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
-    TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
-    TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
-    TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
-    TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
-    TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
-    TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
-    TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
-    TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
-    TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
-    TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
-    TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
-    TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
-    TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
-    TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
-    TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
-    TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
-    TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
+       TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
+       TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
+       TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
+       TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
+       TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
+       TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
+       TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
+       TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
+       TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
+       TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
+       TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
+       TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
+       TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
+       TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
+       TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
+       TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
+       TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
+       TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
+       TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
+       TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
+       TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
+       TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     TreeEE = TTree("calibEE", "Tree of EE Inter-calibration constants")
-    TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
-    TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
-    TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
-    TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
-    TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
-    TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
-    TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
-    TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
-    TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
-    TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
-    TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
-    TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
-    TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
-    TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
-    TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
-    TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
-    TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
-    TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
-    TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
-    TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
-    TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
-    TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
+       TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
+       TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
+       TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
+       TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
+       TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
+       TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
+       TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
+       TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
+       TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
+       TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
+       TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
+       TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
+       TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
+       TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
+       TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
+       TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
+       TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
+       TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
+       TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
+       TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
+       TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()

@@ -4,6 +4,7 @@ import subprocess, time, sys, os
 from methods import *
 
 if len(sys.argv) != 7:
+    print str(sys.argv) + "is a wrong number of srguments (It sould be 7)."
     print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs"
     print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
     sys.exit(1)
