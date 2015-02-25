@@ -15,26 +15,26 @@ CRAB_CopyCert    = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
 unitsPerJob = 5   #DBS File per Job
 #MC and TTree
 isMC = True
-MakeNtuple4optimization = False
+MakeNtuple4optimization = True
 #PATH
 eosPath = '/store/caf/user/lpernie'
 #eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie'
 if(isCRAB):
    eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie/' #For reason of space is better the group area
-inputlist_n      = 'ALL_MINBIAS_UNCAL_L1.list' # list of the input files
-dirname          = 'ALL_MINBIAS_UNCAL_L1_prova_01'
+inputlist_n      = 'ALL_MINBIAS_UNCAL_L1_NOL1FILTER_40PU50ns.list' # list of the input files
+dirname          = 'ALL_MINBIAS_UNCAL_L1_NOL1FILTER_40PU50ns_EE_pi0'
 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = ''                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations = 2
+nIterations = 1
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 50 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ONLY_ENDCAP'         # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
@@ -47,10 +47,10 @@ hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'
 L1Seed = ""                                     # You can ask taht one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36"
 
 #Seeds (Comment if you want the standard cuts ones)
-EB_Seed_E    = '0.2'
-useEE_EtSeed = 'True'
+EB_Seed_E    = '0.5'
+useEE_EtSeed = 'False'
 EE_Seed_Et   = '0.5'
-EE_Seed_E    = '1.5'
+EE_Seed_E    = '1.0'
 #Selection
 CutOnHLTIso = "False"
 if(Are_pi0):
@@ -132,7 +132,7 @@ else:
    #outer barrel
    Pi0PtCutEB_high = '3.2'
    gPtCutEB_high = '1.4'
-   Pi0IsoCutEB_high = '0.8'
+   Pi0IsoCutEB_high = '0.'
    Pi0HLTIsoCutEB_high = "999"
    nXtal_1_EB_high = '6'
    nXtal_2_EB_high = '4'
@@ -505,11 +505,13 @@ doLaserCorr="False"
 if(Are_pi0):                                           # Member of Recalibration Module
    ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB')"
    eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE')"
-   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"  #40PU 25 ns
+   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonlyRegional','pi0EcalRecHitsES','TEST')"  #40PU 50 ns
 else:
    ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
    eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
-   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"  #40PU 25 ns
+   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonlyRegional','etaEcalRecHitsES','TEST')"  #40PU 50 ns
 hltGtDigis = "InputTag('simGtDigis','','TEST')"
 triggerTag = 'InputTag("TriggerResults","","TEST")'
 hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
