@@ -25,11 +25,16 @@ using namespace std;
 void Step3_BestBin(TString Input, int nLine, TString Input2, int nLine2){
 
   //Create an array with all the values
-  vector< float > values_eff; values_eff.clear();
-  vector< float > values_sb; values_sb.clear();
-  vector< float > values_mu; values_mu.clear();
-  vector< float > values_chi; values_chi.clear();
-  vector< int > values_bin; values_bin.clear();
+  vector< float > values_effL; values_effL.clear();
+  vector< float > values_sbL; values_sbL.clear();
+  vector< float > values_muL; values_muL.clear();
+  vector< float > values_chiL; values_chiL.clear();
+  vector< int >   values_binL; values_binL.clear();
+  vector< float > values_effH; values_effH.clear();
+  vector< float > values_sbH; values_sbH.clear();
+  vector< float > values_muH; values_muH.clear();
+  vector< float > values_chiH; values_chiH.clear();
+  vector< int >   values_binH; values_binH.clear();
   string Line, check;
   ifstream infile;
   infile.open (Input.Data());
@@ -42,43 +47,77 @@ void Step3_BestBin(TString Input, int nLine, TString Input2, int nLine2){
     stringstream ss(Line); 
     vector<string> tokens; tokens.clear();
     while (ss >> buf)  tokens.push_back(buf);
-    values_eff.push_back( atof(tokens[9].c_str()) );
-    values_sb.push_back(  atof(tokens[3].c_str()) );
-    values_mu.push_back(  atof(tokens[5].c_str()) );
-    values_chi.push_back( atof(tokens[7].c_str()) );
-    values_bin.push_back( atof(tokens[1].c_str()) );
+    if( tokens[0]=="L_BIN" ){
+	values_effL.push_back( atof(tokens[9].c_str()) );
+	values_sbL.push_back(  atof(tokens[3].c_str()) );
+	values_muL.push_back(  atof(tokens[5].c_str()) );
+	values_chiL.push_back( atof(tokens[7].c_str()) );
+	values_binL.push_back( atof(tokens[1].c_str()) );
+    }
+    if( tokens[0]=="H_BIN" ){
+	values_effH.push_back( atof(tokens[9].c_str()) );
+	values_sbH.push_back(  atof(tokens[3].c_str()) );
+	values_muH.push_back(  atof(tokens[5].c_str()) );
+	values_chiH.push_back( atof(tokens[7].c_str()) );
+	values_binH.push_back( atof(tokens[1].c_str()) );
+    }
+
   }
   infile.close();
-  //Find the best values
+  int numBadFit_L(0), numBadFit_H(0);
+  //Find the best values Low Eta
   float tmp1 = -1.;   int bin1 = -1.;
   float tmp2 = 100.;  int bin2 = -1.;
-  for(unsigned int i(0); i<values_eff.size(); i++){
-    if(values_sb[i] > tmp1){
-	tmp1 = values_sb[i];
-	bin1 = i; cout<<"--> S/B bin:  "<<values_sb[i]<<" bin "<<values_bin[bin1]<<endl;
+  for(unsigned int i(0); i<values_effL.size(); i++){
+    if(values_sbL[i] > tmp1 && values_chiL[i]<0.08 ){
+	tmp1 = values_sbL[i];
+	bin1 = i; cout<<"-->LOW S/B bin:  "<<values_sbL[i]<<" bin "<<values_binL[bin1]<<endl;
     }
-    if(values_mu[i] < tmp2){
-	tmp2 = values_mu[i];
-	bin2 = i; cout<<"--> Mu bin:  "<<values_mu[i]<<" bin "<<values_bin[bin2]<<endl;
+    if(values_muL[i] < tmp2 && values_chiL[i]<0.08 ){
+	tmp2 = values_muL[i];
+	bin2 = i; cout<<"-->HIGH Mu bin:  "<<values_muL[i]<<" bin "<<values_binL[bin2]<<endl;
     }
+    if( values_chiH[i]>0.08 ) numBadFit_L++;
+  }
+  //Find the best values High Eta
+  tmp1 = -1.;   int bin3 = -1.;
+  tmp2 = 100.;  int bin4 = -1.;
+  for(unsigned int i(0); i<values_effH.size(); i++){
+    if(values_sbH[i] > tmp1 && values_chiH[i]<0.044){
+	tmp1 = values_sbH[i];
+	bin3 = i; cout<<"-->LOW S/B bin:  "<<values_sbH[i]<<" bin "<<values_binH[bin3]<<endl;
+    }
+    if(values_muH[i] < tmp2 && values_chiH[i]<0.044 ){
+	tmp2 = values_muH[i];
+	bin4 = i; cout<<"-->HIGH Mu bin:  "<<values_muH[i]<<" bin "<<values_binH[bin4]<<endl;
+    }
+    if( values_chiH[i]>0.08 ) numBadFit_H++;
   }
   //Print them
-  cout<<"S/B) Bin: "<<values_bin[bin1]<<" sb: "<<values_sb[bin1]<<" smu: "<<values_mu[bin1]<<" eff: "<<values_eff[bin1]<<" chi: "<<values_chi[bin1]<<endl;
-  cout<<"M/U) Bin: "<<values_bin[bin2]<<" sb: "<<values_sb[bin2]<<" smu: "<<values_mu[bin2]<<" eff: "<<values_eff[bin2]<<" chi: "<<values_chi[bin2]<<endl;
+  cout<<"LOW Eta"<<endl;
+  cout<<"S/B) Bin: "<<values_binL[bin1]<<" sb: "<<values_sbL[bin1]<<" smu: "<<values_muL[bin1]<<" eff: "<<values_effL[bin1]<<" chi: "<<values_chiL[bin1]<<endl;
+  cout<<"M/U) Bin: "<<values_binL[bin2]<<" sb: "<<values_sbL[bin2]<<" smu: "<<values_muL[bin2]<<" eff: "<<values_effL[bin2]<<" chi: "<<values_chiL[bin2]<<endl;
+  cout<<"HIGH Eta"<<endl;
+  cout<<"S/B) Bin: "<<values_binH[bin3]<<" sb: "<<values_sbH[bin3]<<" smu: "<<values_muH[bin3]<<" eff: "<<values_effH[bin3]<<" chi: "<<values_chiH[bin3]<<endl;
+  cout<<"M/U) Bin: "<<values_binH[bin4]<<" sb: "<<values_sbH[bin4]<<" smu: "<<values_muH[bin4]<<" eff: "<<values_effH[bin4]<<" chi: "<<values_chiH[bin4]<<endl;
+  cout<<"We have "<<numBadFit_L<<" bad fit in L and "<<numBadFit_L<<" in H."<<endl;
+  cout<<endl;
   //Look for the cuts used
   ifstream infile2;
   infile2.open (Input2.Data());
   string Line2, check2;
   int nL2=1;
   while(!infile2.eof()){
-    if(nL2==nLine) break;
+    if(nL2==nLine2) break;
     nL2++;
     getline(infile2,Line);   
     string buf;
     stringstream ss(Line);
     vector<string> tokens; tokens.clear();
     while (ss >> buf)  tokens.push_back(buf);
-    if( atof(tokens[1].c_str()) == values_bin[bin1]  ) cout<<"S/B Selection: "<<Line<<endl;
-    if( atof(tokens[1].c_str()) == values_bin[bin2]  ) cout<<"SigmaMu/Mu Selection:"<<Line<<endl;
+    if( atof(tokens[1].c_str()) == values_binL[bin1]  ) cout<<"LOW: S/B Selection: "<<Line<<endl;
+    if( atof(tokens[1].c_str()) == values_binL[bin2]  ) cout<<"LOW: SigmaMu/Mu Selection:"<<Line<<endl;
+    if( atof(tokens[1].c_str()) == values_binH[bin3]  ) cout<<"HIGH: S/B Selection: "<<Line<<endl;
+    if( atof(tokens[1].c_str()) == values_binH[bin4]  ) cout<<"HIGH: SigmaMu/Mu Selection:"<<Line<<endl;
   }
 }

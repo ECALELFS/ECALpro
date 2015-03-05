@@ -403,17 +403,17 @@ FillEpsilonPlot::~FillEpsilonPlot()
 #endif
   //JSON
   //delete myjson;
-#ifdef MVA_REGRESSIO
-  // if the analyzer did not run it crash because you do not create it
-  if(!isMC_){
-    delete forest_EB_1;
-    delete forest_EB_2;
-  }
-#endif
-#ifdef MVA_REGRESSIO_EE
-  delete forest_EE_pi01;
-  delete forest_EE_pi02;
-#endif
+//#ifdef MVA_REGRESSIO
+//  // if the analyzer did not run it crash because you do not create it. Better never delete it
+//  if(!isMC_){
+//    delete forest_EB_1;
+//    delete forest_EB_2;
+//  }
+//#endif
+//#ifdef MVA_REGRESSIO_EE
+//  delete forest_EE_pi01;
+//  delete forest_EE_pi02;
+//#endif
   //if( calibMapPath_.find("iter_-1")!=std::string::npos ){
   //Write the PassPreselection Map
   //cout<<"Preselection:: Siamo al primo iter: Scrivo le correzioni"<<endl;
@@ -484,8 +484,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   bool EB_HLT=true, EE_HLT=true;
   if( HLTResults_ ){
-    EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
-    EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
     if(Are_pi0_){
 	EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 	EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
@@ -829,7 +827,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
     }  // loop over xtals in the region
     if(simple_energy <= 0) { 
-	cout << "skipping cluster with negative energy " << simple_energy << endl; 
+	//cout << "skipping cluster with negative energy " << simple_energy << endl; 
 	continue;
     }
 
