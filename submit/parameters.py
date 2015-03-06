@@ -21,8 +21,8 @@ MakeNtuple4optimization = False
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie'
 if(isCRAB):
    eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie/' #For reason of space is better the group area
-inputlist_n      = 'ALL_MINBIAS_UNCAL_L1_NOL1FILTER_40PU50ns.list' # list of the input files
-dirname          = 'ALL_CRAB_IIHE_01'
+inputlist_n      = 'ALL_NeuPt2_20_PU40x25.list' # list of the input files
+dirname          = 'ALL_CRAB_IIHE_02'
 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
@@ -495,31 +495,31 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 #HLTPaths='AlCa_EcalPi0_*'
 
 #MC MINBIAS_PIZERO_ALCARAW_NOL1_v2
-HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
-json_file = ''
-is_2011 = 'False'                                             # Fit Parameter Range
-overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
-doEnenerScale='False'
-doIC='False'                                                  # Member of Recalibration Module
-doLaserCorr="False"
-if(Are_pi0):                                           # Member of Recalibration Module
-   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB')"
-   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE')"
-#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"  #40PU 25 ns
-   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonlyRegional','pi0EcalRecHitsES','TEST')"  #40PU 50 ns
-else:
-   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
-   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
-#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"  #40PU 25 ns
-   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonlyRegional','etaEcalRecHitsES','TEST')"  #40PU 50 ns
-hltGtDigis = "InputTag('simGtDigis','','TEST')"
-triggerTag = 'InputTag("TriggerResults","","TEST")'
-hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
-useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
-correctHits = 'False'
-globaltag='MCRUN2_72_V1A::All'
-HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
-isMC = True
+#HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
+#json_file = ''
+#is_2011 = 'False'                                             # Fit Parameter Range
+#overWriteGlobalTag = False                                    # Allow to overwrite AlphaTag, Laser correction etc
+#doEnenerScale='False'
+#doIC='False'                                                  # Member of Recalibration Module
+#doLaserCorr="False"
+#if(Are_pi0):                                           # Member of Recalibration Module
+#   ebInputTag = "InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB')"
+#   eeInputTag = "InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE')"
+##   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonly','pi0EcalRecHitsES','TEST')"  #40PU 25 ns
+#   esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonlyRegional','pi0EcalRecHitsES','TEST')"  #40PU 50 ns
+#else:
+#   ebInputTag = "InputTag('hltAlCaEtaEBUncalibrator','etaEcalRecHitsEB','TEST')"
+#   eeInputTag = "InputTag('hltAlCaEtaEEUncalibrator','etaEcalRecHitsEE','TEST')"
+##   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonly','etaEcalRecHitsES','TEST')"  #40PU 25 ns
+#   esInputTag = "InputTag('hltAlCaEtaRecHitsFilterEEonlyRegional','etaEcalRecHitsES','TEST')"  #40PU 50 ns
+#hltGtDigis = "InputTag('simGtDigis','','TEST')"
+#triggerTag = 'InputTag("TriggerResults","","TEST")'
+#hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap","","TEST")'
+#useHLTFilter = "False"                                        # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
+#correctHits = 'False'
+#globaltag='MCRUN2_72_V1A::All'
+#HLTPaths='AlCa_EcalPi0_*'                                     # Name of the HLT path selected with useHLTFilter
+#isMC = True
 
 #MC CRAB Neutrino GUN
 HLTResults = 'False'                                          # Use the function GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
