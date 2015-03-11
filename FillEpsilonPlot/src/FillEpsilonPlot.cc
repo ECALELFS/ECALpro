@@ -139,10 +139,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     externalGeometry_                  = iConfig.getUntrackedParameter<std::string>("ExternalGeometry");
     currentIteration_                  = iConfig.getUntrackedParameter<int>("CurrentIteration");
     outputDir_                         = iConfig.getUntrackedParameter<std::string>("OutputDir");
+    isCRAB_                            = iConfig.getUntrackedParameter<bool>("isCRAB",false);
     calibMapPath_                      = iConfig.getUntrackedParameter<std::string>("calibMapPath");
     Barrel_orEndcap_                   = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     EB_Seed_E_                         = iConfig.getUntrackedParameter<double>("EB_Seed_E",0.2);
-    useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed","True");
+    useEE_EtSeed_                      = iConfig.getUntrackedParameter<bool>("useEE_EtSeed",true);
     EE_Seed_E_                         = iConfig.getUntrackedParameter<double>("EE_Seed_E",0.5);
     EE_Seed_Et_                        = iConfig.getUntrackedParameter<double>("EE_Seed_Et",0.5);
     pi0PtCut_low_[EcalBarrel]          = iConfig.getUntrackedParameter<double>("Pi0PtCutEB_low");
@@ -153,7 +154,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     gPtCut_high_[EcalBarrel]           = iConfig.getUntrackedParameter<double>("gPtCutEB_high");
     gPtCut_low_[EcalEndcap]            = iConfig.getUntrackedParameter<double>("gPtCutEE_low");
     gPtCut_high_[EcalEndcap]           = iConfig.getUntrackedParameter<double>("gPtCutEE_high");
-    CutOnHLTIso_                       = iConfig.getUntrackedParameter<bool>("CutOnHLTIso");
+    CutOnHLTIso_                       = iConfig.getUntrackedParameter<bool>("CutOnHLTIso",false);
     pi0HLTIsoCut_low_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_low");
     pi0HLTIsoCut_high_[EcalBarrel]     = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEB_high");
     pi0HLTIsoCut_low_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("Pi0HLTIsoCutEE_low");
@@ -241,7 +242,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     {
 	  char fileName[200];
 	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
-	  sprintf(fileName,"%s", calibMapPath_.c_str());
+	  if( isCRAB_ ) sprintf(fileName,"%s",  edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str() );
+	  else          sprintf(fileName,"%s", calibMapPath_.c_str());
 	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
     }
 
@@ -363,6 +365,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     forest_EE_pi01 = (GBRForest *)EEweight_file_pi01->Get("Correction");
     forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
 #endif
+
 }
 
 FillEpsilonPlot::~FillEpsilonPlot()
@@ -400,17 +403,17 @@ FillEpsilonPlot::~FillEpsilonPlot()
 #endif
   //JSON
   //delete myjson;
-#ifdef MVA_REGRESSIO
-  // if the analyzer did not run it crash because you do not create it
-  if(!isMC_){
-    delete forest_EB_1;
-    delete forest_EB_2;
-  }
-#endif
-#ifdef MVA_REGRESSIO_EE
-  delete forest_EE_pi01;
-  delete forest_EE_pi02;
-#endif
+//#ifdef MVA_REGRESSIO
+//  // if the analyzer did not run it crash because you do not create it. Better never delete it
+//  if(!isMC_){
+//    delete forest_EB_1;
+//    delete forest_EB_2;
+//  }
+//#endif
+//#ifdef MVA_REGRESSIO_EE
+//  delete forest_EE_pi01;
+//  delete forest_EE_pi02;
+//#endif
   //if( calibMapPath_.find("iter_-1")!=std::string::npos ){
   //Write the PassPreselection Map
   //cout<<"Preselection:: Siamo al primo iter: Scrivo le correzioni"<<endl;
@@ -428,7 +431,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
   //Trigger Histo
-  if( !areLabelsSet_ ){
+  if( !areLabelsSet_ && L1TriggerInfo_ ){
     edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
     iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
     const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
@@ -481,8 +484,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   bool EB_HLT=true, EE_HLT=true;
   if( HLTResults_ ){
-    EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
-    EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
     if(Are_pi0_){
 	EB_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EBonly.*");
 	EE_HLT = GetHLTResults(iEvent, "AlCa_EcalPi0EEonly.*");
@@ -505,6 +506,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot, EcalEndcap);
 
   delete estopology_;
+
 }
 
 
@@ -825,7 +827,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
     }  // loop over xtals in the region
     if(simple_energy <= 0) { 
-	cout << "skipping cluster with negative energy " << simple_energy << endl; 
+	//cout << "skipping cluster with negative energy " << simple_energy << endl; 
 	continue;
     }
 
@@ -1427,7 +1429,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	cout << "[DEBUG] Fill Optimization Variables..." << endl;
 #endif
 	//Fill Optimization
-	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.35) && pi0P4.mass() < ((Are_pi0_)?0.25:0.7) ){
+	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.2) && pi0P4.mass() < ((Are_pi0_)?0.25:1.) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
 	    int ind1 = i,  ind2 = j;

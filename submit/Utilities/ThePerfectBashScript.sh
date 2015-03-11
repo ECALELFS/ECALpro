@@ -10,7 +10,7 @@ echo "---->                          man_oper: to know how are the operator in b
 echo "---->                          man_perl: to know how to use perl language and awk"
 echo "---->To make something useful: iamroot: to know if you are a root user"
 echo "---->                          SobstituteWords-directory-worlds1-worlds2: to chanhe all the 'worlds1' with 'worlds2' in all the file 'in directory'"
-echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax-NumMax: to remove all Useless-files in group_Eos/dirName'"
+echo "---->                          removeEOS-group_Eos-dirName-TagFiles-iterMin-iterMax-NumMax: to remove all Useless-files in group_Eos/dirName (use notag if there is no tag)'"
 echo "---->                          CopyEosFolder-group-DirFromToCopy-NewDirectory: make a cosy of a EOS folder with a different name."
 echo "---->                          RemoveHaddfailed-group-Directory-TagFiles: Remove from Hadd list the corrupt files."
 echo "---->                          ResendHaddfailed-Directory-Iter-Queue: Resend Hadd of one iter."

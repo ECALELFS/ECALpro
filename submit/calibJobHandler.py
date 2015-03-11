@@ -2,26 +2,52 @@
 
 import subprocess, time, sys, os
 from methods import *
-from parameters import *
 
-if len(sys.argv) != 4:
-    print "usage thisPyton.py pwd nITER queue"
-    print "or"
-    print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
-    print "or"
-    print "Change CRAB with CRAB_RESU_FinalHadd in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
-    sys.exit(1)
-
-#if ( sys.argv[1] == 'CRAB' or sys.argv[1] == 'CRAB_RESU_FinalHadd' ):
+if ( str(sys.argv[1]).find('CRAB')==-1 and str(sys.argv[1]).find('BATCH_RESU')==-1 ): # Batch system
+   if len(sys.argv) != 3:
+       print "usage thisPyton.py pwd nITER queue"
+       sys.exit(1)
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):                                   # Batch Resubmission
+    if len(sys.argv) != 5:
+       print "usage thisPyton.py BATCH_RESU pwd nITER queue nJobs"
+       sys.exit(1)
+else:                                                                                 # CRAB
+    if len(sys.argv) != 5:
+       print "usage thisPyton.py CRAB currentITER queue (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       print "or"
+       print "Change CRAB with CRAB_RESU_FinalHadd in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       print "or"
+       print "Change CRAB with CRAB_RESU_FitOnly in: (bsub -q " + queueForDaemon + " 'source " + str(os.getcwd()) + "/" + dirname + "/CRAB_files/HaddSendafterCrab_XXX.sh')"
+       sys.exit(1)
+#Selec what mode you are running
+RunCRAB = True; RunBatch = True; RunResub = True;
 if ( str(sys.argv[1]).find('CRAB') != -1 ):
-    pwd = os.getcwd()
+     RunCRAB = True; RunBatch = False; RunResub = False;
+elif ( str(sys.argv[1]).find('BATCH_RESU') != -1 ):
+     RunCRAB = False; RunBatch = False; RunResub = True;
+else:
+     RunCRAB = False; RunBatch = True; RunResub = False;
+ONLYHADD = False; ONLYFIT = False
+if ( str(sys.argv[1]).find('ONLYHADD') != -1 ):
+     ONLYHADD = True;
+if ( str(sys.argv[1]).find('ONLYFIT') != -1 ):
+     ONLYFIT = True;
+
+Add_path = ''
+if ( RunCRAB ):
     nIterations = 1
     njobs = 0
+    Add_path = sys.argv[4]
+    queue = sys.argv[3]
+elif ( RunResub ):
+    njobs = int(sys.argv[4])
+    queue = sys.argv[3]
+    nIterations = nIterations - int(sys.argv[2])
 else:
-    pwd = sys.argv[1]
-    njobs = int(sys.argv[2])
-queue = sys.argv[3]
+    njobs = int(sys.argv[1])
+    queue = sys.argv[2]
 
+pwd = os.getcwd()
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
 srcPath  = outputdir + '/src'
@@ -29,21 +55,30 @@ srcPath  = outputdir + '/src'
 workdir = pwd+'/'+dirname
 cfgHaddPath  = workdir + '/src/hadd'
 
-
 # To compute the num of hadd
 inputlist_f = open( inputlist_n )
 # read the list containing all the input files
 inputlistbase_v = inputlist_f.readlines()
 
 for iters in range(nIterations):
-    #if ( sys.argv[1] == 'CRAB' ):
-    if ( str(sys.argv[1]).find('CRAB') != -1 ):
+    if ( RunCRAB ):
         iters = int(sys.argv[2])
-    #if ( sys.argv[1] != 'CRAB' ):
-    if ( str(sys.argv[1]).find('CRAB') == -1 ):
+    if ( RunResub ):
+        iters = iters + int(sys.argv[2])
+    if ( not RunCRAB and not ONLYHADD and not ONLYFIT ):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         for ijob in range(njobs):
-
+            #In case you want the stat. syst
+            if ( str(sys.argv[1]).find('BATCH_RESU_SYST_1') != -1 ):
+                 env_script_n = open(outputdir + "/cfgFile/Fill/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
+                 SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(1)\n'
+                 env_script_n.write(SystParamLine)
+                 env_script_n.close()
+            if ( str(sys.argv[1]).find('BATCH_RESU_SYST_2') != -1 ):
+                 env_script_n = open(outputdir + "/cfgFile/Fill/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
+                 SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(2)\n'
+                 env_script_n.write(SystParamLine)
+                 env_script_n.close()
             # preparing submission of filling tasks
             fill_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + ".log"
             fill_src_n = srcPath + "/Fill/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
@@ -67,7 +102,6 @@ for iters in range(nIterations):
         datalines = (checkJobs.communicate()[0]).splitlines()
 
         print 'Waiting for filling jobs to be finished...'
-
         # Daemon cheking running jobs
         while len(datalines)>=2 :
             for entry in datalines:
@@ -77,25 +111,18 @@ for iters in range(nIterations):
                 if(entry.find('JOBID')!=-1): continue
                 i = int(entry)
 
-            time.sleep(1)
+            time.sleep(10)
 
             checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
             datalines = (checkJobs.communicate()[0]).splitlines()
-
-        print 'Done with loop'
-        # Computing Nunber of hadd
-        inputlist_v = inputlistbase_v[:]
-        NrelJob = float(len(inputlist_v)) / float(ijobmax)
-        if( float(int(NrelJob) - NrelJob) < 0. ):
-            NrelJob = int(NrelJob) + 1
-        Nlist_flo = float(NrelJob/nHadd) + 1.
-        Nlist = int(Nlist_flo)
-        print "Number of Hadd in parallel: " + str(Nlist)
+            checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
+            datalines2 = (checkJobs2.communicate()[0]).splitlines()
+        print 'Done with the Fill part'
+    #Crab start from HADD, but it need to rebuild the list of files. So he has this additional part
     if ( sys.argv[1] == 'CRAB' ):
-        #Crab start here, but it have to rebuild the list of files. First the total mumber of jobs
-        getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + " | awk '{print $5}'" ], stdout=subprocess.PIPE, shell=True)
+        print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + " | awk '{print $5}' | grep root"
+        getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path +  " | awk '{print $5}' | grep root" ], stdout=subprocess.PIPE, shell=True)
         getGoodfile_c = getGoodfile.communicate()
-
         getGoodfile_str = str(getGoodfile_c)
         getGoodfile_str = getGoodfile_str.replace("\\n", " ")
         getGoodfile_str = getGoodfile_str.replace("'", "")
@@ -104,13 +131,12 @@ for iters in range(nIterations):
         getGoodfile_str = getGoodfile_str.replace("None", "")
         getGoodfile_str = getGoodfile_str.replace(",", "")
         getGoodfile_list = getGoodfile_str.split()
-
         NrelJob = float(len(getGoodfile_list))
         if( float(int(NrelJob) - NrelJob) < 0. ):
             NrelJob = int(NrelJob) + 1
         Nlist_flo = float(NrelJob/nHadd) + 1.
         Nlist = int(Nlist_flo)
-        print "Number of Hadds in parallel: " + str(Nlist)
+        print "Number of Hadds in parallel (CRAB): " + str(Nlist)
         #Remove Old .list and create new ones
         rmOLDlist = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_*.list" ], stdout=subprocess.PIPE, shell=True)
         rmOLDlist_c = rmOLDlist.communicate()
@@ -123,7 +149,7 @@ for iters in range(nIterations):
         for num_list in range(Nlist):
             haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_" + str(num_list)+ ".list")
             haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
-            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
             for nj in range(nHadd):
                 nEff = num_list*nHadd+nj
                 if( nEff < len(getGoodfile_list) ):
@@ -135,7 +161,7 @@ for iters in range(nIterations):
         #Remove Old .sh and create new ones
         rmOLDsh = subprocess.Popen(["rm -rf " + srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_*.sh" ], stdout=subprocess.PIPE, shell=True)
         rmOLDsh_c = rmOLDsh.communicate()
-        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/'
+        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path
         for num_list in range(Nlist):   
             hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(num_list) + ".sh"
             hadd_cfg_f = open( hadd_cfg_n, 'w' )
@@ -150,10 +176,16 @@ for iters in range(nIterations):
         printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
 
-    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' ):
-        #Now common for EAO and crab
-        # hadd to sum the epsilon histograms
+    #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
+    if ( sys.argv[1] != 'CRAB_RESU_FinalHadd' and sys.argv[1] != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
         print 'Now adding files...'
+        inputlist_v = inputlistbase_v[:]
+        NrelJob = float(len(inputlist_v)) / float(ijobmax)
+        if( float(int(NrelJob) - NrelJob) < 0. ):
+            NrelJob = int(NrelJob) + 1
+        Nlist_flo = float(NrelJob/nHadd) + 1.
+        Nlist = int(Nlist_flo)
+        print "Number of Hadd in parallel: " + str(Nlist)
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
@@ -196,8 +228,8 @@ for iters in range(nIterations):
                    #If is corrupted (size too small), remove it from the list
                    if( int(Splitted[1])<10000 ):
                         print 'HADD::Bad size for: ' + str(filetoCheck2)
-                        print 'removing from Hadd'
-                        f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                        print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
+                        f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
                         NumToRem = NumToRem + 1
                         lines1 = f1.readlines()
                         for line in lines:
@@ -210,7 +242,7 @@ for iters in range(nIterations):
                 MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
                 MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                 mvOut = MoveC.communicate()
-            #End of the check
+            #End of the check, sending the job
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
             outJobs = subJobs.communicate()
             print outJobs
@@ -237,39 +269,38 @@ for iters in range(nIterations):
 
         print 'Done with various hadd'
 
-    print 'Now The Final One...'
-    FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
-    FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
-    FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
-    FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
-    FoutJobs = FsubJobs.communicate()
-    print FoutJobs
-    time.sleep(3)
-
-    FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-    Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
-    print 'Waiting for the Final hadd...'
-    # Daemon cheking running jobs
-    while len(Fdatalines)>=2 :
-        for entry in Fdatalines:
-            entry = entry.rstrip()
-            entry = entry.split()[0]
-            #print entry
-            if(entry.find('JOBID')!=-1): continue
-            i = int(entry)
-
-        time.sleep(1)
+    if ( sys.argv[1] != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
+        print 'Now The Final One...'
+        FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
+        FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
+        FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
+        FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
+        FoutJobs = FsubJobs.communicate()
+        print FoutJobs
+        time.sleep(3)
 
         FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
         Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+        print 'Waiting for the Final hadd...'
+        # Daemon cheking running jobs
+        while len(Fdatalines)>=2 :
+            for entry in Fdatalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
 
-    print 'Done with final hadd'
+            time.sleep(1)
 
-    print 'Done with staging the final epsilonPlots.root'
+            FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+
+        print 'Done with final hadd'
 
 #    # removing useles file
 #    for nRm in range(Nlist):
-#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
+#        remove_s = 'cmsRm ' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(nRm) + '.root'
 #        print '[Removed] :: ' + remove_s
 #        removeFile = subprocess.Popen([remove_s],stdout=subprocess.PIPE, shell=True)
 #        nFilesRemoved = 0
@@ -283,17 +314,32 @@ for iters in range(nIterations):
     if (14647%nFit != 0) :
         nEE = int(nEE) +1
     # For final hadd
-    ListFinaHadd = list()
+    ListFinaHaddEB = list()
+    ListFinaHaddEE = list()
     # preparing submission of fit tasks (EB)
     print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
     for inteb in range(nEB):
-        #fit_log_n = logPath + "/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".log"
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
-        #submit_s = "bsub -q " + queue + " -o " + fit_log_n + " source " + fit_src_n
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
+        #if isCRAB change the path of the files
+        if(isCRAB):
+            #Correct path into the cfg
+            with open(fit_cfg_n, 'a') as file:
+                 file.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + "/" + NameTag + "epsilonPlots.root')\n")
+                 file.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters-1) + "/" + Add_path + "/" + NameTag + calibMapName + "')\n")
+            #Correct path into the src
+            destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Barrel_" + str(inteb)+ "_" + calibMapName
+            logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".log"
+            tmpsource = "/tmp/" + NameTag + "Barrel_" + str(inteb) + "_" + calibMapName
+            with open(fit_src_n, 'a') as file2:
+                 file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                 file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                 file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
+                 file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+        ListFinaHaddEB.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         print 'About to EB fit:'
-        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         print submit_s
         # actually submitting fit tasks (EB)
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
@@ -302,14 +348,28 @@ for iters in range(nIterations):
 
     # preparing submission of fit tasks (EE)
     print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
-    for inte in range(nEE):
-        #fit_log_n = logPath + "/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".log"
+    for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-        # redirecting output on /dev/null is required to avoid LSF directory to be created automatically
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
+        #if isCRAB change the path of the files
+        if(isCRAB):
+            #Correct path into the cfg
+            with open(fit_cfg_n, 'a') as file:
+                 file.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Add_path + "/" + NameTag + "epsilonPlots.root')\n")
+                 file.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iters-1) + "/" + Add_path + "/" + NameTag + calibMapName + "')\n")
+            #Correct path into the src
+            destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Endcap_" + str(inte)+ "_" + calibMapName
+            logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".log"
+            tmpsource = "/tmp/" + NameTag + "Endcap_" + str(inte) + "_" + calibMapName
+            with open(fit_src_n, 'a') as file2:
+                 file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                 file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                 file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
+                 file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+        ListFinaHaddEE.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         print 'About to EE fit:'
-        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+        print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
         print submit_s
         # actually submitting fit tasks (EE)
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
@@ -344,167 +404,181 @@ for iters in range(nIterations):
     gSystem.Load("libFWCoreFWLite.so")
     AutoLibraryLoader.enable()
     f = TFile('/tmp/' + NameTag + calibMapName, 'recreate')
+    #Run only on EB or EE if needed
+    ListFinaHadd = list()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       ListFinaHadd = ListFinaHaddEB
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       ListFinaHadd = ListFinaHaddEE
+    if (Barrel_or_Endcap=='ONLY_BARREL' and Barrel_or_Endcap=='ONLY_ENDCAP'):
+       ListFinaHadd = ListFinaHaddEB
+       ListFinaHadd = ListFinaHadd + ListFinaHaddEE
 
     # Create a struct
-    gROOT.ProcessLine(\
-      "struct EBStruct{\
-        Int_t rawId_;\
-        Int_t hashedIndex_;\
-        Int_t ieta_;\
-        Int_t iphi_;\
-        Int_t iSM_;\
-        Int_t iMod_;\
-        Int_t iTT_;\
-        Int_t iTTeta_;\
-        Int_t iTTphi_;\
-        Int_t iter_;\
-        Double_t coeff_;\
-        Double_t Signal_;\
-        Double_t Backgr_;\
-        Double_t Chisqu_;\
-        Double_t Ndof_;\
-        Double_t fit_mean_;\
-        Double_t fit_sigma_;\
-        Double_t fit_Snorm_;\
-        Double_t fit_b0_;\
-        Double_t fit_b1_;\
-        Double_t fit_b2_;\
-        Double_t fit_b3_;\
-        Double_t fit_Bnorm_;\
-      };")
-    gROOT.ProcessLine(\
-      "struct EEStruct{\
-        Int_t ix_;\
-        Int_t iy_;\
-        Int_t zside_;\
-        Int_t sc_;\
-        Int_t isc_;\
-        Int_t ic_;\
-        Int_t iquadrant_;\
-        Int_t hashedIndex_;\
-        Int_t iter_;\
-        Double_t coeff_;\
-        Double_t Signal_;\
-        Double_t Backgr_;\
-        Double_t Chisqu_;\
-        Double_t Ndof_;\
-        Double_t fit_mean_;\
-        Double_t fit_sigma_;\
-        Double_t fit_Snorm_;\
-        Double_t fit_b0_;\
-        Double_t fit_b1_;\
-        Double_t fit_b2_;\
-        Double_t fit_b3_;\
-        Double_t fit_Bnorm_;\
-      };")
-    s = EBStruct()
-    t = EEStruct()
-
-    gROOT.ProcessLine(\
-      "struct EB1Struct{\
-        Int_t rawId;\
-        Int_t hashedIndex;\
-        Int_t ieta;\
-        Int_t iphi;\
-        Int_t iSM;\
-        Int_t iMod;\
-        Int_t iTT;\
-        Int_t iTTeta;\
-        Int_t iTTphi;\
-        Int_t iter;\
-        Double_t coeff;\
-        Double_t Signal;\
-        Double_t Backgr;\
-        Double_t Chisqu;\
-        Double_t Ndof;\
-        Double_t fit_mean;\
-        Double_t fit_sigma;\
-        Double_t fit_Snorm;\
-        Double_t fit_b0;\
-        Double_t fit_b1;\
-        Double_t fit_b2;\
-        Double_t fit_b3;\
-        Double_t fit_Bnorm;\
-      };")
-    gROOT.ProcessLine(\
-      "struct EE1Struct{\
-        Int_t ix;\
-        Int_t iy;\
-        Int_t zside;\
-        Int_t sc;\
-        Int_t isc;\
-        Int_t ic;\
-        Int_t iquadrant;\
-        Int_t hashedIndex;\
-        Int_t iter;\
-        Double_t coeff;\
-        Double_t Signal;\
-        Double_t Backgr;\
-        Double_t Chisqu;\
-        Double_t Ndof;\
-        Double_t fit_mean;\
-        Double_t fit_sigma;\
-        Double_t fit_Snorm;\
-        Double_t fit_b0;\
-        Double_t fit_b1;\
-        Double_t fit_b2;\
-        Double_t fit_b3;\
-        Double_t fit_Bnorm;\
-      };")
-    s1 = EB1Struct()
-    t1 = EE1Struct()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       gROOT.ProcessLine(\
+         "struct EBStruct{\
+           Int_t rawId_;\
+           Int_t hashedIndex_;\
+           Int_t ieta_;\
+           Int_t iphi_;\
+           Int_t iSM_;\
+           Int_t iMod_;\
+           Int_t iTT_;\
+           Int_t iTTeta_;\
+           Int_t iTTphi_;\
+           Int_t iter_;\
+           Double_t coeff_;\
+           Double_t Signal_;\
+           Double_t Backgr_;\
+           Double_t Chisqu_;\
+           Double_t Ndof_;\
+           Double_t fit_mean_;\
+           Double_t fit_sigma_;\
+           Double_t fit_Snorm_;\
+           Double_t fit_b0_;\
+           Double_t fit_b1_;\
+           Double_t fit_b2_;\
+           Double_t fit_b3_;\
+           Double_t fit_Bnorm_;\
+         };")
+       s = EBStruct()
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       gROOT.ProcessLine(\
+         "struct EEStruct{\
+           Int_t ix_;\
+           Int_t iy_;\
+           Int_t zside_;\
+           Int_t sc_;\
+           Int_t isc_;\
+           Int_t ic_;\
+           Int_t iquadrant_;\
+           Int_t hashedIndex_;\
+           Int_t iter_;\
+           Double_t coeff_;\
+           Double_t Signal_;\
+           Double_t Backgr_;\
+           Double_t Chisqu_;\
+           Double_t Ndof_;\
+           Double_t fit_mean_;\
+           Double_t fit_sigma_;\
+           Double_t fit_Snorm_;\
+           Double_t fit_b0_;\
+           Double_t fit_b1_;\
+           Double_t fit_b2_;\
+           Double_t fit_b3_;\
+           Double_t fit_Bnorm_;\
+         };")
+       t = EEStruct()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       gROOT.ProcessLine(\
+         "struct EB1Struct{\
+           Int_t rawId;\
+           Int_t hashedIndex;\
+           Int_t ieta;\
+           Int_t iphi;\
+           Int_t iSM;\
+           Int_t iMod;\
+           Int_t iTT;\
+           Int_t iTTeta;\
+           Int_t iTTphi;\
+           Int_t iter;\
+           Double_t coeff;\
+           Double_t Signal;\
+           Double_t Backgr;\
+           Double_t Chisqu;\
+           Double_t Ndof;\
+           Double_t fit_mean;\
+           Double_t fit_sigma;\
+           Double_t fit_Snorm;\
+           Double_t fit_b0;\
+           Double_t fit_b1;\
+           Double_t fit_b2;\
+           Double_t fit_b3;\
+           Double_t fit_Bnorm;\
+         };")
+       s1 = EB1Struct()
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       gROOT.ProcessLine(\
+         "struct EE1Struct{\
+           Int_t ix;\
+           Int_t iy;\
+           Int_t zside;\
+           Int_t sc;\
+           Int_t isc;\
+           Int_t ic;\
+           Int_t iquadrant;\
+           Int_t hashedIndex;\
+           Int_t iter;\
+           Double_t coeff;\
+           Double_t Signal;\
+           Double_t Backgr;\
+           Double_t Chisqu;\
+           Double_t Ndof;\
+           Double_t fit_mean;\
+           Double_t fit_sigma;\
+           Double_t fit_Snorm;\
+           Double_t fit_b0;\
+           Double_t fit_b1;\
+           Double_t fit_b2;\
+           Double_t fit_b3;\
+           Double_t fit_Bnorm;\
+         };")
+       t1 = EE1Struct()
 
     calibMap_EB = TH2F("calibMap_EB", "EB calib coefficients: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
     calibMap_EEm = TH2F("calibMap_EEm", "EE- calib coefficients", 100,0.5,100.5,100,0.5,100.5)
     calibMap_EEp = TH2F("calibMap_EEp", "EE+ calib coefficients", 100,0.5,100.5,100,0.5,100.5)
     TreeEB = TTree("calibEB", "Tree of EB Inter-calibration constants")
-    TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
-    TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
-    TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
-    TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
-    TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
-    TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
-    TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
-    TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
-    TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
-    TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
-    TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
-    TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
-    TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
-    TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
-    TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
-    TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
-    TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
-    TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
-    TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
-    TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
-    TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
-    TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
-    TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
+       TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
+       TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
+       TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
+       TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
+       TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
+       TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
+       TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
+       TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
+       TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
+       TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
+       TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
+       TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
+       TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
+       TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
+       TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
+       TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
+       TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
+       TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
+       TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
+       TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
+       TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
+       TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     TreeEE = TTree("calibEE", "Tree of EE Inter-calibration constants")
-    TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
-    TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
-    TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
-    TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
-    TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
-    TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
-    TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
-    TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
-    TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
-    TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
-    TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
-    TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
-    TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
-    TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
-    TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
-    TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
-    TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
-    TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
-    TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
-    TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
-    TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
-    TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
+       TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
+       TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
+       TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
+       TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
+       TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
+       TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
+       TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
+       TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
+       TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
+       TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
+       TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
+       TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
+       TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
+       TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
+       TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
+       TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
+       TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
+       TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
+       TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
+       TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
+       TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()
@@ -653,11 +727,17 @@ for iters in range(nIterations):
     f.Close()
 
     print 'Now staging calibMap.root on EOS'
-    stage_s_fin = 'cmsStage /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    stage_s_fin = 'cmsStage /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     print stage_s_fin
     stageCalibFile = subprocess.Popen([stage_s_fin], stdout=subprocess.PIPE, shell=True);
     print stageCalibFile.communicate()
-    print 'Done with staging the final calibMap.root'
+    if ( str(sys.argv[1]).find('CRAB') != -1 ):
+        print 'Since we are in CRAB mode I will also copy ' + NameTag + calibMapName + 'on data/ to be accessible from CRAB' 
+        stage_s_fin2 = 'cp /tmp/' + NameTag + calibMapName + " " + str(os.getcwd()) + "../FillEpsilonPlot/data/"
+        print stage_s_fin2
+        stageCalibFile2 = subprocess.Popen([stage_s_fin2], stdout=subprocess.PIPE, shell=True);
+        print stageCalibFile2.communicate()
+    print 'Done with staging the final ' + NameTag + calibMapName
 
     # checking that calibMap.root is actually available on EOS
     print "Checking availabilty of " + NameTag + calibMapName
