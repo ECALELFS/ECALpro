@@ -1286,8 +1286,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 	  else           { Corr1 = Correct2; Corr2 = Correct1; }
-	  //WARNIGN no CC for now!
-	  Corr1 = 1.; Corr2 = 1.; 
+	  //WARNIGN no CC for now! Put back in CKM 20/10/2015
+	  //	  Corr1 = 1.; Corr2 = 1.; 
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
 	  //In case ES give same posizion for different clusters
 	  Correction1_mva = Correct1; Correction2_mva = Correct2;
