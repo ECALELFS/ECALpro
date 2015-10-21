@@ -3,7 +3,10 @@
 import subprocess, time, sys, os
 from methods import *
 
-pwd         = os.getcwd()
+if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ): # Beacause in IIHE the pwd give a link to the area, and you don't want that
+    pwd         = os.getenv('PWD')
+else:
+    pwd         = os.getcwd()
 
 #-------- check if you have right access to queues --------#
 checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
@@ -12,9 +15,8 @@ if(output.find('command not found')==-1):
     print "[calib] Correct setup for batch submission"
 else:
     print "[calib] Missing access to queues"
-    sys.exit(1)
-
-#print pwd
+    if not( isCRAB and storageSite=="T2_BE_IIHE" ):
+       sys.exit(1)
 
 #-------- create folders --------#
 
@@ -25,7 +27,6 @@ cfgHaddPath  = workdir + '/src/hadd'
 srcPath  = workdir + '/src'
 
 print "[calib] Creating local folders (" + dirname + ")"
-
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/cfgFile/'], stdout=subprocess.PIPE, shell=True);
@@ -47,15 +48,28 @@ folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + srcPath + '/hadd'], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 
-print "[calib] Creating folders on EOS"
-folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
-folderCreation.communicate()
+print "[calib] Storing parameter.py for future reference"
+CopyParam = subprocess.Popen(['cp  parameters.py ' + workdir], stdout=subprocess.PIPE, shell=True);
+CopyParam.communicate()
+
+if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
+   print "[calib] Creating folders on PNFS"
+   folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
+   folderCreation.communicate()
+else:
+   print "[calib] Creating folders on EOS"
+   folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
+   folderCreation.communicate()
 
 for iter in range(nIterations):
-    print "[calib]  ---  cmsMkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
-    folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
-    folderCreation.communicate()
-
+    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
+       print "[calib]  ---  srmmkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
+       folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
+       folderCreation.communicate()
+    else:
+       print "[calib]  ---  cmsMkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
+       folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
+       folderCreation.communicate()
 
 #-------- fill cfg files --------#
 if( isCRAB ):
@@ -82,7 +96,6 @@ for iter in range(nIterations):
     Nlist_flo = float(NrelJob/nHadd) + 1.
     Nlist = int(Nlist_flo)
 
-
     haddSrc_n_s = list()
     haddSrc_f_s = list()
 
@@ -93,10 +106,16 @@ for iter in range(nIterations):
     for num_list in range(Nlist):
         haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iter) + "_step_" + str(num_list)+ ".list")
         haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
-        fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+        if(fastHadd):
+            fileToAdd_final_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+        else:
+            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
         for nj in range(nHadd):
             nEff = num_list*nHadd+nj
-            fileToAdd_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
+            if(fastHadd):
+                fileToAdd_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
+            else:
+                fileToAdd_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
             if(nEff < NrelJob) :
                 haddSrc_f_s[num_list].write(fileToAdd_n_s)
         haddSrc_final_f_s.write(fileToAdd_final_n_s)
@@ -109,14 +128,20 @@ for iter in range(nIterations):
         hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iter) + "_job_" + str(num_list) + ".sh"
         hadd_cfg_f = open( hadd_cfg_n, 'w' )
         HaddOutput = NameTag + "epsilonPlots_" + str(num_list) + ".root"
-        printParallelHadd(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd )
+        if(fastHadd):
+            printParallelHaddFAST(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd, num_list )
+        else:
+            printParallelHadd(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd )
         hadd_cfg_f.close()
         changePermission = subprocess.Popen(['chmod 777 ' + hadd_cfg_n], stdout=subprocess.PIPE, shell=True);
         debugout = changePermission.communicate()
     # print Final hadd
     Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iter) + ".sh"
     Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
-    printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+    if(fastHadd):
+        printFinalHaddFAST(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+    else:
+        printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     Fhadd_cfg_f.close()
     # loop over the whole list
     while (len(inputlist_v) > 0):
@@ -196,7 +221,6 @@ for iter in range(nIterations):
 
         # print the cfg file
         printFitCfg( fit_cfg_f , iter, "/tmp",inListB[nFit],finListB[nFit],"Barrel",nFit)
-
         fit_cfg_f.close()
 
         # print source file for batch submission of FitEpsilonPlot task
@@ -204,7 +228,10 @@ for iter in range(nIterations):
         fitSrc_f = open( fitSrc_n, 'w')
         destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(nFit) + "_iter_" + str(iter) + ".log"
-        printSubmitFitSrc(fitSrc_f, fit_cfg_n, "/tmp/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
+        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
+            printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
+        else:
+            printSubmitFitSrc(fitSrc_f, fit_cfg_n, "/tmp/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
         fitSrc_f.close()
 
         # make the source file executable
@@ -226,7 +253,10 @@ for iter in range(nIterations):
         fitSrc_f = open( fitSrc_n, 'w')
         destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(nFit) + "_iter_" + str(iter) + ".log"
-        printSubmitFitSrc(fitSrc_f, fit_cfg_n, "/tmp/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
+        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
+            printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
+        else:
+            printSubmitFitSrc(fitSrc_f, fit_cfg_n, "/tmp/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
         fitSrc_f.close()
 
         # make the source file executable
@@ -267,7 +297,7 @@ if( isCRAB ):
     print "---------------------------------"
     print "Here it is how it works with CRAB:"
     print "--> 1) You will run the crab_eos_0.cfg I wrote for you in: " + workdir + "/CRAB_files/crab_eos.cfg: \n  --->crab submit -c crab_eos_X.py"
-    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command:\n  --->bsub -q " + queueForDaemon + " 'bash " + pwd + "/ALL_NeuPt2_20_PU40x25_01/CRAB_files/HaddSendafterCrab_XXX.sh'"
+    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command:\n  --->bsub -q " + queueForDaemon + " 'bash " + workdir + "/CRAB_files/HaddSendafterCrab_XXX.sh'"
     print "--> 3) Once it has finished you will re-run CRAB importing the constant you produced" #!!! this part is not clear.
     print "--> 4) Then you repeat all these steps for all the iterations you need. Good luck."
     # in the futur launch a script that send crab automatically

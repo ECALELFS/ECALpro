@@ -5,7 +5,7 @@ from methods import *
 
 if len(sys.argv) != 7:
     print str(sys.argv) + "is a wrong number of srguments (It sould be 7)."
-    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs"
+    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs+1(goes from j=0 to n<YOUR_Number)"
     print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
     sys.exit(1)
 
@@ -24,6 +24,8 @@ if SystParam != 0 :
     Mode = Mode + "_SYST_" + str(SystParam)
 if onlyHadd=="True" :
     Mode = Mode + "_ONLYHADD"
+if onlyFinalHadd=="True" :
+    Mode = Mode + "_ONLYFINALHADD"
 if OnlyFIT=="True" :
     Mode = Mode + "_ONLYFIT"
 

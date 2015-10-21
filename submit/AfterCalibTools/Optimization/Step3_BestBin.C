@@ -69,29 +69,31 @@ void Step3_BestBin(TString Input, int nLine, TString Input2, int nLine2){
   float tmp1 = -1.;   int bin1 = -1.;
   float tmp2 = 100.;  int bin2 = -1.;
   for(unsigned int i(0); i<values_effL.size(); i++){
-    if(values_sbL[i] > tmp1 && values_chiL[i]<0.08 ){
+    //if(values_sbL[i] > tmp1 && values_chiL[i]<0.08 ){
+    if(values_sbL[i] > tmp1 && values_chiL[i]<1. ){
 	tmp1 = values_sbL[i];
-	bin1 = i; cout<<"-->LOW S/B bin:  "<<values_sbL[i]<<" bin "<<values_binL[bin1]<<endl;
+	bin1 = i; cout<<"-->LOW_ETA LOW S/B bin:  "<<values_sbL[i]<<" bin "<<values_binL[bin1]<<endl;
     }
-    if(values_muL[i] < tmp2 && values_chiL[i]<0.08 ){
+    //if(values_muL[i] < tmp2 && values_chiL[i]<0.08 ){
+    if(values_muL[i] < tmp2 && values_chiL[i]<1. ){
 	tmp2 = values_muL[i];
-	bin2 = i; cout<<"-->HIGH Mu bin:  "<<values_muL[i]<<" bin "<<values_binL[bin2]<<endl;
+	bin2 = i; cout<<"-->LOW_ETA HIGH Mu bin:  "<<values_muL[i]<<" bin "<<values_binL[bin2]<<endl;
     }
-    if( values_chiH[i]>0.08 ) numBadFit_L++;
+    if( values_chiL[i]>0.08 ) numBadFit_L++;
   }
   //Find the best values High Eta
   tmp1 = -1.;   int bin3 = -1.;
   tmp2 = 100.;  int bin4 = -1.;
   for(unsigned int i(0); i<values_effH.size(); i++){
-    if(values_sbH[i] > tmp1 && values_chiH[i]<0.044){
+    if(values_sbH[i] > tmp1 && values_chiH[i]<0.019 && values_muH[i]>0.0002 ){
 	tmp1 = values_sbH[i];
-	bin3 = i; cout<<"-->LOW S/B bin:  "<<values_sbH[i]<<" bin "<<values_binH[bin3]<<endl;
+	bin3 = i; cout<<"-->HIGH_ETA LOW S/B bin:  "<<values_sbH[i]<<" bin "<<values_binH[bin3]<<endl;
     }
-    if(values_muH[i] < tmp2 && values_chiH[i]<0.044 ){
+    if(values_muH[i] < tmp2 && values_chiH[i]<0.019 && values_muH[i]>0.00206 ){
 	tmp2 = values_muH[i];
-	bin4 = i; cout<<"-->HIGH Mu bin:  "<<values_muH[i]<<" bin "<<values_binH[bin4]<<endl;
+	bin4 = i; cout<<"-->HIGH_ETA HIGH Mu bin:  "<<values_muH[i]<<" bin "<<values_binH[bin4]<<endl;
     }
-    if( values_chiH[i]>0.08 ) numBadFit_H++;
+    if( values_chiH[i]>0.03 ) numBadFit_H++;
   }
   //Print them
   cout<<"LOW Eta"<<endl;

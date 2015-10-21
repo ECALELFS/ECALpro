@@ -21,6 +21,9 @@ ROOT.gStyle.SetOptFit(11111)
 def usage():
     print "Usage: -----> python MoltiplicateIC.py pathXml, pathTH2, Output"
 # python MoltiplicateIC.py InputFile/EcalIntercalibConstants_GR10_H_V6.xml 2010/IC_ResidsualFree.root 2010/ABSIC_ResidsualFree.root
+# python MoltiplicateIC.py InputFile/EcalIntercalibConstants_V20120620_piZPhiSEtaScale2012_IOV2_AlphaStudies_2012.xml
+#                          root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_Neutrino_Pt2to20_AVE40BX25_FoldEtaRing_03/iter_7/calibMap.root
+#                          ALL_Neutrino_Pt2to20_AVE40BX25_FoldEtaRing_03/Absolute_IC_AlphaStudies_2012.root
 def readCellId(node):
     ieta =-1
     iphi =-1

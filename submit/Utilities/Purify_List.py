@@ -3,36 +3,39 @@
 import subprocess, time, sys, os, string
 
 #######
-#fileRun: list of RUN number ex: 197601/n 197602/n 197603/n...
 #fileList: list of files
 #fileJson: JSON file
 #fileNEW: OutPut: the original list cleaned removing the file not in the JSON file
 ######
 
 #file name
-fileRun = '../ALL_2012A_RUN.list'
-fileList = '../ALL_2012A.list'
-fileJson = '../common/goodrunlist_json2012D.txt'
-fileNEW = '../ALL_2012A_good.list'
+fileList = '../InputList/2015B_AlCaP0Raw.list'
+if not( os.path.isfile(fileList) ):
+   print "WARNING!!! " + str(fileList) + " not found!"
+fileJson = '../../FillEpsilonPlot/data/goodrunlist_json2015Bred.txt'
+if not( os.path.isfile(fileJson) ):
+   print "WARNING!!! " + str(fileJson) + " not found!"
+fileNEW = '../InputList/2015B_AlCaP0Raw_good.list2'
+if ( os.path.isfile(fileNEW) ):
+   os.remove(fileNEW)
 #open
-Runlist_f = open( fileRun )
 Filelist_f = open( fileList )
 Jsonlist_f = open( fileJson )
 NEW_f = open( fileNEW, 'w' )
 #Read
-Runlistbase_v = Runlist_f.readlines()
 Filelistbase_v = Filelist_f.readlines()
 Jsonlistbase_v = Jsonlist_f.readlines()
 
-for Nline in range(len(Runlistbase_v)):
+for Nline in range(len(Filelistbase_v)):
   IsThere=False
-  line = Runlistbase_v[Nline]
-  newLine = line.strip('\n')
-  newLine = '"' + str(newLine) + '":'
+  line = Filelistbase_v[Nline]
+  num = line.index('000') #assume .../v1/000/251/028/...
+  newLine  = line[int(num+4):int(num+7)]
+  newLine += line[int(num+8):int(num)+11]
   print "Look For: " + str(newLine)
   for NlineJson in range(len(Jsonlistbase_v)):
-      if( string.find(str(Jsonlistbase_v[NlineJson]),str(newLine))>0 ): IsThere=True
-
+      JsonLine = str(Jsonlistbase_v[NlineJson]).strip('\n')
+      if( string.find(str(JsonLine),str(newLine))>0 ): IsThere=True
   if(IsThere):
      print "There is!"
      NEW_f.write(Filelistbase_v[Nline])
