@@ -15,3 +15,4 @@ cd $RELEASE/src
 cmsenv
 git cms-init
 git clone git@github.com:ECALELFS/ECALpro.git CalibCode
+scram b -j16

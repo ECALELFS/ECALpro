@@ -1,5 +1,15 @@
 Welcome and thanks for choosing the ECALpro tools!
 
+Download:
+```
+wget https://raw.githubusercontent.com/ECALELFS/ECALpro/master/setup.sh
+chmod +x setup.sh
+./setup.sh CMSSW_7_4_15
+cd CMSSW_7_4_15/src
+cmsenv
+```
+
+
 Intro:
 
 To get IC you basically need only to do 2 things:
