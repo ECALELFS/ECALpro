@@ -78,7 +78,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     inRangeFit_ = iConfig.getUntrackedParameter<int>("NInFit");
     finRangeFit_ = iConfig.getUntrackedParameter<int>("NFinFit");    
     EEoEB_ = iConfig.getUntrackedParameter<std::string>("EEorEB");
-    is_2011_ = iConfig.getUntrackedParameter<bool>("is_2011");
+    isNot_2010_ = iConfig.getUntrackedParameter<bool>("isNot_2010");
     Are_pi0_ = iConfig.getUntrackedParameter<bool>("Are_pi0");
     StoreForTest_ = iConfig.getUntrackedParameter<bool>("StoreForTest","false");
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
@@ -137,7 +137,7 @@ void FitEpsilonPlot::loadEpsilonPlot(char *filename)
     if(!inputEpsilonFile_) 
 	  throw cms::Exception("loadEpsilonPlot") << "Cannot open file " << string(filename) << "\n"; 
     if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(int iR=inRangeFit_; iR < finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
+	  for(int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
 	  {
 		sprintf(line,"Barrel/epsilon_EB_iR_%d",iR);
 		epsilon_EB_h[iR] = (TH1F*)inputEpsilonFile_->Get(line);
@@ -149,7 +149,7 @@ void FitEpsilonPlot::loadEpsilonPlot(char *filename)
 	  }
     }
     else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(int jR=inRangeFit_; jR < finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
+	  for(int jR=inRangeFit_; jR <= finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
 	  {
 		sprintf(line,"Endcap/epsilon_EE_iR_%d",jR);
 		epsilon_EE_h[jR] = (TH1F*)inputEpsilonFile_->Get(line);
@@ -260,6 +260,7 @@ void FitEpsilonPlot::saveCoefficients()
     float      Chisqu; 
     float      Ndof; 
     float      fit_mean;
+    float      fit_mean_err;
     float      fit_sigma;
     float      fit_Snorm;
     float      fit_b0;
@@ -297,6 +298,7 @@ void FitEpsilonPlot::saveCoefficients()
     treeEB->Branch("Chisqu",&Chisqu,"Chisqu/F");
     treeEB->Branch("Ndof",&Ndof,"Ndof/F");
     treeEB->Branch("fit_mean",&fit_mean,"fit_mean/F");
+    treeEB->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
     treeEB->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
     treeEB->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
     treeEB->Branch("fit_b0",&fit_b0,"fit_b0/F");
@@ -321,6 +323,7 @@ void FitEpsilonPlot::saveCoefficients()
     treeEE->Branch("Chisqu",&Chisqu,"Chisqu/F");
     treeEE->Branch("Ndof",&Ndof,"Ndof/F");
     treeEE->Branch("fit_mean",&fit_mean,"fit_mean/F");
+    treeEE->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
     treeEE->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
     treeEE->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
     treeEE->Branch("fit_b0",&fit_b0,"fit_b0/F");
@@ -346,7 +349,8 @@ void FitEpsilonPlot::saveCoefficients()
 		Backgr = EBmap_Backgr[ebid.hashedIndex()];
 		Chisqu = EBmap_Chisqu[ebid.hashedIndex()];
 		Ndof = EBmap_ndof[ebid.hashedIndex()];
-		fit_mean   = EBmap_mean[ebid.hashedIndex()];
+		fit_mean     = EBmap_mean[ebid.hashedIndex()];
+		fit_mean_err = EBmap_mean_err[ebid.hashedIndex()];
 		fit_sigma  = EBmap_sigma[ebid.hashedIndex()];
 		fit_Snorm  = EBmap_Snorm[ebid.hashedIndex()];
 		fit_b0     = EBmap_b0[ebid.hashedIndex()];
@@ -380,7 +384,8 @@ void FitEpsilonPlot::saveCoefficients()
 		Backgr = EEmap_Backgr[eeid.hashedIndex()];
 		Chisqu = EEmap_Chisqu[eeid.hashedIndex()];            
 		Ndof = EEmap_ndof[eeid.hashedIndex()];            
-		fit_mean   = EEmap_mean[eeid.hashedIndex()];
+		fit_mean     = EEmap_mean[eeid.hashedIndex()];
+		fit_mean_err = EEmap_mean_err[eeid.hashedIndex()];
 		fit_sigma  = EEmap_sigma[eeid.hashedIndex()];
 		fit_Snorm  = EEmap_Snorm[eeid.hashedIndex()];
 		fit_b0     = EEmap_b0[eeid.hashedIndex()];
@@ -417,7 +422,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     /// compute average weight, eps, and update calib constant
     if( (EEoEB_ == "Barrel") && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(uint32_t j= (uint32_t)inRangeFit_; j < (uint32_t)finRangeFit_ && j < (uint32_t)regionalCalibration_->getCalibMap()->getNRegionsEB(); ++j)  
+	  for(uint32_t j= (uint32_t)inRangeFit_; j <= (uint32_t)finRangeFit_ && j < (uint32_t)regionalCalibration_->getCalibMap()->getNRegionsEB(); ++j)  
 	  {
 		cout<<"FIT_EPSILON: Fitting EB Cristal--> "<<j<<endl;
 
@@ -470,17 +475,19 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		    double integral = epsilon_EB_h[j]->Integral(iMin, iMax);  
 		    if(integral>60.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, j, 1, Pi0EB, 0, is_2011_); //0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
-
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
 			  r2 = r2*r2;
-			  if( fitres.SoB>(is_2011_ ? 0.04:0.1) && (fitres.chi2/fitres.dof)< 0.049 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
-			  else                                                                                                  mean = 0.;
+			  //cout<<"EBMEAN::"<<j<<":"<<mean<<" Saved if: "<<fitres.SoB<<">(isNot_2010_ ? 0.04:0.1) "<<(fitres.chi2/fitres.dof)<<" < 0.2 "<<fabs(mean-0.15)<<" >0.0000001) "<<endl;
+			  //if( fitres.SoB>(isNot_2010_ ? 0.04:0.1) && (fitres.chi2/fitres.dof)< 0.5 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
+			  if( fitres.chi2 < 5 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
+			  else                                              mean = 0.;
 		    }
-		    else
+		    else{
 			  mean = 0.;
+		    }
 		}
 
 
@@ -494,7 +501,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     /// loop over EE crystals
     if( (EEoEB_ == "Endcap") && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(int jR = inRangeFit_; jR <finRangeFit_ && jR < regionalCalibration_->getCalibMap()->getNRegionsEE(); jR++)
+	  for(int jR = inRangeFit_; jR <=finRangeFit_ && jR < regionalCalibration_->getCalibMap()->getNRegionsEE(); jR++)
 	  {
 		cout << "FIT_EPSILON: Fitting EE Cristal--> " << jR << endl;
 		if(!(jR%1000))
@@ -544,18 +551,19 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		    if(integral>70.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.25:0.65, jR, 1, Pi0EE, 0, is_2011_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.25:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
-
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
 			  r2 = r2*r2;
-			  if( (fitres.chi2/fitres.dof)<0.3 && fitres.SoB>(is_2011_? 0.07:0.35) && fabs(mean-0.14)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
-			  else                                                                                                mean = 0.;
+			  //cout<<"EEMEAN::"<<jR<<":"<<mean<<" Saved if: "<<fitres.SoB<<">0.3 "<<(fitres.chi2/fitres.dof)<<" < (isNot_2010_? 0.07:0.35) "<<fabs(mean-0.14)<<" >0.0000001) "<<endl;
+			  //if( (fitres.chi2/fitres.dof)<0.3 && fitres.SoB>(isNot_2010_? 0.07:0.35) && fabs(mean-0.14)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
+			  if( fitres.chi2 < 5 && fabs(mean-0.16)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
+			  else                                              mean = 0.;
 		    }
 		    else
 		    {
-			  mean = 0.;
+			  mean = 0.; 
 		    }
 		}
 
@@ -590,7 +598,6 @@ FitEpsilonPlot::IterativeFit(TH1F* h, TF1 & ffit)
 
     for(int iter=0; iter< iterMax && chi2>5.; ++iter) 
     {
-	  cout<<"par 0  "<<par[0]<<"  par 1  "<<par[1]<<"  par 2  "<<par[2]<<endl; //@@
 	  ffit.SetParameters(par[0],par[1], par[2]);
 
 	  h->Fit(&ffit,"q","",xmin,xmax);
@@ -609,27 +616,26 @@ FitEpsilonPlot::IterativeFit(TH1F* h, TF1 & ffit)
 
 
 //-----------------------------------------------------------------------------------
-Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi,  uint32_t HistoIndex, int ngaus, FitMode mode, int niter, bool is_2011_) 
+Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi,  uint32_t HistoIndex, int ngaus, FitMode mode, int niter, bool isNot_2010_) 
 {
     //-----------------------------------------------------------------------------------
 
 
     RooRealVar x("x","#gamma#gamma invariant mass",xlo, xhi, "GeV/c^2");
-    //x.setRange(xlo,xhi);
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.116:0.57,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.150:0.62,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.15:0.62,"GeV/c^{2}");
     RooRealVar sigma("sigma","#pi^{0} core #sigma",0.013, 0.005,0.020,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.10:0.45, Are_pi0_? 0.140:0.62); // 0.200
-	  mean.setVal(Are_pi0_? 0.120:0.55);
+	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? 0.16:0.62);
+	  mean.setVal(Are_pi0_? 0.13:0.55);
 	  sigma.setRange(0.005, 0.060);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? 0.155:0.62);
+	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? 0.15:0.62);
 	  sigma.setRange(0.003, 0.030);
     }
 
@@ -705,7 +711,8 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     else if(ngaus==2) model = &model2;
 
 
-    RooNLLVar nll("nll","log likelihood var",*model,dh, Extended());
+    RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
+    //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
     RooMinuit m(nll);
     m.setVerbose(kFALSE);
     //m.setVerbose(kTRUE);
@@ -741,9 +748,6 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 		pow(pi0res.Berr/pi0res.B,2) ) ;
     pi0res.dof = ndof;
 
-    //cout<<"Param Sig: "<<HistoIndex<<") "<<gaus.getNorm() <<"  "<<mean.getVal()<<"  "<<sigma.getVal()<<endl;
-    //cout<<"Param Bkg: "<<HistoIndex<<") "<<bkg.getNorm() <<"  "<<cb0.getVal()<<"  "<<cb1.getVal()<<"  "<<cb2.getVal()<<"  "<<cb3.getVal()<<endl;
-
     RooPlot*  xframe = x.frame(h->GetNbinsX());
     xframe->SetTitle(h->GetTitle());
     dh.plotOn(xframe);
@@ -768,6 +772,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  EBmap_Chisqu[HistoIndex]=xframe->chiSquare();
 	  EBmap_ndof[HistoIndex]=ndof;
 	  EBmap_mean[HistoIndex]=mean.getVal();
+	  EBmap_mean_err[HistoIndex]=mean.getError();
 	  EBmap_sigma[HistoIndex]=sigma.getVal();
 	  EBmap_Snorm[HistoIndex]=normSig;
 	  EBmap_b0[HistoIndex]=cb0.getVal();
@@ -782,6 +787,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  EEmap_Chisqu[HistoIndex]=xframe->chiSquare();
 	  EEmap_ndof[HistoIndex]=ndof;
 	  EEmap_mean[HistoIndex]=mean.getVal();
+	  EEmap_mean_err[HistoIndex]=mean.getError();
 	  EEmap_sigma[HistoIndex]=sigma.getVal();
 	  EEmap_Snorm[HistoIndex]=normSig;
 	  EEmap_b0[HistoIndex]=cb0.getVal();
@@ -819,10 +825,11 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     lat.DrawLatex(xmin,yhi-5.*ypass, line);
 
     Pi0FitResult fitres = pi0res;
-    if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
-	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, is_2011_);
-	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, is_2011_);
-	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, is_2011_);
+    //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
+    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
+	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
+	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
+	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
     }
     if(StoreForTest_ && niter==0){
 	  std::stringstream ind;
