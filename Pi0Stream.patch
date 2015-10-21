@@ -1,0 +1,88 @@
+diff --git a/CondFormats/EcalObjects/src/EcalSampleMask.cc b/CondFormats/EcalObjects/src/EcalSampleMask.cc
+index f359ff7..0d57bfe 100644
+--- a/CondFormats/EcalObjects/src/EcalSampleMask.cc
++++ b/CondFormats/EcalObjects/src/EcalSampleMask.cc
+@@ -7,7 +7,7 @@
+ #include <assert.h>
+ #include "CondFormats/EcalObjects/interface/EcalSampleMask.h"
+ #include "DataFormats/EcalDigi/interface/EcalDataFrame.h"
+-
++#include "FWCore/MessageLogger/interface/MessageLogger.h"
+ EcalSampleMask::EcalSampleMask() 
+ {
+   // by default, all samples are set as active
+@@ -138,6 +138,8 @@ bool EcalSampleMask::useSample  (const int sampleId, DetId &theCrystalId) const
+     return useSampleEE ( sampleId );
+   }
+   else {
++    std::cout<<"EcalSampleMask.cc"<<std::endl;
++    throw cms::Exception("CrystalIDError");
+     std::cout << "EcalSampleMaskuseSample::useSample can only be called for EcalBarrel or EcalEndcap DetID" << std::endl; 
+     assert(0);
+   }
+diff --git a/RecoLocalCalo/EcalRecProducers/plugins/EcalRecHitWorkerSimple.cc b/RecoLocalCalo/EcalRecProducers/plugins/EcalRecHitWorkerSimple.cc
+index 4ba3e8b..4b0f7d7 100644
+--- a/RecoLocalCalo/EcalRecProducers/plugins/EcalRecHitWorkerSimple.cc
++++ b/RecoLocalCalo/EcalRecProducers/plugins/EcalRecHitWorkerSimple.cc
+@@ -104,6 +104,8 @@ EcalRecHitWorkerSimple::run( const edm::Event & evt,
+     if( icalit!=icalMap.end() ) {
+         icalconst = (*icalit);
+     } else {
++        std::cout<<"EcalRecHitWorkerSimple.cc"<<std::endl;
++        throw cms::Exception("CrystalIDError");
+         edm::LogError("EcalRecHitError") << "No intercalib const found for xtal "
+                                          << detid.rawId()
+                                          << "! something wrong with EcalIntercalibConstants in your DB? ";
+@@ -121,6 +123,8 @@ EcalRecHitWorkerSimple::run( const edm::Event & evt,
+     if( itime!=itimeMap.end() ) {
+         itimeconst = (*itime);
+     } else {
++        std::cout<<"EcalRecHitWorkerSimple.cc 2"<<std::endl;
++        throw cms::Exception("CrystalIDError");
+         edm::LogError("EcalRecHitError") << "No time calib const found for xtal "
+                         << detid.rawId()
+                         << "! something wrong with EcalTimeCalibConstants in your DB? ";
+diff --git a/RecoLocalCalo/EcalRecProducers/plugins/EcalRecalibRecHitProducer.cc b/RecoLocalCalo/EcalRecProducers/plugins/EcalRecalibRecHitProducer.cc
+index d8eb9fc..a715927 100644
+--- a/RecoLocalCalo/EcalRecProducers/plugins/EcalRecalibRecHitProducer.cc
++++ b/RecoLocalCalo/EcalRecProducers/plugins/EcalRecalibRecHitProducer.cc
+@@ -28,7 +28,7 @@
+ #include "DataFormats/EcalRecHit/interface/EcalRecHit.h"
+ #include "DataFormats/EcalDetId/interface/EBDetId.h"
+ #include "DataFormats/EcalDetId/interface/EEDetId.h"
+-
++#include "FWCore/MessageLogger/interface/MessageLogger.h"
+ 
+ 
+ EcalRecalibRecHitProducer::EcalRecalibRecHitProducer(const edm::ParameterSet& ps) {
+@@ -126,6 +126,8 @@ void EcalRecalibRecHitProducer::produce(edm::Event& evt, const edm::EventSetup&
+                                 if( icalit!=icalMap.end() ){
+                                         icalconst = (*icalit);
+                                 } else {
++                                        std::cout<<"EcalRecalibRecHitProducer.cc"<<std::endl;
++                                        throw cms::Exception("CrystalIDError");
+                                         edm::LogError("EcalRecHitError") << "No intercalib const found for xtal " << EBDetId(it->id()) << "! something wrong with EcalIntercalibConstants in your DB? "
+                                                 ;
+                                 }
+diff --git a/RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitWorkerGlobal.cc b/RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitWorkerGlobal.cc
+index e985c6b..6c5a308 100644
+--- a/RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitWorkerGlobal.cc
++++ b/RecoLocalCalo/EcalRecProducers/plugins/EcalUncalibRecHitWorkerGlobal.cc
+@@ -16,7 +16,7 @@
+ 
+ #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
+ #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
+-
++#include "FWCore/MessageLogger/interface/MessageLogger.h"
+ EcalUncalibRecHitWorkerGlobal::EcalUncalibRecHitWorkerGlobal(const edm::ParameterSet&ps,edm::ConsumesCollector& c) :
+   EcalUncalibRecHitWorkerBaseClass(ps,c)
+ {
+@@ -255,6 +255,8 @@ EcalUncalibRecHitWorkerGlobal::run( const edm::Event & evt,
+ 	if( it != itime->end() ) {
+ 		  itimeconst = (*it);
+ 	} else {
++		  std::cout<<"EcalUncalibRecHitWorkerGlobal.cc"<<std::endl;
++		  throw cms::Exception("CrystalIDError");
+ 		  edm::LogError("EcalRecHitError") << "No time intercalib const found for xtal "
+ 		  << detid.rawId()
+ 		  << "! something wrong with EcalTimeCalibConstants in your DB? ";
