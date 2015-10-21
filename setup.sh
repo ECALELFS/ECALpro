@@ -12,7 +12,7 @@ esac
 
 scram project $RELEASE
 cd $RELEASE/src
-cmsenv
+eval `scramv1 runtime -sh`
 git cms-init
 git clone git@github.com:ECALELFS/ECALpro.git CalibCode
 scram b -j16
