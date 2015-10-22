@@ -35,11 +35,11 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2015C_AlCaP0Raw_38T.list' # list of input files
-dirname          = 'ALL_2015C_v2_38T_pi0_CC'
+inputlist_n      = 'InputList/2015B_AlCaP0Raw_good.list' # list of input files
+dirname          = 'ALL_2015B_Test2'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = '2015C_v2_38T_pi0_CC'                   # Tag to the names to avoid overlap
+NameTag          = '2015B_T'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 14
@@ -50,7 +50,7 @@ fastHadd         = True                  # From 7_4_X we can use this faster mat
 if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
@@ -237,7 +237,7 @@ FROMDIGI=False
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'json_DCSONLY.txt'            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_246908-255031_13TeV_PromptReco_Collisions15_50ns_JSON_v2.txt'            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
