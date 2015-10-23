@@ -20,20 +20,7 @@ def printFillCfg1( outputfile ):
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
     #From DIGI
     if (FROMDIGI):
-        outputfile.write("#DUMMY RECHIT\n")
-        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigis',\n")
-        outputfile.write("                                     doDigi = cms.untracked.bool(True),\n")
-        outputfile.write("                                     # rechits\n")                                                                                                
-        outputfile.write("                                     barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB' ,'HLT'),\n")
-        outputfile.write("                                     endcapHitProducer      = cms.InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE' ,'HLT'),\n")
-        outputfile.write("                                     barrelRecHitCollection = cms.untracked.string('dummyBarrelRechits'),\n")
-        outputfile.write("                                     endcapRecHitCollection = cms.untracked.string('dummyEndcapRechits'),\n")
-        outputfile.write("                                     # digis\n")                                                                                                                               
-        outputfile.write("                                     barrelDigis            = cms." + EBdigi + ",\n")
-        outputfile.write("                                     endcapDigis            = cms." + EEdigi + ",\n")
-        outputfile.write("                                     barrelDigiCollection   = cms.untracked.string('dummyBarrelDigis'),\n")
-        outputfile.write("                                     endcapDigiCollection   = cms.untracked.string('dummyEndcapDigis'))\n")
-        outputfile.write("\n")
+        outputfile.write('process.load("CalibCode.FillEpsilonPlot.digiCleaning_cfi")\n')
         outputfile.write("#RAW to DIGI'\n")
         outputfile.write("#https://github.com/cms-sw/cmssw/blob/CMSSW_7_5_X/RecoLocalCalo/EcalRecProducers/test/testMultipleEcalRecoLocal_cfg.py\n")
         outputfile.write("#process.load('Configuration.StandardSequences.RawToDigi_cff')\n")
@@ -288,7 +275,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
     if (FROMDIGI):
-        outputfile.write("process.p *= process.dummyHits\n")
+        outputfile.write("process.p *= process.digiCleaning\n")
         if(MULTIFIT):
            outputfile.write("process.p *= process.ecalMultiFitUncalibRecHit\n")
         if (WEIGHTS):
