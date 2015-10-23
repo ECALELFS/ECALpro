@@ -41,7 +41,6 @@ class DummyRechitDigis : public edm::EDProducer {
 public:
   explicit DummyRechitDigis(const edm::ParameterSet&);
   ~DummyRechitDigis();
-
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:

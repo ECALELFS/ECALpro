@@ -16,3 +16,6 @@ eval `scramv1 runtime -sh`
 git cms-init
 git clone git@github.com:ECALELFS/ECALpro.git CalibCode
 scram b -j16
+git cms-addpkg RecoLocalCalo/EcalRecProducers
+git cms-addpkg CondFormats/EcalObjects
+git cms-addpkg RecoLocalCalo/EcalRecProducers
