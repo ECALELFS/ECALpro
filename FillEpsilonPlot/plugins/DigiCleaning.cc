@@ -83,6 +83,7 @@ void DigiCleaning::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
 //     bool foundEEDigi = true;
 
    iEvent.getByLabel(tag_barrelDigiProducer_, digisEBHandle);
+   iEvent.getByLabel(tag_endcapDigiProducer_, digisEEHandle);
 
    if(digisEBHandle.isValid()){
 	   unsigned long long int size= digisEBHandle->size();
@@ -94,7 +95,7 @@ void DigiCleaning::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
 		   ){
 		   DataFrameContainer::const_IterPair itr = digisEBHandle->pair(i);
 		   if(DetId(*(itr.first)).subdetId()!=EcalBarrel) continue; // if invalid is skipped
-		   outputEEDigiCollection->push_back(*(itr.first),  &(*itr.second));
+		   outputEBDigiCollection->push_back(*(itr.first),  &(*itr.second));
 	   }
    }
 
@@ -103,7 +104,12 @@ void DigiCleaning::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
 	   
 	   for(unsigned long long int i=0; i < size; ++i){
 		   DataFrameContainer::const_IterPair itr = digisEEHandle->pair(i);
-		   if(DetId(*(itr.first)).subdetId()!=EcalEndcap) continue; // if invalid is skipped
+		   if(DetId(*(itr.first)).subdetId()!=EcalEndcap){
+#ifdef DEBUG
+			   edm::LogWarning("Invalid EE digi")<<  "\t SubdetId = " << DetId(*(itr.first)).subdetId();
+#endif
+			   continue; // if invalid is skipped
+		   }
 		   outputEEDigiCollection->push_back(*(itr.first),  &(*itr.second));
 	   }
    }

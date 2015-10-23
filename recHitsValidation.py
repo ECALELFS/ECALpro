@@ -74,7 +74,7 @@ eventMin=-1
 lumi=-1
 
 # for now look for events in two files with a given lumi section
-maxEvents=2
+maxEvents=-1
 event_counter=0
 
 file="alcaraw.root"
@@ -129,8 +129,8 @@ for event in events:
     if(eventNumber > 0 and event.eventAuxiliary().event()!= eventNumber ):
         continue
 
-    event.getByLabel("hltAlCaEtaEBRechitsToDigis", "etaEBDigis", "HLT", handle_hltdigis_EB)
-    event.getByLabel("hltAlCaEtaEERechitsToDigis", "etaEEDigis", "HLT", handle_hltdigis_EE)
+#    event.getByLabel("hltAlCaEtaEBRechitsToDigis", "etaEBDigis", "HLT", handle_hltdigis_EB)
+#    event.getByLabel("hltAlCaEtaEERechitsToDigis", "etaEEDigis", "HLT", handle_hltdigis_EE)
 
     event.getByLabel("hltAlCaPi0EBRechitsToDigis", "pi0EBDigis", "HLT", handle_hltdigis_EB)
     event.getByLabel("hltAlCaPi0EERechitsToDigis", "pi0EEDigis", "HLT", handle_hltdigis_EE)
@@ -145,15 +145,14 @@ for event in events:
 
     if(handle_hltdigis_EB.isValid()):
         digis= handle_hltdigis_EB.product()
-        for digi in digis:
-            print "EBDigi:", digi.id()
-
+        if(digis.size()!=handle_dummyDigis_EB.product().size() or digis.size()!= handle_cleanedDigis_EB.product().size()):
+            print "EB is valid", digis.size()," ", handle_dummyDigis_EB.product().size(), " ", handle_cleanedDigis_EB.product().size()
     if(handle_hltdigis_EE.isValid()):
         digis= handle_hltdigis_EE.product()
-        for digi in digis:
-            print "EEDigi:", digi.id()
+        if(digis.size()!=handle_dummyDigis_EE.product().size() or digis.size()!= handle_cleanedDigis_EE.product().size()):
+            print "EE is valid", digis.size()," ", handle_dummyDigis_EE.product().size(), " ", handle_cleanedDigis_EE.product().size()
 
-    print "End of Event"
+    print "End of Event ", event_counter 
     event_counter=event_counter+1
     continue
 
