@@ -249,7 +249,7 @@ useHLTFilter       = "True" if isMC==False else "False"                         
 correctHits        = 'False'
 globaltag          = '74X_dataRun2_Prompt_v2' if isMC==False else 'MCRUN2_74_V9' #old is GR_P_V56
 globaltag_New      = True
-FROMDIGI           = True
+FROMDIGI           = False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing
 MULTIFIT           = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
 is50ns             = False      # If DigiCustomization and MULTIFIT is True
@@ -274,12 +274,16 @@ if(FROMDIGI):
       EBdigi = 'InputTag("hltAlCaEtaEBRechitsToDigis","etaEBDigis","HLT")'
       EEdigi = 'InputTag("hltAlCaEtaEERechitsToDigis","etaEEDigis","HLT")'
 else:
-   if(Are_pi0):
-      ebInputTag = 'InputTag("hltAlCaPi0EBUncalibrator","pi0EcalRecHitsEB","HLT")'
-      eeInputTag = 'InputTag("hltAlCaPi0EEUncalibrator","pi0EcalRecHitsEE","HLT")'
+   if isMC:
+      ebInputTag = 'InputTag("ecalRecHit","EcalRecHitsEB","RECO")'
+      eeInputTag = 'InputTag("ecalRecHit","EcalRecHitsEE","RECO")'
    else:
-      ebInputTag = 'InputTag("hltAlCaEtaEBUncalibrator","etaEcalRecHitsEB","HLT")'
-      eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE","HLT")'
+      if(Are_pi0):
+         ebInputTag = 'InputTag("hltAlCaPi0EBUncalibrator","pi0EcalRecHitsEB","HLT")'
+         eeInputTag = 'InputTag("hltAlCaPi0EEUncalibrator","pi0EcalRecHitsEE","HLT")'
+      else:
+         ebInputTag = 'InputTag("hltAlCaEtaEBUncalibrator","etaEcalRecHitsEB","HLT")'
+         eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE","HLT")'
 if isMC:
    MC_Asssoc = True
    genPartInputTag = "InputTag('genParticles','')"
