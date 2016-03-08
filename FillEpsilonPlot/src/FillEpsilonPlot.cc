@@ -53,6 +53,11 @@ Implementation:
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 
+#include "SimDataFormats/Track/interface/SimTrack.h"
+#include "SimDataFormats/Track/interface/SimTrackContainer.h"
+#include "SimDataFormats/Vertex/interface/SimVertex.h"
+#include "SimDataFormats/Vertex/interface/SimVertexContainer.h"
+
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
 #include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
@@ -102,6 +107,7 @@ using std::max;
 #include "TLorentzVector.h"
 
 using namespace TMVA;
+using namespace edm;
 
 //Function
 double max_array(double *A, int n);
@@ -483,26 +489,127 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   }
 
   //MC Photons (they will be associated to the clusters later)
-  Gamma1MC.SetPtEtaPhiE( -999., -999., -999., -999. ); Gamma2MC.SetPtEtaPhiE( -999., -999., -999., -999. );
   if( isMC_ && MC_Asssoc_ ){
     edm::Handle<std::vector<reco::GenParticle>> GenParProd;
     iEvent.getByLabel( GenPartCollectionTag_, GenParProd);//Fatal Root Error: @SUB=TBufferFile::CheckByteCount object of class edm::RefCore read too many bytes: 10 instead of 8
-    const reco::GenParticleCollection *GenPars = 0;
-    if ( ! GenParProd.isValid() )  edm::LogWarning("GenParSummary") << "GenPars not found";
-    GenPars = GenParProd.product();
-    //Find MC photons
-    bool firstnotfound = true;
-    for (auto& GenPar : *GenPars){
-	if( GenPar.pdgId()==22 && GenPar.mother()->pdgId()==Are_pi0_?111:221 && firstnotfound ){
-	  Gamma1MC.SetPtEtaPhiE( GenPar.pt(), GenPar.p4().Eta(), GenPar.p4().Phi(), GenPar.p4().E() );
-	  firstnotfound = false;
-	  continue;
-	}
-	if( GenPar.pdgId()==22 && GenPar.mother()->pdgId()==Are_pi0_?111:221 && GenPar.p4().Eta() != Gamma1MC.Eta() ){
-	  Gamma2MC.SetPtEtaPhiE( GenPar.pt(), GenPar.p4().Eta(), GenPar.p4().Phi(), GenPar.p4().E() );
-	}
+    // const reco::GenParticleCollection *GenPars = 0;
+    // std::cout << "MC truth taken" << std::endl;
+    // //if ( ! GenParProd.isValid() )  edm::LogWarning("GenParSummary") << "GenPars not found";
+    // if ( ! GenParProd.isValid() )  std::cout << "GenPars not found" << std::endl;
+    // GenPars = GenParProd.product();
+
+
+    // GUN sample made with PYTHIA6 doesn't decay the pi0, need to look at simtracks by GEANT
+    // get GEANT sim tracks and vertices (includes conversions)
+    Handle<SimTrackContainer> simTracks_h;
+    const SimTrackContainer* simTracks;
+    iEvent.getByLabel("g4SimHits", simTracks_h);
+    simTracks = (simTracks_h.isValid()) ? simTracks_h.product() : 0;
+
+    Handle<SimVertexContainer> simVert_h;
+    const SimVertexContainer* simVertices;
+    iEvent.getByLabel("g4SimHits", simVert_h);
+    simVertices = (simVert_h.isValid()) ? simVert_h.product() : 0;
+
+
+    // Vertices only return trackID of their parent SimTrack
+    // Figure out the mapping from trackID to SimTrack
+    map<unsigned int, const SimTrack*> trackMap;
+    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim) {
+      if (!iSim->noVertex()) {
+        assert(trackMap.find(iSim->trackId())==trackMap.end());
+        trackMap[iSim->trackId()] = &(*iSim);
+      }
     }
+
+    // Find all SimTracks that come from decays before the ECAL
+    // and find their parent SimTracks
+    map<const SimTrack*, const SimTrack*> promptParent; // daughter->mother
+    map<const SimTrack*, set<const SimTrack*> > promptDecays; // m->ds
+    map<const SimTrack*, const SimVertex*> promptVertex; // daughter->vertex
+    map<const SimTrack*, const SimVertex*> promptALLVertex; // daughter->vertex in Any Occasion
+    map<const SimTrack*, const SimTrack*> promptALLParent; // daughter->mother in Any Occasion
+
+    int num=0;
+    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++) 
+      {
+        if (!iSim->noVertex()) 
+          {
+            // Find the parent vertex and see if it classifies as an early decay
+            // Exclude the primary vertex (noParent)
+            SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
+            if (!vtx.noParent() && vtx.position().Rho() < 129 && fabs(vtx.position().z()) < 304) 
+              {
+                // Find parent SimParticle that produced this vertex
+                // vtx->parentIndex is NOT a vector index :( so use trackMap
+                assert(trackMap.find(vtx.parentIndex())!=trackMap.end());
+                const SimTrack* p = trackMap[vtx.parentIndex()];
+                promptParent[&(*iSim)] = p; // nel Pi0Gun: ->genpartIndex() e' -1
+                promptDecays[p].insert(&(*iSim));
+                promptVertex[&(*iSim)] = &vtx;
+              } // early decay
+            if (!vtx.noParent() ){
+              promptALLVertex[&(*iSim)] = &vtx;
+              const SimTrack* p = trackMap[vtx.parentIndex()];
+              promptALLParent[&(*iSim)] = p; 
+              // cout<<num<<" PDG: "<<iSim->type()<<" id: "<<iSim->trackId()<<" Son of: "<<p->type()<<" id: "<<p->trackId()
+              // <<" x vtx:" <<vtx.position().x()<<" Z Vtx: "<<vtx.position().z()<<"Px "<<iSim->momentum().x()<<" py "<<iSim->momentum().y()<<" pz "<<iSim->momentum().z()<<
+              // "pt "<<sqrt(pow(iSim->momentum().x(),2)+pow(iSim->momentum().y(),2)+pow(iSim->momentum().z(),2))<<endl;
+            }
+          } // has vertex
+      } // for simTracks
+
+    //cout<<"Event:"<<endl;
+    //Store Pi0 & gamma
+    //    unsigned int IdGamma1=0, IdGamma2=0;
+    TVector3 pi0_pos, ga1, ga2;
+    num=0;
+    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++){
+      if (!iSim->noVertex() ){
+        SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
+        if( !vtx.noParent() ) {
+          
+          if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==111 && num==1){
+            pi0_pos.SetXYZ(promptALLVertex[&(*iSim)]->position().x(),promptALLVertex[&(*iSim)]->position().y(),promptALLVertex[&(*iSim)]->position().z());
+            Gamma1MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
+            //            IdGamma1 = iSim->trackId();
+            //            std::cout << "Photon1 eta,phi = " << Gamma1MC.eta() << "  " << Gamma1MC.phi() << std::endl;
+         }
+          if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==111 && num==2){
+            Gamma2MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
+            //            IdGamma2 = iSim->trackId();
+            //            std::cout << "Photon2 eta,phi = " << Gamma2MC.eta() << "  " << Gamma2MC.phi() << std::endl;
+          }
+        }
+      }
+    }
+
+    //Find MC photons
+    /*
+    std::cout << "coll size = " << GenPars->size() << std::endl;
+    bool firstnotfound = true;
+    //    for (auto& GenPar : *GenPars){
+    for (reco::GenParticleCollection::const_iterator GenPar = GenPars->begin(); GenPar != GenPars->end(); ++GenPar) {
+      std::cout << "id = " << GenPar->pdgId() << std::endl;
+      if(GenPar->mother()!=0) std::cout << " mothId = " << GenPar->mother()->pdgId() << std::endl;
+      
+      int motherID = Are_pi0_ ? 111:221;
+      if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && firstnotfound ){
+        std::cout << "Found 1st photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
+        std::cout << "dentro id = " << GenPar->pdgId() << std::endl;
+        Gamma1MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
+        firstnotfound = false;
+      }
+      if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && GenPar->p4().Eta() != Gamma1MC.Eta() ){
+        std::cout << "Found 2nd photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
+        Gamma2MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
+      }
+      std::cout << "running PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
+    }
+    std::cout << "==> final PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
+    */
   }
+
 
 #ifdef DEBUG
   cout << "\n --------------- [DEBUG] Beginning New Event ------------------"<< endl;
@@ -768,6 +875,15 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     //}
     if( fabs( clusPos.eta() )<1. ){ if(s4s9<S4S9_cut_low_[EcalBarrel]) continue;}
     else                          { if(s4s9<S4S9_cut_high_[EcalBarrel]) continue;}
+
+    if(isMC_ && MC_Asssoc_) {
+      TVector3 clusDir;
+      clusDir.SetPtEtaPhi(1.0,clusPos.eta(),clusPos.phi());
+      TVector3 ga1Dir, ga2Dir;
+      ga1Dir.SetPtEtaPhi(1.0,Gamma1MC.eta(),Gamma1MC.phi());
+      ga2Dir.SetPtEtaPhi(1.0,Gamma2MC.eta(),Gamma2MC.phi());
+      if(min(clusDir.DeltaR(ga1Dir),clusDir.DeltaR(ga2Dir))>0.3) continue;
+    }
 
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEBContainmentCorrections_) 

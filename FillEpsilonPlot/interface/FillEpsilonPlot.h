@@ -194,8 +194,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double SystOrNot_;
       bool isMC_;
       bool MC_Asssoc_;
-      TLorentzVector Gamma1MC;
-      TLorentzVector Gamma2MC;
+      math::XYZPoint Gamma1MC;
+      math::XYZPoint Gamma2MC;
       bool isCRAB_;
       bool MakeNtuple4optimization_;
 
