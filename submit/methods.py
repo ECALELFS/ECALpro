@@ -11,7 +11,6 @@ def printFillCfg1( outputfile ):
     outputfile.write('process = cms.Process("analyzerFillEpsilon")\n')
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
     outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
-    outputfile.write('process.load("RecoLuminosity.LumiProducer.bunchSpacingProducer_cfi")\n')
 
     if(globaltag_New):
        outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
@@ -278,7 +277,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
-    outputfile.write("process.p = cms.Path(process.bunchSpacingProducer)\n")
+    outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")

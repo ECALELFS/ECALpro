@@ -459,7 +459,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   void
 FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-  //cout<<"Event: "<<iEvent.id().event()<<" Run "<<iEvent.id().run()<<" LS "<<iEvent.id().luminosityBlock()<<endl;
+  // std::cout<<"Event: "<<iEvent.id().event()<<" Run "<<iEvent.id().run()<<" LS "<<iEvent.id().luminosityBlock()<<endl;
   //JSON
   EventFlow_EB->Fill(0.); EventFlow_EE->Fill(0.);
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
@@ -539,7 +539,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   Ncristal_EB.clear(); Ncristal_EE.clear();
 
   bool EB_HLT=true, EE_HLT=true;
-  if( HLTResults_ ){
+  if( HLTResults_ && (!MakeNtuple4optimization_) ){
     if(Are_pi0_){
 	EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
 	EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);

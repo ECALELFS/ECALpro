@@ -16,33 +16,33 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 #PATH
 #eosPath = '/store/caf/user/lpernie'
-eosPath = '/store/caf/user/cmackay'
+eosPath = '/store/caf/user/emanuele'
 #CRAB
 isCRAB           = False               # If not is batch
-CRAB_Data_Path   = '/Neutrino_Pt-2to20_gun/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/AODSIM'
+CRAB_Data_Path   = '/SinglePion_FlatPt-1To15/RunIISpring15DR74-AsymptFlat0to50bx25RawReco_MCRUN2_74_V9-v1/GEN-SIM-RECO'
 CRAB_CopyCert    = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
 storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 if(isCRAB):
-   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/lpernie/' #For reason of space is better the group area
+   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/emanuele/' #For reason of space is better the group area
    if(isOtherT2):
-       eosPath = '/pnfs/iihe/cms/store/user/lpernie/'
-       voGroup     = "becms"
-       storageSite = "T2_BE_IIHE"
-       outLFN      = "/store/user/lpernie/ALL_CRAB_IIHE_03/"
+       eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/emanuele'
+       voGroup     = "itcms"
+       storageSite = "T2_IT_Rome"
+       outLFN      = "/store/user/emanuele/PI02015_CRAB/"
 #MC and Selection Optimization
-isMC = False
-MakeNtuple4optimization = False
+isMC = True
+MakeNtuple4optimization = True
 #InputList and Folder name
-inputlist_n      = 'InputList/2015C_AlCaP0Raw_38T.list' # list of input files
-dirname          = 'ALL_2015C_v2_38T_pi0_CC'
+inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_PUFlat0to50bx25.list' # list of input files
+dirname          = 'ALL_Pi0Gun_Flat0to50bx25_v1'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = '2015C_v2_38T_pi0_CC'                   # Tag to the names to avoid overlap
+NameTag          = 'Pi0Gun_Flat0to50bx25_v1'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 14
+nIterations      = 1
 #N files
 ijobmax          = 3                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
@@ -206,7 +206,7 @@ else:
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
 #containment corrections
-useEBContainmentCorrections = 'True'
+useEBContainmentCorrections = 'False'
 useEEContainmentCorrections = 'False'
 EBContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEB.root'
 MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
@@ -234,10 +234,10 @@ FROMDIGI=False
 ######################################################################
 
 ##2015C AlCaP0 RAW
-isMC               = False
+isMC               = True
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'json_DCSONLY.txt'            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -245,14 +245,14 @@ doLaserCorr        = "False"
 hltGtDigis         = "InputTag('simGtDigis','','HLT')"        # Not used in the Fill.cc   
 triggerTag         = 'InputTag("TriggerResults","","HLT")'    # Run Fill EB only if the HLTPaths for EB(ee) exist. In this sample also extist InputTag('simGtDigis','','HLT')
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap","","HLT")'
-useHLTFilter       = "True"                                   # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
+useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '74X_dataRun2_Prompt_v2' #old is GR_P_V56
+globaltag          = '74X_dataRun2_Prompt_v2' if isMC==False else 'MCRUN2_74_V9' #old is GR_P_V56
 globaltag_New      = True
-FROMDIGI           = True
+FROMDIGI           = False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing
 MULTIFIT           = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
-is50ns             = True      # If DigiCustomization and MULTIFIT is True
+is50ns             = False      # If DigiCustomization and MULTIFIT is True
 WEIGHTS            = False;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
 if(Are_pi0):                                           # Member of Recalibration Module
    esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonlyRegional','pi0EcalRecHitsES','HLT')"
@@ -274,12 +274,19 @@ if(FROMDIGI):
       EBdigi = 'InputTag("hltAlCaEtaEBRechitsToDigis","etaEBDigis","HLT")'
       EEdigi = 'InputTag("hltAlCaEtaEERechitsToDigis","etaEEDigis","HLT")'
 else:
-   if(Are_pi0):
-      ebInputTag = 'InputTag("hltAlCaPi0EBUncalibrator","pi0EcalRecHitsEB","HLT")'
-      eeInputTag = 'InputTag("hltAlCaPi0EEUncalibrator","pi0EcalRecHitsEE","HLT")'
+   if isMC:
+      ebInputTag = 'InputTag("ecalRecHit","EcalRecHitsEB","RECO")'
+      eeInputTag = 'InputTag("ecalRecHit","EcalRecHitsEE","RECO")'
    else:
-      ebInputTag = 'InputTag("hltAlCaEtaEBUncalibrator","etaEcalRecHitsEB","HLT")'
-      eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE","HLT")'
+      if(Are_pi0):
+         ebInputTag = 'InputTag("hltAlCaPi0EBUncalibrator","pi0EcalRecHitsEB","HLT")'
+         eeInputTag = 'InputTag("hltAlCaPi0EEUncalibrator","pi0EcalRecHitsEE","HLT")'
+      else:
+         ebInputTag = 'InputTag("hltAlCaEtaEBUncalibrator","etaEcalRecHitsEB","HLT")'
+         eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE","HLT")'
+if isMC:
+   MC_Asssoc = True
+   genPartInputTag = "InputTag('genParticles','')"
 
 ##2015B AlCaP0 RAW
 #isMC               = False

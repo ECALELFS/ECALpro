@@ -3,20 +3,26 @@
 import subprocess, time, sys, os
 from methods import *
 
+from optparse import OptionParser                                                                                                                                                                                                                                     
+parser = OptionParser(usage="%prog [options]")    
+parser.add_option("-c", "--create",           dest="create", action="store_true", default=False, help="Do not submit the jobs, only create the subfolders")
+(options, args) = parser.parse_args()
+
 if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ): # Beacause in IIHE the pwd give a link to the area, and you don't want that
     pwd         = os.getenv('PWD')
 else:
     pwd         = os.getcwd()
 
-#-------- check if you have right access to queues --------#
-checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
-output = checkAccessToQueues.communicate()[1]
-if(output.find('command not found')==-1):
-    print "[calib] Correct setup for batch submission"
-else:
-    print "[calib] Missing access to queues"
-    if not( isCRAB and storageSite=="T2_BE_IIHE" ):
-       sys.exit(1)
+if not options.create:
+    #-------- check if you have right access to queues --------#
+    checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
+    output = checkAccessToQueues.communicate()[1]
+    if(output.find('command not found')==-1):
+        print "[calib] Correct setup for batch submission"
+    else:
+        print "[calib] Missing access to queues"
+        if not( isCRAB and storageSite=="T2_BE_IIHE" ):
+            sys.exit(1)
 
 #-------- create folders --------#
 
@@ -309,9 +315,10 @@ else:
     submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
     print "[calib]  '-- " + submit_s
     
-    # submitting calibration handler
-    submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-    output = (submitJobs.communicate()[0]).splitlines()
-    print "[calib]  '-- " + output[0]
+    if not options.create:
+        # submitting calibration handler
+        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+        output = (submitJobs.communicate()[0]).splitlines()
+        print "[calib]  '-- " + output[0]
     
-    #    print "usage thisPyton.py pwd njobs queue"
+        #    print "usage thisPyton.py pwd njobs queue"
