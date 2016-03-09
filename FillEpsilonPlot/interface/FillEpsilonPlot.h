@@ -80,7 +80,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // ---------- user defined ------------------------
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
-      std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR);
+      std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
@@ -215,8 +215,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TFile *outfile_;
       TFile *externalGeometryFile_;
 
-      std::vector<int> Ncristal_EE;
-      std::vector<int> Ncristal_EB;
+      std::vector<int> Ncristal_EE, Ncristal_EE_used;
+      std::vector<int> Ncristal_EB, Ncristal_EB_used;
 
       TH1F *EventFlow_EB;
       TH1F *EventFlow_EE;
@@ -281,8 +281,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t   Op_n1CrisPi0_rec[NPI0MAX];
       Int_t   Op_n2CrisPi0_rec[NPI0MAX];
       Float_t Op_mPi0_rec[NPI0MAX];
-      Float_t Op_ptG1_rec[NPI0MAX];
-      Float_t Op_ptG2_rec[NPI0MAX];
+      Float_t Op_enG1_rec[NPI0MAX];
+      Float_t Op_enG2_rec[NPI0MAX];
       Float_t Op_etaPi0_rec[NPI0MAX];
       Float_t Op_ptPi0_rec[NPI0MAX];
       Float_t Op_DeltaRG1G2[NPI0MAX];
@@ -292,16 +292,38 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_Es_e2_2[NPI0MAX];
       Float_t Op_S4S9_1[NPI0MAX];
       Float_t Op_S4S9_2[NPI0MAX];
+      Float_t Op_S1S9_1[NPI0MAX];
+      Float_t Op_S1S9_2[NPI0MAX];
+      Float_t Op_S2S9_1[NPI0MAX];
+      Float_t Op_S2S9_2[NPI0MAX];
       Float_t Op_Eta_1[NPI0MAX];
       Float_t Op_Eta_2[NPI0MAX];
       Float_t Op_Phi_1[NPI0MAX];
       Float_t Op_Phi_2[NPI0MAX];
       Float_t Op_Time_1[NPI0MAX];
       Float_t Op_Time_2[NPI0MAX];
-      Float_t Op_ptG1_nocor[NPI0MAX];
-      Float_t Op_ptG2_nocor[NPI0MAX];
+      Float_t Op_DeltaR_1[NPI0MAX];
+      Float_t Op_DeltaR_2[NPI0MAX];
+      Float_t Op_enG1_nocor[NPI0MAX];
+      Float_t Op_enG2_nocor[NPI0MAX];
       Float_t Op_ptPi0_nocor[NPI0MAX];
       Float_t Op_mPi0_nocor[NPI0MAX];
+      Float_t Op_enG1_true[NPI0MAX];
+      Float_t Op_enG2_true[NPI0MAX];
+      Int_t Op_Nxtal_1[NPI0MAX];
+      Int_t Op_Nxtal_2[NPI0MAX];
+      Int_t Op_iEtaiX_1[NPI0MAX];
+      Int_t Op_iEtaiX_2[NPI0MAX];
+      Int_t Op_iPhiiY_1[NPI0MAX];
+      Int_t Op_iPhiiY_2[NPI0MAX];
+      Int_t Op_iEta_1on5[NPI0MAX];
+      Int_t Op_iEta_2on5[NPI0MAX];
+      Int_t Op_iPhi_1on2[NPI0MAX];
+      Int_t Op_iPhi_2on2[NPI0MAX];
+      Int_t Op_iEta_1on2520[NPI0MAX];
+      Int_t Op_iEta_2on2520[NPI0MAX];
+      Int_t Op_iPhi_1on20[NPI0MAX];
+      Int_t Op_iPhi_2on20[NPI0MAX];
 
       vector<float> Es_1;
       vector<float> Es_2;
@@ -337,9 +359,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> vs4s9EE;
       vector<float> vSeedTime;
       vector<float> vSeedTimeEE;
-#ifdef MVA_REGRESSIO_EE
       vector<float> vs1s9EE;
       vector<float> vs2s9EE;
+#ifdef MVA_REGRESSIO_EE
       vector<float> ESratio;
       TFile *EEweight_file_pi01;
       TFile *EEweight_file_pi02;
