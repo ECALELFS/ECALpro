@@ -105,6 +105,7 @@ using std::max;
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
 //#include "Cintex/Cintex.h"
 #include "TLorentzVector.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 using namespace TMVA;
 using namespace edm;
@@ -195,6 +196,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     SystOrNot_                         = iConfig.getUntrackedParameter<double>("SystOrNot",0);
     isMC_                              = iConfig.getUntrackedParameter<bool>("isMC",false);
     MC_Asssoc_                         = iConfig.getUntrackedParameter<bool>("MC_Asssoc",false);
+    MC_Asssoc_DeltaR                   = iConfig.getUntrackedParameter<double>("MC_Asssoc_DeltaR",0.1);
     MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
     GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
     JSONfile_                          = iConfig.getUntrackedParameter<std::string>("JSONfile","");
@@ -664,8 +666,16 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   EventFlow_EB->Fill(2.); EventFlow_EE->Fill(2.);
   if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ){ EventFlow_EB->Fill(3.); fillEBClusters(ebclusters, iEvent, channelStatus);}
   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ){ EventFlow_EE->Fill(3.); fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);}
-  if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters, EcalBarrel);
-  if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eseeclusters_tot, EcalEndcap);
+  std::vector< CaloCluster > ebclusters_used, eeclusters_used;
+  if(isMC_ && MC_Asssoc_) {
+    ebclusters_used = MCTruthAssociate(ebclusters,0.05);
+    eeclusters_used = MCTruthAssociate(eseeclusters_tot,0.05);
+  } else {
+    ebclusters_used = ebclusters;
+    eeclusters_used = eseeclusters_tot;
+  }
+  if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, EcalBarrel);
+  if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, EcalEndcap);
 
   delete estopology_;
 
@@ -876,14 +886,6 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     if( fabs( clusPos.eta() )<1. ){ if(s4s9<S4S9_cut_low_[EcalBarrel]) continue;}
     else                          { if(s4s9<S4S9_cut_high_[EcalBarrel]) continue;}
 
-    if(isMC_ && MC_Asssoc_) {
-      TVector3 clusDir;
-      clusDir.SetPtEtaPhi(1.0,clusPos.eta(),clusPos.phi());
-      TVector3 ga1Dir, ga2Dir;
-      ga1Dir.SetPtEtaPhi(1.0,Gamma1MC.eta(),Gamma1MC.phi());
-      ga2Dir.SetPtEtaPhi(1.0,Gamma2MC.eta(),Gamma2MC.phi());
-      if(min(clusDir.DeltaR(ga1Dir),clusDir.DeltaR(ga2Dir))>0.3) continue;
-    }
 
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEBContainmentCorrections_) 
@@ -1284,7 +1286,39 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
     h[jR]->Write();
 }
 
+std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR) {
 
+  std::vector< CaloCluster > ret;
+  ret.clear();
+  int n_tmp1 = -1;    int n_tmp2 = -1;
+  double deltaR1_tmp = 999;    double deltaR2_tmp = 999;
+  if(isMC_ && MC_Asssoc_) {
+    //    std::cout << "Association with MC: initial collection size = " << clusters.size() << std::endl;
+    for(unsigned int i=0; i<clusters.size(); i++){
+      const CaloCluster g = clusters[i];
+      double deltaR1 = reco::deltaR(g.eta(),g.phi(), Gamma1MC.Eta(),Gamma1MC.Phi());
+      double deltaR2 = reco::deltaR(g.eta(),g.phi(), Gamma2MC.Eta(),Gamma2MC.Phi());
+      //      std::cout << "DR1,2 = " << deltaR1 << "  " << deltaR2 << std::endl;
+      if(deltaR1<deltaR1_tmp) {
+        deltaR1_tmp = deltaR1; n_tmp1 = i;
+      }
+      if(deltaR2<deltaR2_tmp) {
+        deltaR2_tmp = deltaR2; n_tmp2 = i;
+      }
+    }
+  } else return ret;
+
+  // std::cout << "deltaR1,2_tmp = " << deltaR1_tmp << "  " << deltaR2_tmp << std::endl;
+  // std::cout << "ntmp = " << n_tmp1 << "  " << n_tmp2 << std::endl;
+
+  // one could look to another close cluster, but if the two MC photons are closer than 0.05 to the same cluster, 
+  // that is merged in one cluster most probably, so another one would be fake
+  if(n_tmp1==n_tmp2) return ret;
+  
+  if(deltaR1_tmp < deltaR) ret.push_back(clusters[n_tmp1]);
+  if(deltaR2_tmp < deltaR) ret.push_back(clusters[n_tmp2]);
+  return ret;
+}
 
 void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
 {

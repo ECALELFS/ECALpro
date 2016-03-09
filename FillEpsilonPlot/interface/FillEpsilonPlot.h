@@ -80,6 +80,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // ---------- user defined ------------------------
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
+      std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
@@ -194,6 +195,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double SystOrNot_;
       bool isMC_;
       bool MC_Asssoc_;
+      double MC_Asssoc_DeltaR;
       math::XYZPoint Gamma1MC;
       math::XYZPoint Gamma2MC;
       bool isCRAB_;
