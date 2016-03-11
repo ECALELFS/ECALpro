@@ -662,9 +662,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   ebclusters.clear();
   vs4s9.clear(); vs2s9.clear(); vs2s9.clear(); vSeedTime.clear();
   vs4s9EE.clear(); Es_1.clear(); Es_2.clear(); vSeedTimeEE.clear();
-#ifdef MVA_REGRESSIO_EE
   vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
-#endif
   std::vector< CaloCluster > eseeclusters; eseeclusters.clear();
   std::vector< CaloCluster > eseeclusters_tot; eseeclusters_tot.clear();
   Ncristal_EB.clear(); Ncristal_EE.clear();
@@ -806,9 +804,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
 	maxToFront = posit.mag();
     }
-#ifdef MVA_REGRESSIO
+
     double EnergyCristals[9] = {0.};
-#endif
 
     bool All_rechit_good=true;
 
@@ -833,9 +830,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
 	int dx = diff_neta_s(seed_ieta,ieta);
 	int dy = diff_nphi_s(seed_iphi,iphi);
-#ifdef MVA_REGRESSIO
 	EnergyCristals[j] = en;
-#endif
 
 	if(abs(dx)<=1 && abs(dy)<=1) 
 	{
@@ -925,13 +920,11 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
     // make calo clusters
     vs4s9.push_back( s4s9 ); 
-#ifdef MVA_REGRESSIO
     vs1s9.push_back( itseed->energy()/e3x3 );
     double maxEne = max_array( EnergyCristals, 9 );
     for(int i=0; i<9; i++){ if( EnergyCristals[i]==maxEne ) EnergyCristals[i]=0.; }
     double maxEne2 = max_array( EnergyCristals, 9);
     vs2s9.push_back( (maxEne+maxEne2)/e3x3 );
-#endif
     Ncristal_EB.push_back(RecHitsInWindow.size() );
     ebclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL), enFracs, CaloCluster::undefined, seed_id ) );
     vSeedTime.push_back( SeedTime ); 
@@ -950,10 +943,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
   vector <double> eeclusterS4S9; eeclusterS4S9.clear();
   vector <double> SeedTime_v;    SeedTime_v.clear();
-#ifdef MVA_REGRESSIO_EE
   vector <double> eeclusterS1S9; eeclusterS1S9.clear();
   vector <double> eeclusterS2S9; eeclusterS2S9.clear();
-#endif
 
   std::vector< CaloCluster > eeclusters; // contains the output eeclusters
   eeclusters.clear();
@@ -1061,9 +1052,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
 	maxToFront = posit.mag();
     }
-#ifdef MVA_REGRESSIO_EE
     double EnergyCristals[9] = {0.};
-#endif
     bool All_rechit_good=true;
     // loop over xtals and compute energy and position
     for(unsigned int j=0; j<RecHitsInWindow.size();j++)
@@ -1084,9 +1073,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
 	int dx = seed_ix-ix;
 	int dy = seed_iy-iy;
-#ifdef MVA_REGRESSIO_EE
 	EnergyCristals[j] = en;
-#endif
 	if(abs(dx)<=1 && abs(dy)<=1) 
 	{
 	  e3x3 += en;
@@ -1164,15 +1151,14 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
     eeclusterS4S9.push_back(s4s9);
     SeedTime_v.push_back(SeedTimeEE);
-#ifdef MVA_REGRESSIO_EE
     eeclusterS1S9.push_back(eeitseed->energy()/e3x3);
     double maxEne = max_array( EnergyCristals, 9 );
     for(int i=0; i<9; i++){ if( EnergyCristals[i]==maxEne ) EnergyCristals[i]=0.; }
     double maxEne2 = max_array( EnergyCristals, 9);
     eeclusterS2S9.push_back( (maxEne+maxEne2)/e3x3 );
-#endif
 
   } //loop over seeds to make eeclusters
+
 
   /************************** ENDCAP-PRESHOWER MATCHING ************************/
 
@@ -1249,11 +1235,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	vs4s9EE.push_back( eeclusterS4S9[ind] );
 	vSeedTimeEE.push_back( SeedTime_v[ind] );
 	Es_1.push_back( -999. ); Es_2.push_back( -999. );
-#ifdef MVA_REGRESSIO_EE
 	vs1s9EE.push_back( eeclusterS1S9[ind] );
 	vs2s9EE.push_back( eeclusterS2S9[ind] );
 	ESratio.push_back( (-1998.)/eeclus_iter->energy() );
-#endif
     }
   }//end of the matching loop
 
@@ -1487,9 +1471,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}
 #endif
 
-#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO_EE)
 	if( subDetId==EcalEndcap && (g1->seed().subdetId()==2) && (g2->seed().subdetId()==2) ){
 
+#ifdef MVA_REGRESSIO_EE
 	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
 	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy();
@@ -1507,6 +1491,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
             ind1=j; ind2=i;
           }
 
+
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
 	  value_pi01[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
@@ -1519,6 +1504,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  value_pi01[7] = ( vs2s9EE[ind1] );
 	  value_pi01[8] = ( ESratio[ind1] );
 	  value_pi01[9] = ( EtaRing_1 );
+
 	  float Correct1 = Are_pi0_? forest_EE_pi01->GetResponse(value_pi01) : 1.;
 	  cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
 	    <<" ratio E "<< G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_1.Pt()
@@ -1548,7 +1534,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Correction1EE_mva = Correct1; Correction2EE_mva = Correct2;
 	  iX1_mva = iX1; iX2_mva = iX2; iY1_mva = iY1; iY1_mva = iY2; Pt1EE_mva = G_Sort_1.Pt(); Pt2EE_mva = G_Sort_2.Pt();
 	  EtaRing1_mva = EtaRing_1; EtaRing2_mva = EtaRing_2;
-
 	  TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
 	  TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
 
@@ -1558,8 +1543,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  MassEE_mva = (mvag1P4 + mvag2P4).M();
 	  MassEEOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
 	  TTree_JoshMva_EE->Fill();   
-	}
 #endif
+	}
+
 	math::PtEtaPhiMLorentzVector g1P4( (Corr1*g1->energy())/cosh(g1->eta()), g1->eta(), g1->phi(), 0. );
 	math::PtEtaPhiMLorentzVector g2P4( (Corr2*g2->energy())/cosh(g2->eta()), g2->eta(), g2->phi(), 0. );
 	math::PtEtaPhiMLorentzVector pi0P4 = g1P4 + g2P4;
@@ -1681,7 +1667,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.2) && pi0P4.mass() < ((Are_pi0_)?0.25:1.) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
-	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:2;
+	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:0;
 	    Op_IsoPi0_rec[nPi0]    = nextClu;  
 	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
 	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
@@ -1928,7 +1914,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
   if(MakeNtuple4optimization_){
     for(int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
     Op_NPi0_rec = nPi0; 
-    Tree_Optim->Fill();
+    if(nPi0>0) Tree_Optim->Fill();
   }
 
 }

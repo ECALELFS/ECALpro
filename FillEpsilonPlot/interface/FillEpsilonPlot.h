@@ -361,8 +361,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> vSeedTimeEE;
       vector<float> vs1s9EE;
       vector<float> vs2s9EE;
-#ifdef MVA_REGRESSIO_EE
       vector<float> ESratio;
+#ifdef MVA_REGRESSIO_EE
       TFile *EEweight_file_pi01;
       TFile *EEweight_file_pi02;
       const GBRForest *forest_EE_pi01;
