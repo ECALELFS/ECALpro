@@ -50,7 +50,7 @@ fastHadd         = True                  # From 7_4_X we can use this faster mat
 if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
-Barrel_or_Endcap = 'ONLY_BARREL'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
@@ -277,6 +277,7 @@ else:
    if isMC:
       ebInputTag = 'InputTag("ecalRecHit","EcalRecHitsEB","RECO")'
       eeInputTag = 'InputTag("ecalRecHit","EcalRecHitsEE","RECO")'
+      esInputTag = 'InputTag("ecalPreshowerRecHit","EcalRecHitsES","RECO")'
    else:
       if(Are_pi0):
          ebInputTag = 'InputTag("hltAlCaPi0EBUncalibrator","pi0EcalRecHitsEB","HLT")'
