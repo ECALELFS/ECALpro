@@ -122,13 +122,13 @@ def printFillCfg1( outputfile ):
     outputfile.write('    process.AlcaP0Filter.HLTPaths = ["' + HLTPaths + '"]\n\n')
 
     outputfile.write("process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(" + nEventsPerJob +") )\n")
-    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 1000000\n")
-    outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
-    outputfile.write("        threshold  = cms.untracked.string('WARNING'),\n")
-    outputfile.write("        ERROR      = cms.untracked.PSet (\n")
-    outputfile.write("                                         limit = cms.untracked.int32(1)\n")
-    outputfile.write("        )\n")
-    outputfile.write(")\n")
+    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n")
+    # outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
+    # outputfile.write("        threshold  = cms.untracked.string('WARNING'),\n")
+    # outputfile.write("        ERROR      = cms.untracked.PSet (\n")
+    # outputfile.write("                                         limit = cms.untracked.int32(1)\n")
+    # outputfile.write("        )\n")
+    # outputfile.write(")\n")
     outputfile.write("process.options = cms.untracked.PSet(\n")
     outputfile.write("   wantSummary = cms.untracked.bool(True),\n")
     outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
@@ -206,6 +206,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     if(MC_Asssoc):
         outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
         outputfile.write("process.analyzerFillEpsilon.MC_Asssoc            = cms.untracked.bool(True)\n")
+        outputfile.write("process.analyzerFillEpsilon.MC_Asssoc_DeltaR     = cms.untracked.double(0.3)\n")
     if(Are_pi0):
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
     else:
