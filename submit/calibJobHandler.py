@@ -61,6 +61,8 @@ else:
     njobs = int(sys.argv[1])
     queue = sys.argv[2]
 
+myeosls = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls '  #to avoid use of cmsLs that is deprecated since January 2016
+myeoslsl = myeosls + '-l '
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
 srcPath  = outputdir + '/src'
@@ -136,8 +138,12 @@ for iters in range(nIterations):
         if( storageSite=="T2_CH_CERN" ):
            for Extra_path in ListPaths:
                print 'LETS TRY: ' + Extra_path
-               print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
-               getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
+               #print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
+               #getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
+               print 'Getting Good file: ' + myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -\
+v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
+               getGoodfile = subprocess.Popen([myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | gre\
+p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
                getGoodfile_c = getGoodfile.communicate()
                getGoodfile_str += str(getGoodfile_c)
         if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
@@ -265,7 +271,8 @@ for iters in range(nIterations):
                       lines = f2.readlines()
                       f2.close()
                    filetoCheck2 = str(filetoCheck)[22:]
-                   CheckComm = 'cmsLs -l ' + str(filetoCheck2)
+                   #CheckComm = 'cmsLs -l ' + str(filetoCheck2)  #cmsLs is deprecated since January 2016, must use eos ls
+                   CheckComm = myeoslsl + str(filetoCheck2)
                    myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
                    Check_output = myCheck.communicate()
                    #If file is not present, remove it from the list
@@ -891,7 +898,8 @@ for iters in range(nIterations):
 
     # checking that calibMap.root is actually available on EOS
     print "Checking availabilty of " + NameTag + calibMapName
-    checkFileAvailability_s = 'cmsLs ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    #checkFileAvailability_s = 'cmsLs ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    checkFileAvailability_s = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
     print checkFileAvailability_s
     checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
     output = checkFileAvailability.communicate()[0]
