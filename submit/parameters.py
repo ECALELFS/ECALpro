@@ -23,7 +23,7 @@ CRAB_Data_Path   = '/SinglePion_FlatPt-1To15_AsymptNoPU/emanuele-SinglePion_Flat
 CRAB_CopyCert    = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
 storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
-isOtherT2        = False
+isOtherT2        = True
 if(isCRAB):
    eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/' #For reason of space is better the group area
    if(isOtherT2):
