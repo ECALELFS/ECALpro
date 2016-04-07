@@ -16,7 +16,7 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 #PATH
 #eosPath = '/store/caf/user/lpernie'
-eosPath = '/store/caf/user/emanuele'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
 #CRAB
 isCRAB           = False               # If not is batch
 CRAB_Data_Path   = '/SinglePion_FlatPt-1To15_AsymptNoPU/emanuele-SinglePion_FlatPt-1To15_AsymptNoPU-9709e5e865f17288f5a53621cf8e9935/USER'
@@ -25,12 +25,19 @@ storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 if(isCRAB):
-   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/emanuele/' #For reason of space is better the group area
+   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/' #For reason of space is better the group area
    if(isOtherT2):
-       eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/emanuele'
+       eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/mciprian/piZero2016/'
        voGroup     = "itcms"
        storageSite = "T2_IT_Rome"
-       outLFN      = "/store/user/emanuele/PI02015_CRAB/"
+       outLFN      = "/store/user/mciprian/piZero2016/"
+#adding following line to run on T2 without using crab
+if(isOtherT2):
+   eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/mciprian/piZero2016/'
+   voGroup     = "itcms"
+   storageSite = "T2_IT_Rome"
+   outLFN      = "/store/user/mciprian/piZero2016/"
+# end of my personal addition
 #MC and Selection Optimization
 isMC = True
 MakeNtuple4optimization = True
@@ -42,6 +49,10 @@ Silent           = False                 # True->Fill modules is silent; False->
 NameTag          = 'Pi0Gun_NoPU_v1'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
+#adding following lines to run on T2 Rome
+if(isOtherT2):
+   queueForDaemon   = 'cmscan'
+   queue            = 'cmscan'
 nIterations      = 1
 #N files
 ijobmax          = 3                     # 5 number of files per job
@@ -68,8 +79,8 @@ MC_Asssoc = False
 #Seeds (Comment if you want the standard cuts ones)
 EB_Seed_E    = '0.5'
 useEE_EtSeed = 'False'
-EE_Seed_Et   = '0.5'
-EE_Seed_E    = '1.5' #1.5 for 40PU25
+EE_Seed_Et   = '0.0'
+EE_Seed_E    = '1.0' #1.5 for 40PU25
 #Selection
 CutOnHLTIso = "False"
 if(Are_pi0):
@@ -108,7 +119,7 @@ if(Are_pi0):
    if MakeNtuple4optimization:
       #inner barrel
       Pi0PtCutEB_low = '1'
-      gPtCutEB_low = '.4'
+      gPtCutEB_low = '0.4'
       Pi0IsoCutEB_low = '0.0'
       Pi0HLTIsoCutEB_low = "999"
       nXtal_1_EB_low = '0'
@@ -116,7 +127,7 @@ if(Are_pi0):
       S4S9_EB_low = '0.6'
       #outer barrel
       Pi0PtCutEB_high = '1.0'
-      gPtCutEB_high = '.4'
+      gPtCutEB_high = '0.4'
       Pi0IsoCutEB_high = '0.0'
       Pi0HLTIsoCutEB_high = '999'
       nXtal_1_EB_high = '0'
@@ -124,7 +135,7 @@ if(Are_pi0):
       S4S9_EB_high = '0.6'
       #low eta EE
       Pi0PtCutEE_low = '1.0'
-      gPtCutEE_low = '.4'
+      gPtCutEE_low = '0.4'
       Pi0IsoCutEE_low = '.0'
       Pi0HLTIsoCutEE_low = '999'
       nXtal_1_EE_low = '0'
