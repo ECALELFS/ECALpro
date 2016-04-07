@@ -19,7 +19,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 eosPath = '/store/caf/user/emanuele'
 #CRAB
 isCRAB           = False               # If not is batch
-CRAB_Data_Path   = '/SinglePion_FlatPt-1To15/RunIISpring15DR74-AsymptFlat0to50bx25RawReco_MCRUN2_74_V9-v1/GEN-SIM-RECO'
+CRAB_Data_Path   = '/SinglePion_FlatPt-1To15_AsymptNoPU/emanuele-SinglePion_FlatPt-1To15_AsymptNoPU-9709e5e865f17288f5a53621cf8e9935/USER'
 CRAB_CopyCert    = '/afs/cern.ch/user/l/lpernie/private/x509up_u12147'
 storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
@@ -35,11 +35,11 @@ if(isCRAB):
 isMC = True
 MakeNtuple4optimization = True
 #InputList and Folder name
-inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_PUFlat0to50bx25.list' # list of input files
-dirname          = 'ALL_Pi0Gun_Flat0to50bx25_v1'
+inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_NoPU.list' # list of input files
+dirname          = 'ALL_Pi0Gun_NoPU_v1'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'Pi0Gun_Flat0to50bx25_v1'                   # Tag to the names to avoid overlap
+NameTag          = 'Pi0Gun_NoPU_v1'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 1
@@ -247,7 +247,7 @@ triggerTag         = 'InputTag("TriggerResults","","HLT")'    # Run Fill EB only
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap","","HLT")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '74X_dataRun2_Prompt_v2' if isMC==False else 'MCRUN2_74_V9' #old is GR_P_V56
+globaltag          = '74X_dataRun2_Prompt_v2' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing
@@ -287,7 +287,8 @@ else:
          eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE","HLT")'
 if isMC:
    MC_Asssoc = True
-   genPartInputTag = "InputTag('genParticles','')"
+   genPartInputTag = 'InputTag("genParticles","")'
+      
 
 ##2015B AlCaP0 RAW
 #isMC               = False
