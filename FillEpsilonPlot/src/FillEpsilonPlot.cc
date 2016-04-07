@@ -122,9 +122,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
-    EBRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag");
-    EERecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag");
-    ESRecHitCollectionTag_             = iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag");
+    EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
+    EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
+    ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     HLTResultsNameEB_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEB","AlCa_EcalPi0EB");
     HLTResultsNameEE_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEE","AlCa_EcalPi0EE");
@@ -133,9 +133,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     L1_Bit_Sele_                       = iConfig.getUntrackedParameter<std::string>("L1_Bit_Sele","");
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
-    triggerTag_                        = iConfig.getUntrackedParameter<edm::InputTag>("triggerTag",edm::InputTag("TriggerResults"));
-    hltL1GtObjectMap_                  = iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap"));
-    GenPartCollectionTag_              = iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles"));
+    triggerResultsToken_               = consumes<edm::TriggerResults>(iConfig.getUntrackedParameter("triggerTag",edm::InputTag("TriggerResults")));
+    L1GTobjmapToken_                   = consumes<L1GlobalTriggerObjectMapRecord>(iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap")));
+    GenPartCollectionToken_            = consumes<GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles")));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
     MVAEBContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
@@ -200,6 +200,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
     GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
     JSONfile_                          = iConfig.getUntrackedParameter<std::string>("JSONfile","");
+
+    // for MC-truth association
+    g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
+    g4_simVtx_Token_ = consumes<edm::SimVertexContainer>(edm::InputTag("g4SimHits"));
 
     if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
     else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
@@ -497,7 +501,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //Trigger Histo
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
-    iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
+    iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
     const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
     for( int i=0; i<NL1SEED; i++ ){
 	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
@@ -515,7 +519,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //MC Photons (they will be associated to the clusters later)
   if( isMC_ && MC_Asssoc_ ){
     edm::Handle<std::vector<reco::GenParticle>> GenParProd;
-    iEvent.getByLabel( GenPartCollectionTag_, GenParProd);//Fatal Root Error: @SUB=TBufferFile::CheckByteCount object of class edm::RefCore read too many bytes: 10 instead of 8
+    iEvent.getByToken( GenPartCollectionToken_, GenParProd);//Fatal Root Error: @SUB=TBufferFile::CheckByteCount object of class edm::RefCore read too many bytes: 10 instead of 8
     // const reco::GenParticleCollection *GenPars = 0;
     // std::cout << "MC truth taken" << std::endl;
     // //if ( ! GenParProd.isValid() )  edm::LogWarning("GenParSummary") << "GenPars not found";
@@ -527,12 +531,12 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     // get GEANT sim tracks and vertices (includes conversions)
     Handle<SimTrackContainer> simTracks_h;
     const SimTrackContainer* simTracks;
-    iEvent.getByLabel("g4SimHits", simTracks_h);
+    iEvent.getByToken(g4_simTk_Token_, simTracks_h);
     simTracks = (simTracks_h.isValid()) ? simTracks_h.product() : 0;
 
     Handle<SimVertexContainer> simVert_h;
     const SimVertexContainer* simVertices;
-    iEvent.getByLabel("g4SimHits", simVert_h);
+    iEvent.getByToken(g4_simVtx_Token_, simVert_h);
     simVertices = (simVert_h.isValid()) ? simVert_h.product() : 0;
 
 
@@ -644,9 +648,9 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
   else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
 
-  iEvent.getByLabel ( EBRecHitCollectionTag_, ebHandle);
-  iEvent.getByLabel ( EERecHitCollectionTag_, eeHandle);
-  iEvent.getByLabel ( ESRecHitCollectionTag_, esHandle);
+  iEvent.getByToken ( EBRecHitCollectionToken_, ebHandle);
+  iEvent.getByToken ( EERecHitCollectionToken_, eeHandle);
+  iEvent.getByToken ( ESRecHitCollectionToken_, esHandle);
 
   //Internal Geometry
   edm::ESHandle<CaloGeometry> geoHandle;
@@ -2093,7 +2097,7 @@ FillEpsilonPlot::DeltaPhi(float phi1, float phi2){
 bool FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
 
   edm::Handle<edm::TriggerResults> hltTriggerResultHandle;
-  iEvent.getByLabel(triggerTag_, hltTriggerResultHandle);
+  iEvent.getByToken(triggerResultsToken_, hltTriggerResultHandle);
 
   edm::TriggerNames HLTNames;
 
@@ -2126,7 +2130,7 @@ bool FillEpsilonPlot::getTriggerByName( std::string s ) {
 bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
-  iEvent.getByLabel( hltL1GtObjectMap_, gtReadoutRecord);
+  iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
   const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
   for( int i=0; i<NL1SEED; i++ ){
     const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
