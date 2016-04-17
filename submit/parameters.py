@@ -17,6 +17,17 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+#
+#adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
+#See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools    
+myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select '  #this call directly the eos command (note that eos is an alias, see link above)
+myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
+myeoslsl = myeosls + '-l '
+myeosmkdir = myeoscmd + 'mkdir '
+myeosstage = myeoscmd + 'cp '  # I called it myeosstage instead of myeoscp to remember that it substitutes cmsStage command
+# as a convention, when adding commands like: command = myeoscmd + "some_option ", just leave a space AFTER the some_option, not before
+# end of my additions
+#  
 #CRAB
 isCRAB           = False               # If not is batch
 CRAB_Data_Path   = '/SinglePion_FlatPt-1To15_AsymptNoPU/emanuele-SinglePion_FlatPt-1To15_AsymptNoPU-9709e5e865f17288f5a53621cf8e9935/USER'
@@ -43,10 +54,10 @@ isMC = True
 MakeNtuple4optimization = True
 #InputList and Folder name
 inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_NoPU.list' # list of input files
-dirname          = 'ALL_Pi0Gun_NoPU_v1'
+dirname          = 'ALL_Pi0Gun_NoPU_v2'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'Pi0Gun_NoPU_v1'                   # Tag to the names to avoid overlap
+NameTag          = 'Pi0Gun_NoPU_v2'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 #adding following lines to run on T2 Rome
