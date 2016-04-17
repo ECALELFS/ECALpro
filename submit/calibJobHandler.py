@@ -61,8 +61,6 @@ else:
     njobs = int(sys.argv[1])
     queue = sys.argv[2]
 
-myeosls = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select ls '  #to avoid use of cmsLs that is deprecated since January 2016
-myeoslsl = myeosls + '-l '
 outputdir = pwd+'/'+dirname
 logPath = outputdir + '/log'
 srcPath  = outputdir + '/src'
@@ -430,8 +428,8 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                         file2.write("srmcp file:///" + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     else:
                         file2.write("#FILE_APPEPENDED\n")
-                        file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
-                        file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                        file2.write("echo 'eos cp -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                        file2.write(myeosstage + "-f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                     file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -488,8 +486,8 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                         file2.write("srmcp file:///" + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     else:
                         file2.write("#FILE_APPEPENDED\n")
-                        file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
-                        file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                        file2.write("echo 'eos cp -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                        file2.write(myeosstage + "-f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                     file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -881,7 +879,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
         stage_s_fin = 'srmcp file:///$TMPDIR//' + NameTag + calibMapName + ' srm://maite.iihe.ac.be:8443/pnfs/iihe/cms' + outLFN + "/iter_" + str(iters) + "/" + NameTag + calibMapName
     else:
-        stage_s_fin = 'cmsStage -f /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
+        stage_s_fin = myeosstage + '-f /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     print stage_s_fin
     stageCalibFile = subprocess.Popen([stage_s_fin], stdout=subprocess.PIPE, shell=True);
     print stageCalibFile.communicate()
