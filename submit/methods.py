@@ -459,7 +459,7 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
        outputfile.write("echo 'hadd -f /tmp/" + outFile + " @" + list + "'\n")
        outputfile.write("hadd -f /tmp/" + outFile + " @" + list  + "\n")
        outputfile.write("echo 'eos cp -f /tmp/" + outFile + " " + destination + "'\n")
-       outputfile.write(myeosstage "-f /tmp/" + outFile + " " + destination + "\n")
+       outputfile.write(myeosstage + "-f /tmp/" + outFile + " " + destination + "\n")
        outputfile.write("rm -f /tmp/" + outFile + "\n")
 
 def printFinalHadd(outputfile, list, destination, pwd):
