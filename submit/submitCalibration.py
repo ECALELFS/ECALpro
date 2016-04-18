@@ -129,7 +129,7 @@ for iter in range(nIterations):
     haddSrc_final_f_s.close()
 
     # create Hadd cfg file
-    dest = eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
+    dest = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
     for num_list in range(Nlist):
         hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iter) + "_job_" + str(num_list) + ".sh"
         hadd_cfg_f = open( hadd_cfg_n, 'w' )
@@ -181,7 +181,7 @@ for iter in range(nIterations):
         fillSrc_n = srcPath + "/Fill/submit_iter_" + str(iter) + "_job_" + str(ijob) + ".sh"
         fillSrc_f = open( fillSrc_n, 'w')
         source_s = NameTag +outputFile + "_" + str(ijob) + ".root"
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
         logpathFill = pwd + "/" + dirname + "/log/" + "fillEpsilonPlot_iter_" + str(iter) + "_job_" + str(ijob) + ".log"
         printSubmitSrc(fillSrc_f, fill_cfg_n, "/tmp/" + source_s, destination_s , pwd, logpathFill)
         fillSrc_f.close()
@@ -232,7 +232,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EB_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
@@ -257,7 +257,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EE_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
