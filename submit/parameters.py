@@ -25,15 +25,15 @@ myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.sele
 myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
 myeoslsl = myeosls + '-l '
 myeosmkdir = myeoscmd + 'mkdir '
-#myeosstage = myeoscmd + 'cp '  
-myeosstage = 'cmsStage -f '
+myeosstage = myeoscmd + 'cp '  
+#myeosstage = 'cmsStage -f '
 # I called it myeosstage instead of myeoscp to remember that it substitutes cmsStage command
 # as a convention, when adding commands like: command = myeoscmd + "some_option ", just leave a space AFTER the some_option, not before
 # note that code used cmsStage -f, but eos cp doesn't support -f option
 # also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
 # work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-#myPrefixToEosPath = 'root://eoscms//eos/cms'
-myPrefixToEosPath = ''
+myPrefixToEosPath = 'root://eoscms//eos/cms'
+#myPrefixToEosPath = ''
 # will modify calibJobHandler.py with this prefix to destination
 #
 # end of my additions
@@ -64,10 +64,10 @@ isMC = True
 MakeNtuple4optimization = True
 #InputList and Folder name
 inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_NoPU.list' # list of input files
-dirname          = 'ALL_Pi0Gun_NoPU_v7'
+dirname          = 'ALL_Pi0Gun_NoPU_v8'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'Pi0Gun_NoPU_v7'                   # Tag to the names to avoid overlap
+NameTag          = 'Pi0Gun_NoPU_v8'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 #adding following lines to run on T2 Rome
