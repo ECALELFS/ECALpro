@@ -331,7 +331,7 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
         outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
         outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-        outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
+        # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
         outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
@@ -349,7 +349,7 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
+    # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
     if ( not isOtherT2 and isCRAB ):
         outputfile.write("setenv X509_USER_PROXY " + CRAB_CopyCert + "\n")
     if not(Silent):
@@ -418,7 +418,7 @@ def printCrabHadd(outputfile, iter, pwd):
        outputfile.write("#qsub -q localgrid@cream02 " + pwd + "/" + dirname + "/CRAB_files/HaddSendafterCrab_" + iter + ".sh\n")
        outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
        outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
+       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
        outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     else:
        outputfile.write("#bsub -q " + queueForDaemon + " 'bash " + pwd + "/" + dirname + "/CRAB_files/HaddSendafterCrab_" + iter + ".sh'\n")
@@ -440,7 +440,7 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
        outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
        outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
+       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
        outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
@@ -469,7 +469,7 @@ def printFinalHadd(outputfile, list, destination, pwd):
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
        outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
        outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
+       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
        outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
