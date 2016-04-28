@@ -504,7 +504,7 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-    outputfile.write("echo \"Copying files locally: awk '{print \"eos cp -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+    outputfile.write("echo \"Copying files locally: awk '{print \"eos cp \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
     outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("filesHadd=''\n")

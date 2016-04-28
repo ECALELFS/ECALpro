@@ -243,13 +243,13 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                if(fastHadd):
                   Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
                else:
-                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $4}'"
+                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $8}'"
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep)[2:]
                else:
-                  FoutGrep_2 = str(FoutGrep)[3:]
+                  FoutGrep_2 = str(FoutGrep)[2:]
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep_2)[:-11]
                else:
@@ -285,9 +285,9 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                       f1.close()
                    else:
                       Splitted =  str(Check_output).split( );
-                      print "size: " + str(Splitted[1])
+                      print "size: " + str(Splitted[4])
                       #If is corrupted (size too small), remove it from the list
-                      if( int(Splitted[1])<10000 ):
+                      if( int(Splitted[4])<10000 ):
                            print 'HADD::Bad size for: ' + str(filetoCheck2)
                            print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                            f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
