@@ -262,6 +262,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                NumToRem = 0
                for filetoCheck in lines:
                    if(fastHadd):
+                      #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
                       filetoCheck = "root://eoscms//eos/cms" + filetoCheck
                    if( NumToRem!=0 ):
                       Num = NumToRem - 1
@@ -269,10 +270,16 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                       lines = f2.readlines()
                       f2.close()
                    filetoCheck2 = str(filetoCheck)[22:]
+                   #print "CHECK ~line 273: filetoCheck2 = " + filetoCheck2
                    #CheckComm = 'cmsLs -l ' + str(filetoCheck2)  #cmsLs is deprecated since January 2016, must use eos ls
+                   #print "CHECK: ~line 273"
                    CheckComm = myeoslsl + str(filetoCheck2)
+                   #print CheckComm
                    myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
+                   #print myCheck
                    Check_output = myCheck.communicate()
+                   #print "Chek_output = " + Check_output
+                   #print "CHECK: ~line 278"
                    #If file is not present, remove it from the list
                    if "No such" in str(Check_output):
                       print 'HADD::MISSING: ' + str(filetoCheck2)
