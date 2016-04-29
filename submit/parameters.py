@@ -60,14 +60,14 @@ if(isOtherT2):
    outLFN      = "/store/user/mciprian/piZero2016/"
 # end of my personal addition
 #MC and Selection Optimization
-isMC = True
+isMC = False
 MakeNtuple4optimization = True
 #InputList and Folder name
-inputlist_n      = 'InputList/Gun_Pi0_Pt1To15_NoPU.list' # list of input files
-dirname          = 'ALL_Pi0Gun_NoPU_v8'
+inputlist_n      = 'InputList/HLTmodifiedCodeDATA.list' # list of input files
+dirname          = 'HLTmodifiedCodeDATA'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'Pi0Gun_NoPU_v8'                   # Tag to the names to avoid overlap
+NameTag          = 'HLTmodifiedCodeDATA'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 #adding following lines to run on T2 Rome
@@ -266,10 +266,10 @@ FROMDIGI=False
 ######################################################################
 
 ##2015C AlCaP0 RAW
-isMC               = True
+isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'myjson_file_run271195.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -279,7 +279,7 @@ triggerTag         = 'InputTag("TriggerResults","","HLT")'    # Run Fill EB only
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap","","HLT")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '74X_dataRun2_Prompt_v2' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
+globaltag          = '80X_dataRun2_Prompt_v8' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing
