@@ -738,6 +738,8 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         thisfile_f = TFile.Open(thisfile_s)
         #Taking Interval and EB or EE
         h_Int = thisfile_f.Get("hint")
+        #print "Error in calibJobHandler.py --> h_Int = thisfile_f.Get("hint"): h_Int is a null pointer. Calling sys.exit()"
+        #sys.exit()
         init = h_Int.GetBinContent(1)
         finit = h_Int.GetBinContent(2)
         EEoEB = h_Int.GetBinContent(3)
