@@ -489,7 +489,7 @@ def printFinalHadd(outputfile, list, destination, pwd):
     else:
        outputfile.write("echo 'hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
        outputfile.write("hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
-       outputfile.write("echo 'eos cp /tmp//" + NameTag + "epsilonPlots.root " + destination + "'\n")
+       outputfile.write("echo 'eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
        outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
        outputfile.write("rm -f /tmp/" + NameTag + "epsilonPlots.root\n")
 
@@ -556,8 +556,16 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-    outputfile.write("echo \"Copying files locally: awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-    outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
+    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+    elif "cmsStage -f" in myeosstage:
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
+    else:
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("filesHadd=''\n")
     outputfile.write("for file in $files;\n")
