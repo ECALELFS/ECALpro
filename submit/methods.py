@@ -342,7 +342,10 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
     if not(isCRAB): #If CRAB you have to put the correct path, anbd you do it on calibJobHandler.py, not on ./submitCalibration.py
-       outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+           outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+       else:
+           outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")           
        outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
@@ -357,7 +360,10 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
-        outputfile.write("echo 'eos cp " + source + " " + destination + "'\n")
+        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+            outputfile.write("echo 'eos cp " + source + " " + destination + "'\n")
+        else:
+            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "'\n")
         outputfile.write(myeosstage + source + " " + destination + "\n")
         outputfile.write("echo 'rm -f " + source + "'\n")
         outputfile.write("rm -f " + source + "\n")
@@ -366,7 +372,10 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+            outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+        else:
+            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")
         outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
@@ -460,7 +469,10 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
     else:
        outputfile.write("echo 'hadd -f /tmp/" + outFile + " @" + list + "'\n")
        outputfile.write("hadd -f /tmp/" + outFile + " @" + list  + "\n")
-       outputfile.write("echo 'eos cp /tmp/" + outFile + " " + destination + "'\n")
+       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
+           outputfile.write("echo 'eos cp /tmp/" + outFile + " " + destination + "'\n")
+       else:
+           outputfile.write("echo 'cmsStage -f /tmp/" + outFile + " " + destination + "'\n")
        outputfile.write(myeosstage + "/tmp/" + outFile + " " + destination + "\n")
        outputfile.write("rm -f /tmp/" + outFile + "\n")
 
@@ -489,7 +501,10 @@ def printFinalHadd(outputfile, list, destination, pwd):
     else:
        outputfile.write("echo 'hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
        outputfile.write("hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
-       outputfile.write("echo 'eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
+       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
+           outputfile.write("echo 'eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
+       else:
+           outputfile.write("echo 'cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
        outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
        outputfile.write("rm -f /tmp/" + NameTag + "epsilonPlots.root\n")
 
@@ -538,7 +553,10 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root /tmp/" + NameTag + "FinalFile.pb\n")
-    outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
+    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
+    else:
+        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
@@ -588,7 +606,10 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots.root /tmp/" + NameTag + "FinalFile.pb\n")
-    outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+    else:
+        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
