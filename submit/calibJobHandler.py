@@ -260,7 +260,11 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                lines = f.readlines()
                f.close()
                NumToRem = 0
+               line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
+                   print ""  #to separate different steps
+                   print "loop: iter " + str(line_index)
+                   line_index += 1
                    if(fastHadd):
                       #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
                       filetoCheck = "root://eoscms//eos/cms" + filetoCheck
@@ -274,21 +278,24 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                    #CheckComm = 'cmsLs -l ' + str(filetoCheck2)  #cmsLs is deprecated since January 2016, must use eos ls
                    #print "CHECK: ~line 273"
                    CheckComm = myeoslsl + str(filetoCheck2)
-                   #print CheckComm
+                   #printn CheckComm
                    myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
                    #print myCheck
                    Check_output = myCheck.communicate()
                    #print "Chek_output = " + Check_output
                    #print "CHECK: ~line 278"
                    #If file is not present, remove it from the list
-                   if "No such" in str(Check_output):
+                   if "('', None)" in str(Check_output):   # WARNING: output for missing file is --> "('', None)", not "No such ...". Probably it changed when I use eos ls instead of old cmsLs
                       print 'HADD::MISSING: ' + str(filetoCheck2)
                       print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                       f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                      updated_list = str(FoutGrep_2) + str(NumToRem)
                       NumToRem = NumToRem + 1
                       for line in lines:
-                          if line!=str(filetoCheck):
+                          if line!=str(filetoCheck2):
                                f1.write(line)
+                          else:                              
+                              print "Not printing " + str(line) + " in updated file " + str(updated_list)
                       f1.close()
                    else:
                       Splitted =  str(Check_output).split( );
@@ -298,11 +305,14 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                            print 'HADD::Bad size for: ' + str(filetoCheck2)
                            print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                            f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
+                           updated_list = str(FoutGrep_2) + str(NumToRem)
                            NumToRem = NumToRem + 1
-                           lines1 = f1.readlines()
-                           for line in lines:
-                               if line!=str(filetoCheck):
+                           lines1 = f1.readlines() # don'tunderstand the purpose of this line
+                           for line in lines: 
+                               if line!=str(filetoCheck2):
                                     f1.write(line)
+                               else:                              
+                                   print "Not printing " + str(line) + " in updated file " + str(updated_list)
                            f1.close()
                #moving the .list to the correct one
                if( NumToRem!=0 ):
@@ -310,7 +320,10 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                    MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
                    MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                    mvOut = MoveC.communicate()
+                   print "Some files were removed in " + str(FoutGrep_2)
+                   print "Copied " + str(FoutGrep_2) + str(NumToRem) + " into " + str(FoutGrep_2)
             #End of the check, sending the job
+            print "Now sending job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
             print Hsubmit_s
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
             outJobs = subJobs.communicate()
