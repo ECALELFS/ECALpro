@@ -310,15 +310,19 @@ if( isCRAB ):
 
 else:
     # configuring calibration handler
-    print "[calib] Number of jobs created = " + str(njobs)
-    print "[calib] Submitting calibration handler"
-    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
-    print "[calib]  '-- " + submit_s
     
     if not options.create:
+        print "[calib] Number of jobs created = " + str(njobs)
+        print "[calib] Submitting calibration handler"
+        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+        print "[calib]  '-- " + submit_s
         # submitting calibration handler
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
         output = (submitJobs.communicate()[0]).splitlines()
         print "[calib]  '-- " + output[0]
     
         #    print "usage thisPyton.py pwd njobs queue"
+    else:
+        print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
+
+
