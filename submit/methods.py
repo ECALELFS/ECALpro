@@ -538,7 +538,7 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $9 }'`\n")
+        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
     outputfile.write('   echo "outEncode is: $outEncode"\n')
@@ -591,7 +591,7 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $9 }'`\n")
+        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
     outputfile.write('   echo "outEncode is: $outEncode"\n')
