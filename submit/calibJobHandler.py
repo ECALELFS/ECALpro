@@ -243,13 +243,13 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                if(fastHadd):
                   Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
                else:
-                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $8}'"
+                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $4}'"
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep)[2:]
                else:
-                  FoutGrep_2 = str(FoutGrep)[2:]
+                  FoutGrep_2 = str(FoutGrep)[3:]
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep_2)[:-11]
                else:
