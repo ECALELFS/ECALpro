@@ -136,8 +136,12 @@ for iters in range(nIterations):
         if( storageSite=="T2_CH_CERN" ):
            for Extra_path in ListPaths:
                print 'LETS TRY: ' + Extra_path
-               print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
-               getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
+               #print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
+               #getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
+               print 'Getting Good file: ' + myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -\
+v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
+               getGoodfile = subprocess.Popen([myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | gre\
+p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
                getGoodfile_c = getGoodfile.communicate()
                getGoodfile_str += str(getGoodfile_c)
         if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
@@ -256,8 +260,13 @@ for iters in range(nIterations):
                lines = f.readlines()
                f.close()
                NumToRem = 0
+               line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
+                   print ""  #to separate different steps
+                   print "loop: iter " + str(line_index)
+                   line_index += 1
                    if(fastHadd):
+                      #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
                       filetoCheck = "root://eoscms//eos/cms" + filetoCheck
                    if( NumToRem!=0 ):
                       Num = NumToRem - 1
@@ -265,32 +274,45 @@ for iters in range(nIterations):
                       lines = f2.readlines()
                       f2.close()
                    filetoCheck2 = str(filetoCheck)[22:]
-                   CheckComm = 'cmsLs -l ' + str(filetoCheck2)
+                   #print "CHECK ~line 273: filetoCheck2 = " + filetoCheck2
+                   #CheckComm = 'cmsLs -l ' + str(filetoCheck2)  #cmsLs is deprecated since January 2016, must use eos ls
+                   #print "CHECK: ~line 273"
+                   CheckComm = myeoslsl + str(filetoCheck2)
+                   #printn CheckComm
                    myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
+                   #print myCheck
                    Check_output = myCheck.communicate()
+                   #print "Chek_output = " + Check_output
+                   #print "CHECK: ~line 278"
                    #If file is not present, remove it from the list
-                   if "No such" in str(Check_output):
+                   if "('', None)" in str(Check_output):   # WARNING: output for missing file is --> "('', None)", not "No such ...". Probably it changed when I use eos ls instead of old cmsLs
                       print 'HADD::MISSING: ' + str(filetoCheck2)
                       print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                       f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
+                      updated_list = str(FoutGrep_2) + str(NumToRem)
                       NumToRem = NumToRem + 1
                       for line in lines:
-                          if line!=str(filetoCheck):
+                          if line!=str(filetoCheck2):
                                f1.write(line)
+                          else:                              
+                              print "Not printing " + str(line) + " in updated file " + str(updated_list)
                       f1.close()
                    else:
                       Splitted =  str(Check_output).split( );
-                      print "size: " + str(Splitted[1])
+                      print "size: " + str(Splitted[4])
                       #If is corrupted (size too small), remove it from the list
-                      if( int(Splitted[1])<10000 ):
+                      if( int(Splitted[4])<10000 ):
                            print 'HADD::Bad size for: ' + str(filetoCheck2)
                            print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                            f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
+                           updated_list = str(FoutGrep_2) + str(NumToRem)
                            NumToRem = NumToRem + 1
-                           lines1 = f1.readlines()
-                           for line in lines:
-                               if line!=str(filetoCheck):
+                           lines1 = f1.readlines() # don'tunderstand the purpose of this line
+                           for line in lines: 
+                               if line!=str(filetoCheck2):
                                     f1.write(line)
+                               else:                              
+                                   print "Not printing " + str(line) + " in updated file " + str(updated_list)
                            f1.close()
                #moving the .list to the correct one
                if( NumToRem!=0 ):
@@ -298,7 +320,10 @@ for iters in range(nIterations):
                    MoveComm = "cp " + str(FoutGrep_2) + str(NumToRem) + " " + str(FoutGrep_2)
                    MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                    mvOut = MoveC.communicate()
+                   print "Some files were removed in " + str(FoutGrep_2)
+                   print "Copied " + str(FoutGrep_2) + str(NumToRem) + " into " + str(FoutGrep_2)
             #End of the check, sending the job
+            print "Now sending job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
             print Hsubmit_s
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
             outJobs = subJobs.communicate()
@@ -414,7 +439,7 @@ for iters in range(nIterations):
                  destination = "srm://maite.iihe.ac.be:8443/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + "/" + NameTag + "Barrel_" + str(inteb)+ "_" + calibMapName
             else:
                  tmpsource = "/tmp/" + NameTag + "Barrel_" + str(inteb) + "_" + calibMapName
-                 destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Barrel_" + str(inteb)+ "_" + calibMapName
+                 destination = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Barrel_" + str(inteb)+ "_" + calibMapName
             if not( '#FILE_APPEPENDED' in open(fit_src_n).read()):
                with open(fit_src_n, 'a') as file2:
                     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -423,8 +448,8 @@ for iters in range(nIterations):
                         file2.write("srmcp file:///" + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     else:
                         file2.write("#FILE_APPEPENDED\n")
-                        file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
-                        file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                        file2.write("echo 'eos cp " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                        file2.write(myeosstage + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                     file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -472,7 +497,7 @@ for iters in range(nIterations):
                 destination = "srm://maite.iihe.ac.be:8443/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + "/" + NameTag + "Endcap_" + str(inte)+ "_" + calibMapName
             else:
                 tmpsource = "/tmp/" + NameTag + "Endcap_" + str(inte) + "_" + calibMapName
-                destination = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Endcap_" + str(inte)+ "_" + calibMapName
+                destination = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + "Endcap_" + str(inte)+ "_" + calibMapName
             if not( '#FILE_APPEPENDED' in open(fit_src_n).read()):
                with open(fit_src_n, 'a') as file2:
                     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -481,8 +506,8 @@ for iters in range(nIterations):
                         file2.write("srmcp file:///" + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     else:
                         file2.write("#FILE_APPEPENDED\n")
-                        file2.write("echo 'cmsStage -f " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
-                        file2.write("cmsStage -f " + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
+                        file2.write("echo 'eos cp " + tmpsource + " " + destination + "' >> " + logpath  + "\n")
+                        file2.write(myeosstage + tmpsource + " " + destination + " >> " + logpath + " 2>&1 \n")
                     file2.write("echo 'rm -f " + tmpsource + "' >> " + logpath + " \n")
                     file2.write("rm -f " + tmpsource + " >> " + logpath + " 2>&1 \n")
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
@@ -726,6 +751,8 @@ for iters in range(nIterations):
         thisfile_f = TFile.Open(thisfile_s)
         #Taking Interval and EB or EE
         h_Int = thisfile_f.Get("hint")
+        #print "Error in calibJobHandler.py --> h_Int = thisfile_f.Get("hint"): h_Int is a null pointer. Calling sys.exit()"
+        #sys.exit()
         init = h_Int.GetBinContent(1)
         finit = h_Int.GetBinContent(2)
         EEoEB = h_Int.GetBinContent(3)
@@ -874,7 +901,7 @@ for iters in range(nIterations):
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
         stage_s_fin = 'srmcp file:///$TMPDIR//' + NameTag + calibMapName + ' srm://maite.iihe.ac.be:8443/pnfs/iihe/cms' + outLFN + "/iter_" + str(iters) + "/" + NameTag + calibMapName
     else:
-        stage_s_fin = 'cmsStage -f /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
+        stage_s_fin = myeosstage + '/tmp/' + NameTag + calibMapName + ' ' + myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     print stage_s_fin
     stageCalibFile = subprocess.Popen([stage_s_fin], stdout=subprocess.PIPE, shell=True);
     print stageCalibFile.communicate()
@@ -891,7 +918,8 @@ for iters in range(nIterations):
 
     # checking that calibMap.root is actually available on EOS
     print "Checking availabilty of " + NameTag + calibMapName
-    checkFileAvailability_s = 'cmsLs ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    #checkFileAvailability_s = 'cmsLs ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
+    checkFileAvailability_s = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
     print checkFileAvailability_s
     checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
     output = checkFileAvailability.communicate()[0]

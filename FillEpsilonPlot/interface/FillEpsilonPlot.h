@@ -29,7 +29,7 @@
 
 #define NPI0MAX 30000
 #define NL1SEED 128
-//#define SELECTION_TREE
+#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
@@ -148,16 +148,19 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       bool Are_pi0_;
       bool L1TriggerInfo_;
-      edm::InputTag EBRecHitCollectionTag_;
-      edm::InputTag EERecHitCollectionTag_;
-      edm::InputTag ESRecHitCollectionTag_;
+      edm::EDGetTokenT<EBRecHitCollection> EBRecHitCollectionToken_;
+      edm::EDGetTokenT<EERecHitCollection> EERecHitCollectionToken_;
+      edm::EDGetTokenT<ESRecHitCollection> ESRecHitCollectionToken_;
       edm::InputTag l1TriggerTag_;
-      edm::InputTag triggerTag_;
-      edm::InputTag hltL1GtObjectMap_;
+      edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_;
+      edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> L1GTobjmapToken_;
       edm::InputTag l1InputTag_;
       std::map<string,int> L1_nameAndNumb;
-      edm::InputTag GenPartCollectionTag_;
-      
+      edm::EDGetTokenT<GenParticleCollection> GenPartCollectionToken_;
+
+      edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
+      edm::EDGetTokenT<edm::SimVertexContainer> g4_simVtx_Token_;      
+
       PosCalcParams PCparams_;
       //const double preshowerStartEta_ =  1.653;
 
