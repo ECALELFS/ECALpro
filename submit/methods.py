@@ -461,14 +461,14 @@ def printParallelHadd(outputfile, outFile, list, destination, pwd):
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("echo 'hadd -f $TMPDIR/" + outFile + " @" + list + "'\n")
-       outputfile.write("hadd -f $TMPDIR/" + outFile + " @" + list  + "\n")
+       outputfile.write("echo 'hadd -f -k $TMPDIR/" + outFile + " @" + list + "'\n")
+       outputfile.write("hadd -f -k $TMPDIR/" + outFile + " @" + list  + "\n")
        outputfile.write("echo 'srmcp file:///$TMPDIR/" + outFile + " " + destination + "/" + outFile + "'\n")
        outputfile.write("srmcp file:///$TMPDIR/" + outFile + " " + destination + "/" + outFile + "\n")
        outputfile.write("rm -f $TMPDIR/" + outFile + "\n")
     else:
-       outputfile.write("echo 'hadd -f /tmp/" + outFile + " @" + list + "'\n")
-       outputfile.write("hadd -f /tmp/" + outFile + " @" + list  + "\n")
+       outputfile.write("echo 'hadd -f -k /tmp/" + outFile + " @" + list + "'\n")
+       outputfile.write("hadd -f -k /tmp/" + outFile + " @" + list  + "\n")
        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
            outputfile.write("echo 'eos cp /tmp/" + outFile + " " + destination + "'\n")
        else:
@@ -493,14 +493,14 @@ def printFinalHadd(outputfile, list, destination, pwd):
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("echo 'hadd -f $TMPDIR/" + NameTag + "epsilonPlots.root @" + list + "'\n")
-       outputfile.write("hadd -f $TMPDIR/" + NameTag + "epsilonPlots.root @" + list  + "\n")
+       outputfile.write("echo 'hadd -f -k $TMPDIR/" + NameTag + "epsilonPlots.root @" + list + "'\n")
+       outputfile.write("hadd -f -k $TMPDIR/" + NameTag + "epsilonPlots.root @" + list  + "\n")
        outputfile.write("echo 'srmcp file:///$TMPDIR/" + NameTag + "epsilonPlots.root " + destination + "/epsilonPlots.root" + "'\n")
        outputfile.write("srmcp file:///$TMPDIR/" + NameTag + "epsilonPlots.root " + destination + "/epsilonPlots.root" + "\n")
        outputfile.write("rm -f $TMPDIR/" + NameTag + "epsilonPlots.root\n")
     else:
-       outputfile.write("echo 'hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
-       outputfile.write("hadd -f /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
+       outputfile.write("echo 'hadd -f -k /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
+       outputfile.write("hadd -f -k /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
            outputfile.write("echo 'eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
        else:
