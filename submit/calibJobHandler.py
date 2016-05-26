@@ -243,7 +243,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                if(fastHadd):
                   Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
                else:
-                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $4}'"
+                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $5}'"  # was print $4, but I added an option to hadd command appearing in the printed string
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
                if(fastHadd):
