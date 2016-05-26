@@ -95,37 +95,37 @@ EE_Seed_E    = '1.0' #1.5 for 40PU25
 CutOnHLTIso = "False"
 if(Are_pi0):
    #inner barrel
-   Pi0PtCutEB_low = '1'
-   gPtCutEB_low = '0.4'
+   Pi0PtCutEB_low = '2.0'
+   gPtCutEB_low = '1.0'
    Pi0IsoCutEB_low = '0.0'
    Pi0HLTIsoCutEB_low = "999"
-   nXtal_1_EB_low = '0'
-   nXtal_2_EB_low = '0'
-   S4S9_EB_low = '0.6'
-   #outer barrel
-   Pi0PtCutEB_high = '1.0'
-   gPtCutEB_high = '0.4'
+   nXtal_1_EB_low = '5'
+   nXtal_2_EB_low = '5'
+   S4S9_EB_low = '0.9'
+   #outer barrel # P. Jarry cuts
+   Pi0PtCutEB_high = '3.0'
+   gPtCutEB_high = '2.0'
    Pi0IsoCutEB_high = '0.0'
    Pi0HLTIsoCutEB_high = '999'
-   nXtal_1_EB_high = '0'
-   nXtal_2_EB_high = '0'
-   S4S9_EB_high = '0.6'
+   nXtal_1_EB_high = '5'
+   nXtal_2_EB_high = '5'
+   S4S9_EB_high = '0.9'
    #low eta EE
-   Pi0PtCutEE_low = '1.0'
-   gPtCutEE_low = '0.4'
+   Pi0PtCutEE_low = '3.0'
+   gPtCutEE_low = '0.95'
    Pi0IsoCutEE_low = '.0'
    Pi0HLTIsoCutEE_low = '999'
-   nXtal_1_EE_low = '0'
-   nXtal_2_EE_low = '0'
-   S4S9_EE_low = '0.6'
+   nXtal_1_EE_low = '5'
+   nXtal_2_EE_low = '5'
+   S4S9_EE_low = '0.95'
    #high eta EE
-   Pi0PtCutEE_high = '1.0'
-   gPtCutEE_high = '0.4'
+   Pi0PtCutEE_high = '1.5'
+   gPtCutEE_high = '0.65'
    Pi0IsoCutEE_high = '0.0'
    Pi0HLTIsoCutEE_high = '999'
-   nXtal_1_EE_high = '0'
-   nXtal_2_EE_high = '0'
-   S4S9_EE_high = '0.6'
+   nXtal_1_EE_high = '5'
+   nXtal_2_EE_high = '5'
+   S4S9_EE_high = '0.95'
    if MakeNtuple4optimization:
       #inner barrel
       Pi0PtCutEB_low = '1'
