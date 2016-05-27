@@ -1189,8 +1189,10 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  ESDetId tmp1_conversion (tmp1);
 	  ESDetId tmp2_conversion (tmp2);
 
-	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( PreshowerTools::clusterwindowsize_, &tmp1_conversion);
-	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( PreshowerTools::clusterwindowsize_, &tmp2_conversion);
+          // replace the std PreshowerTools::clusterwindowsize_ = 15 with 5, smaller for 3x3 clusters
+          float es_clusterwindowsize = 5;
+	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion);
+	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion);
 
 
 	  double e1 = preshowerclusterp1.energy();
@@ -1201,7 +1203,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  double tempenergy = eeclus_iter->energy();
 
 	  //if(e1+e2 > 1.0e-10) 
-	  if(e1 > 2.0 || e2 > 2.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
+	  if(e1 > 1.0 && e2 > 1.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
 	  {
 	    double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
 

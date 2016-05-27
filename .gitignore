@@ -1,1 +1,4 @@
 *__init__.py
+*.pyc
+*~
+ALL_Pi0Gun*/

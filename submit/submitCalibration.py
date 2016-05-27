@@ -64,7 +64,7 @@ if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
    folderCreation.communicate()
 else:
    print "[calib] Creating folders on EOS"
-   folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
+   folderCreation = subprocess.Popen([myeosmkdir + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
    folderCreation.communicate()
 
 for iter in range(nIterations):
@@ -73,8 +73,8 @@ for iter in range(nIterations):
        folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
     else:
-       print "[calib]  ---  cmsMkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
-       folderCreation = subprocess.Popen(['cmsMkdir ' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
+       print "[calib]  ---  eos mkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
+       folderCreation = subprocess.Popen([myeosmkdir + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
 
 #-------- fill cfg files --------#
@@ -129,7 +129,7 @@ for iter in range(nIterations):
     haddSrc_final_f_s.close()
 
     # create Hadd cfg file
-    dest = eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
+    dest = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
     for num_list in range(Nlist):
         hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iter) + "_job_" + str(num_list) + ".sh"
         hadd_cfg_f = open( hadd_cfg_n, 'w' )
@@ -181,7 +181,7 @@ for iter in range(nIterations):
         fillSrc_n = srcPath + "/Fill/submit_iter_" + str(iter) + "_job_" + str(ijob) + ".sh"
         fillSrc_f = open( fillSrc_n, 'w')
         source_s = NameTag +outputFile + "_" + str(ijob) + ".root"
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
         logpathFill = pwd + "/" + dirname + "/log/" + "fillEpsilonPlot_iter_" + str(iter) + "_job_" + str(ijob) + ".log"
         printSubmitSrc(fillSrc_f, fill_cfg_n, "/tmp/" + source_s, destination_s , pwd, logpathFill)
         fillSrc_f.close()
@@ -232,7 +232,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EB_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
@@ -257,7 +257,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EE_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
+        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
@@ -310,15 +310,22 @@ if( isCRAB ):
 
 else:
     # configuring calibration handler
-    print "[calib] Number of jobs created = " + str(njobs)
-    print "[calib] Submitting calibration handler"
-    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
-    print "[calib]  '-- " + submit_s
     
     if not options.create:
+        print "[calib] Number of jobs created = " + str(njobs)
+        print "[calib] Submitting calibration handler"
+        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+        print "[calib]  '-- " + submit_s
         # submitting calibration handler
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
         output = (submitJobs.communicate()[0]).splitlines()
         print "[calib]  '-- " + output[0]
     
         #    print "usage thisPyton.py pwd njobs queue"
+    else:
+        print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
+        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+        print "To run the whole code use the following command."
+        print submit_s
+
+
