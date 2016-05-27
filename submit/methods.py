@@ -601,14 +601,14 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "FinalFile.root $filesHadd\"\n")
-    outputfile.write("hadd -k /tmp/" + NameTag + "FinalFile.root $filesHadd\n")
+    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\n")
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     else:
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
 
 
 ####################################
@@ -705,11 +705,10 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "FinalFile.root $filesHadd\"\n")
-    outputfile.write("hadd -k /tmp/" + NameTag + "FinalFile.root $filesHadd\n")
+    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\n")
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     else:
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
