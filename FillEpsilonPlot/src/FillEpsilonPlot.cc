@@ -1203,7 +1203,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	  double tempenergy = eeclus_iter->energy();
 
 	  //if(e1+e2 > 1.0e-10) 
-	  if(e1 > 1.0 && e2 > 1.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
+	  if(e1 > 2.0 && e2 > 2.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
 	  {
 	    double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
 
