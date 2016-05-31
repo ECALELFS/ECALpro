@@ -508,6 +508,65 @@ def printFinalHadd(outputfile, list, destination, pwd):
        outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
        outputfile.write("rm -f /tmp/" + NameTag + "epsilonPlots.root\n")
 
+# following function is copied and modified just after. Keep it commented for reference for now
+
+# def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
+#     import os, sys, imp, re
+#     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
+#     outputfile.write("#!/bin/bash\n")
+#     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
+#          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
+#          print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
+#          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
+#     else:
+#          outputfile.write("cd " + pwd + "\n")
+#     outputfile.write("eval `scramv1 runtime -sh`\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+# #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
+#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#     elif "cmsStage -f" in myeosstage:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
+#     else:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#     outputfile.write("files=`cat " + listReduced + "`\n")
+#     outputfile.write("filesHadd=''\n")
+#     outputfile.write("for file in $files;\n")
+#     outputfile.write("do\n")
+#     if( isCRAB ):
+#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
+#     else:
+#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
+#     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
+#     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
+#     outputfile.write('   echo "outEncode is: $outEncode"\n')
+#     outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
+#     outputfile.write('   then\n')
+#     outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
+#     outputfile.write('      then\n')
+#     outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
+#     outputfile.write("      fi\n")
+#     outputfile.write("   fi\n")
+#     outputfile.write("done\n")
+#     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
+#     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
+#     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root /tmp/" + NameTag + "FinalFile.pb\n")
+#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+#         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
+#     else:
+#         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
+#     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+
+#############################################################
+
+# copying and modifying previous method
+
 def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
     import os, sys, imp, re
     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
@@ -523,13 +582,13 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
     else:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("filesHadd=''\n")
@@ -539,27 +598,78 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
-    outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
-    outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
-    outputfile.write('   echo "outEncode is: $outEncode"\n')
-    outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
-    outputfile.write('   then\n')
-    outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
-    outputfile.write('      then\n')
-    outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
-    outputfile.write("      fi\n")
-    outputfile.write("   fi\n")
+    outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
-    outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
-    outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
-    outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root /tmp/" + NameTag + "FinalFile.pb\n")
+    outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\"\n")
+    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\n")
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     else:
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+
+
+####################################
+
+# commented as previous function. Will use modifyed version below
+
+# def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
+#     import os, sys, imp, re
+#     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
+#     outputfile.write("#!/bin/bash\n")
+#     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
+#          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
+#          print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
+#          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
+#     else:
+#          outputfile.write("cd " + pwd + "\n")
+#     outputfile.write("eval `scramv1 runtime -sh`\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+# #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
+#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#     elif "cmsStage -f" in myeosstage:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
+#     else:
+#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#     outputfile.write("files=`cat " + listReduced + "`\n")
+#     outputfile.write("filesHadd=''\n")
+#     outputfile.write("for file in $files;\n")
+#     outputfile.write("do\n")
+#     if( isCRAB ):
+#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
+#     else:
+#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
+#     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
+#     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
+#     outputfile.write('   echo "outEncode is: $outEncode"\n')
+#     outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
+#     outputfile.write('   then\n')
+#     outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
+#     outputfile.write('      then\n')
+#     outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
+#     outputfile.write("      fi\n")
+#     outputfile.write("   fi\n")
+#     outputfile.write("done\n")
+#     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
+#     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
+#     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots.root /tmp/" + NameTag + "FinalFile.pb\n")
+#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+#         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+#     else:
+#         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+#     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+
+
+##############################################################
 
 def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     import os, sys, imp, re
@@ -576,13 +686,13 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
     else:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("filesHadd=''\n")
@@ -592,24 +702,13 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
-    outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
-    outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
-    outputfile.write('   echo "outEncode is: $outEncode"\n')
-    outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
-    outputfile.write('   then\n')
-    outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
-    outputfile.write('      then\n')
-    outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
-    outputfile.write("      fi\n")
-    outputfile.write("   fi\n")
+    outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
-    outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
-    outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
-    outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots.root /tmp/" + NameTag + "FinalFile.pb\n")
+    outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\"\n")
+    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\n")
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     else:
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
