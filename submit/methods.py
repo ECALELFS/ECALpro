@@ -346,7 +346,10 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
            outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
        else:
            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")           
+           destrooplot = destination.replace("calibMap","fitRes")
+           outputfile.write("echo 'cmsStage -f /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
        outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+       outputfile.write(myeosstage + " /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
 
