@@ -342,11 +342,12 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
     if not(isCRAB): #If CRAB you have to put the correct path, anbd you do it on calibJobHandler.py, not on ./submitCalibration.py
+       destrooplot = destination.replace("calibMap","fitRes")
        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
            outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+           outputfile.write("echo 'eos cp /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
        else:
            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")           
-           destrooplot = destination.replace("calibMap","fitRes")
            outputfile.write("echo 'cmsStage -f /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
        outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
        outputfile.write(myeosstage + " /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
