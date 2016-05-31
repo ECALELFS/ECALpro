@@ -625,14 +625,14 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.15:0.62,"GeV/c^{2}");
-    RooRealVar sigma("sigma","#pi^{0} core #sigma",0.013, 0.005,0.020,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? 0.14:0.62,"GeV/c^{2}");
+    RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,0.015,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? 0.16:0.62);
+	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? 0.14:0.62);
 	  mean.setVal(Are_pi0_? 0.13:0.55);
-	  sigma.setRange(0.005, 0.060);
+	  sigma.setRange(0.007, 0.020);
     }
     if(mode==Pi0EB && niter==1){
 	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? 0.15:0.62);
@@ -661,7 +661,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
     RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
-    RooRealVar cb2("cb2","cb2", 0.1, -1.,1.);
+    RooRealVar cb2("cb2","cb2", 0.1,  0.,1.);
     RooRealVar cb3("cb3","cb3",-0.1, -0.5,0.5);
     RooRealVar cb4("cb4","cb4", 0.1, -1.,1.);
     RooRealVar cb5("cb5","cb5", 0.1, -1.,1.);
@@ -672,7 +672,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooChebychev bkg("bkg","bkg model", x, RooArgList(cb0,cb1,cb2,cb3) );
 
     RooArgList cbpars(cb0,cb1,cb2);
-    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
+    //    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
     //if(mode==Pi0EE) cbpars.add( cb4);
     //if(mode==Pi0EE) cbpars.add( cb5);
 
