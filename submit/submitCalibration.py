@@ -324,5 +324,8 @@ else:
         #    print "usage thisPyton.py pwd njobs queue"
     else:
         print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
+        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+        print "To run the whole code use the following command."
+        print submit_s
 
 
