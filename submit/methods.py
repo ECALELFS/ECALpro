@@ -320,7 +320,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( True )\n")
     else:
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( False )\n")
-    outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( False )\n")
+    outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -353,6 +353,8 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
        outputfile.write(myeosstage + " /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+       outputfile.write("echo 'rm -f /tmp/Fit_Stored.root' >> " + logpath + " \n")
+       outputfile.write("rm -f /tmp/Fit_Stored.root >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
