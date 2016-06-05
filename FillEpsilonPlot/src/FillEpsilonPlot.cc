@@ -1605,7 +1605,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //new_value_pi01[6] = ( 0. );//DeltaR of rec and gen photon,...
 	    new_value_pi01[6] = ( iX1 );
 	    new_value_pi01[7] = ( iY1 );
-	  Correct1 = 1.0
+	  Correct1 = 1.0;
           if(Are_pi0_)
 		{
 		if(new_pi0ContainmentCorrections_)
