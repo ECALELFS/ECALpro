@@ -15,8 +15,8 @@ EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 #PATH
-#eosPath = '/store/caf/user/lpernie'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+eosPath = '/store/caf/user/zhicaiz'
+#eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -56,8 +56,8 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_All.list' # list of input files
-dirname          = 'testScript'
+inputlist_n      = 'InputList/run272818.list' # list of input files
+dirname          = 'run272818_001'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = 'testScript'                   # Tag to the names to avoid overlap
@@ -234,6 +234,13 @@ MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
 MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
 MVAEEContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_EE.root'
 MVAEEContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_EE.root'
+
+new_pi0ContainmentCorrections = 'False'
+new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
+new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'
+new_MVAEEContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain_EE.root'
+new_MVAEEContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain_EE.root'
+
 MVAEBContainmentCorrections_eta01 = 'JOSH_MVA_eta1_Mediumtrain.root'
 MVAEBContainmentCorrections_eta02 = 'JOSH_MVA_eta2_Mediumtrain.root'
 Endc_x_y = 'Endc_x_y_ring.txt'
@@ -309,7 +316,7 @@ if isMC:
    MC_Asssoc = True
    genPartInputTag = 'InputTag("genParticles","")'
       
-<<<<<<< HEAD
+#<<<<<<< HEAD
 
 ##2015B AlCaP0 RAW
 #isMC               = False
