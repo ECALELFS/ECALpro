@@ -124,7 +124,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
-    new_pi0ContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",true);
+    new_pi0ContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
     
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
@@ -1413,7 +1413,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
 	    float value_pi01[14];
-	    float new_value_pi01[13];
+	    float new_value_pi01[12];
 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB[ind1] );
@@ -1435,13 +1435,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi01[3] = ( Ncristal_EB[ind1] );
 	    new_value_pi01[4] = ( vs4s9[ind1] );
 	    new_value_pi01[5] = ( vs2s9[ind1] );
-	    new_value_pi01[6] = ( 0. );//DeltaR of rec and gen photon,...
-	    new_value_pi01[7] = ( iEta1 );
-	    new_value_pi01[8] = ( iPhi1 );
-	    new_value_pi01[9] = ( iEta1%5 );
-	    new_value_pi01[10] = ( iEta1%2 );
-	    new_value_pi01[11] = ( iEta1%20 );
-	    new_value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+	    //new_value_pi01[6] = ( 0. );//DeltaR of rec and gen photon,...
+	    new_value_pi01[6] = ( iEta1 );
+	    new_value_pi01[7] = ( iPhi1 );
+	    new_value_pi01[8] = ( iEta1%5 );
+	    new_value_pi01[9] = ( iEta1%2 );
+	    new_value_pi01[10] = ( iEta1%20 );
+	    new_value_pi01[11] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
 	    
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
 	    //else                                    value_pi01[14] = false ;
@@ -1463,7 +1463,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
                 fclose(m_outfile_Corr);
 		}
 	    float value_pi02[14];//#
-	    float new_value_pi02[13];
+	    float new_value_pi02[12];
 	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi02[1] = ( G_Sort_2.Pt() );
 	    value_pi02[2] = ( Ncristal_EB[ind1] );
@@ -1485,13 +1485,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi02[3] = ( Ncristal_EB[ind2] );
 	    new_value_pi02[4] = ( vs4s9[ind2] );
 	    new_value_pi02[5] = ( vs2s9[ind2] );
-	    new_value_pi02[6] = ( 0. );//DeltaR of rec and gen photon,...
-	    new_value_pi02[7] = ( iEta2 );
-	    new_value_pi02[8] = ( iPhi2 );
-	    new_value_pi02[9] = ( iEta2%5 );
-	    new_value_pi02[10] = ( iEta2%2 );
-	    new_value_pi02[11] = ( iEta2%20 );
-	    new_value_pi02[12] = ((TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::     Abs(iEta2)/iEta2)%20) );
+	    //new_value_pi02[6] = ( 0. );//DeltaR of rec and gen photon,...
+	    new_value_pi02[6] = ( iEta2 );
+	    new_value_pi02[7] = ( iPhi2 );
+	    new_value_pi02[8] = ( iEta2%5 );
+	    new_value_pi02[9] = ( iEta2%2 );
+	    new_value_pi02[10] = ( iEta2%20 );
+	    new_value_pi02[11] = ((TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::     Abs(iEta2)/iEta2)%20) );
 	   
 	
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
@@ -1580,7 +1580,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
-	  float new_value_pi01[9];
+	  float new_value_pi01[8];
 	  value_pi01[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
 	  value_pi01[1] = ( G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
 	  value_pi01[2] = ( G_Sort_1.Pt() );
@@ -1598,9 +1598,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi01[3] = ( Ncristal_EE[ind1] );
 	    new_value_pi01[4] = ( vs4s9[ind1] );
 	    new_value_pi01[5] = ( vs2s9[ind1] );
-	    new_value_pi01[6] = ( 0. );//DeltaR of rec and gen photon,...
-	    new_value_pi01[7] = ( iX1 );
-	    new_value_pi01[8] = ( iY1 );
+	    //new_value_pi01[6] = ( 0. );//DeltaR of rec and gen photon,...
+	    new_value_pi01[6] = ( iX1 );
+	    new_value_pi01[7] = ( iY1 );
 	  Correct1 = 1.0
           if(Are_pi0_)
 		{
@@ -1623,7 +1623,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    <<" ESratio "<<ESratio[ind1]<<" EtaRing_1 "<<EtaRing_1<<endl;
 
 	  float value_pi02[10];
-	  float new_value_pi02[9];
+	  float new_value_pi02[8];
 	  value_pi02[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
 	  value_pi02[1] = ( G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
 	  value_pi02[2] = ( G_Sort_2.Pt() );
@@ -1641,9 +1641,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi02[3] = ( Ncristal_EE[ind2] );
 	    new_value_pi02[4] = ( vs4s9[ind2] );
 	    new_value_pi02[5] = ( vs2s9[ind2] );
-	    new_value_pi02[6] = ( 0. );//DeltaR of rec and gen photon,...
-	    new_value_pi02[7] = ( iX2 );
-	    new_value_pi02[8] = ( iY2 );
+	    //new_value_pi02[6] = ( 0. );//DeltaR of rec and gen photon,...
+	    new_value_pi02[6] = ( iX2 );
+	    new_value_pi02[7] = ( iY2 );
 
 	  Correct2 = 1.0;
 	  if(Are_pi0_)
