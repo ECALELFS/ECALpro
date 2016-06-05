@@ -1447,13 +1447,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //else                                    value_pi01[14] = false ;
 	    if(new_pi0ContainmentCorrections_)
 		{
-	    	Correct1 = forestD_EB_1->GetResponse(new_value_pi01);
-		Correct1 = meanoffset + meanscale*TMath::Sin(Correct1);
+	    	float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
+		Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
 		
 		FILE* m_outfile_Corr = fopen("log_FillEpsilonPlot_new.log","a");
-                fprintf(m_outfile_Corr,"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = %4.3f \n", Correct1);
+                fprintf(m_outfile_Corr,"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 (before and after transformation)= %4.3f  %4.3f \n", Correct1_tmp, Correct1);
                 fclose(m_outfile_Corr);
-
+		cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
 		}
 	    else
 		{
@@ -1461,6 +1461,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		FILE* m_outfile_Corr = fopen("log_FillEpsilonPlot_old.log","a");
                 fprintf(m_outfile_Corr,"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = %4.3f \n", Correct1);
                 fclose(m_outfile_Corr);
+		cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
 		}
 	    float value_pi02[14];//#
 	    float new_value_pi02[12];
@@ -1499,8 +1500,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	 //   Correct2 = forest_EB_2->GetResponse(value_pi02);
 	    if(new_pi0ContainmentCorrections_)
 		{
-	    	Correct2 = forestD_EB_2->GetResponse(new_value_pi02);
-		Correct2 = meanoffset + meanscale*TMath::Sin(Correct2);
+	    	float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
+		Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
 		}
 	    else
 		{
@@ -1606,8 +1607,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		{
 		if(new_pi0ContainmentCorrections_)
                 {
-                Correct1 = forestD_EE_1->GetResponse(new_value_pi01);
-                Correct1 = meanoffset + meanscale*TMath::Sin(Correct1);
+                float Correct1_tmp = forestD_EE_1->GetResponse(new_value_pi01);
+                Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
                 }
             	else
                 {
@@ -1650,8 +1651,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  {
   		if(new_pi0ContainmentCorrections_)
                 {
-                Correct2 = forestD_EE_2->GetResponse(new_value_pi02);
-                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2);
+                float Correct2_tmp = forestD_EE_2->GetResponse(new_value_pi02);
+                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
                 }
             	else
                 {
