@@ -149,6 +149,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       float L1BitCollection_[NL1SEED];
 
       bool Are_pi0_;
+      bool useMVAContainmentCorrections_;
       bool new_pi0ContainmentCorrections_;
       bool L1TriggerInfo_;
       edm::EDGetTokenT<EBRecHitCollection> EBRecHitCollectionToken_;

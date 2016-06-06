@@ -57,7 +57,7 @@ isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
 inputlist_n      = 'InputList/run272818.list' # list of input files
-dirname          = 'run272818_newCC'
+dirname          = 'run272818_noCC'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = 'testScript'                   # Tag to the names to avoid overlap
@@ -235,6 +235,7 @@ MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
 MVAEEContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_EE.root'
 MVAEEContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_EE.root'
 
+useMVAContainmentCorrections = False
 new_pi0ContainmentCorrections = True
 new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
 new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'

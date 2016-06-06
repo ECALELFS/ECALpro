@@ -124,6 +124,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
+    useMVAContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
     new_pi0ContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
     
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
@@ -1445,6 +1446,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
 	    //else                                    value_pi01[14] = false ;
+	    if(useMVAContainmentCorrections_)
+	    {
 	    if(new_pi0ContainmentCorrections_)
 		{
 	    	float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
@@ -1466,6 +1469,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		*/
 		cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
 		}
+	       }
 	    float value_pi02[14];//#
 	    float new_value_pi02[12];
 	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
@@ -1501,6 +1505,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
 	    //else                                    value_pi02[14] = false ;
 	 //   Correct2 = forest_EB_2->GetResponse(value_pi02);
+	    if(useMVAContainmentCorrections_)
+	    {
 	    if(new_pi0ContainmentCorrections_)
 		{
 	    	float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
@@ -1510,6 +1516,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		{
 	    	Correct2 = forest_EB_2->GetResponse(value_pi02);
 		}
+	     }
 	  }
 	  else{
 	    float value_pi01[10];
@@ -1606,7 +1613,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi01[6] = ( iX1 );
 	    new_value_pi01[7] = ( iY1 );
 	  Correct1 = 1.0;
-          if(Are_pi0_)
+          if(Are_pi0_ && useMVAContainmentCorrections_)
 		{
 		if(new_pi0ContainmentCorrections_)
                 {
@@ -1650,7 +1657,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    new_value_pi02[7] = ( iY2 );
 
 	  Correct2 = 1.0;
-	  if(Are_pi0_)
+	  if(Are_pi0_ && useMVAContainmentCorrections_)
 	  {
   		if(new_pi0ContainmentCorrections_)
                 {
