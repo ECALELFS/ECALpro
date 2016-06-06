@@ -56,14 +56,14 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_All_06June2016_RAW.list' # list of input files
-dirname          = 'pi0data_run273730_OptimTest_addVar'
+inputlist_n      = 'InputList/2016B_AlcaP0_All_06June2016_RAW.list' # list of input files 'InputList/2016B_run273730_partial.list'   #
+dirname          = 'AlcaP0_All2016'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'pi0data_run273730_OptimTest_addVar_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_All2016_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1
+nIterations      = 14
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
@@ -257,7 +257,7 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
