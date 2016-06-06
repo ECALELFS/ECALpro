@@ -29,7 +29,7 @@
 
 #define NPI0MAX 30000
 #define NL1SEED 128
-#define SELECTION_TREE
+//#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
