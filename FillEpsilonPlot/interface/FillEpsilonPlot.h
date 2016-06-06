@@ -29,7 +29,7 @@
 
 #define NPI0MAX 30000
 #define NL1SEED 128
-//#define SELECTION_TREE
+#define SELECTION_TREE
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
@@ -260,17 +260,34 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TTree *CutVariables_EE;
 
       Float_t PtPi0_EB, mpi0_EB, Etapi0_EB, Phipi0_EB, Epsilon_EB;
+      //adding these variables
+      Float_t PtGamma1_EB, PtGamma2_EB, EtaGamma1_EB, EtaGamma2_EB, NxtalGamma1_EB, NxtalGamma2_EB, S4S9Gamma1_EB, S4S9Gamma2_EB;
       void Fill_PtPi0_EB(float pt){ PtPi0_EB=pt; };
       void Fill_mpi0_EB(float m){ mpi0_EB=m; };
       void Fill_etapi0_EB( float eta){ Etapi0_EB =eta; };
       void Fill_phipi0_EB( float phi){ Phipi0_EB =phi; };
+      //adding these method to fill variables
+      void Fill_PtGamma_EB(float pt1, float pt2){ PtGamma1_EB = pt1; PtGamma2_EB = pt2;};
+      void Fill_EtaGamma_EB(float eta1, float eta2){ EtaGamma1_EB = eta1; EtaGamma2_EB = eta2;};
+      void Fill_NcrystalUsedGamma_EB(float Nxtal1, float Nxtal2) { NxtalGamma1_EB = Nxtal1 ; NxtalGamma2_EB = Nxtal2;};
+      void Fill_S4S9Gamma_EB(float s4s9g1, float s4s9g2) { S4S9Gamma1_EB = s4s9g1; S4S9Gamma2_EB = s4s9g2;};
+      //
       void Fill_Epsilon_EB(float eps ){ Epsilon_EB=eps; };
       TTree *Pi0Info_EB;
+
       Float_t PtPi0_EE, mpi0_EE,Etapi0_EE, Phipi0_EE, Epsilon_EE;
+      //adding these variables
+      Float_t PtGamma1_EE, PtGamma2_EE, EtaGamma1_EE, EtaGamma2_EE, NxtalGamma1_EE, NxtalGamma2_EE, S4S9Gamma1_EE, S4S9Gamma2_EE;
       void Fill_PtPi0_EE(float pt){ PtPi0_EE=pt; };
       void Fill_mpi0_EE(float m){ mpi0_EE=m; };
       void Fill_etapi0_EE( float eta){ Etapi0_EE =eta; };
       void Fill_phipi0_EE( float phi){ Phipi0_EE =phi; };
+      //adding these methods to fill variables
+      void Fill_PtGamma_EE(float pt1, float pt2){ PtGamma1_EE = pt1; PtGamma2_EE = pt2;};
+      void Fill_EtaGamma_EE(float eta1, float eta2){ EtaGamma1_EE = eta1; EtaGamma2_EE = eta2;};
+      void Fill_NcrystalUsedGamma_EE(float Nxtal1, float Nxtal2) { NxtalGamma1_EE = Nxtal1 ; NxtalGamma2_EE = Nxtal2;};
+      void Fill_S4S9Gamma_EE(float s4s9g1, float s4s9g2) { S4S9Gamma1_EE = s4s9g1; S4S9Gamma2_EE = s4s9g2;};
+      //
       void Fill_Epsilon_EE(float eps ){ Epsilon_EE=eps; };
       TTree *Pi0Info_EE;
 #endif
