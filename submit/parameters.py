@@ -16,7 +16,7 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 #PATH
 #eosPath = '/store/caf/user/lpernie'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -46,7 +46,7 @@ storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 if(isCRAB):
-   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/' #For reason of space is better the group area
+   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/' #For reason of space is better the group area
    if(isOtherT2):
        eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/mciprian/piZero2016/'
        voGroup     = "itcms"
@@ -62,12 +62,12 @@ Silent           = False                 # True->Fill modules is silent; False->
 #TAG, QUEUE and ITERS
 NameTag          = 'pi0data_run273730_OptimTest_addVar_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue            = 'cmscaf1nd'
+queue            = '8nh'
 nIterations      = 1
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
-fastHadd         = True                 # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
+fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
@@ -95,21 +95,21 @@ EE_Seed_E    = '1.0' #1.5 for 40PU25
 CutOnHLTIso = "False"
 if(Are_pi0):
    #inner barrel
-   Pi0PtCutEB_low = '2.0'
-   gPtCutEB_low = '1.0'
-   Pi0IsoCutEB_low = '0.0'
+   Pi0PtCutEB_low = '2.6'
+   gPtCutEB_low = '1.3'
+   Pi0IsoCutEB_low = '0.5'
    Pi0HLTIsoCutEB_low = "999"
-   nXtal_1_EB_low = '5'
-   nXtal_2_EB_low = '5'
-   S4S9_EB_low = '0.9'
+   nXtal_1_EB_low = '0'
+   nXtal_2_EB_low = '0'
+   S4S9_EB_low = '0.83'
    #outer barrel # P. Jarry cuts
-   Pi0PtCutEB_high = '3.0'
-   gPtCutEB_high = '2.0'
-   Pi0IsoCutEB_high = '0.0'
+   Pi0PtCutEB_high = '2.6'
+   gPtCutEB_high = '1.3'
+   Pi0IsoCutEB_high = '0.5'
    Pi0HLTIsoCutEB_high = '999'
-   nXtal_1_EB_high = '5'
-   nXtal_2_EB_high = '5'
-   S4S9_EB_high = '0.9'
+   nXtal_1_EB_high = '0'
+   nXtal_2_EB_high = '0'
+   S4S9_EB_high = '0.83'
    #low eta EE
    Pi0PtCutEE_low = '3.0'
    gPtCutEE_low = '0.95'
