@@ -17,6 +17,16 @@ def printFillCfg1( outputfile ):
     else:
        outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
+# adding this line to be used when running on 2016 data
+    outputfile.write("#\n")
+    outputfile.write("#following lines are needed to run on 2016 data \n")
+    outputfile.write("process.GlobalTag.toGet = cms.VPSet(cms.PSet(\n")
+    outputfile.write("    record  = cms.string(\"EcalPulseShapesRcd\"),\n")
+    outputfile.write("    tag     = cms.string(\"EcalPulseShapes_data\"),\n")
+    outputfile.write("    connect = cms.string(\"sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db\")))\n")
+    outputfile.write("# end of lines needed to run on 2016 data\n")
+    outputfile.write("#\n")
+    #
     #From DIGI
     if (FROMDIGI):
         outputfile.write("#DUMMY RECHIT\n")
@@ -124,7 +134,7 @@ def printFillCfg1( outputfile ):
     outputfile.write('    process.AlcaP0Filter.HLTPaths = ["' + HLTPaths + '"]\n\n')
 
     outputfile.write("process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(" + nEventsPerJob +") )\n")
-    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n")
+    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 10\n")
     # outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
     # outputfile.write("        threshold  = cms.untracked.string('WARNING'),\n")
     # outputfile.write("        ERROR      = cms.untracked.PSet (\n")
