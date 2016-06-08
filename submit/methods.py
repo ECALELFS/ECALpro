@@ -33,6 +33,12 @@ def printFillCfg1( outputfile ):
         outputfile.write("                                     barrelDigiCollection   = cms.untracked.string('dummyBarrelDigis'),\n")
         outputfile.write("                                     endcapDigiCollection   = cms.untracked.string('dummyEndcapDigis'))\n")
         outputfile.write("\n")
+        if(FixGhostDigis):
+            outputfile.write("# GHOST DIGIS CLEANER (FOR 2015 STREAM DATA)\n")
+            outputfile.write("process.load(\"CalibCode.FillEpsilonPlot.cleanedDigiCollectionProducer_cfi\")\n")
+            outputfile.write("process.cleanedEcalDigis.ebDigis = cms.InputTag('dummyHits','dummyBarrelDigis')\n")
+            outputfile.write("process.cleanedEcalDigis.eeDigis = cms.InputTag('dummyHits','dummyEndcapDigis')\n")
+            outputfile.write("\n")
         outputfile.write("#RAW to DIGI'\n")
         outputfile.write("#https://github.com/cms-sw/cmssw/blob/CMSSW_7_5_X/RecoLocalCalo/EcalRecProducers/test/testMultipleEcalRecoLocal_cfg.py\n")
         outputfile.write("#process.load('Configuration.StandardSequences.RawToDigi_cff')\n")
@@ -48,16 +54,24 @@ def printFillCfg1( outputfile ):
                outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs = cms.vint32(-4,-2,0,2,4) #Are 10 (-5-5). For 50ns is (-4,-2,0,2,4) #No .algoPSet. in old releases\n")
            if( not is50ns and DigiCustomization ):
                outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4) #Are 10 (-5-5). For 50ns is (-4,-2,0,2,4) #No .algoPSet. in old releases\n")
-           outputfile.write("process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigis','analyzerFillEpsilon')\n")
-           outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")
+           if(FixGhostDigis):
+               outputfile.write("process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('cleanedEcalDigis','ebCleanedDigis')\n")
+               outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('cleanedEcalDigis','eeCleanedDigis')\n")
+           else:
+               outputfile.write("process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigis','analyzerFillEpsilon')\n")
+               outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
            outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added this line to make code run\n") #can enable setting --> DigiCustomization = True <-- in parameters.py, but this also set --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4) #Are 10 (-5-5). For 50ns is (-4,-2,0,2,4) \
 #No .algoPSet. in old releases\n")  <-- line above , so I prefer to add it here
         if(WEIGHTS):
            outputfile.write("import RecoLocalCalo.EcalRecProducers.ecalGlobalUncalibRecHit_cfi\n")
            outputfile.write("process.load('RecoLocalCalo.EcalRecProducers.ecalGlobalUncalibRecHit_cfi')\n")
            outputfile.write("process.ecalweight =  RecoLocalCalo.EcalRecProducers.ecalGlobalUncalibRecHit_cfi.ecalGlobalUncalibRecHit.clone()\n")
-           outputfile.write("process.ecalweight.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigis','analyzerFillEpsilon')\n")
-           outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")
+           if(FixGhostDigis):
+               outputfile.write("process.ecalweight.EBdigiCollection = cms.InputTag('cleanedEcalDigis','ebCleanedDigis')\n")
+               outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('cleanedEcalDigis','eeCleanedDigis')\n")
+           else:
+               outputfile.write("process.ecalweight.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigis','analyzerFillEpsilon')\n")
+               outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
         outputfile.write("#UNCALIB to CALIB\n")
         outputfile.write("from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *\n")
         outputfile.write("process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()\n")
@@ -291,6 +305,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
     if (FROMDIGI):
         outputfile.write("process.p *= process.dummyHits\n")
+        if(FixGhostDigis):
+            outputfile.write("process.p *= process.cleanedEcalDigis\n")
         if(MULTIFIT):
            outputfile.write("process.p *= process.ecalMultiFitUncalibRecHit\n")
         if (WEIGHTS):

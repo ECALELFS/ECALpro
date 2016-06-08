@@ -14,6 +14,7 @@ SMCalibEB          = False
 EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
+FixGhostDigis      = True
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele'
@@ -56,16 +57,16 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlCaP0Raw_run273730.list' # list of input files
-dirname          = 'pi0data_2016B_Run273730_Yong'
+inputlist_n      = 'InputList/2015All_AlCaP0Raw.list' # list of input files
+dirname          = 'pi0data_2015'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'pi0data_2016B_Run273730_Yong'                   # Tag to the names to avoid overlap
+NameTag          = 'pi0data_2015'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = '8nh'
 nIterations      = 1
 #N files
-ijobmax          = 2                     # 5 number of files per job
+ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
@@ -257,7 +258,7 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'json_16Dec2015ReReco_Collisions15_25ns_JSON_Silver_v2.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
