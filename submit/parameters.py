@@ -56,16 +56,16 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_All_06June2016_RAW.list' # list of input files 'InputList/2016B_run273730_partial.list'   #
-dirname          = 'AlcaP0_All2016'
+inputlist_n      = 'InputList/2016B_AlcaP0_fromRun273158_06June2016_RAW.list' # list of input files 'InputList/2016B_run273730_partial.list'   #
+dirname          = 'AlcaP0_fromRun273158_2016'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_All2016_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_fromRun273158_2016_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 14
 #N files
-ijobmax          = 5                     # 5 number of files per job
+ijobmax          = 8                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
