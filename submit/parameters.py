@@ -14,6 +14,7 @@ SMCalibEB          = False
 EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
+FixGhostDigis      = True
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
