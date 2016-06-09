@@ -14,7 +14,8 @@ SMCalibEB          = False
 EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
-FixGhostDigis      = True
+FixGhostDigis      = True   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
+Use2016pulseShapes = True   # use new pulse shapes for 2016
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
