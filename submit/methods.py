@@ -149,7 +149,7 @@ def printFillCfg1( outputfile ):
     outputfile.write('    process.AlcaP0Filter.HLTPaths = ["' + HLTPaths + '"]\n\n')
 
     outputfile.write("process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(" + nEventsPerJob +") )\n")
-    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 10\n")
+    outputfile.write("process.MessageLogger.cerr.FwkReport.reportEvery = 10000\n")
     # outputfile.write("process.MessageLogger.cerr = cms.untracked.PSet(\n")
     # outputfile.write("        threshold  = cms.untracked.string('WARNING'),\n")
     # outputfile.write("        ERROR      = cms.untracked.PSet (\n")
