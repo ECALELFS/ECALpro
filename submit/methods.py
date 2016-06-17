@@ -98,7 +98,7 @@ def printFillCfg1( outputfile ):
            outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
            outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
            outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-           if(GeVTagRecord=='' and alphaTag2==''):
+           if(GeVTagRecord=='' and alphaTag==''):
               outputfile.write('     )\n')
            if not(GeVTagRecord==''):
               outputfile.write('     ),\n')
@@ -107,13 +107,20 @@ def printFillCfg1( outputfile ):
               outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
               if(alphaTag2==''):
                  outputfile.write('     )\n')
-           if not(alphaTag2==''):
+           if not(alphaTag==''):
               outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord2 + "'),\n")
-              outputfile.write("             tag = cms.string('" + alphaTag2 + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + alphaDB2 + "')\n")
+              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
+              outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
+              outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
               outputfile.write('     )\n')
            outputfile.write(')\n\n')
+        if not(pulseShapeTag==''):
+            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+            outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
+            outputfile.write("     tag = cms.string('" + pulseShapeTag + "'),\n")
+            outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
+            outputfile.write('     )\n')
+            outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')

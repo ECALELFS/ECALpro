@@ -14,7 +14,7 @@ SMCalibEB          = False
 EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
-FixGhostDigis      = True
+FixGhostDigis      = False
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele'
@@ -57,13 +57,13 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2015All_AlCaP0Raw.list' # list of input files
-dirname          = 'pi0data_2015'
+inputlist_n      = 'InputList/2016B_Purified.list' # list of input files
+dirname          = 'pi0data_2016_2p6fb'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'pi0data_2015'                   # Tag to the names to avoid overlap
+NameTag          = 'pi0data_2016_2p6fb'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
-queue            = '8nh'
+queue            = '2nd'
 nIterations      = 1
 #N files
 ijobmax          = 5                     # 5 number of files per job
@@ -247,8 +247,9 @@ useOnlyEEClusterMatchedWithES = 'True'
 
 #-----------------------------------------------------------------------------------
 laserTagRecord='';laserTag='';laserDB=''
-alphaTagRecord2='';alphaTag2='';alphaDB2=''
+alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
+pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
 
 ######################################################################
 # Now decomment the part that correspond to data you want to run on. #
@@ -258,8 +259,8 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'json_16Dec2015ReReco_Collisions15_25ns_JSON_Silver_v2.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
-overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
+json_file          = 'Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
