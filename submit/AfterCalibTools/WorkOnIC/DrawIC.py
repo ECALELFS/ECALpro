@@ -19,6 +19,15 @@ class EcalDetId:
         self.y = int(xyz[1])
         self.z = int(xyz[2])
 
+    def __hash__(self):
+        return hash((self.x, self.y, self.z))
+
+    def __eq__(self, other):
+        return (self.x, self.y, self.z) == (other.x, other.y, other.z)
+
+    def __ne__(self, other):
+        return not(self == other)
+
     def subdet(self):
         if self.z == 0: return 'EcalBarrel'
         elif self.z == 1: return 'EcalEndcapPlus'
@@ -41,6 +50,7 @@ class EtaRings:
 
 class ICplotter:
     def loadICs(self, txt):
+        print "loading data from file ",txt
         data = {}
         for line in open(txt,'r'):
             if line.startswith('#'): continue
@@ -98,7 +108,6 @@ class ICplotter:
             if k.subdet() != partition: continue
             if(v.staterr < 999): 
                 h.Fill(k.y,k.x,max(zmin,min(zmax,v.val)))
-                print "x=%d y=%d z=%d etaring=%d" % (k.x,k.y,k.z,ering.etaring(k))
                 hsterr.Fill(ering.etaring(k),v.staterr)
                 hsyerr.Fill(ering.etaring(k),v.systerr)
                 htoterr.Fill(ering.etaring(k),v.toterr)
@@ -135,6 +144,50 @@ class ICplotter:
             else: p.Draw()
             canv.SaveAs('%s.pdf' % p.GetName())
             canv.SaveAs('%s.png' % p.GetName())
+
+    def compareIC2D(self,data2,partition,zwidth=0.07):
+        #rt.gStyle.SetOptStat(0)
+        customROOTstyle()
+        plots = []
+
+        if partition=='EcalBarrel': 
+            h = rt.TProfile2D(('%s_%s_icratio_2d' % (self.name,partition)), '',360,1,360,170,-85,85)
+            h.GetXaxis().SetTitle('i#phi')
+            h.GetYaxis().SetTitle('i#eta')
+        else: 
+            h = rt.TProfile2D(('%s_%s_icratio_2d' % (self.name,partition)), '',100,1,100,100,1,100)
+            h.GetXaxis().SetTitle('ix')
+            h.GetYaxis().SetTitle('iy')
+
+        zmin=1-zwidth; zmax=1+zwidth
+        if partition=='EcalBarrel': 
+            h1d = rt.TH1D(str(h.GetName()).replace('icratio_2d','icratio_1d'),'',200,zmin,zmax)
+        else: 
+            h1d = rt.TH1D(str(h.GetName()).replace('icratio_2d','icratio_1d'),'',200,zmin,zmax)
+            
+        h1d.GetXaxis().SetTitle('IC ratio')
+        h1d.SetLineColor(rt.kRed)
+
+        for k,v in self.data.iteritems():
+            if k.subdet() != partition: continue
+            if k not in data2: continue
+            icref = data2[k]
+            if(v.staterr < 999): 
+                h.Fill(k.y,k.x,max(zmin,min(zmax,v.val/icref.val)))
+                h1d.Fill(v.val/icref.val)
+            
+        h.GetZaxis().SetRangeUser(zmin,zmax)
+        
+        plots.append(h)
+
+        for p in plots:
+            xsize = ysize = 1200
+            if p.GetDimension()==2: ysize = int(xsize*170/360+0.1*xsize) if 'EcalBarrel' in h.GetName() else int(xsize*0.9)
+            canv = rt.TCanvas("c","",xsize,ysize)
+            if p.GetDimension()==2: p.Draw("colz")
+            else: p.Draw()
+            canv.SaveAs('%s.pdf' % p.GetName())
+            canv.SaveAs('%s.png' % p.GetName())
              
 if __name__ == "__main__":
     from optparse import OptionParser
@@ -151,4 +204,9 @@ if __name__ == "__main__":
     icp.plotIC2D('EcalBarrel')
     icp.plotIC2D('EcalEndcapPlus',0.2,0.03)
     icp.plotIC2D('EcalEndcapMinus',0.2,0.03)
+
+    if len(args)==2:    
+        comparefile = args[1]
+        data2 = icp.loadICs(comparefile)
+        icp.compareIC2D(data2,'EcalBarrel')
 
