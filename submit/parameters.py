@@ -58,16 +58,16 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_fromRun273158_06June2016_RAW.list' # list of input files 'InputList/2016B_run273730_partial.list'   #
-dirname          = 'AlcaP0_fromRun273158_2016'
+inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p07fb_RAW_purified.list'
+dirname          = 'AlcaP0_2016_json2p07fb'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_fromRun273158_2016_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016_json2p07fb_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 14
+nIterations      = 8
 #N files
-ijobmax          = 8                     # 5 number of files per job
+ijobmax          = 6                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
@@ -104,7 +104,7 @@ if(Are_pi0):
    nXtal_1_EB_low = '0'
    nXtal_2_EB_low = '0'
    S4S9_EB_low = '0.83'
-   #outer barrel # P. Jarry cuts
+   #outer barrel 
    Pi0PtCutEB_high = '2.6'
    gPtCutEB_high = '1.3'
    Pi0IsoCutEB_high = '0.5'
@@ -259,7 +259,7 @@ GeVTagRecord='';GeVTag='';GeVDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_271036-274240_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
