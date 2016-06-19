@@ -57,7 +57,7 @@ isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
 inputlist_n      = 'InputList/run272818.list' # list of input files
-dirname          = 'run272818_noCC'
+dirname          = 'run272818_YongCC'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = 'testScript'                   # Tag to the names to avoid overlap
@@ -227,8 +227,8 @@ else:
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
 #containment corrections
-useEBContainmentCorrections = 'False'
-useEEContainmentCorrections = 'False'
+useEBContainmentCorrections = 'True'
+useEEContainmentCorrections = 'True'
 EBContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEB.root'
 MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
 MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
@@ -236,7 +236,7 @@ MVAEEContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain_EE.root'
 MVAEEContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain_EE.root'
 
 useMVAContainmentCorrections = False
-new_pi0ContainmentCorrections = True
+new_pi0ContainmentCorrections = False
 new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
 new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'
 new_MVAEEContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain_EE.root'
