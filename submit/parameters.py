@@ -58,14 +58,19 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p07fb_RAW_purified.list'
-dirname          = 'AlcaP0_2016_json2p07fb'
+inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p6fb_RAW_purified.list'
+dirname          = 'AlcaP0_2016_json2p6fb'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2016_json2p07fb_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016_json2p6fb_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 8
+SubmitFurtherIterationsFromExisting = False
+if (SubmitFurtherIterationsFromExisting):
+   iterToStartFrom  = 7  # it can be equal to nIterations-1 (goes from 0 to nIterations) of the set of IC from which we want to resume (but could be any of the existing ones). Basically it is just needed for the first one the new iterations, to decide which is the calibMap to be used for the first new step
+   dirname_old = AlcaP0_2016_json2p07fb  # for the first of the new iterations, we need the last calibMap, whose path on eos depends on the old dirname and NameTag
+   NameTag_old = AlcaP0_2016_json2p07fb_
 #N files
 ijobmax          = 6                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
