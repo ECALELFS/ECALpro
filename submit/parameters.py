@@ -68,9 +68,7 @@ queue            = 'cmscaf1nd'
 nIterations      = 8
 SubmitFurtherIterationsFromExisting = False
 if (SubmitFurtherIterationsFromExisting):
-   iterToStartFrom  = 7  # it can be equal to nIterations-1 (goes from 0 to nIterations) of the set of IC from which we want to resume (but could be any of the existing ones). Basically it is just needed for the first one the new iterations, to decide which is the calibMap to be used for the first new step
-   dirname_old = AlcaP0_2016_json2p07fb  # for the first of the new iterations, we need the last calibMap, whose path on eos depends on the old dirname and NameTag
-   NameTag_old = AlcaP0_2016_json2p07fb_
+   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p6fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
 #N files
 ijobmax          = 6                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
