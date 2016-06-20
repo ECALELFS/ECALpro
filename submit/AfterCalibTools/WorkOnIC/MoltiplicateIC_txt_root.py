@@ -440,7 +440,7 @@ TreeEE   = fileTH2.Get("calibEE")
 # take the it+1 for systematic error
 nominal_iter = [x for x in pathTH2.split('/') if 'iter' in x]
 nominal_iter_num = int([int(i) for i in nominal_iter[0].split('_') if 'iter' not in i][0])
-next_iter = 'iter_' + str(nominal_iter_num+1)
+next_iter = 'iter_' + str(nominal_iter_num-1)
 pathTH2Next = re.sub(nominal_iter[0], next_iter, pathTH2)
 print 'pathTH2Next = ',pathTH2Next
 fileTH2Next  = ROOT.TFile.Open(pathTH2Next)
