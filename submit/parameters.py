@@ -252,7 +252,8 @@ useOnlyEEClusterMatchedWithES = 'True'
 laserTagRecord='';laserTag='';laserDB=''
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
-pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
+pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
+#pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
 
 ######################################################################
 # Now decomment the part that correspond to data you want to run on. #
