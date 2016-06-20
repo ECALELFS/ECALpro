@@ -1568,6 +1568,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_mpi0_EB( pi0P4.mass() );
 	  Fill_etapi0_EB( pi0P4.eta() );
 	  Fill_phipi0_EB( pi0P4.phi() );
+	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
+	  Fill_PtGamma_EB( g1P4.Pt(), g2P4.Pt() );
+	  Fill_EtaGamma_EB( g1P4.eta(), g2P4.eta() );
+	  // to be implemented
+	  Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
+	  Fill_S4S9Gamma_EB(vs4s9[0], vs4s9[1]);
+	  //Fill_NxtalEnergGamma_EB(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EB_used ?!? 
+	  //Fill_NxtalEnergGamma2_EB(Nxtal_EnergGamma2);
+	  //
 	  Fill_Epsilon_EB( 0.5 * ( pow(pi0P4.mass()/PI0MASS,2)  - 1. ) );
 	  Pi0Info_EB->Fill();
 	}
@@ -1576,6 +1585,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_mpi0_EE( pi0P4.mass() );
 	  Fill_etapi0_EE( pi0P4.eta() );
 	  Fill_phipi0_EE( pi0P4.phi() );
+	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
+	  Fill_PtGamma_EE( g1P4.Pt(), g2P4.Pt() );
+	  Fill_EtaGamma_EE( g1P4.eta(), g2P4.eta() );
+	  // to be implemented
+	  Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
+	  Fill_S4S9Gamma_EE(vs4s9[0], vs4s9[1]);
+	  //Fill_NxtalEnergGamma_EE(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EE_used ?!? 
+	  //Fill_NxtalEnergGamma2_EE(Nxtal_EnergGamma2);
+	  //
 	  Fill_Epsilon_EE( 0.5 * ( pow(pi0P4.mass()/PI0MASS,2)  - 1. ) );
 	  Pi0Info_EE->Fill();
 	}

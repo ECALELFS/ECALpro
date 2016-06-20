@@ -57,10 +57,11 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
     system( (string("mkdir -p plot_") + Path ).c_str());
     TCanvas* myc1 = new TCanvas("myc1", "CMS", 600, 600);
     TString outname = "plot_" + Path + "/Differences.root";
-    TFile* output = new TFile(outname.Data(),"RECREATE");
+     TFile* output = new TFile(outname.Data(),"RECREATE");
     TH2F* rms_EB  = new TH2F("rms_EB","IC(n)-IC(n-1) #phi on x #eta on y",MAX_IPHI, MIN_IPHI, MAX_IPHI, 2*MAX_IETA+1, -MAX_IETA-0.5, MAX_IETA+0.5 );
     TH2F* rms_EEp = new TH2F("rms_EEp","IC(n)-IC(n-1) iX on x iY on y (EEp)",100,0.5,100.5,100,0.5,100.5);
     TH2F* rms_EEm = new TH2F("rms_EEm","IC(n)-IC(n-1) iY on x iY on y (EEm)",100,0.5,100.5,100,0.5,100.5);
+
 
     for(int isEB=0; isEB<2; isEB++){
 
@@ -70,7 +71,17 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 	  iter = new float[nIter];
 
 	  float hmean(0.), hrms(0.01), sigma_plot(0);
-	  if(isEB==1){ hmean=0.09; hrms=0.03; } //rms 0.015
+          float hrange;
+          int nbins;
+	  if(isEB==0){ // barrel
+            hmean=0.09; hrms=0.03; 
+            hrange = 0.05;
+            nbins = 200;
+          } 
+          else { 
+            hrange = 0.10; 
+            nbins = 50;
+          }
 
 	  for(int i=0; i<nIter; i++){
 
@@ -117,7 +128,8 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 
 		//Histo
 		//TH1F *h1; h1 =new TH1F("h1","",1000,hmean-9*hrms,hmean+9*hrms);
-		TH1F *h1; h1 =new TH1F("h1","",2000,-0.1,0.1);
+		TH1F *h1; h1 =new TH1F("h1","",nbins,-1*hrange,hrange);
+                h1->GetXaxis()->SetTitle("IC_{i}-IC_{i-1}");
 
 		//Loop
 		Long64_t nentries = Tree->GetEntriesFast();
@@ -151,6 +163,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 
 		hmean = h1->GetMean();
 		hrms  = h1->GetRMS();
+                /*
 		//Fit Method
 		RooRealVar x("x","IC distribution",hmean-2.3*hrms, hmean+2.3*hrms,"");
 		RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h1);
@@ -174,7 +187,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 
 		RooAddPdf model1("model","only_gaus",RooArgList(gaus),RooArgList(Nsig));
 		RooAddPdf model2("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
-		RooAbsPdf* model=0; model = &model2;
+		RooAbsPdf* model=0; model = &model1;
 		RooNLLVar nll("nll","log likelihood var",*model,dh);//,Extended());
 		RooMinuit m(nll);
 		m.setVerbose(kFALSE);
@@ -190,15 +203,21 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 		xframe->Draw("same");
 		myc1->SaveAs(out.Data());
 		sigma_plot  = sigma.getVal();
+                */
 
-		TLatex lat;
-		char line[300];
-		lat.SetNDC();
-		lat.SetTextSize(0.030);
-		lat.SetTextColor(1);
-		sprintf(line,"SIGMA: %.6f ", sigma_plot );
-		float xmin(0.55), yhi(0.80);// ypass(0.05);
-		lat.DrawLatex(xmin,yhi, line);
+                h1->Draw("hist");
+
+		// TLatex lat;
+		// char line[300];
+		// lat.SetNDC();
+		// lat.SetTextSize(0.030);
+		// lat.SetTextColor(1);
+		// sprintf(line,"SIGMA: %.6f ", h1->GetRMS() );
+		// float xmin(0.55), yhi(0.80);// ypass(0.05);
+		// lat.DrawLatex(xmin,yhi, line);
+
+		myc1->SaveAs(out.Data());
+
 //
 //		hmean=mean.getVal();
 //		EB_RMS[i]=sigma_plot;
@@ -206,6 +225,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 		EB_RMS[i]=h1->GetRMS();
 		iter[i]=i+1;
 	  }
+               
 
 	  TGraph *Conv = new TGraph(nIter, iter, EB_RMS);
 	  Conv->SetLineColor(2);
@@ -215,7 +235,7 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 	  Conv->SetMarkerSize(0.5);
 	  if(isEB==0) Conv->SetTitle("EB) IC Convergence");
 	  if(isEB==1) Conv->SetTitle("EE) IC Convergence");
-	  Conv->GetXaxis()->SetTitle("Iter");
+	  Conv->GetXaxis()->SetTitle("Iteration");
 	  //Conv->GetYaxis()->SetOffset(1.);
 	  if(nJump==1) Conv->GetYaxis()->SetTitle("RMS(ICn+1 - IC)");
 	  if(nJump==2) Conv->GetYaxis()->SetTitle("RMS(ICn+2 - IC)");

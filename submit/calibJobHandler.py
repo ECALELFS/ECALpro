@@ -747,7 +747,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()
-        print thisfile_s
+        print "file --> " + str(thisfile_s)
         thisfile_f = TFile.Open(thisfile_s)
         #Taking Interval and EB or EE
         h_Int = thisfile_f.Get("hint")
