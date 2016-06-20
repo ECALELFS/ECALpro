@@ -1,6 +1,11 @@
 *__init__.py
 *.pyc
+*.pdf
+*.png
 *~
 ALL_Pi0Gun*/
 LSFJOB*/
 pi0data*/
+HLTmodified*/
+HLTunmodified*/
+parameters_mycopy.py

@@ -630,9 +630,9 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? 0.14:0.62);
+	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? 0.16:0.62);
 	  mean.setVal(Are_pi0_? 0.13:0.55);
-	  sigma.setRange(0.007, 0.020);
+	  sigma.setRange(0.005, 0.020);
     }
     if(mode==Pi0EB && niter==1){
 	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? 0.15:0.62);
