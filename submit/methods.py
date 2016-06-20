@@ -17,17 +17,6 @@ def printFillCfg1( outputfile ):
     else:
        outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
-    if (Use2016pulseShapes):
-        # adding these lines to be used when running on 2016 data: use new pulse shapes for 2016
-        outputfile.write("#\n")
-        outputfile.write("#following lines are needed to run on 2016 data: use new pulse shapes for 2016 \n")
-        outputfile.write("process.GlobalTag.toGet = cms.VPSet(cms.PSet(\n")
-        outputfile.write("    record  = cms.string(\"EcalPulseShapesRcd\"),\n")
-        outputfile.write("    tag     = cms.string(\"EcalPulseShapes_data\"),\n")
-        outputfile.write("    connect = cms.string(\"sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db\")))\n")
-        outputfile.write("# end of lines needed to run on 2016 data\n")
-        outputfile.write("#\n")
-    #
     #From DIGI
     if (FROMDIGI):
         outputfile.write("#DUMMY RECHIT\n")
@@ -109,7 +98,7 @@ def printFillCfg1( outputfile ):
            outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
            outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
            outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-           if(GeVTagRecord=='' and alphaTag2==''):
+           if(GeVTagRecord=='' and alphaTag==''):
               outputfile.write('     )\n')
            if not(GeVTagRecord==''):
               outputfile.write('     ),\n')
@@ -118,13 +107,20 @@ def printFillCfg1( outputfile ):
               outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
               if(alphaTag2==''):
                  outputfile.write('     )\n')
-           if not(alphaTag2==''):
+           if not(alphaTag==''):
               outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord2 + "'),\n")
-              outputfile.write("             tag = cms.string('" + alphaTag2 + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + alphaDB2 + "')\n")
+              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
+              outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
+              outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
               outputfile.write('     )\n')
            outputfile.write(')\n\n')
+        if not(pulseShapeTag==''):
+            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+            outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
+            outputfile.write("     tag = cms.string('" + pulseShapeTag + "'),\n")
+            outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
+            outputfile.write('     )\n')
+            outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')

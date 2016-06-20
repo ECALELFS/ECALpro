@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from math import fabs
+from math import fabs,sqrt
 import operator
 import xml.dom.minidom
 import subprocess, time, sys, os, optparse
@@ -59,9 +59,9 @@ def MoltiplicateICFromTXT():
             newIC = float(IC_EE_1[iEE][3])*float(myIC)
             NewcalibMap_EEp.SetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]), float(newIC) )
 
-def WriteTXT(hEB,hEEm,hEEp,name,errorType,whichIC):
+def WriteTXT(hEB,hEEm,hEEp,name,errorType,whichIC,hEB_1=None,hEEm_1=None,hEEp_1=None):
     outputfile = open( name, 'wr+' )
-    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC error chi2\n")
+    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC toterr staterr systerr chi2\n")
     #EB
     for ieta in range(171):#[0,170]
         for iphi in range(360):#[0,359]
@@ -75,10 +75,15 @@ def WriteTXT(hEB,hEEm,hEEp,name,errorType,whichIC):
                         outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC,6)) + " 999. 0\n")
                     else:
                         index = str(((ieta+1)-86)) + "_" + str(iphi+1)
-                        Error = 0
-                        if( SystE=="FIT" and whichIC=="mine" ): Error = SystEBList[index]
-                        if( SystE=="FIT" and whichIC=="abs" ): Error = SystEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1)
-                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC,6)) + " " + str(Error) + " " + str(Chi2EBList[index]) + "\n")
+                        StatError = 0
+                        SystError = 0
+                        if( whichIC=="mine" ): 
+                            StatError = StatEBList[index]
+                            if hEB_1 != None: SystError = abs(IC - hEB_1.GetBinContent( ieta+1, iphi+1 ))
+                        if( whichIC=="abs" ): 
+                            StatError = StatEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1)
+                            if hEB_1 != None: SystError = abs(IC - hEB_1.GetBinContent( ieta+1, iphi+1 )) * OricalibMap_EB.GetBinContent(ieta+1, iphi+1)
+                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " +  str(StatError) + " " + str(SystError) + " " + str(Chi2EBList[index]) + "\n")
     #EEm
     for ix in range(100):#[0,99]
         for iy in range(100):#[0,99]
@@ -92,10 +97,15 @@ def WriteTXT(hEB,hEEm,hEEp,name,errorType,whichIC):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC,6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_-1"
-                        Error = 0
-                        if( SystE=="FIT" and whichIC=="mine" ): Error = SystEEList[index]
-                        if( SystE=="FIT" and whichIC=="abs" ): Error = SystEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC,6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = 0
+                        SystError = 0
+                        if( whichIC=="mine" ): 
+                            StatError = StatEEList[index]
+                            if hEEm_1 != None: SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 ))
+                        if( whichIC=="abs" ): 
+                            StatError = StatEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
+                            if hEEm_1 != None: SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
     #EEp
     for ix in range(100):#[0,99]
         for iy in range(100):#[0,99]
@@ -109,18 +119,25 @@ def WriteTXT(hEB,hEEm,hEEp,name,errorType,whichIC):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC,6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_1"
-                        Error = 0
-                        if( SystE=="FIT" and whichIC=="mine" ): Error = SystEEList[index]
-                        if( SystE=="FIT" and whichIC=="abs" ): Error = SystEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1)
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC,6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = 0
+                        SystError = 0
+                        if( whichIC=="mine" ): 
+                            StatError = StatEEList[index]
+                            if hEEp_1 != None: SystError = abs(IC - hEEp_1.GetBinContent( ix+1, iy+1 ))
+                        if( whichIC=="abs" ): 
+                            StatError = StatEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1)
+                            if hEEp_1 != None: SystError = abs(IC - hEEp_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEp.GetBinContent(ix+1, iy+1)
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
+
     outputfile.close()
     if( int(len(open(name).readlines())-1) != int(TotalIC) ):
         print "WARNING: Final IC has a number of lines different from the number of lines of the original IC!!!"
         print str(int(len(open(name).readlines()))) + " vs " + str(TotalIC)
 
-def AverageGlobally(hEB,hEEm,hEEp,name,errorType):
+
+def AverageGlobally(hEB,hEEm,hEEp,name,errorType,hEB_1=None,hEEm_1=None,hEEp_1=None):
     outputfile = open( name, 'wr+' )
-    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC error chi2\n")
+    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC toterr staterr systerr chi2\n")
     #EB
     IC_tmp=0.
     IC_tot=0.
@@ -148,9 +165,9 @@ def AverageGlobally(hEB,hEEm,hEEp,name,errorType):
                         outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp,6)) + " 999. 0\n")
                     else:
                         index = str(((ieta+1)-86)) + "_" + str(iphi+1)
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1) / IC_tmp
-                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp,6)) + " " + str(Error) + " " + str(Chi2EBList[index]) + "\n")
+                        StatError = StatEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1)
+                        SystError = abs(IC - hEB_1.GetBinContent( ieta+1, iphi+1 )) * OricalibMap_EB.GetBinContent(ieta+1, iphi+1) / IC_tmp if hEB_1 != None else 0
+                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EBList[index]) + "\n")
     #EEm
     IC_tmp=0.
     IC_tot=0.
@@ -175,9 +192,9 @@ def AverageGlobally(hEB,hEEm,hEEp,name,errorType):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp,6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_-1"
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp,6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = StatEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
+                        SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp if hEEm_1 != None else 0
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
     #EEp
     IC_tmp=0.
     IC_tot=0.
@@ -202,17 +219,17 @@ def AverageGlobally(hEB,hEEm,hEEp,name,errorType):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp,6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_1"
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1) / IC_tmp
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp,6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = StatEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1)
+                        SystError = abs(IC - hEEp_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEp.GetBinContent(ix+1, iy+1) / IC_tmp if hEEp_1 != None else 0
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp,6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
     outputfile.close()
     if( int(len(open(name).readlines())-1) != int(TotalIC)):
         print "WARNING: Final IC has a number of lines different from the number of lines of the original IC!!!"
         print str(int(len(open(name).readlines()))) + " vs " + str(TotalIC)
 
-def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType):
+def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType,hEB_1=None,hEEm_1=None,hEEp_1=None):
     outputfile = open( name, 'wr+' )
-    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC error chi2\n")
+    outputfile.write("#iEta(ix) iPhi(iy) 0(iZ) IC toterr staterr systerr chi2\n")
     #EB
     IC_tmp = [0.] * 171
     IC_tot = [0.] * 171
@@ -244,9 +261,9 @@ def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType):
                         outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp[ieta],6)) + " 999. 0\n")
                     else:
                         index = str(((ieta+1)-86)) + "_" + str(iphi+1)
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1) / IC_tmp[ieta]
-                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp[ieta],6)) + " " + str(Error) + " " + str(Chi2EBList[index]) + "\n")
+                        StatError = StatEBList[index] * OricalibMap_EB.GetBinContent(ieta+1, iphi+1)
+                        SystError = abs(IC - hEB_1.GetBinContent( ieta+1, iphi+1 )) * OricalibMap_EB.GetBinContent(ieta+1, iphi+1) / IC_tmp[ieta] if hEB_1 != None else 0
+                        outputfile.write( str(((ieta+1)-86)) + " " + str(iphi+1) + " 0 " + str(round(IC/IC_tmp[ieta],6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EBList[index]) + "\n")
     #EEm
     IC_tmp = [0.] * 39
     IC_tot = [0.] * 39
@@ -279,9 +296,10 @@ def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp[Ring],6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_-1"
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp[Ring]
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp[Ring],6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = StatEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
+                        SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp[Ring] if hEEm_1 != None else 0
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " -1 " + str(round(IC/IC_tmp[Ring],6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
+
     #EEp
     IC_tmp = [0.] * 39
     IC_tot = [0.] * 39
@@ -314,9 +332,9 @@ def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType):
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp[Ring],6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_1"
-                        Error = 0
-                        if (SystE=="FIT"): Error = SystEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1) / IC_tmp[Ring]
-                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp[Ring],6)) + " " + str(Error) + " " + str(Chi2EEList[index]) + "\n")
+                        StatError = StatEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
+                        SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp[Ring] if hEEm_1 != None else 0
+                        outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp[Ring],6)) + " " + str(sqrt(StatError**2 + SystError**2)) + " " + str(StatError) + " " + str(SystError) + " " + str(Chi2EEList[index]) + "\n")
     outputfile.close()
     if( int(len(open(name).readlines())-1) != int(TotalIC)):
         print "WARNING: Final IC has a number of lines different from the number of lines of the original IC!!!"
@@ -386,59 +404,70 @@ def TEST_average():
 print "STARTING"
 Usage = """python MoltiplicateIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
 root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A Absolute_IC.root
---SystErr FIT"""
+--SystErr ITplus1"""
 
 if (len(sys.argv) < 5):
     usage(); sys.exit(1)
-try:
-    parser = optparse.OptionParser(Usage)
-    parser.add_option("-S", "--SystErr",
-                       help="Systematic error to be applied to the ICs. FIT means take the error form the mean param. of the fit.",
-                       type="string",
-                       default="none",
-                       dest="SystErr")
-    options, args = parser.parse_args()
-    SystE = options.SystErr
-    pathTXT1 = str(sys.argv[1])
-    pathTH2  = str(sys.argv[2])
-    OutputF  = str(sys.argv[3])
-    Output   = str(sys.argv[4])
-    folderCreation = subprocess.Popen(['mkdir -p ' + OutputF], stdout=subprocess.PIPE, shell=True);
-    folderCreation.communicate()
-    print "My IC are taken from: " + pathTH2
-    print "The original IC are from: " + pathTXT1
-    if not (os.path.isfile(pathTXT1)):
-        print str(pathTXT1) + " doesn't exist!"
-    file1_r  = open(pathTXT1,'r')
-    file1_v  = file1_r.readlines()
-    file1_v1 = file1_v[:]
-    fileTH2  = ROOT.TFile.Open(pathTH2)
-    EBIC     = fileTH2.Get('calibMap_EB')
-    EEmIC    = fileTH2.Get('calibMap_EEm')
-    EEpIC    = fileTH2.Get('calibMap_EEp')
-    TreeEB   = fileTH2.Get("calibEB")
-    TreeEE   = fileTH2.Get("calibEE")
-    #Read EtaRing
-    Endc_x_y_ring="../../../FillEpsilonPlot/data/Endc_x_y_ring.txt"
-    print "The File to di the iRing Map is: " + str(Endc_x_y_ring)
-    if not (os.path.isfile(Endc_x_y_ring)):
-        print str(Endc_x_y_ring) + " doesn't exist!"
-    EtaRing_r  = open(Endc_x_y_ring,'r')
-    EtaRing_v  = EtaRing_r.readlines()
-    EtaRing_v1 = EtaRing_v[:]
-except:
-    print "ERROR: something wrong with the arguments: \n %s" % sys.argv[1:]
-    usage(); sys.exit(1)
+
+parser = optparse.OptionParser(Usage)
+parser.add_option("-S", "--SystErr",
+                  help="Systematic error to be applied to the ICs. ITplus1 means taking the 100% of the difference between i and i+1",
+                  type="string",
+                  default="none",
+                  dest="SystErr")
+options, args = parser.parse_args()
+SystE = options.SystErr
+pathTXT1 = str(sys.argv[1])
+pathTH2  = str(sys.argv[2])
+OutputF  = str(sys.argv[3])
+Output   = str(sys.argv[4])
+folderCreation = subprocess.Popen(['mkdir -p ' + OutputF], stdout=subprocess.PIPE, shell=True);
+folderCreation.communicate()
+print "My IC are taken from: " + pathTH2
+print "The original IC are from: " + pathTXT1
+if not (os.path.isfile(pathTXT1)):
+    print str(pathTXT1) + " doesn't exist!"
+file1_r  = open(pathTXT1,'r')
+file1_v  = file1_r.readlines()
+file1_v1 = file1_v[:]
+fileTH2  = ROOT.TFile.Open(pathTH2)
+print "Opened ",pathTH2
+EBIC     = fileTH2.Get('calibMap_EB')
+EEmIC    = fileTH2.Get('calibMap_EEm')
+EEpIC    = fileTH2.Get('calibMap_EEp')
+TreeEB   = fileTH2.Get("calibEB")
+TreeEE   = fileTH2.Get("calibEE")
+# take the it+1 for systematic error
+nominal_iter = [x for x in pathTH2.split('/') if 'iter' in x]
+nominal_iter_num = int([int(i) for i in nominal_iter[0].split('_') if 'iter' not in i][0])
+next_iter = 'iter_' + str(nominal_iter_num-1)
+pathTH2Next = re.sub(nominal_iter[0], next_iter, pathTH2)
+print 'pathTH2Next = ',pathTH2Next
+fileTH2Next  = ROOT.TFile.Open(pathTH2Next)
+print "Opened ",pathTH2Next
+EBIC_Next     = fileTH2Next.Get('calibMap_EB')
+EEmIC_Next    = fileTH2Next.Get('calibMap_EEm')
+EEpIC_Next    = fileTH2Next.Get('calibMap_EEp')
+#Read EtaRing
+Endc_x_y_ring="../../../FillEpsilonPlot/data/Endc_x_y_ring.txt"
+print "The File to di the iRing Map is: " + str(Endc_x_y_ring)
+if not (os.path.isfile(Endc_x_y_ring)):
+    print str(Endc_x_y_ring) + " doesn't exist!"
+EtaRing_r  = open(Endc_x_y_ring,'r')
+EtaRing_v  = EtaRing_r.readlines()
+EtaRing_v1 = EtaRing_v[:]
+
 #Read Ori IC
 print 'Reading the original IC'
 IC_EB_1=list(); IC_EE_1=list()
 TotalIC = len(file1_v)
 for nXtal in range(len(file1_v)):
     List1=file1_v1[nXtal].split(' ')
-    if(nXtal<61200):
-       IC_EB_1.append([List1[0],List1[1],List1[3]]) #eta Phi IC
+    [ietaix,iphiiy,iz,ic,detid] = List1
+    if int(iz)==0:
+       IC_EB_1.append([ietaix,iphiiy,ic]) 
     else:
-       IC_EE_1.append([List1[0],List1[1],List1[2],List1[3]]) #iX iY iZ IC
+       IC_EE_1.append([ietaix,iphiiy,iz,ic])
 print 'Now Storing EtaRing Map'
 EtaList={}; maxRing=0
 for nRing in range(len(EtaRing_v)):
@@ -449,7 +478,7 @@ for nRing in range(len(EtaRing_v)):
 print "The max iRing is: " + str(maxRing).rstrip()
 #Tree
 print "Reading syst error from TTree"
-SystEBList={}; Chi2EBList={}
+StatEBList={}; Chi2EBList={}
 gROOT.ProcessLine(\
     "struct MyStructEB{\
         Float_t fit_mean_err_;\
@@ -465,9 +494,9 @@ TreeEB.SetBranchAddress('iphi_',AddressOf(sEB,'iphi_'));
 for nT in range(TreeEB.GetEntries()):
     TreeEB.GetEntry(nT);
     name = str(sEB.ieta_) + "_" + str(sEB.iphi_)
-    SystEBList[ str(name) ] = sEB.fit_mean_err_
+    StatEBList[ str(name) ] = sEB.fit_mean_err_
     Chi2EBList[ str(name) ] = sEB.Chisqu_
-SystEEList={}; Chi2EEList={};
+StatEEList={}; Chi2EEList={};
 gROOT.ProcessLine(\
     "struct MyStructEE{\
         Float_t fit_mean_err_;\
@@ -485,25 +514,25 @@ TreeEE.SetBranchAddress('zside_',AddressOf(sEE,'zside_'));
 for nT in range(TreeEE.GetEntries()):
     TreeEE.GetEntry(nT);
     name = str(sEE.ix_) + "_" + str(sEE.iy_) + "_" + str(sEE.zside_)
-    SystEEList[ str(name) ] = sEE.fit_mean_err_
+    StatEEList[ str(name) ] = sEE.fit_mean_err_
     Chi2EEList[ str(name) ] = sEE.Chisqu_
 
 #Create Histos
 print "Creating Histos"
-f = TFile(OutputF + "/" + Output, 'recreate')
-MyIC_EB               = fileTH2.Get('calibMap_EB')
+f = ROOT.TFile.Open(OutputF + "/" + Output, 'recreate')
+#MyIC_EB               = fileTH2.Get('calibMap_EB')
 NewcalibMap_EB        = TH2F("Abs_CalibMap_EB", "Absolute EB IC: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
 OricalibMap_EB        = TH2F("OricalibMap_EB", "EB IC from GT: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
 OriCoef_EB            = TH1F("OriCoef_EB", "IC EB from GT", 100, 0.2, 1.8)
 NewcalibMap_Glob1_EB  = TH2F("NewcalibMap_Glob1_EB", "Absolute EB IC Globally to 1: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
 NewcalibMap_EtaR1_EB  = TH2F("NewcalibMap_EtaR1_EB", "Absolute EB IC EtaRing to 1: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
-MyIC_EEm              = fileTH2.Get('calibMap_EEm')
+#MyIC_EEm              = fileTH2.Get('calibMap_EEm')
 NewcalibMap_EEm       = TH2F("Abs_calibMap_EEm", "Absolute EEm IC", 100,0.5,100.5,100,0.5,100.5)
 OricalibMap_EEm       = TH2F("OricalibMap_EEm", "EEm IC from GT", 100,0.5,100.5,100,0.5,100.5)
 OriCoef_EEm           = TH1F("OriCoef_EEm","EEm IC from GT",100, 0.2, 1.8)
 NewcalibMap_Glob1_EEm = TH2F("NewcalibMap_Glob1_EEm", "Absolute EEm IC Globally to 1", 100,0.5,100.5,100,0.5,100.5)
 NewcalibMap_EtaR1_EEm = TH2F("NewcalibMap_EtaR1_EEm", "Absolute EEm IC EtaRing to 1", 100,0.5,100.5,100,0.5,100.5)
-MyIC_EEp              = fileTH2.Get('calibMap_EEp')
+#MyIC_EEp              = fileTH2.Get('calibMap_EEp')
 NewcalibMap_EEp       = TH2F("Abs_calibMap_EEp", "Absolute EEp IC", 100,0.5,100.5,100,0.5,100.5)
 OricalibMap_EEp       = TH2F("OricalibMap_EEp", "EEp IC from GT", 100,0.5,100.5,100,0.5,100.5)
 OriCoef_EEp           = TH1F("OriCoef_EEp","EEp IC from GT",100, 0.2, 1.8)
@@ -517,18 +546,19 @@ MoltiplicateICFromTXT()
 #Write txt
 print 'Executing WriteTXT1 for IC_fromECALpro.txt'
 name = OutputF + "/IC_fromECALpro.txt"
-WriteTXT(EBIC,EEmIC,EEpIC,name,"none","mine")
+(EBIC_syst,EEmIC_syst,EEpIC_syst) = (None,None,None) if SystE!="ITplus1" else (EBIC_Next,EEmIC_Next,EEpIC_Next) 
+WriteTXT(EBIC,EEmIC,EEpIC,name,"none","mine",EBIC_syst,EEmIC_syst,EEpIC_syst)
 print 'Executing WriteTXT1 for IC_fromECALpro_Absolute.txt'
 name = OutputF + "/IC_fromECALpro_Absolute.txt"
-WriteTXT(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,"ErrorFromMyIC","abs") #ErrorFromMyIC does that if I have no IC, you place the Original IC with 999. error.
+WriteTXT(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,"ErrorFromMyIC","abs",EBIC_syst,EEmIC_syst,EEpIC_syst) #ErrorFromMyIC does that if I have no IC, you place the Original IC with 999. error.
 #Average to 1 Globally
 print 'Executing AverageGlobally'
 name = OutputF + "/IC_fromECALpro_Absolute_Global1.txt"
-AverageGlobally(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,"ErrorFromMyIC")
+AverageGlobally(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,"ErrorFromMyIC",EBIC_syst,EEmIC_syst,EEpIC_syst)
 #Average to 1 PerEtaRing
 print 'Executing AverageEtaRing'
 name = OutputF + "/IC_fromECALpro_Absolute_EtaRing1.txt"
-AverageEtaRing(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,EtaList,"ErrorFromMyIC")
+AverageEtaRing(NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,EtaList,"ErrorFromMyIC",EBIC_syst,EEmIC_syst,EEpIC_syst)
 #Test the average
 print 'Now the final test...'
 TEST_average()

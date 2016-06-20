@@ -14,8 +14,7 @@ SMCalibEB          = False
 EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
-FixGhostDigis      = True   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
-Use2016pulseShapes = True   # use new pulse shapes for 2016
+FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/lpernie'
 eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
@@ -251,8 +250,10 @@ useOnlyEEClusterMatchedWithES = 'True'
 
 #-----------------------------------------------------------------------------------
 laserTagRecord='';laserTag='';laserDB=''
-alphaTagRecord2='';alphaTag2='';alphaDB2=''
+alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
+pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
+#pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
 
 ######################################################################
 # Now decomment the part that correspond to data you want to run on. #
