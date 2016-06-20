@@ -62,7 +62,7 @@ IC_EB_2=list()
 IC_EE_1=list()
 IC_EE_2=list()
 print 'Starting reading files!'
-for nXtal in range(len(file1_v)):
+for nXtal in range(1,len(file1_v)):
     List1=file1_v1[nXtal].split(' ')
     List2=file2_v1[nXtal].split(' ')
     if(nXtal<61200):
