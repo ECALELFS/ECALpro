@@ -57,11 +57,11 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p6fb_RAW_purified.list'
-dirname          = 'AlcaP0_2016_json2p6fb'
+inputlist_n      = 'InputList/2016B_AlcaP0_json2p07minus0p8fb_RAW_purified.list'
+dirname          = 'AlcaP0_2016_json2p07minus0p8fb'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2016_json2p6fb_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016_json2p07minus0p8fb_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 8
@@ -69,7 +69,7 @@ SubmitFurtherIterationsFromExisting = False
 if (SubmitFurtherIterationsFromExisting):
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p6fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
 #N files
-ijobmax          = 6                     # 5 number of files per job
+ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
@@ -252,8 +252,8 @@ useOnlyEEClusterMatchedWithES = 'True'
 laserTagRecord='';laserTag='';laserDB=''
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
-pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
-#pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
+#pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
+pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
 
 ######################################################################
 # Now decomment the part that correspond to data you want to run on. #
@@ -263,8 +263,8 @@ pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
-overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
+json_file          = 'Cert_274240-274421_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
