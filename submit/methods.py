@@ -201,10 +201,17 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.useEBContainmentCorrections = cms.untracked.bool(" + useEBContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.useEEContainmentCorrections = cms.untracked.bool(" + useEEContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContainmentCorrections + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_01 + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_02 + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_01 + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_02 + "')\n")
+    if (new_pi0ContainmentCorrections):
+	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEBContainmentCorrections_01 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEBContainmentCorrections_02 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEEContainmentCorrections_01 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEEContainmentCorrections_02 + "')\n")
+    else:
+	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_01 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_02 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_01 + "')\n")
+	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_02 + "')\n")
+
     outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_eta01 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_eta02 + "')\n")
     outputfile.write("process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + Endc_x_y + "')\n")
@@ -237,6 +244,18 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(False)\n")
+    
+    if(useMVAContainmentCorrections):
+        outputfile.write("process.analyzerFillEpsilon.useMVAContainmentCorrections                 = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.useMVAContainmentCorrections                 = cms.untracked.bool(False)\n")
+
+    if(new_pi0ContainmentCorrections):
+         outputfile.write("process.analyzerFillEpsilon.new_pi0ContainmentCorrections                 = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.new_pi0ContainmentCorrections                 = cms.untracked.bool(False)\n")
+
+    
     outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
 
     outputfile.write("### choosing proper input tag (recalibration module changes the collection names)\n")
@@ -346,6 +365,17 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( True )\n")
     else:
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( False )\n")
+
+    if(useMVAContainmentCorrections):
+        outputfile.write("process.fitEpsilon.useMVAContainmentCorrections = cms.untracked.bool( True )\n")
+    else:
+        outputfile.write("process.fitEpsilon.useMVAContainmentCorrections = cms.untracked.bool( False )\n")
+    
+    if(new_pi0ContainmentCorrections):
+        outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( True )\n")
+    else:
+        outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( False )\n")
+
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py

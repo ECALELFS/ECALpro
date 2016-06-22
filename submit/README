@@ -78,3 +78,18 @@ LP
 /CalibCode/
 /CondFormats/EcalObjects/
 /RecoLocalCalo/EcalRecProducers/
+
+---------------------Choose Containment Corrections---------------------
+1. set the variable ContainmentCorrection properly in parameters.py
+2. if you set ContainmentCorrection = 'YongParametric', in the file '../FillEpsilonPlot/interface/FillEpsilonPlot.h', you need to keep:
+#define NEW_CONTCORR
+and comment/delete:
+#define MVA_REGRESSIO
+#define MVA_REGRESSIO_EE
+3. if you set ContainmentCorrection = 'No' or '2012reg' or '2016reg', in the file '../FillEpsilonPlot/interface/FillEpsilonPlot.h', you need to keep:
+#define MVA_REGRESSIO
+#define MVA_REGRESSIO_EE
+and comment/delete:
+#define NEW_CONTCORR
+
+

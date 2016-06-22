@@ -33,7 +33,7 @@
 //#define NEW_CONTCORR
 #define MVA_REGRESSIO
 //#define MVA_REGRESSIO_Tree
-//#define MVA_REGRESSIO_EE
+#define MVA_REGRESSIO_EE
 //#define MVA_REGRESSIO_EE_Tree
 
 //MVA Stuff
@@ -44,6 +44,8 @@
 #endif
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
+#include "CondFormats/EgammaObjects/interface/GBRForestD.h"
+
 //#include "Cintex/Cintex.h"
 
 enum calibGranularity{ xtal, tt, etaring };
@@ -147,6 +149,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       float L1BitCollection_[NL1SEED];
 
       bool Are_pi0_;
+      bool useMVAContainmentCorrections_;
+      bool new_pi0ContainmentCorrections_;
+
       bool L1TriggerInfo_;
       edm::EDGetTokenT<EBRecHitCollection> EBRecHitCollectionToken_;
       edm::EDGetTokenT<EERecHitCollection> EERecHitCollectionToken_;
@@ -360,7 +365,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TFile *EBweight_file_1;
       TFile *EBweight_file_2;
       const GBRForest *forest_EB_1;
+      const GBRForestD *forestD_EB_1;
       const GBRForest *forest_EB_2;
+      const GBRForestD *forestD_EB_2;
       GBRApply *gbrapply;
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
       TTree *TTree_JoshMva;
@@ -386,7 +393,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TFile *EEweight_file_pi01;
       TFile *EEweight_file_pi02;
       const GBRForest *forest_EE_pi01;
+      const GBRForestD *forestD_EE_pi01;
       const GBRForest *forest_EE_pi02;
+      const GBRForestD *forestD_EE_pi02;
+
       TTree *TTree_JoshMva_EE;
       Float_t Correction1EE_mva, Correction2EE_mva, Pt1EE_mva, Pt2EE_mva, MassEE_mva, MassEEOr_mva;
       Int_t   iX1_mva, iY1_mva, iX2_mva, iY2_mva, EtaRing1_mva, EtaRing2_mva;
@@ -402,4 +412,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //bool FailPreselEB;
       //bool FailPreselEE;
       //std::map<int,bool>  PassPreselection;
+      
+      //Containment correction
+      /*constexpr*/ double meanlimlow  = 0.2;
+      /*constexpri*/ double meanlimhigh = 2.0;
+      /*constexpr*/ double meanoffset  = meanlimlow + 0.5*(meanlimhigh-meanlimlow);
+      /*constexpr*/ double meanscale   = 0.5*(meanlimhigh-meanlimlow);
+
 };
