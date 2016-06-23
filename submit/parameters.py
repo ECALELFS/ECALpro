@@ -57,10 +57,8 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-#inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p6fb_RAW_purified.list'
-inputlist_n      = 'InputList/2016B_run273730_partial.list'
-#dirname          = 'AlcaP0_2016_json2p6fb'
-dirname          = 'AlcaP0_2016_run273730_2016reg2'
+inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p6fb_RAW_purified.list'
+dirname          = 'AlcaP0_2016_json2p6fb'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = 'AlcaP0_2016_json2p6fb_'                   # Tag to the names to avoid overlap
@@ -78,7 +76,7 @@ if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = 'No' # Option: 'No', '2012reg', '2016reg','Yong'
+ContainmentCorrection = '2012reg' # Option: 'No', '2012reg', '2016reg', 'Yong'
 
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
@@ -234,28 +232,28 @@ else:
       nXtal_1_EE_high = '0'
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
-#containment corrections
 
+#containment corrections
 if ContainmentCorrection == 'No':
-	useEBContainmentCorrections = 'False'
-	useEEContainmentCorrections = 'False'
-	useMVAContainmentCorrections = False
-	new_pi0ContainmentCorrections = False
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = False
+   new_pi0ContainmentCorrections = False
 if ContainmentCorrection == '2012reg':
-	useEBContainmentCorrections = 'False'
-	useEEContainmentCorrections = 'False'
-	useMVAContainmentCorrections = True
-	new_pi0ContainmentCorrections = False
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = True
+   new_pi0ContainmentCorrections = False
 if ContainmentCorrection == '2016reg':
-	useEBContainmentCorrections = 'False'
-	useEEContainmentCorrections = 'False'
-	useMVAContainmentCorrections = True 
-	new_pi0ContainmentCorrections = True
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = True 
+   new_pi0ContainmentCorrections = True
 if ContainmentCorrection == 'Yong':
-	useEBContainmentCorrections = 'True'
-	useEEContainmentCorrections = 'True'
-	useMVAContainmentCorrections = False
-	new_pi0ContainmentCorrections = False
+   useEBContainmentCorrections = 'True'
+   useEEContainmentCorrections = 'True'
+   useMVAContainmentCorrections = False
+   new_pi0ContainmentCorrections = False
 
 new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
 new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'

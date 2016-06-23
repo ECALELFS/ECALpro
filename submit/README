@@ -90,7 +90,7 @@ and comment/delete:
 
 3. if you set ContainmentCorrection = '2012reg' or '2016reg', in the file '../FillEpsilonPlot/interface/FillEpsilonPlot.h', you need to keep:
 #define MVA_REGRESSIO
-#define MVA_REGRESSIO_EE
+(#define MVA_REGRESSIO_EE) (optional)
 and comment/delete:
 #define NEW_CONTCORR
 and if you are using '2016reg', you also need to copy the GBRForest files to '../FillEpsilonPlot/data/' by:
