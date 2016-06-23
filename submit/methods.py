@@ -59,7 +59,8 @@ def printFillCfg1( outputfile ):
                outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('cleanedEcalDigis','eeCleanedDigis')\n")
            else:
                outputfile.write("process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','dummyBarrelDigis','analyzerFillEpsilon')\n")
-               outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
+               outputfile.write("process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")    
+    
            outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added this line to make code run\n") #can enable setting --> DigiCustomization = True <-- in parameters.py, but this also set --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs = cms.vint32(-5,-4,-3,-2,-1,0,1,2,3,4) #Are 10 (-5-5). For 50ns is (-4,-2,0,2,4) \
 #No .algoPSet. in old releases\n")  <-- line above , so I prefer to add it here
         if(WEIGHTS):
