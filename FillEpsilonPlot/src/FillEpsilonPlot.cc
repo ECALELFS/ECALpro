@@ -86,6 +86,7 @@ Implementation:
 #include "FWCore/Framework/interface/TriggerNamesService.h"
 #include <FWCore/Common/interface/TriggerNames.h>
 #include <DataFormats/Common/interface/TriggerResults.h>
+
 //#define DEBUG
 
 using std::cout;
@@ -103,6 +104,8 @@ using std::max;
 #endif
 #include "CalibCode/GBRTrain/interface/GBRApply.h"
 #include "CalibCode/EgammaObjects/interface/GBRForest.h"
+#include "CondFormats/EgammaObjects/interface/GBRForestD.h"
+
 //#include "Cintex/Cintex.h"
 #include "TLorentzVector.h"
 #include "DataFormats/Math/interface/deltaR.h"
@@ -122,6 +125,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
+    useMVAContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
+    new_pi0ContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
+
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
@@ -246,9 +252,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     // containment corrections
 #if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
     if(useEEContainmentCorrections_)
-	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath() );
+	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath().c_str() );
     if(useEBContainmentCorrections_){
-	  containmentCorrections_.loadContainmentCorrectionsEB( edm::FileInPath( ebContainmentCorrections_.c_str() ).fullPath(); );
+	  containmentCorrections_.loadContainmentCorrectionsEB( edm::FileInPath( ebContainmentCorrections_.c_str() ).fullPath().c_str());
 	  EBPHI_Cont_Corr_load( edm::FileInPath( ebPHIContainmentCorrections_.c_str() ).fullPath() );
     }
 #endif
@@ -415,14 +421,30 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 #ifdef MVA_REGRESSIO
     EBweight_file_1 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_01_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta01_.c_str() ).fullPath().c_str() );
     EBweight_file_2 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_02_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta02_.c_str() ).fullPath().c_str() );
-    forest_EB_1 = (GBRForest *)EBweight_file_1->Get("Correction");    
-    forest_EB_2 = (GBRForest *)EBweight_file_2->Get("Correction");    
+    if(new_pi0ContainmentCorrections_)
+        {
+        forestD_EB_1 = (GBRForestD *)EBweight_file_1->Get("Correction");
+        forestD_EB_2 = (GBRForestD *)EBweight_file_2->Get("Correction");
+        }
+    else
+        {
+        forest_EB_1 = (GBRForest *)EBweight_file_1->Get("Correction");
+        forest_EB_2 = (GBRForest *)EBweight_file_2->Get("Correction");
+        }
 #endif
 #ifdef MVA_REGRESSIO_EE
     EEweight_file_pi01 = TFile::Open( edm::FileInPath( MVAEEContainmentCorrections_01_.c_str() ).fullPath().c_str() );
     EEweight_file_pi02 = TFile::Open( edm::FileInPath( MVAEEContainmentCorrections_02_.c_str() ).fullPath().c_str() );
-    forest_EE_pi01 = (GBRForest *)EEweight_file_pi01->Get("Correction");
-    forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
+    if(new_pi0ContainmentCorrections_)
+        {
+        forestD_EE_pi01 = (GBRForestD *)EEweight_file_pi01->Get("Correction");
+        forestD_EE_pi02 = (GBRForestD *)EEweight_file_pi02->Get("Correction");
+        }
+    else
+        {
+        forest_EE_pi01 = (GBRForest *)EEweight_file_pi01->Get("Correction");
+        forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
+        }
 #endif
 }
 
@@ -1391,6 +1413,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
 	    float value_pi01[14];
+	    float new_value_pi01[12];
+
 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB[ind1] );
@@ -1405,10 +1429,40 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    value_pi01[11] = ( iPhi1%2 );
 	    value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
 	    value_pi01[13] = ( iPhi1%20 );
+	    
+	    new_value_pi01[0] = ( G_Sort_1.E() );
+            new_value_pi01[1] = ( G_Sort_1.Eta() );
+            new_value_pi01[2] = ( G_Sort_1.Phi() );
+            new_value_pi01[3] = ( Ncristal_EB[ind1] );
+            new_value_pi01[4] = ( vs4s9[ind1] );
+            new_value_pi01[5] = ( vs2s9[ind1] );
+            new_value_pi01[6] = ( iEta1 );
+            new_value_pi01[7] = ( iPhi1 );
+            new_value_pi01[8] = ( iEta1%5 );
+            new_value_pi01[9] = ( iEta1%2 );
+            new_value_pi01[10] = ( iEta1%20 );
+            new_value_pi01[11] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
 	    //else                                    value_pi01[14] = false ;
-	    Correct1 = forest_EB_1->GetResponse(value_pi01);
+	    if(useMVAContainmentCorrections_)
+            {
+            if(new_pi0ContainmentCorrections_)
+                {
+                float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
+                Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
+                cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
+                }
+            else
+                {
+                Correct1 = forest_EB_1->GetResponse(value_pi01);
+                cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
+                }
+               }
+
 	    float value_pi02[14];//#
+	    float new_value_pi02[12];
+
 	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi02[1] = ( G_Sort_2.Pt() );
 	    value_pi02[2] = ( Ncristal_EB[ind1] );
@@ -1425,11 +1479,36 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    value_pi02[13] = ( iPhi2%20 );
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
 	    //else                                    value_pi02[14] = false ;
-	    Correct2 = forest_EB_2->GetResponse(value_pi02);
+	   
+	    new_value_pi02[0] = ( G_Sort_2.E() );
+            new_value_pi02[1] = ( G_Sort_2.Eta() );
+            new_value_pi02[2] = ( G_Sort_2.Phi() );
+            new_value_pi02[3] = ( Ncristal_EB[ind2] );
+            new_value_pi02[4] = ( vs4s9[ind2] );
+            new_value_pi02[5] = ( vs2s9[ind2] );
+            new_value_pi02[6] = ( iEta2 );
+            new_value_pi02[7] = ( iPhi2 );
+            new_value_pi02[8] = ( iEta2%5 );
+            new_value_pi02[9] = ( iEta2%2 );
+            new_value_pi02[10] = ( iEta2%20 );
+            new_value_pi02[11] = ((TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::     Abs(iEta2)/iEta2)%20) );
+
+	    if(useMVAContainmentCorrections_)
+            {
+            if(new_pi0ContainmentCorrections_)
+                {
+                float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
+                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
+                }
+            else
+                {
+                Correct2 = forest_EB_2->GetResponse(value_pi02);
+                }
+             }
 	  }
 	  else{
 	    float value_pi01[10];
-	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+ 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB[ind1] );
 	    value_pi01[3] = ( iEta1 );
@@ -1500,6 +1579,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
+	  float new_value_pi01[8];
 	  value_pi01[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
 	  value_pi01[1] = ( G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
 	  value_pi01[2] = ( G_Sort_1.Pt() );
@@ -1510,14 +1590,37 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  value_pi01[7] = ( vs2s9EE[ind1] );
 	  value_pi01[8] = ( ESratio[ind1] );
 	  value_pi01[9] = ( EtaRing_1 );
+	    new_value_pi01[0] = ( G_Sort_1.E() );
+            new_value_pi01[1] = ( G_Sort_1.Eta() );
+            new_value_pi01[2] = ( G_Sort_1.Phi() );
+            new_value_pi01[3] = ( Ncristal_EE[ind1] );
+            new_value_pi01[4] = ( vs4s9[ind1] );
+            new_value_pi01[5] = ( vs2s9[ind1] );
+            new_value_pi01[6] = ( iX1 );
+            new_value_pi01[7] = ( iY1 );
+	   
+           float  Correct1 = 1.0;
+          if(Are_pi0_ && useMVAContainmentCorrections_)
+                {
+                if(new_pi0ContainmentCorrections_)
+                {
+                float Correct1_tmp = forestD_EE_pi01->GetResponse(new_value_pi01);
+                Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
+                }
+                else
+                {
+                Correct1 = forest_EE_pi01->GetResponse(value_pi01);
+                }
 
-	  float Correct1 = Are_pi0_? forest_EE_pi01->GetResponse(value_pi01) : 1.;
+                }
+
 	  cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
 	    <<" ratio E "<< G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_1.Pt()
 	    <<" xtal "<<Ncristal_EE[ind1]<<" vs4s9EE "<<vs4s9EE[ind1]<<" vs1s9EE "<<vs1s9EE[ind1]<<" vs2s9EE "<<vs2s9EE[ind1]
 	    <<" ESratio "<<ESratio[ind1]<<" EtaRing_1 "<<EtaRing_1<<endl;
 
 	  float value_pi02[10];
+	  float new_value_pi02[8];
 	  value_pi02[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
 	  value_pi02[1] = ( G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
 	  value_pi02[2] = ( G_Sort_2.Pt() );
@@ -1528,7 +1631,30 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  value_pi02[7] = ( vs2s9EE[ind2] );
 	  value_pi02[8] = ( ESratio[ind2] );
 	  value_pi02[9] = ( EtaRing_2 );
-	  float Correct2 = Are_pi0_? forest_EE_pi02->GetResponse(value_pi02) : 1.;
+	    new_value_pi02[0] = ( G_Sort_2.E() );
+            new_value_pi02[1] = ( G_Sort_2.Eta() );
+            new_value_pi02[2] = ( G_Sort_2.Phi() );
+            new_value_pi02[3] = ( Ncristal_EE[ind2] );
+            new_value_pi02[4] = ( vs4s9[ind2] );
+            new_value_pi02[5] = ( vs2s9[ind2] );
+            new_value_pi02[6] = ( iX2 );
+            new_value_pi02[7] = ( iY2 );
+
+	 float  Correct2 = 1.0;
+          if(Are_pi0_ && useMVAContainmentCorrections_)
+          {
+                if(new_pi0ContainmentCorrections_)
+                {
+                float Correct2_tmp = forestD_EE_pi02->GetResponse(new_value_pi02);
+                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
+                }
+                else
+                {
+                Correct2 = forest_EE_pi02->GetResponse(value_pi02);
+                }
+
+          }
+
 	  cout<<"Correction2: "<<Correct2<<" iX: "<<iX2<<" iY "<<iY2<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
 	    <<" ratio E "<< G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_2.Pt()
 	    <<" xtal "<<Ncristal_EE[ind2]<<" vs4s9EE "<<vs4s9EE[ind2]<<" vs1s9EE "<<vs1s9EE[ind2]<<" vs2s9EE "<<vs2s9EE[ind2]

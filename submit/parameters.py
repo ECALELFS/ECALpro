@@ -16,8 +16,8 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
-#eosPath = '/store/caf/user/lpernie'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+eosPath = '/store/caf/user/zhicaiz'
+#eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -76,6 +76,8 @@ if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+ContainmentCorrection = '2012reg' # Option: 'No', '2012reg', '2016reg', 'Yong'
+
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
@@ -230,9 +232,34 @@ else:
       nXtal_1_EE_high = '0'
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
+
 #containment corrections
-useEBContainmentCorrections = 'False'
-useEEContainmentCorrections = 'False'
+if ContainmentCorrection == 'No':
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = False
+   new_pi0ContainmentCorrections = False
+if ContainmentCorrection == '2012reg':
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = True
+   new_pi0ContainmentCorrections = False
+if ContainmentCorrection == '2016reg':
+   useEBContainmentCorrections = 'False'
+   useEEContainmentCorrections = 'False'
+   useMVAContainmentCorrections = True 
+   new_pi0ContainmentCorrections = True
+if ContainmentCorrection == 'Yong':
+   useEBContainmentCorrections = 'True'
+   useEEContainmentCorrections = 'True'
+   useMVAContainmentCorrections = False
+   new_pi0ContainmentCorrections = False
+
+new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
+new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'
+new_MVAEEContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain_EE.root'
+new_MVAEEContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain_EE.root'
+
 EBContainmentCorrections = 'totNewPi0TupleMB_fillingTot.fittedcorrectionsEB.root'
 MVAEBContainmentCorrections_01 = 'JOSH_MVA_pi01_Mediumtrain.root'
 MVAEBContainmentCorrections_02 = 'JOSH_MVA_pi02_Mediumtrain.root'
