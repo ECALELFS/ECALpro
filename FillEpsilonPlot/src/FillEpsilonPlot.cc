@@ -1451,12 +1451,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
                 {
                 float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
                 Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
-                cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
+                // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
                 }
             else
                 {
                 Correct1 = forest_EB_1->GetResponse(value_pi01);
-                cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
+                // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
                 }
                }
 
