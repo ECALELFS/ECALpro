@@ -12,24 +12,24 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetOptFit(11111)
 
-#python MoltiplicateIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
+#python MultiplyIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
 #root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A_Iter9 IC_Plotted.root --SystErr FIT
 
-#python MoltiplicateIC_txt_root.py Original_IC/2015B_BON_dump_EcalIntercalibConstants__since_00251004_till_18446744073709551615.dat
+#python MultiplyIC_txt_root.py Original_IC/2015B_BON_dump_EcalIntercalibConstants__since_00251004_till_18446744073709551615.dat
 #root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015B_Multifit_01/iter_13/2015B_calibMap.root 2015B_CMSSW746_GTGR_P_V56_Iter13_Error
 #IC_Plotted.root --SystErr FIT
 
 def usage():
-    print "Usage: -----> python MoltiplicateIC_txt_root.py Ori_IC_TXT MY_IC_ROOT OutputFolder RootFile"
+    print "Usage: -----> python MultiplyIC_txt_root.py Ori_IC_TXT MY_IC_ROOT OutputFolder RootFile"
 
-def MoltiplicateICFromTXT():
+def MultiplyICFromTXT():
 #Read the IC in the txt file (they should be never zero) and I multiply them for my IC. If mine are 1, I moltiply them anyway.
     for iEB in range(len(IC_EB_1)):
         OricalibMap_EB.SetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]), float(IC_EB_1[iEB][2]) )
         OriCoef_EB.Fill( float(IC_EB_1[iEB][2]) )
         myIC = EBIC.GetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]) )
         if(float(myIC)==0.):
-            print "MoltiplicateICFromTXT::WARNING, my IC is Zero in EB"
+            print "MultiplyICFromTXT::WARNING, my IC is Zero in EB"
         if(float(myIC)==1. and float(IC_EB_1[iEB][2])!=1.):
             name = str(int(IC_EB_1[iEB][0]) + 86) + "_" + str(IC_EB_1[iEB][1])
             ListBadFromMe_EB.append(name)
@@ -41,7 +41,7 @@ def MoltiplicateICFromTXT():
             OriCoef_EEm.Fill( float(IC_EE_1[iEE][3]) )
             myIC = EEmIC.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
             if(float(myIC)==0.):
-                print "MoltiplicateICFromTXT::WARNING, my IC is Zero in EEm"
+                print "MultiplyICFromTXT::WARNING, my IC is Zero in EEm"
             if(float(myIC)==1. and float(IC_EE_1[iEE][3])!=1.):
                 name = str(IC_EE_1[iEE][0]) + "_" + str(IC_EE_1[iEE][1])
                 ListBadFromMe_EEm.append(name)
@@ -52,7 +52,7 @@ def MoltiplicateICFromTXT():
             OriCoef_EEp.Fill( float(IC_EE_1[iEE][3]) )
             myIC = EEpIC.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
             if(float(myIC)==0.):
-                print "MoltiplicateICFromTXT::WARNING, my IC is Zero in EEp"
+                print "MultiplyICFromTXT::WARNING, my IC is Zero in EEp"
             if(float(myIC)==1. and float(IC_EE_1[iEE][3])!=1.):
                 name = str(IC_EE_1[iEE][0]) + "_" + str(IC_EE_1[iEE][1])
                 ListBadFromMe_EEp.append(name)
@@ -402,7 +402,7 @@ def TEST_average():
             print "No Ring " + str(iRing)
 
 print "STARTING"
-Usage = """python MoltiplicateIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
+Usage = """python MultiplyIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
 root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A Absolute_IC.root
 --SystErr ITplus1"""
 
@@ -539,10 +539,10 @@ OriCoef_EEp           = TH1F("OriCoef_EEp","EEp IC from GT",100, 0.2, 1.8)
 NewcalibMap_Glob1_EEp = TH2F("NewcalibMap_Glob1_EEp", "Absolute EEp IC Globally to 1", 100,0.5,100.5,100,0.5,100.5)
 NewcalibMap_EtaR1_EEp = TH2F("NewcalibMap_EtaR1_EEp", "Absolute EEp IC EtaRing to 1", 100,0.5,100.5,100,0.5,100.5)
 
-#Moltiplicate IC
-print 'Executing MoltiplicateICFromTXT'
+#Multiply IC
+print 'Executing MultiplyICFromTXT'
 ListBadFromMe_EB=list(); ListBadFromMe_EEm=list(); ListBadFromMe_EEp=list();
-MoltiplicateICFromTXT()
+MultiplyICFromTXT()
 #Write txt
 print 'Executing WriteTXT1 for IC_fromECALpro.txt'
 name = OutputF + "/IC_fromECALpro.txt"
