@@ -76,7 +76,7 @@ for iters in range(nIterations):
         iters = int(sys.argv[2])
     if ( RunResub ):
         iters = iters + int(sys.argv[2])
-    if ( False and (not RunCRAB and not ONLYHADD and not ONLYFIT and not ONLYFINHADD) ):
+    if ( not RunCRAB and not ONLYHADD and not ONLYFIT and not ONLYFINHADD ):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         print "Submitting " + str(njobs) + " jobs"
         for ijob in range(njobs):
@@ -221,7 +221,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         Fhadd_cfg_f.close()
 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
-    if ( False and mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
+    if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
         print 'Now adding files...'
         Nlist = 0
         if not( RunCRAB ):
