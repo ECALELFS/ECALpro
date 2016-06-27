@@ -16,8 +16,8 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
-eosPath = '/store/caf/user/zhicaiz'
-#eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+#eosPath = '/store/caf/user/zhicaiz'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -66,7 +66,8 @@ queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cm
 queue            = 'cmscaf1nd'
 nIterations      = 1
 SubmitFurtherIterationsFromExisting = False
-if (SubmitFurtherIterationsFromExisting):
+startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
+if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p6fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
 #N files
 ijobmax          = 4                     # 5 number of files per job
