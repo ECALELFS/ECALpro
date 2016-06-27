@@ -223,6 +223,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
         print 'Now adding files...'
+        Nlist = 0
         if not( RunCRAB ):
            inputlist_v = inputlistbase_v[:]
            NrelJob = float(len(inputlist_v)) / float(ijobmax)
@@ -357,6 +358,45 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
                datalines = (checkJobs.communicate()[0]).splitlines()
         print 'Done with various hadd'
+
+        # Check if all the hadds are there and files are not empty
+        HaddRecoveryAttempt = 0
+        goodHadds = 0
+        while goodHadds < Nlist or HaddRecoveryAttempt > 10:
+            goodHadds = 0
+            for ih in range(Nlist):
+                eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
+                testHaddFile_s = myeoslsl + ' ' + eosFile
+                print "checking the presence and the sanity of hadded file: " + eosFile
+                testHaddFile = subprocess.Popen([testHaddFile_s], stdout=subprocess.PIPE, shell=True);
+                output = testHaddFile.communicate()[0]
+                print "output = ",output
+                fsize = int(output.split()[4]) if len(output)>0 else 0
+                if 'o such file' in output or fsize<1000:
+                    print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
+                    Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
+                    Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + "_recovery_" + str(HaddRecoveryAttempt) + ".log"
+                    Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
+                    print Hsubmit_s
+                    subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
+                    outJobs = subJobs.communicate()
+                    print outJobs
+                    time.sleep(1)
+                else: goodHadds += 1
+            
+            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            datalines = (checkJobs.communicate()[0]).splitlines()
+     
+            # Daemon cheking running jobs
+            print "Checking recovery of hadds..."
+            while len(datalines)>=num :
+               time.sleep(5)
+               checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+               datalines = (checkJobs.communicate()[0]).splitlines()
+     
+            HaddRecoveryAttempt += 1
+     
+            print 'Done with hadd recovery'
 
     if ( mode != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
         print 'Now The Final One...'
