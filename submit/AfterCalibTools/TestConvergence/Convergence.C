@@ -60,7 +60,7 @@ Int_t getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
   Int_t etaRing = -1;
 
-  string fileName = "../../Utilities/endcap_ix_iy_zside_ietaRing.dat";
+  string fileName = "endcap_ix_iy_zside_ietaRing.dat";
   ifstream inputFile(fileName.c_str());
 
   Int_t a,b,c,d;  // file format is --> a b c d                             
