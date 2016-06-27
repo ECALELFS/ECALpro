@@ -223,6 +223,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
         print 'Now adding files...'
+        Nlist = 0
         if not( RunCRAB ):
            inputlist_v = inputlistbase_v[:]
            NrelJob = float(len(inputlist_v)) / float(ijobmax)
@@ -363,7 +364,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         goodHadds = 0
         while goodHadds < Nlist or HaddRecoveryAttempt > 10:
             goodHadds = 0
-            for ih in range(nList):
+            for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
                 testHaddFile_s = myeoslsl + ' ' + eosFile
                 print "checking the presence and the sanity of hadded file: " + eosFile
@@ -372,7 +373,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                 print "output = ",output
                 fsize = int(output.split()[4]) if len(output)>0 else 0
                 if 'o such file' in output or fsize<1000:
-                    print "The file " + testHaddFile_s + " is not present, or empty. Redoing hadd..."
+                    print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
                     Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + "_recovery_" + str(HaddRecoveryAttempt) + ".log"
                     Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
