@@ -19,8 +19,8 @@ ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetOptFit(11111)
 
 def usage():
-    print "Usage: -----> python MoltiplicateIC_xml_txt.py pathXml pathTXT Output"
-# python MoltiplicateIC_xml_txt.py InputFile/EcalIntercalibConstants_GR10_H_V6.xml 2010/IC.txt 2010/ABSIC_ResidsualFree.root
+    print "Usage: -----> python MultiplyIC_xml_txt.py pathXml pathTXT Output"
+# python MultiplyIC_xml_txt.py InputFile/EcalIntercalibConstants_GR10_H_V6.xml 2010/IC.txt 2010/ABSIC_ResidsualFree.root
 def readCellId(node):
     ieta =-1
     iphi =-1
