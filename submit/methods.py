@@ -778,3 +778,53 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+
+
+
+def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10):
+    import os, sys, imp, re, ntpath
+    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
+    outputfile.write("#!/bin/bash\n")
+    outputfile.write("cd " + pwd + "\n")
+    outputfile.write("eval `scramv1 runtime -sh`\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    
+    fileWithList = open(listReduced,"r")
+    files = fileWithList.readlines()
+    idx=0
+    grouped_files = []
+    while len(files)>0:
+        filesToMerge = files[:grouping]
+        mergedfile_n = "/tmp/hadded_epsilon_"+str(idx)+".root"
+        outputfile.write("echo Copying files locally\n")
+        strippedFiles = []
+        for f in filesToMerge:
+            f = f.strip()
+            if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+                outputfile.write(myeosstage + "root://eoscms/eos/cms" + f + " /tmp \n")
+            elif "cmsStage -f" in myeosstage:
+                outputfile.write(myeosstage + f + " /tmp \n")        
+            else:
+                outputfile.write("cmsStage -f " + f + " /tmp \n")
+            strippedFiles.append(ntpath.basename(f))
+        outputfile.write("filesHadd=\"/tmp/" + " /tmp/".join(strippedFiles) + "\"\n")
+        outputfile.write("echo \"hadd -k " + mergedfile_n + " $filesHadd\"\n")
+        outputfile.write("hadd -k " + mergedfile_n + " $filesHadd\n")
+        outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n\n")
+
+        grouped_files.append(mergedfile_n)
+        idx += 1
+        files = files[grouping:]
+
+    outputfile.write("echo now hadding the intermediate hadded files: " + " ".join(grouped_files) + "\n")
+    outputfile.write("hadd -k /tmp/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
+
+    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
+        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+    else:
+        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
+    outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "hadded_epsilon*\n")
+
