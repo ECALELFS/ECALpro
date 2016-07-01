@@ -194,9 +194,9 @@ if __name__ == "__main__":
     parser = OptionParser(usage="%prog [options] tag1.txt tag2.txt")
     parser.add_option("-n","--name", dest="name",  type="string", default='', help="prefix to give to the figures")
     parser.add_option("--max-EB", dest="max_EB",  type="float", default=0.05, help="width of the z-axis for IC maps for barrel")
-    parser.add_option("--max-EE", dest="max_EE",  type="float", default=0.2, help="width of the z-axis for IC maps for endcaps")
+    parser.add_option("--max-EE", dest="max_EE",  type="float", default=0.5, help="width of the z-axis for IC maps for endcaps")
     parser.add_option("--max-err-EB", dest="max_err_EB",  type="float", default=0.005, help="width of the y-axis for IC 1D error profile for barrel")
-    parser.add_option("--max-err-EE", dest="max_err_EE",  type="float", default=0.03, help="width of the y-axis for IC 1D error profile for endcaps")
+    parser.add_option("--max-err-EE", dest="max_err_EE",  type="float", default=0.2, help="width of the y-axis for IC 1D error profile for endcaps")
 
     (options, args) = parser.parse_args()
     if len(args) < 1: raise RuntimeError, 'Expecting at least the tag txt file'
@@ -206,8 +206,8 @@ if __name__ == "__main__":
 
     icp = ICplotter(inputfile,name)
     icp.plotIC2D('EcalBarrel',options.max_EB,options.max_err_EB)
-    icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE)
     icp.plotIC2D('EcalEndcapMinus',options.max_EE,options.max_err_EE)
+    icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE)
 
     if len(args)==2:    
         comparefile = args[1]
