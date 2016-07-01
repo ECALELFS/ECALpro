@@ -342,8 +342,8 @@ def AverageEtaRing(hEB,hEEm,hEEp,name,EtaList,errorType,hEB_1=None,hEEm_1=None,h
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp[Ring],6)) + " 999. 0\n")
                     else:
                         index = str(ix+1) + "_" + str(iy+1) + "_1"
-                        StatError = StatEEList[index] * OricalibMap_EEm.GetBinContent(ix+1, iy+1)
-                        SystError = abs(IC - hEEm_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEm.GetBinContent(ix+1, iy+1) / IC_tmp[Ring] if hEEm_1 != None else 0
+                        StatError = StatEEList[index] * OricalibMap_EEp.GetBinContent(ix+1, iy+1)
+                        SystError = abs(IC - hEEp_1.GetBinContent( ix+1, iy+1 )) * OricalibMap_EEp.GetBinContent(ix+1, iy+1) / IC_tmp[Ring] if hEEp_1 != None else 0
                         outputfile.write( str(ix+1) + " " + str(iy+1) + " 1 " + str(round(IC/IC_tmp[Ring],6)) + " " + str(round(sqrt(StatError**2 + SystError**2),6)) + " " + str(round(StatError,6)) + " " + str(round(SystError,6)) + " " + str(round(Chi2EEList[index],6)) + "\n")
     outputfile.close()
     if( int(len(open(name).readlines())-1) != int(TotalIC)):
