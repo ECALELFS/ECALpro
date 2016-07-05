@@ -378,6 +378,9 @@ void Convergence( string Path_0, string Path, int nIter, string Tag, int nJump=1
 	      Conv->SetPoint(iterIndex, iter[iterIndex], EB_RMS_etaRing[iterIndex][k]);
 	    }	    
 	    Conv->Draw("ACP");
+	    Conv->GetXaxis()->SetTitle("Iteration");
+	    if(nJump==1) Conv->GetYaxis()->SetTitle("RMS(IC_n - IC_{n-1})");  // because X axis starts from 1, so we have RMS(IC_1 - IC_0) and so on 
+	    if(nJump==2) Conv->GetYaxis()->SetTitle("RMS(IC_n - IC_{n-2})");  // because X axis starts from 2, so we have RMS(IC_2 - IC_0) and so on
 	    if(isEB==0) out = "plot_" + Path + "/EB_IC_Convergence_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
 	    if(isEB==1) out = "plot_" + Path + "/EE_IC_Convergence_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
 	    myc1->SaveAs(out.Data());
