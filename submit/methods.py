@@ -122,6 +122,13 @@ def printFillCfg1( outputfile ):
             outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
             outputfile.write('     )\n')
             outputfile.write(')\n\n')
+        if not(intercalibTag==''):
+            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+            outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
+            outputfile.write("     tag = cms.string('" + intercalibTag + "'),\n")
+            outputfile.write("     connect = cms.string('" + intercalibDB + "')\n")
+            outputfile.write('     )\n')
+            outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')
