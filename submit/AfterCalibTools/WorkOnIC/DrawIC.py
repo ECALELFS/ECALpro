@@ -213,4 +213,6 @@ if __name__ == "__main__":
         comparefile = args[1]
         data2 = icp.loadICs(comparefile)
         icp.compareIC2D(data2,'EcalBarrel',options.max_EB)
+        icp.compareIC2D(data2,'EcalEndcapMinus',options.max_EE)
+        icp.compareIC2D(data2,'EcalEndcapPlus',options.max_EE)
 
