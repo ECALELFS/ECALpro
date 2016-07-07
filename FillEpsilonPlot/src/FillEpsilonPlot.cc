@@ -269,7 +269,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// retrieving calibration coefficients of the previous iteration
     if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
-    else if(currentIteration_ > 0)
+    else if(currentIteration_ > 0 || calibMapPath_.find("iter_-1")==std::string::npos)
     {
 	  char fileName[200];
 	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
