@@ -215,7 +215,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iters) + ".sh"
         Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
         if(fastHadd):
-            printFinalHaddFAST(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+            printFinalHaddRegroup(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         else:
             printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
@@ -362,7 +362,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         # Check if all the hadds are there and files are not empty
         HaddRecoveryAttempt = 0
         goodHadds = 0
-        while goodHadds < Nlist or HaddRecoveryAttempt > 10:
+        while goodHadds < Nlist and HaddRecoveryAttempt < 10:
             goodHadds = 0
             for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"

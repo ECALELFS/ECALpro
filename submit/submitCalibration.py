@@ -145,7 +145,7 @@ for iter in range(nIterations):
     Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iter) + ".sh"
     Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
     if(fastHadd):
-        printFinalHaddFAST(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+        printFinalHaddRegroup(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     else:
         printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     Fhadd_cfg_f.close()
