@@ -58,19 +58,19 @@ isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
 inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p07fb_RAW_purified.list'
-dirname          = 'AlcaP0_2016_json2p07fb_debug'
+dirname          = 'AlcaP0_2016_json2p07fb_debug_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2016_json2p07fb_debug_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016_json2p07fb_debug_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1
+nIterations      = 3
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
-   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p6fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
+   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p07fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
 #N files
-ijobmax          = 4                     # 5 number of files per job
+ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
