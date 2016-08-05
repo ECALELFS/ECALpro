@@ -41,8 +41,8 @@ done
 echo "Now launching executable ..."
 
 
-iter_ini=4  # first iteration to use
-iter_fin=4  # last iteration to use: it is included in sequence below
+iter_ini=6  # first iteration to use
+iter_fin=6  # last iteration to use: it is included in sequence below
 path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 dirName="AlcaP0_2016_json3p99fb_V2ext"                            # dirname (see CalibCode/submit/parameters.py)
 tagName="AlcaP0_2016_json3p99fb_V2ext_"                           # TagName (see CalibCode/submit/parameters.py) 
