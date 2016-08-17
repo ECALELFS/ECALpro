@@ -1,0 +1,49 @@
+================================================
+= Short guide for the usage of calibAna* codes =
+================================================
+
+This guide assumes the reader is familiar with inheritance in C++
+
+////////////////
+// INTRODUCTION
+
+The basic idea is to have a "base" class with the skeleton of the tree structure as obtained from MakeClass and to have derived classes (exploiting C++ inheritance) to do the real analysis. This allows to separate the code from the MakeClass output (tree structure is not supposed to change: in case it happens, all we need is to do a new MakeClass and make our derived class inheriting from it).
+
+At the end we have:
+1) calibAnaEcal_base.* : class obtained using MakeClass from a root file containing the trees structure.
+2) calibAnaEcal.*      : class implementing the real analysis on the trees
+
+At this point we actually added two separate classes inheriting from calibAnaEcal, one for EB and one for EE. They are called calibAnaEcalEB and calibAnaEcalEE. Inheritance allows us to treat the last two classe as calibAnaEcal (all methods and variables owned by calibAnaEcal are owned by calibAnaEcalEB and calibAnaEcalEE as well), with the important difference that they might have different implementation for some methods. 
+
+In a nut shell, (one of) the biggest advantage is that if there are common parts with the analysis on EB and EE, we can implement these parts just once in calibAnaEcal, while features specific to EB (EE) will be implemented in calibAnaEcalEB (calibAnaEcalEE). It also allows us to avoid filling the code with snippets like:
+if ("we are using EB") <do stuff for EB>; else if ("we are using EE") <do stuff for EE>; 
+
+////////////////
+// calibAnaEcal_base
+
+This is the output of MakeClass, with the only difference that, for variables specific to EB or EE, "fChain->SetBranchAddress(...)" in Init() method were removed, leaving only those common to both EB and EE. They are put in calibAnaEcalEB or calibAnaEcalEE in their Init() method.
+
+////////////////
+// calibAnaEcal
+
+setHistograms():
+This member function is used to create new histograms (declared as class'member functions). It also take care of filling the vector of histograms, used to store the histograms themselves and loop on them (for instance, to call in a loop the method to draw plots).
+
+setVerticalRangeInHisto():
+This method is used to set the range for the vertical axis (z for 2D maps and y for 1D histograms). For the maximum, the least between the user's choice and the default value is used.
+
+draw2Dmap():
+This method manages the drawing of the 2D maps
+
+drawProfile():
+As above but for profiles
+
+////////////////
+// calibAnaEcalEB or calibAnaEcalEE
+
+setHistograms():
+It calls calibAnaEcal::setHistograms() and adds the setting of the lower range for the histograms.
+
+set2DmapMaxZaxisVector():
+This method set the upper range for the histograms
+
