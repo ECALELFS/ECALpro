@@ -105,7 +105,6 @@ void calibAnaEE::Loop(string whichEE, string dirName, string iterNumber)
   TProfile *mean_etaRingProfile = new TProfile("mean_etaRingProfile","fit_mean profile in EE",40,0,40);
   TProfile *sigma_etaRingProfile = new TProfile("sigma_etaRingProfile","fit_sigma profile in EE",40,0,40);
 
-
   vector<TH2D*> th2dVector;
   th2dVector.push_back(hSignal);
   th2dVector.push_back(hBackground);
