@@ -153,12 +153,12 @@ void Convergence::run() {
     float hrange;
     int nbins;
     if(isEB==0){ // barrel
-      // divide EB in bins of |ieta|, from  0 up to 87 (max(ieta) = 86)
-      //First range will be [0,20) and so on (upper value excluded)
+      // divide EB in bins of |ieta|, from  0 up to 86 (max(ieta) = 85, so ieta=86 is not considered in the range)
+      //First range will be [1,20) and so on (upper value excluded)
       etaRingEdges.push_back(1);
-      etaRingEdges.push_back(21);
-      etaRingEdges.push_back(41);
-      etaRingEdges.push_back(61);
+      etaRingEdges.push_back(26);
+      etaRingEdges.push_back(46);
+      etaRingEdges.push_back(66);
       etaRingEdges.push_back(86);
       
       hmean=0.09; hrms=0.03; 
@@ -167,8 +167,8 @@ void Convergence::run() {
     } 
     else if (isEB==1){
       
-      // divide EE in bins of ietaRing, from 0 up to 37 (max(ietaRing index) = 36). 
-      //First range will be [0,9) and so on (upper value excluded) 
+      // divide EE in bins of ietaRing, from 0 up to 37 (max(ietaRing index) = 36, so etaRing=37 is not considered in the range). 
+      //First range will be [1,9) and so on (upper value excluded) 
       etaRingEdges.push_back(1);
       etaRingEdges.push_back(10);
       etaRingEdges.push_back(19);
