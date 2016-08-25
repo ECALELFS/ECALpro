@@ -17,7 +17,8 @@ At the end we have to classes and their respective source and header files:
 
 At this point we actually added two separate classes inheriting from calibAnaEcal, one for EB and one for EE. They are called calibAnaEcalEB and calibAnaEcalEE. 
 
-Thanks to inheritance, an object declared as calibAnaEcalEB is also considered a calibAnaEcal object:all methods and variables owned by calibAnaEcal are owned by calibAnaEcalEB and calibAnaEcalEE as well (unless they are declared as private members), with the important difference that they might have different implementation for some methods. 
+Thanks to inheritance, an object declared as calibAnaEcalEB is also considered a calibAnaEcal object:all methods and variables owned by calibAnaEcal are owned by calibAnaEcalEB and calibAnaEcalEE as well (unless they are declared as private members). 
+The base class and the derived one can have member functions with same name but different implementation: this is called function overriding.  
 
 In a nut shell, (one of) the biggest advantage is that if there are common parts with the analysis on EB and EE, we can implement these parts just once in calibAnaEcal, while features specific to EB (EE) will be implemented in calibAnaEcalEB (calibAnaEcalEE). It also allows us to avoid filling the code with snippets like:
 
