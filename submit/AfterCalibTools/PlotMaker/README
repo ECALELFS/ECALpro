@@ -1,15 +1,31 @@
+USER (VERY) SHORT GUIDE
+
+----------------------------------------------------------------
+
 First of all, use script makeDirWWW.sh to create directories in your cern website. There you will store plots.
 - Remember to change settings before launching the script (see comments inside)
 
-Then, you can use calibAna.sh: this script will compile calibAnaEB.C and calibAnaEE.C and then run the executables.
-- passing option -c as "source calibAna.sh -c" will only compile the macros.
-- in calibAna.sh you have to properly set parameters used to run the macros (see comments inside)
-- in both calibAnaEB.C and calibAnaEE.C, you have to change the variable 'wwwPath' which hold the path to the afs folder associated to your website.
-- you might find easier to gather these two macros in a single one and select EB or EE with an option or flag (work in progress, but feel free to implement it yourself)
-- also, notice that currently a TChain of root file is used to make plots. This TChain is made using *calibMap.root files on eos (31 for EB and 8 for EE). Since we also have the merged file, we could directly use that one instead of creating a TChain, but note that variables inside the ntuples in the merged file end with "_" (this is not true for the unmerged file used in the TChain, I don't know why) so you should change the name of trees'variables used if you want to run on the merged ntuples.
+----------------------------------------------------------------
 
-drawFits.C and drawICmap.C are similar to calibAnaE*.C macros: they can be used with the scripts drawFits.sh and drawICmap.sh
+To produce plots for EB and EE (both 2D maps ad profiles), you can use the code inside submit/AfterCalibTools/PlotMaker/2DmapMaker/ folder (inside you will find another README explaining the usage).
+
+Code inside 2DmapMaker/ substitutes the previous one, where the calibAna* macros in PlotMaker/ separately analyzed EB or EE. To avoid confusion, the new code is available inside 2DmapMaker/ , but the old code is not needed anymore and can be deleted (if you make a "fetch & merge" of the central repository, these old files should be automatically removed)
+
+To run the code you only need to use calibAna.sh: this script will compile source codes and then run the executable (produced after compiling main.cc).
+Launch as "source calibAna.sh [OPTIONS]"
+
+- passing option -c as "source calibAna.sh -c" will only compile the macros.
+- passing option -nc as "source calibAna.sh -nc" will skip compiling (to save time if not necessary, but currently it takes few seconds).
+- in calibAna.sh you have to properly set parameters used to run the macros (see comments inside). They will be passed to the executable
+     - one of this parameters is the 'wwwBasePath' variable with the path to your afs area where you want to store plots (the specific folder is given by the user and added to it afterwards)
+- notice that currently a TChain of root file is used to make plots. This TChain is made using *calibMap.root files on eos (31 for EB and 8 for EE). Since we also have  the merged file, we could directly use that one instead of creating a TChain, but note that variables inside the ntuples in the merged file end with "_" (this is not  true for the unmerged file used in the TChain, I don't know why) so you should change the name of trees'variables used if you want to run on the merged ntuples.
+
+----------------------------------------------------------------
+
+drawFits.C and drawICmap.C are macros used to draw some fits or the IC maps: they can be used with the scripts drawFits.sh and drawICmap.sh
 - again as already said above, there are some paths that you should change inside the macros to match your own folders, like 'storePath' in drawFits.C and wwwPath in drawICmap.C
+
+----------------------------------------------------------------
 
 GENERAL COMMENT:
 - One thing to be improved is the palette for the 2D maps. We could use a finer binning in the z axis, and also a different color scale (rainbow one?) than the default (which currently goes from blue to yellow)
