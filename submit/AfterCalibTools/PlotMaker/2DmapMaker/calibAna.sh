@@ -24,6 +24,7 @@ wwwBasePath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"   # base directo
 
 # list of source files to compile (except main) without extension (which is supposed to be .C in the following)
 sourceFileList=(calibAnaEcal_base calibAnaEcal calibAnaEcalEB calibAnaEcalEE)  
+mainSourceFile="main"
 
 ###############################################
 ###############################################
@@ -82,15 +83,15 @@ if [ "$doNotCompile" = false ]; then
     
 
     echo "Now linking ..."
-    sourceFile="main"
-    g++ -Wall -pedantic -lm -o ${sourceFile} ${sourceFile}.cc ${olist} `$ROOTSYS/bin/root-config --cflags --libs`
+
+    g++ -Wall -pedantic -lm -o ${mainSourceFile} ${mainSourceFile}.cc ${olist} `$ROOTSYS/bin/root-config --cflags --libs`
     if [ $? -ne 0 ]
     then
-	echo "Compiling ${sourceFile}.cc : failed!"
+	echo "Compiling ${mainSourceFile}.cc : failed!"
 	return 0
     fi
-    echo "Compiling ${sourceFile}.cc : success :)"
-    olist="${olist} ${sourceFile}.o"
+    echo "Compiling ${mainSourceFile}.cc : success :)"
+    olist="${olist} ${mainSourceFile}.o"
 
 else
     echo "Options -nc passed: not compiling"
@@ -118,16 +119,16 @@ do
     if [ "$skipEB" = false ]; then
 	echo  "iter_$i --> EB"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Barrel/"
-	./main $path $dirName $i $tagName EB $wwwPath
+	./$mainSourceFile $path $dirName $i $tagName EB $wwwPath
     fi
     if [ "$skipEEp" = false ]; then
 	echo  "iter_$i --> EE+"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Endcap/EEp/"
-	./main $path $dirName $i $tagName EEp $wwwPath
+	./$mainSourceFile $path $dirName $i $tagName EEp $wwwPath
     fi
     if [ "$skipEEm" = false ]; then
 	echo  "iter_$i --> EE-"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Endcap/EEm/"
-	./main $path $dirName $i $tagName EEm $wwwPath
+	./$mainSourceFile $path $dirName $i $tagName EEm $wwwPath
     fi
 done
