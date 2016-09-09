@@ -45,11 +45,11 @@ class calibAnaEcal : public calibAnaEcal_base {
   // # of bins, lower and upper edges for TH2D. Will be set differently in the derived class for EB and EE
   // X is iphi or iX, Y is ieta or iY
   Int_t NbinsX_2Dmap;
-  Int_t lowerX_2Dmap;
-  Int_t upperX_2Dmap;
+  Double_t lowerX_2Dmap;
+  Double_t upperX_2Dmap;
   Int_t NbinsY_2Dmap;
-  Int_t lowerY_2Dmap;
-  Int_t upperY_2Dmap;
+  Double_t lowerY_2Dmap;
+  Double_t upperY_2Dmap;
 
   // Profiles of 2D maps along eta (for EB) or eta ring (for EE)
   TProfile *hSignal_etaProfile;

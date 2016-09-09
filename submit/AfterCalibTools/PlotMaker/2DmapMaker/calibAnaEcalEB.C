@@ -35,12 +35,14 @@ calibAnaEcalEB::calibAnaEcalEB(TTree *tree) : calibAnaEcal(tree) {
   ////////////////////////////////                                                                                                                                     
   // public data members                    
 
+  // ieta and iphi are integer, but we create bins for histograms such that, e.g., the bin with (ieta = 2 ) goes from 1.5 to 2.5
+  // note that ieta!=0 and iphi!=0 --> 0 < |ieta| <= 85 and 0 < iphi <= 360 
   NbinsX_2Dmap = 360;
-  lowerX_2Dmap = 0;
-  upperX_2Dmap = 360;
+  lowerX_2Dmap = 0.5;
+  upperX_2Dmap = 360.5;
   NbinsY_2Dmap = 171;
-  lowerY_2Dmap = -85;
-  upperY_2Dmap = 86;
+  lowerY_2Dmap = -85.5;
+  upperY_2Dmap = 85.5;
 
   NbinsX_etaProfile = 170;
   lowerX_etaProfile = -1.48;

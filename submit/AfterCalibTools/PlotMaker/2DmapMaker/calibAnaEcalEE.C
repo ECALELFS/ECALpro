@@ -37,17 +37,20 @@ calibAnaEcalEE::calibAnaEcalEE(TTree *tree) : calibAnaEcal(tree) {
   ////////////////////////////////                                                                                                                                     
   // public data members                    
 
+  // iX and iY are integer, but we create bins for histograms such that, e.g., the bin with (iX = 2 ) goes from 1.5 to 2.5       
+  // note that 0 < iX <= 100, same for iY. 
+  // However, we make maps with 102 bins on both x and y axis so that there is a 1 bin white margin in the plots (this is just a style choice
   NbinsX_2Dmap = 102;
-  lowerX_2Dmap = 0;
-  upperX_2Dmap = 102;
+  lowerX_2Dmap = -0.5;
+  upperX_2Dmap = 101.5;
   NbinsY_2Dmap = 102;
-  lowerY_2Dmap = 0;
-  upperY_2Dmap = 102;
+  lowerY_2Dmap = -0.5;
+  upperY_2Dmap = 101.5;
 
   // using eta ring for EE
   NbinsX_etaProfile = 40;
-  lowerX_etaProfile = 0;
-  upperX_etaProfile = 40;
+  lowerX_etaProfile = 0.0;
+  upperX_etaProfile = 40.0;
 
   etaRing = -1;
 
