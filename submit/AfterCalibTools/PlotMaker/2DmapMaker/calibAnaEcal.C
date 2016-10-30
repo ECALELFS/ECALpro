@@ -99,6 +99,9 @@ void calibAnaEcal::setHistograms() {
 
 void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
 
+  gStyle->SetPalette(1, 0);  // raibow palette
+  gStyle->SetNumberContours(50); // default is 20
+
   string canvasName(hist2d->GetName());
   canvasName = "c_" + canvasName;
   TCanvas *c = new TCanvas(canvasName.c_str(),canvasName.c_str());
