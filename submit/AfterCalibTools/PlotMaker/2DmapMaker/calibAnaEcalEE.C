@@ -80,6 +80,9 @@ void calibAnaEcalEE::setHistograms() {
 
 void calibAnaEcalEE::set2DmapMaxZaxisVector() {
 
+  // method called after filling histograms. You can choose a value or use the default 
+  // for the latter case, assign a value hat you expect to be bigger than default
+
   th2dMaxZaxisVector.push_back(hSignal->GetBinContent(hSignal->GetMaximumBin()));
   th2dMaxZaxisVector.push_back(hBackground->GetBinContent(hBackground->GetMaximumBin()));
   th2dMaxZaxisVector.push_back(10e9);
@@ -109,6 +112,8 @@ void calibAnaEcalEE::drawProfile(TProfile *profile, const string& yAxisName) {
 //===============================================                                                                                                                      
 
 Int_t calibAnaEcalEE::getEtaRingFromIxIyZside(const Int_t &ix, const Int_t &iy, const Int_t &zside) {
+
+  // obsolete, now using TH2F to get the etaRing value given iX and iY
 
   Int_t thisEtaRing = -1;
 
@@ -168,6 +173,25 @@ void calibAnaEcalEE::Loop()
 
   setHistograms();
 
+  // open file with EE maps to get etaRing given iX and iY
+  // the file was created using convert_eerings_dat_to_TH2.C
+
+  string rootfileName = "eerings_modified.root"; 
+  TFile *rootFile = new TFile((rootfileName).c_str(),"READ");
+  if (!rootFile || !rootFile->IsOpen()) {
+    cout << "Error: file \"" << rootfileName << "\" was not opened." << endl;
+    exit(EXIT_FAILURE);
+  }
+  TH2F *hEE = NULL;
+  if (EBorEE == "EEp") hEE = (TH2F*) rootFile->Get("hEEp");
+  else hEE = (TH2F*) rootFile->Get("hEEm");
+  if (!hEE || hEE == NULL) {
+    cout << "Error: histogram not found in file ' " << rootfileName << "'. End of programme." << endl;
+    exit(EXIT_FAILURE);
+  } else {
+    hEE->SetDirectory(0); // to decouple it from the open file directory
+  }
+
   Long64_t nentries = fChain->GetEntriesFast();
 
   Long64_t nbytes = 0, nb = 0;
@@ -190,7 +214,11 @@ void calibAnaEcalEE::Loop()
       normalizedS = Signal * fit_Snorm;
       normalizedB = Backgr * fit_Bnorm;
 
-      etaRing = getEtaRingFromIxIyZside(ix,iy,zside);  // will return -1 if eta ring is not found for any reason 
+      //etaRing = getEtaRingFromIxIyZside(ix,iy,zside);  // will return -1 if eta ring is not found for any reason 
+
+      // warning, hEE is a TH2F, so it returns float, but etaRing in int, so add 0.5 to avoid bad truncation 
+      // E.g.: 12.0000 could be read as 11 because assignment of float to int does not round, but truncates
+      etaRing = 0.5 + hEE->GetBinContent(ix,iy);
 
       // to avoid that in 2D maps points below lower threshold in z axis are drawn white (as if they are empty), fill with the maximum between threshold and value     
       hSignal->Fill((Double_t)ix,(Double_t)iy,max(th2dMinZaxisVector[0],(Double_t)normalizedS));
