@@ -50,10 +50,17 @@
 using namespace std;
 using namespace RooFit;
 
-void createFits(string Barrel_or_Endcap = "Barrel", Int_t min_fitIndex = 0, Int_t max_fitIndex = 100, string path = "", string dirName = "", string iterNumber = "", string tagName = "") {
+void createFits(const string& Barrel_or_Endcap = "Barrel", 
+		const Int_t& min_fitIndex = 0, 
+		const Int_t& max_fitIndex = 100, 
+		const string& wwwPath = "", 
+		const string& eosPath = "", 
+		const string& dirName = "", 
+		const string& iterNumber = "", 
+		const string& tagName = "") {
 
-  string storePath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/" + iterNumber + "/fitResPlots/";
-  string filename = "root://eoscms//eos/cms" + path + dirName + "/" + iterNumber + "/" + tagName + Barrel_or_Endcap + "_fitRes.root";
+  string storePath = wwwPath + dirName + "/" + iterNumber + "/fitResPlots/";
+  string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + Barrel_or_Endcap + "_fitRes.root";
   storePath += (Barrel_or_Endcap + "/");
 
 
@@ -95,19 +102,21 @@ void createFits(string Barrel_or_Endcap = "Barrel", Int_t min_fitIndex = 0, Int_
 }
 
 
-void drawFits(string path, string dirName, string iterNumber, string tagName) {
+void drawFits(string wwwPath, string eosPath, string dirName, string iterNumber, string tagName) {
 
-  // string path = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/";
+  // examples of arguments
+  // string wwwPath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/";
+  // string eosPath = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/";
   // string dirName = "AlcaP0_fromRun273158_2016_v2";
   // string iterNumber = "iter_6";
   // string tagName = "AlcaP0_fromRun273158_2016_v2_";
 
   cout << "Producing fits for Barrel." << endl;
-  createFits("Barrel",48000,48500,path,dirName,iterNumber,tagName);
+  createFits("Barrel",48000,48500,wwwPath,path,dirName,iterNumber,tagName);
   cout << endl;
   cout << endl;
   cout << "Producing fits for Endcap." << endl;
-  createFits("Endcap",0,500,path,dirName,iterNumber,tagName);
+  createFits("Endcap",0,500,wwwPath, path,dirName,iterNumber,tagName);
   
 
 }

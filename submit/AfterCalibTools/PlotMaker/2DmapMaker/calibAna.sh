@@ -8,11 +8,11 @@
 ##############################################
 
 
-iter_ini=6                                                        # first iteration to use
-iter_fin=6                                                        # last iteration to use: it is included in sequence below
-path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
-dirName="AlcaP0_2016_json3p99fb_V2ext"                            # dirname (see CalibCode/submit/parameters.py)
-tagName="AlcaP0_2016_json3p99fb_V2ext_"                           # TagName (see CalibCode/submit/parameters.py) 
+iter_ini=3                                                        # first iteration to use
+iter_fin=3                                                        # last iteration to use: it is included in sequence below
+path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
+dirName="AlcaP0_2016_json3p99fb_weight"                            # dirname (see CalibCode/submit/parameters.py)
+tagName="AlcaP0_2016_json3p99fb_weight_"                           # TagName (see CalibCode/submit/parameters.py) 
 
 # iter_ini=0                                                          
 # iter_fin=7  # it is included in sequence below                                                                                                                      

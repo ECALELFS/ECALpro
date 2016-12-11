@@ -37,7 +37,11 @@
 
 using namespace std;
 
-void drawICmap(string eosPath, string dirName, string iterNumber, string tagName) {
+void drawICmap(const string& wwwPath = "",
+	       const string& eosPath = "", 
+	       const string& dirName = "", 
+	       const string& iterNumber = "", 
+	       const string& tagName = "") {
 
   string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
 
@@ -76,7 +80,7 @@ void drawICmap(string eosPath, string dirName, string iterNumber, string tagName
 
   }
 
-  string wwwPath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/" + iterNumber + "/2DMaps/";
+  string wwwAllPath = wwwPath + dirName + "/" + iterNumber + "/2DMaps/";
   string name = "";
   TPaletteAxis *palette = NULL;
 
@@ -99,7 +103,7 @@ void drawICmap(string eosPath, string dirName, string iterNumber, string tagName
   gPad->Modified();
   gPad->Update();
   // end of palette fixes                                                                                                                                             
-  name = wwwPath + "Barrel/IC_calibMapEB";
+  name = wwwAllPath + "Barrel/IC_calibMapEB";
   cEB->SaveAs((name + ".pdf").c_str());
   cEB->SaveAs((name + ".png").c_str());
 
@@ -122,7 +126,7 @@ void drawICmap(string eosPath, string dirName, string iterNumber, string tagName
   gPad->Modified();
   gPad->Update();
   // end of palette fixes                                    
-  name = wwwPath + "Endcap/EEp/IC_calibMapEEp";
+  name = wwwAllPath + "Endcap/EEp/IC_calibMapEEp";
   cEEp->SaveAs((name + ".pdf").c_str());
   cEEp->SaveAs((name + ".png").c_str());
 
@@ -145,7 +149,7 @@ void drawICmap(string eosPath, string dirName, string iterNumber, string tagName
   gPad->Modified();
   gPad->Update();
   // end of palette fixes                                    
-  name = wwwPath + "Endcap/EEm/IC_calibMapEEm";
+  name = wwwAllPath + "Endcap/EEm/IC_calibMapEEm";
   cEEm->SaveAs((name + ".pdf").c_str());
   cEEm->SaveAs((name + ".png").c_str());
 
