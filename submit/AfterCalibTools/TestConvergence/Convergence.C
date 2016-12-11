@@ -52,11 +52,6 @@ static const int MIN_IPHI = 1;
 
 //================================================
 
-// function used in Convergence()
-// given the file endcap_ix_iy_zside_ietaRing.dat, it takes ix, iy and zside and returns the corresponding etaRing index 
-
-// N.B.: this function is very slow !!! Will need to define a faster way, maybe save eta-Ring index in trees?
-
 class Convergence {
 
 public:
@@ -89,6 +84,11 @@ void Convergence::addExtension( string Path, int nIter, string Tag, int nJump) {
   nIters_.push_back(nIter);
   nJumps_.push_back(nJump);
 }
+
+// function used in Convergence()
+// given the file endcap_ix_iy_zside_ietaRing.dat, it takes ix, iy and zside and returns the corresponding etaRing index 
+
+// N.B.: this function is very slow !!! Will need to define a faster way, maybe save eta-Ring index in trees?
 
 Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
@@ -141,6 +141,36 @@ void Convergence::run() {
             << nIter << " iterations" << std::endl;
   
   for(int isEB=0; isEB<2; isEB++){
+
+    ////////////////////////////////////7
+    // open file with EE maps to get etaRing given iX and iY                                                                                                       
+    // the file was created using convert_eerings_dat_to_TH2.C                                                                                                       
+    // path of file is ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/PlotMaker/2DmapMaker/
+    // we are in ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/TestConvergence/
+    string rootfileName = "";
+    TFile *rootFile = NULL;
+    TH2F *hEEplus = NULL;  // will point to the histogram for EE+ 
+    TH2F *hEEminus = NULL;  // will point to the histogram for EE- 
+    if (isEB == 1) { 
+      rootfileName = "./../PlotMaker/2DmapMaker/eerings_modified.root";
+      rootFile = new TFile((rootfileName).c_str(),"READ");
+      if (!rootFile || !rootFile->IsOpen()) {
+	cout << "Error: file \"" << rootfileName << "\" was not opened." << endl;
+	exit(EXIT_FAILURE);
+      }
+      // now read proper histogram in file to get EE+ or EE-
+      hEEplus = (TH2F*) rootFile->Get("hEEp");
+      hEEminus = (TH2F*) rootFile->Get("hEEm");
+      if (!hEEplus || hEEplus == NULL || !hEEminus || hEEminus == NULL) {
+	cout << "Error: histogram not found in file ' " << rootfileName << "'. End of programme." << endl;
+	exit(EXIT_FAILURE);
+      } else {
+	hEEplus->SetDirectory(0); // to decouple it from the open file directory                                                                          
+	hEEminus->SetDirectory(0); // to decouple it from the open file directory                                                                          
+      }
+    }
+      
+    //////////////////////////////
 
     etaRingEdges.clear();  // erase all elements, as if it was created here (will be filled differently for EB and EE)
     
@@ -290,7 +320,13 @@ void Convergence::run() {
                   binFound = 1; // get out of loop when bin is found
                 }
               } else if (isEB == 1) {
-                Int_t etaRing = getEtaRingInEE(ix,iy,iz);  // this function is very slow!!!
+
+		Int_t etaRing = -999;
+		// warning, hEEplus(minus) is a TH2F, so it returns float, but etaRing in int, so add 0.5 to avoid bad truncation                     
+		// E.g.: 12.0000 could be read as 11 because assignment of float to int does not round, but truncates                                          
+		if (iz > 0) etaRing = 0.5 + hEEplus->GetBinContent(ix,iy);
+		else        etaRing = 0.5 + hEEminus->GetBinContent(ix,iy);
+                //Int_t etaRing = getEtaRingInEE(ix,iy,iz);  // this function is very slow!!!
                 if (etaRing >= etaRingEdges[binIndex] && etaRing < etaRingEdges[binIndex+1]) {
                   h_etaRing[binIndex]->Fill((coeff1-coeff));
                   binFound = 1; // get out of loop when bin is found
@@ -401,7 +437,12 @@ void Convergence::run() {
       myc1->SaveAs(out.Data());
     }
     
+    rootFile->Close;
+    delete rootFile;
+    delete hEEplus; 
+    delete hEEminus;
     
+  
   }
   output->cd();
   rms_EB->Write();
