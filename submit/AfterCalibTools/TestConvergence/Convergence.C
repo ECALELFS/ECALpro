@@ -37,18 +37,29 @@
 #include "TGraph.h"
 #include "TCanvas.h"
 #include "TStyle.h"
+#include "TPaveStats.h"
 
-using std::cout;
-using std::endl;
-using std::vector;
-using std::string;
-using std::map;
-using std::pair;
-using std::stringstream;
+// using std::cout;
+// using std::endl;
+// using std::vector;
+// using std::string;
+// using std::map;
+// using std::pair;
+// using std::stringstream;
+
+using namespace std;
+
 static const int MAX_IETA = 85;
 static const int MAX_IPHI = 360;
 static const int MIN_IETA = 1;
 static const int MIN_IPHI = 1;
+
+
+// use as :
+//$ root -l
+//[0] .L Convergence.C+
+//[1] Convergence *conv = new Convergence(...)
+//[2] conv->run()
 
 //================================================
 
@@ -85,10 +96,11 @@ void Convergence::addExtension( string Path, int nIter, string Tag, int nJump) {
   nJumps_.push_back(nJump);
 }
 
-// function used in Convergence()
+// function used in Convergence::run() (not anymore)
 // given the file endcap_ix_iy_zside_ietaRing.dat, it takes ix, iy and zside and returns the corresponding etaRing index 
 
 // N.B.: this function is very slow !!! Will need to define a faster way, maybe save eta-Ring index in trees?
+// Now it is not used anymore
 
 Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
@@ -118,23 +130,21 @@ Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 }
 
 //=================================================
-
-//5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
-//Usage: .x Convergence.C+("/store/group/dpg_ecal/alca_ecalcalib/lpernie/","ALL_2015B_Multifit_01",13,"2015B_")
+ 
 void Convergence::run() {
 
   system( (string("mkdir -p plot_") + Paths_[0] ).c_str());
-  TCanvas* myc1 = new TCanvas("myc1", "CMS", 600, 600);
+  TCanvas* myc1 = new TCanvas("myc1", "CMS", 700, 700);
   TString outname = "plot_" + Paths_[0] + "/Differences.root";
   TFile* output = new TFile(outname.Data(),"RECREATE");
-  TH2F* rms_EB  = new TH2F("rms_EB","IC(n)-IC(n-1) #phi on x #eta on y",MAX_IPHI, MIN_IPHI, MAX_IPHI, 2*MAX_IETA+1, -MAX_IETA-0.5, MAX_IETA+0.5 );
+  TH2F* rms_EB  = new TH2F("rms_EB","IC(n)-IC(n-1) #phi on x #eta on y",MAX_IPHI, MIN_IPHI-0.5, MAX_IPHI+0.5, 2*MAX_IETA+1, -MAX_IETA-0.5, MAX_IETA+0.5 );
   TH2F* rms_EEp = new TH2F("rms_EEp","IC(n)-IC(n-1) iX on x iY on y (EEp)",100,0.5,100.5,100,0.5,100.5);
   TH2F* rms_EEm = new TH2F("rms_EEm","IC(n)-IC(n-1) iY on x iY on y (EEm)",100,0.5,100.5,100,0.5,100.5);
 
   vector<Int_t> etaRingEdges;  
 
-  int nIter = -1; // lookig at differences: steps are N-1
-  for(int c=0; c<(int)Paths_.size(); ++c) nIter += nIters_[c];
+  Int_t nIter = -1; // lookig at differences: steps are N-1
+  for(Int_t c=0; c<(Int_t)Paths_.size(); ++c) nIter += nIters_[c];
 
   std::cout << "====> Test of the convergence of the calibrations. <====" << std::endl
             << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
@@ -142,7 +152,15 @@ void Convergence::run() {
   
   for(int isEB=0; isEB<2; isEB++){
 
-    ////////////////////////////////////7
+    // if (isEB > 0) {
+    //   cout << "//////////////////////////////" << endl;
+    //   cout << "//////////////////////////////" << endl;
+    //   cout << "Starting EE" << endl;
+    //   cout << "//////////////////////////////" << endl;
+    //   cout << "//////////////////////////////" << endl;
+    // }
+
+    ////////////////////////////////////
     // open file with EE maps to get etaRing given iX and iY                                                                                                       
     // the file was created using convert_eerings_dat_to_TH2.C                                                                                                       
     // path of file is ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/PlotMaker/2DmapMaker/
@@ -179,7 +197,7 @@ void Convergence::run() {
     float *iter= NULL;
     iter = new float[nIter];
     
-    float hmean(0.), hrms(0.01), sigma_plot(0);
+    //float hmean(0.), hrms(0.01), sigma_plot(0);
     float hrange;
     int nbins;
     if(isEB==0){ // barrel
@@ -191,7 +209,7 @@ void Convergence::run() {
       etaRingEdges.push_back(66);
       etaRingEdges.push_back(86);
       
-      hmean=0.09; hrms=0.03; 
+      //hmean=0.09; hrms=0.03; 
       hrange = 0.05;
       nbins = 200;
     } 
@@ -212,11 +230,13 @@ void Convergence::run() {
     Int_t n_hbinned;
     // Note: n edges --> n-1 bins
     n_hbinned = etaRingEdges.size() -1;		
-    Float_t EB_RMS_etaRing[nIter][n_hbinned];
-    
-    int PrevChunkConsidered = false;
-    int iterOffset = 0;
-    for(int iChunk=0; iChunk<(int)Paths_.size(); ++iChunk) {
+    //Float_t EB_RMS_etaRing[nIter][n_hbinned];
+    vector< vector<Float_t> > EB_RMS_etaRing(nIter,vector<Float_t> (n_hbinned));     
+
+    Int_t PrevChunkConsidered = false;
+    Int_t iterOffset = 0;
+
+    for(Int_t iChunk=0; iChunk<(Int_t)Paths_.size(); ++iChunk) {
 
       std::cout << "Running chunk " << iChunk << " iteration offset = " << iterOffset << std::endl;
 
@@ -272,13 +292,11 @@ void Convergence::run() {
         Tree1->SetBranchAddress( "coeff_", &coeff1);
         Tree->SetBranchAddress( "Ndof_", &Ndof);
         Tree1->SetBranchAddress( "Ndof_", &Ndof1);
-        Tree->SetBranchAddress( "Ndof_", &Ndof);
-        Tree1->SetBranchAddress( "Ndof_", &Ndof1);
+
         if(isEB==0){
           Tree1->SetBranchAddress( "ieta_", &ieta);
           Tree1->SetBranchAddress( "iphi_", &iphi);
-        }
-        if(isEB==1){
+        } else if(isEB==1){
           Tree1->SetBranchAddress( "ix_", &ix);
           Tree1->SetBranchAddress( "iy_", &iy);
           Tree1->SetBranchAddress( "zside_", &iz);
@@ -288,10 +306,13 @@ void Convergence::run() {
         string hXaxisName = "IC_{" + IterTot1 + "}-IC_{" + IterTot + "}";  // e.g. IC_{1}-IC_{0} if nJump==1, or IC_{2}-IC_{0} if nJump==2...
         
         //TH1F *h1; h1 =new TH1F("h1","",1000,hmean-9*hrms,hmean+9*hrms);
-        TH1F *h1; h1 =new TH1F("h1","",nbins,-1*hrange,hrange);
+        TH1F *h1; 
+	if (isEB == 0) h1 = new TH1F("h1","EB",nbins,-1*hrange,hrange);
+	else           h1 = new TH1F("h1","EE",nbins,-1*hrange,hrange);
         h1->GetXaxis()->SetTitle(hXaxisName.c_str());
-        
-        TH1F *h_etaRing[n_hbinned];
+	
+
+        vector<TH1F *> h_etaRing(n_hbinned);
         
         for (Int_t k = 0; k < n_hbinned; k++) {
           // create histograms and set title in printf() style using Form()
@@ -301,6 +322,9 @@ void Convergence::run() {
         
         //Loop
         Long64_t nentries = Tree->GetEntriesFast();
+	// cout << "============================" << endl;
+	// cout << nentries << endl;
+	// cout << "============================" << endl;
         for(Long64_t iEntry=0; iEntry<nentries; iEntry++){
           
           Tree->GetEntry(iEntry);
@@ -322,7 +346,7 @@ void Convergence::run() {
               } else if (isEB == 1) {
 
 		Int_t etaRing = -999;
-		// warning, hEEplus(minus) is a TH2F, so it returns float, but etaRing in int, so add 0.5 to avoid bad truncation                     
+		// warning, hEEplus(minus) is a TH2F, so it returns float, but etaRing is int, so add 0.5 to avoid bad truncation                     
 		// E.g.: 12.0000 could be read as 11 because assignment of float to int does not round, but truncates                                          
 		if (iz > 0) etaRing = 0.5 + hEEplus->GetBinContent(ix,iy);
 		else        etaRing = 0.5 + hEEminus->GetBinContent(ix,iy);
@@ -342,23 +366,33 @@ void Convergence::run() {
               rms_EB->SetBinContent(iphi, ieta+86., fabs(coeff1-coeff)/coeff1);
             }
             if(isEB==1){
-              if(iz==1){    
-                rms_EEp->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
-              }
-              else if(iz==-1)rms_EEm->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
-              else cout<<"WARNING!!! zside_ not -1 or 1"<<endl;
+              if(iz==1)       rms_EEp->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
+              else if(iz==-1) rms_EEm->SetBinContent(ix, iy, fabs(coeff1-coeff)/coeff1);
+              else            cout<<"WARNING!!! zside_ not -1 or 1"<<endl;
             }
           }
           
         }
+
         gStyle->SetOptStat(111111);
         TString out;
-        h1->Draw();
-        if(isEB==0) out = "plot_" + Paths_[0] + "/EB_Iter_" + IterTot + ".png";
-        else if(isEB==1) out = "plot_" + Paths_[0] + "/EE_Iter_" + IterTot + ".png";
+        //h1->Draw();
+        if(isEB==0)      out = "plot_" + Paths_[0] + "/EB_Iter_" + IterTot1;
+        else if(isEB==1) out = "plot_" + Paths_[0] + "/EE_Iter_" + IterTot1;
         
         h1->Draw("hist");
-        
+	myc1->Update();
+	TPaveStats *stat = (TPaveStats*)(h1->FindObject("stats"));
+	if(stat) {
+	  // stat->SetTextColor(kBlue);
+	  // stat1->SetTextColor(kGreen);
+	  Float_t width = stat->GetX2NDC() - stat->GetX1NDC();
+	  // make stat box bigger
+	  stat->SetX1NDC(stat->GetX1NDC() - 0.5 * width);     
+	  stat->SetY1NDC(stat->GetY2NDC() - 1.5 * (stat->GetY2NDC() - stat->GetY1NDC()));
+	  stat->Draw();
+	}        
+
         // TLatex lat;
         // char line[300];
         // lat.SetNDC();
@@ -368,11 +402,12 @@ void Convergence::run() {
         // float xmin(0.55), yhi(0.80);// ypass(0.05);
         // lat.DrawLatex(xmin,yhi, line);
         
-        myc1->SaveAs(out.Data());
+        myc1->SaveAs((out + ".pdf").Data());
+        myc1->SaveAs((out + ".png").Data());
 
-        hmean=h1->GetMean();
-        EB_RMS[i+iterOffset]=h1->GetRMS();
-        iter[i+iterOffset]=i+iterOffset+1;
+        //hmean=h1->GetMean();
+        EB_RMS[i+iterOffset] = h1->GetRMS();
+        iter[i+iterOffset] = i + iterOffset + 1;
 
         for (Int_t k = 0; k < n_hbinned; k++) {
           
@@ -385,19 +420,34 @@ void Convergence::run() {
           string etaRingLow = ssLow.str();
           string etaRingUp = ssUp.str();
 
-          if(isEB==0) out = "plot_" + Paths_[0] + "/EB_Iter_" + IterTot + "_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
-          else if(isEB==1) out = "plot_" + Paths_[0] + "/EE_Iter_" + IterTot + "_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
+          if(isEB==0)      out = "plot_" + Paths_[0] + "/EB_Iter_" + IterTot1 + "_etaRing" + etaRingLow + "To" + etaRingUp;
+          else if(isEB==1) out = "plot_" + Paths_[0] + "/EE_Iter_" + IterTot1 + "_etaRing" + etaRingLow + "To" + etaRingUp;
           h_etaRing[k]->Draw("hist");
-          myc1->SaveAs(out.Data());
+	  myc1->Update();
+	  stat = (TPaveStats*)(h_etaRing[k]->FindObject("stats"));
+	  if(stat) {
+	    // stat->SetTextColor(kBlue);
+	    // stat1->SetTextColor(kGreen);
+	    Float_t width = stat->GetX2NDC() - stat->GetX1NDC();
+	    // make stat box bigger
+	    stat->SetX1NDC(stat->GetX1NDC() - 0.5 * width);     
+	    stat->SetY1NDC(stat->GetY2NDC() - 1.5 * (stat->GetY2NDC() - stat->GetY1NDC()));
+	    stat->Draw();
+	  }        
+          myc1->SaveAs((out + ".pdf").Data());
+          myc1->SaveAs((out + ".png").Data());
           
           delete h_etaRing[k];  // delete histogram before new iteration starts
           
         }        
       }
+
       iterOffset += (nIters_[iChunk]-1);
+    
     }
 
     TGraph *Conv = new TGraph(nIter, iter, EB_RMS);
+    gPad->SetLeftMargin(0.18); //18 per cent of pad for left margin, default is 10%
     Conv->SetLineColor(2);
     Conv->SetLineWidth(1);
     Conv->SetMarkerColor(2);
@@ -409,8 +459,9 @@ void Convergence::run() {
     //Conv->GetYaxis()->SetOffset(1.);
     //if(nJump==1) Conv->GetYaxis()->SetTitle("RMS(ICn+1 - IC)");
     //if(nJump==2) Conv->GetYaxis()->SetTitle("RMS(ICn+2 - IC)");
-    if(nJumps_[0]==1) Conv->GetYaxis()->SetTitle("RMS(IC_n - IC_{n-1})");  // because X axis starts from 1, so we have RMS(IC_1 - IC_0) and so on 
-    if(nJumps_[0]==2) Conv->GetYaxis()->SetTitle("RMS(IC_n - IC_{n-2})");  // because X axis starts from 2, so we have RMS(IC_2 - IC_0) and so on
+    if(nJumps_[0]==1) Conv->GetYaxis()->SetTitle("RMS[ IC(n) - IC(n-1) ]");  // because X axis starts from 1, so we have RMS(IC_1 - IC_0) and so on 
+    if(nJumps_[0]==2) Conv->GetYaxis()->SetTitle("RMS[ IC(n) - IC(n-2) ]");  // because X axis starts from 2, so we have RMS(IC_2 - IC_0) and so on
+    Conv->GetYaxis()->SetTitleOffset(2.1); 
     Conv->Draw("ACP");
     myc1->cd();
     TString out;
@@ -427,27 +478,85 @@ void Convergence::run() {
       ssUp<<(etaRingEdges[k+1]-1);  // if edges are 1, 10, 19 ... we want first bin from 1 to 9 (included), then from 10 to 18 (included) and so on
       string etaRingLow = ssLow.str();
       string etaRingUp = ssUp.str();
+
+      gPad->SetLeftMargin(0.18); //18 per cent of pad for left margin, default is 10%
+      
+      if(isEB==0) Conv->SetTitle(Form("EB: IC Convergence, #eta-ring %d to %d",etaRingEdges[k],etaRingEdges[k+1]-1));
+      else        Conv->SetTitle(Form("EE: IC Convergence, #eta-ring %d to %d",etaRingEdges[k],etaRingEdges[k+1]-1));
       
       for (Int_t iterIndex = 0; iterIndex < nIter; iterIndex++) {
         Conv->SetPoint(iterIndex, iter[iterIndex], EB_RMS_etaRing[iterIndex][k]);
       }	    
+      Conv->GetXaxis()->SetTitle("Iteration");
+      if(nJumps_[0]==1) Conv->GetYaxis()->SetTitle("RMS[ IC(n) - IC(n-1) ]");  // because X axis starts from 1, so we have RMS(IC_1 - IC_0) and so on 
+      if(nJumps_[0]==2) Conv->GetYaxis()->SetTitle("RMS[ IC(n) - IC(n-2) ]");  // because X axis starts from 2, so we have RMS(IC_2 - IC_0) and so on
+      Conv->GetYaxis()->SetTitleOffset(2.1); 
       Conv->Draw("ACP");
       if(isEB==0) out = "plot_" + Paths_[0] + "/EB_IC_Convergence_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
       if(isEB==1) out = "plot_" + Paths_[0] + "/EE_IC_Convergence_etaRing" + etaRingLow + "To" + etaRingUp + ".png";
       myc1->SaveAs(out.Data());
     }
     
-    rootFile->Close;
-    delete rootFile;
-    delete hEEplus; 
-    delete hEEminus;
-    
+    //cout << "check" << endl; 
+
+    if (isEB > 0) {
+      rootFile->Close();
+      delete rootFile;
+      delete hEEplus; 
+      delete hEEminus;
+    }
   
   }
+
   output->cd();
   rms_EB->Write();
   rms_EEp->Write();
   rms_EEm->Write();
   output->Close();
     
+}
+
+
+
+Int_t main(int argc, char* argv[]) {
+
+  // iter_num is the number of iterations, so if you have iter_0, ..., iter_4 then iter_num = 5
+
+  string eosPath(argv[1]);
+  //eosPath = "root://eoscms//eos/cms" + eosPath;
+  string dirName(argv[2]);
+  Int_t iter_num = atoi(argv[3]);
+  string tagName(argv[4]);
+  Int_t nJump = atoi(argv[5]);
+  string extension(argv[6]);
+
+  TString *extension_tstring = NULL;
+
+  string extDirName = "";
+  Int_t ext_iter_num = -1;
+  string ext_tagName = "";
+
+  if (extension != "noExtension") {
+    // Tokenize using TString
+    extension_tstring = new TString(extension.c_str());
+    TObjArray* array = extension_tstring->Tokenize(",");
+    extDirName   = string( (((TObjString *) array->At(0))->String()).Data() );
+    ext_iter_num =         (((TObjString *) array->At(1))->String()).Atoi()  ;
+    ext_tagName  = string( (((TObjString *) array->At(2))->String()).Data() );
+  }
+
+
+  Convergence *conv = new Convergence(eosPath, dirName, iter_num, tagName, nJump);
+  if (extension != "noExtension") {
+    conv->addExtension(extDirName, ext_iter_num, ext_tagName, nJump);
+    cout << "extension used:" << endl;
+    cout << extDirName << endl;
+    cout << ext_iter_num << endl;
+    cout << ext_tagName << endl;
+  }
+
+  conv->run();
+
+  return 0;
+
 }

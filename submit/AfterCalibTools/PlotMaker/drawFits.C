@@ -63,7 +63,6 @@ void createFits(const string& Barrel_or_Endcap = "Barrel",
   string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + Barrel_or_Endcap + "_fitRes.root";
   storePath += (Barrel_or_Endcap + "/");
 
-
   string rooplotbasename = "Fit_n_";
 
   TFile* f = TFile::Open(filename.c_str(),"READ");

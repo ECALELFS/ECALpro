@@ -33,11 +33,14 @@ Launch as "source calibAna.sh [OPTIONS]"
 
 ----------------------------------------------------------------
 
-
-
 drawFits.C and drawICmap.C are macros used to draw some fits or the IC maps: they can be used with the scripts drawFits.sh and drawICmap.sh
 - All the settings are made in the .sh scripts
+
+--> DrawFits.C
+
 - drawFits lets you choose how many fits you want to draw (no need to draw fits for all crystals if you just want to see how they look like): for the moment this is specified in the .C macro, and makes use of the fit index. This index identifies the crystals using a (still unknown to me) convention in ECALpro. Note that here you are just drawing fits on canvases, but the fits themselves are already stored on eos (ECALpro saves them in the *_fitRes.root files)   
+- The .sh script will first merge the *fitRes.root files on eos for Barrel and Endcap (keeping them separate). ECALpro does not do it automatically (unless we modify it). It is thus convenient to do it ourselves just for the iteration we need.
+- the merging is quite slow, so we suggest doing it only for the iterations you need.
 
 ----------------------------------------------------------------
 
