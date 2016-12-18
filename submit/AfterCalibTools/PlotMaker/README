@@ -1,5 +1,16 @@
 USER (VERY) SHORT GUIDE
 
+Here we describe the macros and how to use them.
+
+In general, these ROOT macros are .C files supported by .sh scripts to compile or simply use them. Typically the .sh script is used to set some options passed to the macros. These options generally includes:
+- path to eos, where outputs of ECALpro are stored
+- path to your cern website, where you would store the plots you make (of course you have to make sure you have such a website to see plots from the browser, otherwise you can just store them in local)
+- dirName and tagName, which are the same defined in parameters.py
+- the first and last number of iterations you want to use to produce plots (if you do n iterations with ECALpro, you might want to see plots only for the last two, or only for the first one) 
+- other options will be described in the scripts themselves
+
+In the following, there is a more detailed guide for the macros/scripts
+
 ----------------------------------------------------------------
 
 First of all, use script makeDirWWW.sh to create directories in your cern website. There you will store plots.
@@ -22,12 +33,14 @@ Launch as "source calibAna.sh [OPTIONS]"
 
 ----------------------------------------------------------------
 
+
+
 drawFits.C and drawICmap.C are macros used to draw some fits or the IC maps: they can be used with the scripts drawFits.sh and drawICmap.sh
-- again as already said above, there are some paths that you should change inside the macros to match your own folders, like 'storePath' in drawFits.C and wwwPath in drawICmap.C
+- All the settings are made in the .sh scripts
+- drawFits lets you choose how many fits you want to draw (no need to draw fits for all crystals if you just want to see how they look like): for the moment this is specified in the .C macro, and makes use of the fit index. This index identifies the crystals using a (still unknown to me) convention in ECALpro. Note that here you are just drawing fits on canvases, but the fits themselves are already stored on eos (ECALpro saves them in the *_fitRes.root files)   
 
 ----------------------------------------------------------------
 
 GENERAL COMMENT:
-- One thing to be improved is the palette for the 2D maps. We could use a finer binning in the z axis, and also a different color scale (rainbow one?) than the default (which currently goes from blue to yellow)
 
 Feel free to modify and make this macros better ;-)
