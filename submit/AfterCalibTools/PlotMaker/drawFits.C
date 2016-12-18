@@ -112,11 +112,11 @@ void drawFits(string wwwPath, string eosPath, string dirName, string iterNumber,
   // string tagName = "AlcaP0_fromRun273158_2016_v2_";
 
   cout << "Producing fits for Barrel." << endl;
-  createFits("Barrel",48000,48500,wwwPath,path,dirName,iterNumber,tagName);
+  createFits("Barrel",48300,48350,wwwPath,eosPath,dirName,iterNumber,tagName);
   cout << endl;
   cout << endl;
   cout << "Producing fits for Endcap." << endl;
-  createFits("Endcap",0,500,wwwPath, path,dirName,iterNumber,tagName);
+  createFits("Endcap",400,450,wwwPath,eosPath,dirName,iterNumber,tagName);
   
 
 }
