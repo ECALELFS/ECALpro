@@ -1,0 +1,30 @@
+Here we explain how to use the macro for the convergence test
+
+The macro is Convergence.C and can be used with the Convergence.sh script. 
+
+Otherwise, you can simply use the ROOT prompt. Convergence.C defines a C++ class named Convergence with a constructor . Once it is ready, just use run() method.
+
+If you use the .sh script, you have to:
+
+1) Set parameters as in all other macros (path to EOS, dirName, ...)
+2) Something new is nJump, which says that you want to do IC(n)-IC(n-nJump). Typically it will be 1, but at the moment nJump=2 is also supported
+3) extension: if you run n iterations, this is not needed and you can leave it as "noExtension"; if you run more sets of ICs, and each of them started from an existing one (we have this possibility now, see CalibCode/submit/parameters.py), then you can add extensions (only one extension is allowed for now). See below for further details.
+
+
+------------------
+------------------
+Using extensions:
+------------------
+
+Suppose you have an extension you want to add. Those additional iterations will have their own dirName, tagName parameters and so on. Lets's call them "dirName_ext" and "tagName_ext" and let's assume you made 4 more iterations (iter_0 up to iter_3). Then you have to set extension with the following convention:
+
+extension="dirName_ext,4,tagName_ext"
+
+
+================================
+-->  WARNING
+================================
+
+At the moment the macro produces strange results when extensions are used. In the graph showing the convergence, the line starts going down, but when the points for the extension begin the curve rises up. This seems to be actually related to the ICs produced with the extensions. Indeed, if you just use the additional iterations as a set of independent ICs and do the Convergence test only with them, you will see that the points have the same y values as in the extended convergence plot.
+
+Until it is not understood, it is safer to have just one set of ICs.
