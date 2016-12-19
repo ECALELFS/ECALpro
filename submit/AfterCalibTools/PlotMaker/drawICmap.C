@@ -43,6 +43,9 @@ void drawICmap(const string& wwwPath = "",
 	       const string& iterNumber = "", 
 	       const string& tagName = "") {
 
+  gStyle->SetPalette(1, 0);  // raibow palette                                                
+  gStyle->SetNumberContours(50); // default is 20 
+
   string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
 
   TFile* f = TFile::Open(filename.c_str(),"READ");
