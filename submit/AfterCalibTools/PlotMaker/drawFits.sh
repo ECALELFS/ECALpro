@@ -30,10 +30,11 @@ do
 	done
 
 	echo "Going to merge files on EOS ..."	
-	return 0
+	echo "... for barrel ..."
 	mergedFile="${tagName}Barrel_fitRes.root"
 	hadd -f $mergedFile $barrel_list
 	eos cp $mergedFile ${eosPrefix}${eosPath}${dirName}/iter_${i}/
+	echo "... and now for endcap ..."
 	mergedFile="${tagName}Endcap_fitRes.root"
 	hadd -f $mergedFile $endcap_list
 	eos cp $mergedFile ${eosPrefix}${eosPath}${dirName}/iter_${i}/
