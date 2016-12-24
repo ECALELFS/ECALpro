@@ -6,15 +6,15 @@ iter_fin=7  # it is included in sequence below
 eosPrefix="root://eoscms//eos/cms"                                        
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"                             
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
-dirName="AlcaP0_2016_json3p99fb_weight_8iter"
-tagName="AlcaP0_2016_json3p99fb_weight_8iter_"
+dirName="AlcaP0_2016_json3p99fb_weight_8iter_noCC"
+tagName="AlcaP0_2016_json3p99fb_weight_8iter_noCC_"
 
 skipHaddFile="no"   # yes or no, decide if you need to merge files on eos, if not, skipping saves a lot of time
 
 for i in `seq $iter_ini $iter_fin`
 do
 
-    if [ "$skiHaddFile" = "no" ]; then
+    if [[ "${skipHaddFile}" == "no" ]]; then
 	barrel_list=""
 	for j in {0..30}
 	do
@@ -28,7 +28,9 @@ do
             file="${eosPrefix}${eosPath}${dirName}/iter_${i}/${tagName}Endcap_${j}_fitRes.root"
             endcap_list="${endcap_list} ${file}"
 	done
-	
+
+	echo "Going to merge files on EOS ..."	
+	return 0
 	mergedFile="${tagName}Barrel_fitRes.root"
 	hadd -f $mergedFile $barrel_list
 	eos cp $mergedFile ${eosPrefix}${eosPath}${dirName}/iter_${i}/
