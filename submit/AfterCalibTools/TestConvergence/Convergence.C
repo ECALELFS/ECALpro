@@ -530,6 +530,8 @@ Int_t main(int argc, char* argv[]) {
   Int_t nJump = atoi(argv[5]);
   string extension(argv[6]);
 
+  Convergence *conv = new Convergence(eosPath, dirName, iter_num, tagName, nJump);
+
   TString *extension_tstring = NULL;
 
   string extDirName = "";
@@ -537,22 +539,33 @@ Int_t main(int argc, char* argv[]) {
   string ext_tagName = "";
 
   if (extension != "noExtension") {
+
     // Tokenize using TString
     extension_tstring = new TString(extension.c_str());
-    TObjArray* array = extension_tstring->Tokenize(",");
-    extDirName   = string( (((TObjString *) array->At(0))->String()).Data() );
-    ext_iter_num =         (((TObjString *) array->At(1))->String()).Atoi()  ;
-    ext_tagName  = string( (((TObjString *) array->At(2))->String()).Data() );
-  }
+    // firstly, get all the single extensions
+    TObjArray* allExtensions = extension_tstring->Tokenize(":");
 
+    Int_t nExtensions = allExtensions->GetEntries(); //this method returns only the number of not empty slots in the array, but we don't expect empty slots
+    cout << "==============================" << endl;
+    cout << "There are " << nExtensions << " extensions" << endl;
+    cout << "==============================" << endl;
 
-  Convergence *conv = new Convergence(eosPath, dirName, iter_num, tagName, nJump);
-  if (extension != "noExtension") {
-    conv->addExtension(extDirName, ext_iter_num, ext_tagName, nJump);
-    cout << "extension used:" << endl;
-    cout << extDirName << endl;
-    cout << ext_iter_num << endl;
-    cout << ext_tagName << endl;
+    //secondly, parse each extension and use Convergence::addExtension(...)
+    for (Int_t i = 0; i < nExtensions; i++) {
+
+      TObjArray* singleExtension = ( (TObjString* ) allExtensions->At(i) )->String().Tokenize(",");
+      extDirName   = string( (((TObjString *) singleExtension->At(0))->String()).Data() );
+      ext_iter_num =         (((TObjString *) singleExtension->At(1))->String()).Atoi()  ;
+      ext_tagName  = string( (((TObjString *) singleExtension->At(2))->String()).Data() );
+      cout << "extension used:" << endl;
+      cout << extDirName << endl;
+      cout << ext_iter_num << endl;
+      cout << ext_tagName << endl;
+      conv->addExtension(extDirName, ext_iter_num, ext_tagName, nJump);
+      cout << "------------------------------" << endl;
+
+    }
+
   }
 
   conv->run();
