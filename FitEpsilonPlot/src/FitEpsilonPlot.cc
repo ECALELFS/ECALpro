@@ -93,8 +93,11 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// retrieving calibration coefficients of the previous iteration
     char fileName[200];
+    // if currentIteration_ = 0, calibMapPath_ contains "iter_-1" unless the current set of ICs was started from another existing set (see parameters.py)
+    // therefore, the case with extension is included below
+    std::string stringToMatch = "iter_-1";  // used below: this string should not match to trigger true condition 
     if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
-    else if(currentIteration_ > 0)
+    else if(currentIteration_ > 0 || (currentIteration_ == 0 && calibMapPath_.find(stringToMatch)==std::string::npos))
     {
 	  //sprintf(fileName,"%s/iter_%d/calibMap.root", outputDir_.c_str(), currentIteration_-1);
 	  sprintf(fileName,"%s", calibMapPath_.c_str());
