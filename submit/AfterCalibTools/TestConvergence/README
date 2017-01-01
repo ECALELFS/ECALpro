@@ -8,7 +8,10 @@ If you use the .sh script, you have to:
 
 1) Set parameters as in all other macros (path to EOS, dirName, ...)
 2) Something new is nJump, which says that you want to do IC(n)-IC(n-nJump). Typically it will be 1, but at the moment nJump=2 is also supported
-3) extension: if you run n iterations, this is not needed and you can leave it as "noExtension"; if you run more sets of ICs, and each of them started from an existing one (we have this possibility now, see CalibCode/submit/parameters.py), then you can add extensions (only one extension is allowed for now). See below for further details.
+3) extension: if you run n iterations all in a row, this is not needed and you can leave it as "noExtension"; if you run more sets of ICs, and 
+   each of them started from an existing one (we have this possibility now, see CalibCode/submit/parameters.py), then you can add extensions 
+   (if you add more than one, i.e. ext1, ext2 ..., it is assumed that ext2 started from ext1 and so on). 
+   See below for further details.
 
 
 ------------------
@@ -16,15 +19,15 @@ If you use the .sh script, you have to:
 Using extensions:
 ------------------
 
-Suppose you have an extension you want to add. Those additional iterations will have their own dirName, tagName parameters and so on. Lets's call them "dirName_ext" and "tagName_ext" and let's assume you made 4 more iterations (iter_0 up to iter_3). Then you have to set extension with the following convention:
+Suppose you have an extension you want to add. Those additional iterations will have their own dirName, tagName parameters and so on. 
+Lets's call them "dirName_ext" and "tagName_ext" and let's assume you made 4 more iterations (iter_0 up to iter_3). 
+Then you have to set extension with the following convention:
 
-extension="dirName_ext,4,tagName_ext"
+extension="dirName_ext,4,tagName_ext"   (objects are separated by a comma)
 
+When you have more than one extension, you simply create a single string with the same convention, with the different extensions separated by a colon
+For example, with three extensions you set:
 
-================================
--->  WARNING
-================================
+extension="dirName_ext1,n_ext1,tagName_ext2:dirName_ext2,n_ext2,tagName_ext2:dirName_ext3,n_ext3,tagName_ext3"
 
-At the moment the macro produces strange results when extensions are used. In the graph showing the convergence, the line starts going down, but when the points for the extension begin the curve rises up. This seems to be actually related to the ICs produced with the extensions. Indeed, if you just use the additional iterations as a set of independent ICs and do the Convergence test only with them, you will see that the points have the same y values as in the extended convergence plot.
-
-Until it is not understood, it is safer to have just one set of ICs.
+When extensions are used, plots are stored in the dedicated directory TestConvergence/extension.
