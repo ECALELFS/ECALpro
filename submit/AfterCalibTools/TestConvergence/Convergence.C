@@ -119,7 +119,7 @@ Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
     }
 
   } else {
-    std::cout << "Error: could not open file " << fileName << std::endl;
+    cout << "Error: could not open file " << fileName << endl;
     exit(EXIT_FAILURE);
   }
 
@@ -146,19 +146,24 @@ void Convergence::run() {
   Int_t nIter = -1; // lookig at differences: steps are N-1
   for(Int_t c=0; c<(Int_t)Paths_.size(); ++c) nIter += nIters_[c];
 
-  std::cout << "====> Test of the convergence of the calibrations. <====" << std::endl
+  cout << endl;
+  cout << "====> Test of the convergence of the calibrations. <====" << endl
             << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
-            << nIter << " iterations" << std::endl;
+            << nIter << " iterations" << endl;
+
   
   for(int isEB=0; isEB<2; isEB++){
 
-    // if (isEB > 0) {
-    //   cout << "//////////////////////////////" << endl;
-    //   cout << "//////////////////////////////" << endl;
-    //   cout << "Starting EE" << endl;
-    //   cout << "//////////////////////////////" << endl;
-    //   cout << "//////////////////////////////" << endl;
-    // }
+    // isEB == 0 for EB, while isEB > 0 for EE 
+    // at the moment we consider EE+ and EE- together because the files with the calibMap do not distinguish between them
+
+    cout << endl;
+    cout << "//////////////////////////////" << endl;
+    if (isEB == 0)     cout << "Starting EB" << endl; 
+    else if (isEB > 0) cout << "Starting EE" << endl; 
+    cout << "//////////////////////////////" << endl;
+    cout << endl;
+    
 
     ////////////////////////////////////
     // open file with EE maps to get etaRing given iX and iY                                                                                                       
@@ -169,7 +174,7 @@ void Convergence::run() {
     TFile *rootFile = NULL;
     TH2F *hEEplus = NULL;  // will point to the histogram for EE+ 
     TH2F *hEEminus = NULL;  // will point to the histogram for EE- 
-    if (isEB == 1) { 
+    if (isEB > 0) { 
       rootfileName = "./../PlotMaker/2DmapMaker/eerings_modified.root";
       rootFile = new TFile((rootfileName).c_str(),"READ");
       if (!rootFile || !rootFile->IsOpen()) {
@@ -233,13 +238,13 @@ void Convergence::run() {
     //Float_t EB_RMS_etaRing[nIter][n_hbinned];
     vector< vector<Float_t> > EB_RMS_etaRing(nIter,vector<Float_t> (n_hbinned));     
 
-    Int_t PrevChunkConsidered = false;
     Int_t iterOffset = 0;
 
     for(Int_t iChunk=0; iChunk<(Int_t)Paths_.size(); ++iChunk) {
 
-      std::cout << "Running chunk " << iChunk << " iteration offset = " << iterOffset << std::endl;
-
+      cout << "Running chunk " << iChunk << " iteration offset = " << iterOffset << endl;
+      
+      Int_t PrevChunkConsidered = false;   // when using an extension, it triggers the usage of the last calibMap from previous set of iterations
       string PathL = "root://eoscms//eos/cms" + Path_0_ + Paths_[iChunk];
       
       for(int i=0; i<(int)nIters_[iChunk]-1; ++i){
@@ -256,8 +261,10 @@ void Convergence::run() {
         // Input
         TFile *fout=0;
         TFile *fout1=0;
-        if(iChunk>0 && i==0 && !PrevChunkConsidered) {
-          string PathLPrevChunk = "root://eoscms//eos/cms" + Path_0_ + Paths_[iChunk-1];
+        
+	if (iChunk > 0 && i == 0 && !PrevChunkConsidered) {
+        
+	  string PathLPrevChunk = "root://eoscms//eos/cms" + Path_0_ + Paths_[iChunk-1];
           stringstream ssNminus1; ssNminus1 << nIters_[iChunk-1]-1;
           string fileName = string(PathLPrevChunk) + "/iter_" + ssNminus1.str() + "/" + string(Tags_[iChunk-1]) + "calibMap.root";   
           cout<<"Opening: "<<fileName<<endl;
@@ -266,25 +273,29 @@ void Convergence::run() {
           cout<<"And: "<<fileName<<endl;
           fout1 = TFile::Open(fileName.c_str());
           PrevChunkConsidered = true;
-          i=-1; iterOffset++;
-        } else {
-          string fileName = string(PathL) + "/iter_" + string(Iter) + "/" + string(Tags_[iChunk]) + "calibMap.root";   
+          i = -1; 
+	  iterOffset++;
+       
+	} else {
+        
+	  string fileName = string(PathL) + "/iter_" + string(Iter) + "/" + string(Tags_[iChunk]) + "calibMap.root";   
           cout<<"Opening: "<<fileName<<endl;
           fout = TFile::Open(fileName.c_str());
           fileName = string(PathL) + "/iter_" + string(Iter1) + "/" + string(Tags_[iChunk]) +"calibMap.root";   
           cout<<"And: "<<fileName<<endl;
           fout1 = TFile::Open(fileName.c_str());
+
         }
         
         TTree *Tree; TTree *Tree1;
-        if(isEB==0){
+        if (isEB == 0) {
           Tree  = (TTree*) fout->Get("calibEB");
           Tree1 = (TTree*) fout1->Get("calibEB");
-        }
-        if(isEB==1){
+        } else if (isEB > 0) {
           Tree  = (TTree*) fout->Get("calibEE");
           Tree1 = (TTree*) fout1->Get("calibEE");
         }
+
         Float_t coeff, coeff1;
         Float_t Ndof, Ndof1;
         Int_t ieta, iphi, ix, iy, iz;
