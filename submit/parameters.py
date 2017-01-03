@@ -57,18 +57,18 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_AlcaP0_2016_json2p07fb_RAW_purified.list'
-dirname          = 'AlcaP0_2016_json2p07fb_debug_v3'
+inputlist_n      = 'InputList/2016B_All_june2016_purified.list'
+dirname          = 'AlcaP0_2016_json3p99fb_weight_extV2_4more'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2016_json2p07fb_debug_v3_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016_json3p99fb_weight_extV2_4more_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 3
-SubmitFurtherIterationsFromExisting = False
+nIterations      = 4
+SubmitFurtherIterationsFromExisting = True
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
-   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json2p07fb/iter_7/AlcaP0_2016_json2p07fb_calibMap.root"
+   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json3p99fb_weight_extV2/iter_3/AlcaP0_2016_json3p99fb_weight_extV2_calibMap.root"
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
@@ -282,6 +282,7 @@ alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
 #pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
 pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_data';pulseShapeDB='sqlite_file:/afs/cern.ch/work/e/emanuele/public/ecal/pulseshapes_db/ecaltemplates_popcon_data_Run2016B_since_271983.db'
+pedestalTagRecord='';pedestalTag='';pedestalDB=''
 intercalibTagRecord='';intercalibTag='';intercalibDB=''
 
 ######################################################################
@@ -292,7 +293,7 @@ intercalibTagRecord='';intercalibTag='';intercalibDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_271036-274421_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -306,9 +307,9 @@ globaltag          = '80X_dataRun2_Prompt_v8' if isMC==False else '80X_mcRun2_as
 globaltag_New      = True
 FROMDIGI           = True
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
-MULTIFIT           = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
+MULTIFIT           = False;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
 is50ns             = False      # If DigiCustomization and MULTIFIT is True
-WEIGHTS            = False;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
+WEIGHTS            = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
 if(Are_pi0):                                           # Member of Recalibration Module
    esInputTag = "InputTag('hltAlCaPi0RecHitsFilterEEonlyRegional','pi0EcalRecHitsES')"
    HLTPaths='AlCa_EcalPi0E*'                        # HLT Name to ask before running the event. It can contain a *.
