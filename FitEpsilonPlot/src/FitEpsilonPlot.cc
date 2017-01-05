@@ -837,7 +837,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     Pi0FitResult fitres = pi0res;
     //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
-    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
+    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? UPPER_MASS_PI0_EB:0.62))<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
