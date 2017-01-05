@@ -2,7 +2,7 @@
 
 import ROOT
 #from sys import argv
-from math import fabs
+from math import fabs, sqrt
 
 import operator
 import xml.dom.minidom
@@ -72,9 +72,9 @@ Sig_EE_Diff_iEta  = TH2F("Sig_EE_Diff_iEta","#eta on x, #IC-IC2 on y",15,1.5,3, 
 EB_StatErr        = TH1F("EB_StatErr","#eta on x, Stat. Err. on y",171,-85.5,85.5)
 EB_StatErr.GetXaxis().SetTitle("iEta"); EB_StatErr.GetXaxis().SetTitle("#sigma");
 EEm_StatErr       = TH1F("EEm_StatErr","#eta on x, Stat. Err. on y",15,1.5,3)
-EEm_StatErr.GetXaxis().SetTitle("#eta") EEm_StatErr.GetXaxis().SetTitle("#sigma");
+EEm_StatErr.GetXaxis().SetTitle("#eta"); EEm_StatErr.GetXaxis().SetTitle("#sigma");
 EEp_StatErr       = TH1F("EEp_StatErr","#eta on x, Stat. Err. on y",15,1.5,3)
-EEp_StatErr.GetXaxis().SetTitle("#eta") EEp_StatErr.GetXaxis().SetTitle("#sigma");
+EEp_StatErr.GetXaxis().SetTitle("#eta"); EEp_StatErr.GetXaxis().SetTitle("#sigma");
 #eta
 GeoFile = "../../../../CalibCode/submit/common/geometry_ietaix_iphiiy_0iz_eta.dat"
 GeoFile_r = open(GeoFile,'r')
