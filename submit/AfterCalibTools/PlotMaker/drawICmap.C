@@ -22,6 +22,7 @@
 #include <TPaletteAxis.h>
 #include <TPaveStats.h>
 #include <TPaveText.h>
+#include <TProfile.h>
 #include <TStyle.h>
 #include <TVirtualFitter.h>
 
@@ -70,6 +71,13 @@ void drawICmap(const string& wwwPath = "",
 
   TH2F *mapEB_new = new TH2F("mapEB_new","EB calib coefficients", 360, 0.5, 360.5, 171,-85.5,85.5 );
 
+  // profile along ieta. ieta goea from -85 to 85, exluding 0, for a total of 170 non empty bins (they are 171 including ieta = 0 which is actually empty)
+  // in the profile, ieta = 30 is the bin with x from 29.5 to 30.5
+  // simila logic for profile along iphi
+  TProfile * EB_ieta_profile = new TProfile("EB_ieta_profile","EB calib coefficients - i#eta profile",171,-85.5,85.5);
+  TProfile * EB_iphi_profile = new TProfile("EB_iphi_profile","EB calib coefficients - i#phi profile",360,0.5,360.5);
+
+
   Int_t nbinsX = mapEB->GetNbinsX(); // ieta
   Int_t nbinsY = mapEB->GetNbinsY(); // iphi
 
@@ -78,6 +86,8 @@ void drawICmap(const string& wwwPath = "",
       for (Int_t j = 1; j <= nbinsY; j++) {
 	
 	mapEB_new->Fill(j,(i-86.0),mapEB->GetBinContent(i,j));
+	EB_ieta_profile->Fill((i-86.0),mapEB->GetBinContent(i,j));
+	EB_iphi_profile->Fill(j,mapEB->GetBinContent(i,j));
 
       }
 
@@ -109,6 +119,51 @@ void drawICmap(const string& wwwPath = "",
   name = wwwAllPath + "Barrel/IC_calibMapEB";
   cEB->SaveAs((name + ".pdf").c_str());
   cEB->SaveAs((name + ".png").c_str());
+
+  TCanvas *cEB_ietaProfile = new TCanvas("cEB_ietaProfile","IC map EB - i#eta profile");
+  EB_ieta_profile->Draw("HIST");
+  EB_ieta_profile->GetXaxis()->SetTitle("i #eta");
+  EB_ieta_profile->GetXaxis()->SetTitleSize(0.06);
+  EB_ieta_profile->GetXaxis()->SetTitleOffset(0.7);
+  EB_ieta_profile->GetYaxis()->SetTitle("IC");
+  EB_ieta_profile->GetYaxis()->SetTitleSize(0.06);
+  EB_ieta_profile->GetYaxis()->SetTitleOffset(0.8);
+  // Double_t maxY = EB_ieta_profile->GetBinContent(EB_ieta_profile->GetMaximumBin());
+  // Double_t scale_factor = 1.1;
+  // Double_t minY = 999.9; // minimum would be 0, corresponding to ieta = 0; look for minimum excluding ieta = 0
+  // for (Int_t ieta = -85; ieta<= 85; ieta++) {
+  //   if (ieta == 0) continue;
+  //   minY = (EB_ieta_profile->GetBinContent(ieta+86) < minY) ? EB_ieta_profile->GetBinContent(ieta+86) : minY;
+  // }
+  // Double_t offset = scale_factor * (maxY -minY); 
+  // EB_ieta_profile->GetYaxis()->SetRangeUser(minY - offset, maxY + offset);
+  EB_ieta_profile->GetYaxis()->SetRangeUser(0.89,0.99);
+  EB_ieta_profile->SetStats(0);
+  gPad->Update();
+  name = wwwAllPath + "Barrel/IC_calibMapEB_ietaProfile";
+  cEB_ietaProfile->SaveAs((name + ".pdf").c_str());
+  cEB_ietaProfile->SaveAs((name + ".png").c_str());
+
+
+  TCanvas *cEB_iphiProfile = new TCanvas("cEB_iphiProfile","IC map EB - i#phi profile");
+  EB_iphi_profile->Draw("HIST");
+  EB_iphi_profile->GetXaxis()->SetTitle("i #phi");
+  EB_iphi_profile->GetXaxis()->SetTitleSize(0.06);
+  EB_iphi_profile->GetXaxis()->SetTitleOffset(0.7);
+  EB_iphi_profile->GetYaxis()->SetTitle("IC");
+  EB_iphi_profile->GetYaxis()->SetTitleSize(0.06);
+  EB_iphi_profile->GetYaxis()->SetTitleOffset(0.8);
+  // maxY = EB_iphi_profile->GetBinContent(EB_iphi_profile->GetMaximumBin());
+  // minY = EB_iphi_profile->GetBinContent(EB_iphi_profile->GetMinimumBin()); 
+  // offset = scale_factor * (maxY -minY); 
+  // EB_iphi_profile->GetYaxis()->SetRangeUser(minY - offset, maxY + offset);
+  EB_iphi_profile->GetYaxis()->SetRangeUser(0.91,0.97);
+  EB_iphi_profile->SetStats(0);
+  gPad->Update();
+  name = wwwAllPath + "Barrel/IC_calibMapEB_iphiProfile";
+  cEB_iphiProfile->SaveAs((name + ".pdf").c_str());
+  cEB_iphiProfile->SaveAs((name + ".png").c_str());
+
 
   //EE+
   TCanvas *cEEp = new TCanvas("cEEp","IC map EE+");
