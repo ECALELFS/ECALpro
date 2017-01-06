@@ -66,10 +66,10 @@ using namespace RooFit;
 // in this code the upper boundary of mass for the fit is used to assess the goodness of fit: look for --> if( fitres.chi2 < 5 && fabs(mean-<some_number>)>0.0000001)
 // which means "if the Chi2 is good and the mean of the fit is far from the upper boundary ..."
 // the upper boundary must be consistent with <some_number>
-// for the moment we use a define
-
-#define UPPER_MASS_PI0_EB 0.15
-#define UPPER_MASS_PI0_EE 0.16
+static double upper_bound_pi0mass_EB = 0.15;
+static double upper_bound_pi0mass_EE = 0.16;
+static double upper_bound_etamass_EB = 0.62;
+static double upper_bound_etamass_EE = 0.62;
 
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
@@ -493,7 +493,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  r2 = r2*r2;
 			  //cout<<"EBMEAN::"<<j<<":"<<mean<<" Saved if: "<<fitres.SoB<<">(isNot_2010_ ? 0.04:0.1) "<<(fitres.chi2/fitres.dof)<<" < 0.2 "<<fabs(mean-0.15)<<" >0.0000001) "<<endl;
 			  //if( fitres.SoB>(isNot_2010_ ? 0.04:0.1) && (fitres.chi2/fitres.dof)< 0.5 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
-			  if( fitres.chi2 < 5 && fabs(mean-UPPER_MASS_PI0_EB)>0.0000001) mean = 0.5 * ( r2 - 1. );
+			  if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))>0.0000001) mean = 0.5 * ( r2 - 1. );
 			  else                                              mean = 0.;
 		    }
 		    else{
@@ -569,7 +569,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  r2 = r2*r2;
 			  //cout<<"EEMEAN::"<<jR<<":"<<mean<<" Saved if: "<<fitres.SoB<<">0.3 "<<(fitres.chi2/fitres.dof)<<" < (isNot_2010_? 0.07:0.35) "<<fabs(mean-0.14)<<" >0.0000001) "<<endl;
 			  //if( (fitres.chi2/fitres.dof)<0.3 && fitres.SoB>(isNot_2010_? 0.07:0.35) && fabs(mean-0.14)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
-			  if( fitres.chi2 < 5 && fabs(mean-UPPER_MASS_PI0_EE)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
+			  if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))>0.0000001 ) mean = 0.5 * ( r2 - 1. );
 			  else                                              mean = 0.;
 		    }
 		    else
@@ -636,17 +636,17 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? UPPER_MASS_PI0_EB:0.62,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
     RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,0.015,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? UPPER_MASS_PI0_EE:0.62);
+	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE);
 	  mean.setVal(Are_pi0_? 0.13:0.55);
 	  sigma.setRange(0.005, 0.020);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? UPPER_MASS_PI0_EB:0.62);
+	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB);
 	  sigma.setRange(0.003, 0.030);
     }
 
@@ -837,7 +837,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     Pi0FitResult fitres = pi0res;
     //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
-    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? UPPER_MASS_PI0_EB:0.62))<0.0000001 ) ){
+    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
