@@ -268,8 +268,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     eetopology_->setSubdetTopology(DetId::Ecal,EcalEndcap,eeHTopology);
 
     /// retrieving calibration coefficients of the previous iteration
-    if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
-    else if(currentIteration_ > 0 || calibMapPath_.find("iter_-1")==std::string::npos)
+    // if currentIteration_ = 0, calibMapPath_ contains "iter_-1" unless the current set of ICs was started from another existing set (see parameters.py)
+    // therefore, the case with extension is included below
+    std::string stringToMatch = "iter_-1";  // used below: this string should not match to trigger true condition
+    if (currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
+    else if (currentIteration_ > 0 || (currentIteration_ == 0 && calibMapPath_.find(stringToMatch)==std::string::npos))
     {
 	  char fileName[200];
 	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
