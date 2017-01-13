@@ -11,7 +11,8 @@
 iter_ini=0
 iter_fin=13  # it is included in sequence below                     
 
-path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"
+wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"
+eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"
 dirName="pi0data_2015"
 tagName="pi0data_2015"
 
@@ -20,6 +21,6 @@ for i in `seq $iter_ini $iter_fin`
 do
     iterNumber="iter_$i"
     echo  "iter_$i"
-    root -l -b -q 'drawICmap.C+("'$path'","'$dirName'","'$iterNumber'","'$tagName'")'
+    root -l -b -q 'drawICmap.C+("'$wwwPath'","'$eosPath'","'$dirName'","'$iterNumber'","'$tagName'")'
 done
 
