@@ -50,7 +50,7 @@ When calibration is finished you can work in your IC, and print teh IC.txt used 
 4) Statistical Error
 TO combine your IC with other IC, you need to provide a systematic and statistic error. The second one os computed re-running the last iter of a calibration twice.
 Once only on even events, the others on odd events.Then from the difference/4 of a single IC, you can have the stat. error on it.
-To do that you have to resubmit the calibration twice, but before remember to make news directories on EOS to store the IC running on all events, the odd and even one.
+To do that you have to resubmit the calibration twice, but before remember to make news directories on EOS to store the IC running on all events, the odd and even one. In other words, create a new eos folder to temporary store files created running on all events, and use the original directory to store the output of the new ICs with even events; then copy these last ones in a new folder (you can call il iter_n_even) and repeat the same ruuning on odd events. When yo have finished you can copy again the original files (those with all events) in their original location.
 The command is
 ./resubmitCalibration.py iteration_to_resume 1 False False (for even events) and when it is finished
 ./resubmitCalibration.py iteration_to_resume 2 False False (for odd events)
