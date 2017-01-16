@@ -122,6 +122,13 @@ def printFillCfg1( outputfile ):
             outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
             outputfile.write('     )\n')
             outputfile.write(')\n\n')
+        if not(pedestalTag==''):
+            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+            outputfile.write("     cms.PSet(record = cms.string('" + pedestalTagRecord + "'),\n")
+            outputfile.write("     tag = cms.string('" + pedestalTag + "'),\n")
+            outputfile.write("     connect = cms.string('" + pedestalDB + "')\n")
+            outputfile.write('     )\n')
+            outputfile.write(')\n\n')
         if not(intercalibTag==''):
             outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
@@ -652,7 +659,7 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
@@ -756,7 +763,7 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
@@ -795,7 +802,7 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
     
     fileWithList = open(listReduced,"r")
     files = fileWithList.readlines()
