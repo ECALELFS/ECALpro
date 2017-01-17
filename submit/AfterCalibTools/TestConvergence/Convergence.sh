@@ -1,9 +1,9 @@
 #!/bin/bash
 
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/" 
-dirName="AlcaP0_2016H_23SeptReReco_EBonly_reg2012"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="7"                                                          # number n of iterations (iter_0 to iter_{n-1})
-tagName="AlcaP0_2016H_23SeptReReco_EBonly_reg2012_"                           # TagName (see CalibCode/submit/parameters.py)  
+dirName="AlcaP0_2016_json3p99fb_weight_YongCC"                            # dirname (see CalibCode/submit/parameters.py)  
+iter_number="4"                                                          # number n of iterations (iter_0 to iter_{n-1})
+tagName="AlcaP0_2016_json3p99fb_weight_YongCC_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
 wwwTargetDir="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/${dirName}/TestConvergence/"               
@@ -11,9 +11,9 @@ wwwTargetDir="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/${dirName}/TestCo
 nJump=1
 # leave extension as "noExtension" in you don't need to add additional steps that start from the one above
 # format is newDirName,newIterNumber,newTagName
-extension="noExtension"
-#extension="AlcaP0_2016_json3p99fb_weight_extV2,4,AlcaP0_2016_json3p99fb_weight_extV2_:AlcaP0_2016_json3p99fb_weight_extV2_4more,4,AlcaP0_2016_json3p99fb_weight_extV2_4more_"
-detectorToSkip="EE"   # detectorToSkip = "" to skip nothing, "EB" to skip EB, "EE" to skip EE
+#extension="noExtension"
+extension="AlcaP0_2016_json3p99fb_weight_YongCC_ext1,2,AlcaP0_2016_json3p99fb_weight_YongCC_ext1_"
+detectorToSkip="no"   # detectorToSkip = "no" to skip nothing, "EB" to skip EB, "EE" to skip EE
 
 if [ "${extension}" != "noExtension" ]
 then

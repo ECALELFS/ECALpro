@@ -131,9 +131,9 @@ Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
 //=================================================
  
-void Convergence::run(const string& detectorToSkip = "") {
+void Convergence::run(const string& detectorToSkip = "no") {
 
-  // detectorToSkip can be "EB" or "EE" (if it is "", nothing is kipped)  
+  // detectorToSkip can be "EB" or "EE" (if it is "no", nothing is skipped)  
 
   system( (string("mkdir -p plot_") + Paths_[0] ).c_str());
   TCanvas* myc1 = new TCanvas("myc1", "CMS", 700, 700);
@@ -153,7 +153,7 @@ void Convergence::run(const string& detectorToSkip = "") {
             << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
             << nIter << " iterations" << endl;
 
-  if (detectorToSkip != "") {
+  if (detectorToSkip != "no") {
     cout << endl;
     cout << "Skipping " << detectorToSkip << endl;
     cout << endl;
