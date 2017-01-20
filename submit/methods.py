@@ -662,8 +662,8 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -710,8 +710,8 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
 #     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
 # #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
 #     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
 #     elif "cmsStage -f" in myeosstage:
 #         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
 #         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -766,8 +766,8 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -816,7 +816,7 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
         for f in filesToMerge:
             f = f.strip()
             if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-                outputfile.write(myeosstage + "root://eoscms/eos/cms" + f + " /tmp \n")
+                outputfile.write(myeosstage + "root://eoscms//eos/cms" + f + " /tmp \n")
             elif "cmsStage -f" in myeosstage:
                 outputfile.write(myeosstage + f + " /tmp \n")        
             else:
