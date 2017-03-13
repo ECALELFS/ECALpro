@@ -88,54 +88,59 @@ def printFillCfg1( outputfile ):
            outputfile.write("process.ecalRecHit.EBuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEB')\n")
         outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)\n")
 
-    if (overWriteGlobalTag):
-        if not( alphaTagRecord=='' and alphaTag=='' and alphaDB=='' ):        
-           outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
-           if not(laserTag==''):
-              outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
-              outputfile.write('     ),\n')
-           outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
-           outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
-           outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-           if(GeVTagRecord=='' and alphaTag==''):
-              outputfile.write('     )\n')
-           if not(GeVTagRecord==''):
-              outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + GeVTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
-              if(alphaTag2==''):
-                 outputfile.write('     )\n')
-           if not(alphaTag==''):
-              outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-              outputfile.write('     )\n')
-           outputfile.write(')\n\n')
+    if (overWriteGlobalTag):        
+        outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+        if not(laserTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + laserTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + laserDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(alphaTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + alphaTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + alphaDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(GeVTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + GeVTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + GeVDB + "')\n")
+            outputfile.write('     ),\n')
         if not(pulseShapeTag==''):
-            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
-            outputfile.write("     tag = cms.string('" + pulseShapeTag + "'),\n")
-            outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
-            outputfile.write('     )\n')
-            outputfile.write(')\n\n')
+            outputfile.write("              tag = cms.string('" + pulseShapeTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + pulseShapeDB + "')\n")
+            outputfile.write('     ),\n')
         if not(pedestalTag==''):
-            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + pedestalTagRecord + "'),\n")
-            outputfile.write("     tag = cms.string('" + pedestalTag + "'),\n")
-            outputfile.write("     connect = cms.string('" + pedestalDB + "')\n")
-            outputfile.write('     )\n')
-            outputfile.write(')\n\n')
+            outputfile.write("              tag = cms.string('" + pedestalTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + pedestalDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(laserAlphaTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + laserAlphaTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + laserAlphaTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + laserAlphaDB + "')\n")
+            outputfile.write('     ),\n')
         if not(intercalibTag==''):
-            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
-            outputfile.write("     tag = cms.string('" + intercalibTag + "'),\n")
-            outputfile.write("     connect = cms.string('" + intercalibDB + "')\n")
-            outputfile.write('     )\n')
-            outputfile.write(')\n\n')
+            outputfile.write("              tag = cms.string('" + intercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + intercalibDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(ESEEIntercalibTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + ESEEIntercalibTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + ESEEIntercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + ESEEIntercalibDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(intercalibTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + intercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + intercalibDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(linearCorrectionsTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + linearCorrectionsTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + linearCorrectionsTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + linearCorrectionsDB + "')\n")
+            outputfile.write('     ),\n')
+        outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')
