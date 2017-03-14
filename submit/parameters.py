@@ -57,14 +57,15 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/AlCaP0_2016H_run282814_purified_test.list'
-dirname          = 'trash'
+inputlist_n      = 'InputList/AlCaP0_2016H_06Jan2017_purified.list'
+dirname          = 'AlcaP0_2016H_mar2017newCond_reg2012'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'trash_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2016H_mar2017newCond_reg2012_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1
+nIterations      = 8
+#nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from

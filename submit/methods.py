@@ -12,6 +12,15 @@ def printFillCfg1( outputfile ):
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
     outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
 
+    # if (nThread > 1 ):
+    #     outputfile.write("\n")
+    #     outputfile.write("process.options = cms.untracked.PSet(\n")
+    #     outputfile.write("    numberOfThreads = cms.untracked.uint32( 4 ),\n")
+    #     outputfile.write("    numberOfStreams = cms.untracked.uint32( 0 ),\n")
+    #     outputfile.write("    sizeOfStackForThreadsInKB = cms.untracked.uint32( 10*1024 )\n")
+    #     outputfile.write(")\n\n")
+
+
     if(globaltag_New):
        outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
     else:
@@ -120,10 +129,10 @@ def printFillCfg1( outputfile ):
             outputfile.write("              tag = cms.string('" + laserAlphaTag + "'),\n")
             outputfile.write("              connect = cms.string('" + laserAlphaDB + "')\n")
             outputfile.write('     ),\n')
-        if not(intercalibTag==''):
-            outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
-            outputfile.write("              tag = cms.string('" + intercalibTag + "'),\n")
-            outputfile.write("              connect = cms.string('" + intercalibDB + "')\n")
+        if not(ESIntercalibTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + ESIntercalibTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + ESIntercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + ESIntercalibDB + "')\n")
             outputfile.write('     ),\n')
         if not(ESEEIntercalibTag==''):
             outputfile.write("     cms.PSet(record = cms.string('" + ESEEIntercalibTagRecord + "'),\n")
