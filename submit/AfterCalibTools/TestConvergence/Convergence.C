@@ -70,7 +70,7 @@ public:
   ~Convergence() {};
 
   void addExtension( string Path, int nIter, string Tag, int nJump=1 );
-  void run();
+  void run(const string& detectorToSkip);
 
 private:
   Int_t getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside);
@@ -131,7 +131,9 @@ Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
 //=================================================
  
-void Convergence::run() {
+void Convergence::run(const string& detectorToSkip = "no") {
+
+  // detectorToSkip can be "EB" or "EE" (if it is "no", nothing is skipped)  
 
   system( (string("mkdir -p plot_") + Paths_[0] ).c_str());
   TCanvas* myc1 = new TCanvas("myc1", "CMS", 700, 700);
@@ -151,8 +153,17 @@ void Convergence::run() {
             << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
             << nIter << " iterations" << endl;
 
+  if (detectorToSkip != "no") {
+    cout << endl;
+    cout << "Skipping " << detectorToSkip << endl;
+    cout << endl;
+  }
+
   
   for(int isEB=0; isEB<2; isEB++){
+
+    if (isEB == 0 && detectorToSkip == "EB") continue;
+    if (isEB > 0 && detectorToSkip == "EE") continue;
 
     // isEB == 0 for EB, while isEB > 0 for EE 
     // at the moment we consider EE+ and EE- together because the files with the calibMap do not distinguish between them
@@ -540,6 +551,7 @@ Int_t main(int argc, char* argv[]) {
   string tagName(argv[4]);
   Int_t nJump = atoi(argv[5]);
   string extension(argv[6]);
+  string detectorToSkip(argv[7]);
 
   Convergence *conv = new Convergence(eosPath, dirName, iter_num, tagName, nJump);
 
@@ -579,7 +591,7 @@ Int_t main(int argc, char* argv[]) {
 
   }
 
-  conv->run();
+  conv->run(detectorToSkip);
 
   return 0;
 

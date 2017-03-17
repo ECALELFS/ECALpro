@@ -99,7 +99,7 @@ void calibAnaEcal::setHistograms() {
 
 void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
 
-  gStyle->SetPalette(1, 0);  // raibow palette
+  gStyle->SetPalette(107, 0);  // 1:raibow palette  ; 107: kVisibleSpectrum
   gStyle->SetNumberContours(50); // default is 20
 
   string canvasName(hist2d->GetName());

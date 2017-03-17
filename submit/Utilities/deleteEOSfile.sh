@@ -1,0 +1,38 @@
+#! /bin/bash
+
+iter_ini=0
+iter_fin=3  # it is included in sequence below                                                                           
+
+eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
+dirName="AlcaP0_2016_json3p99fb_weight_extV2_4more"
+
+pattern="EcalNtp"  # use it with grep to select which file to remove
+# use following string to test if eos directory exists: we use a regular expression to test whether this string is in the output of "eos ls ..." 
+noDirFound="No such file or directory" 
+
+for i in `seq $iter_ini $iter_fin`
+do
+    eos_ls_output=`eos ls ${eosPath}${dirName}/iter_${i}`
+    echo "Testing existence of ${eosPath}${dirName}/iter_${i}"
+
+    if [[ ${eos_ls_output} =~ ${noDirFound} ]]; then
+	echo "Directory ${eosPath}${dirName}/iter_${i} not found!"
+    else
+
+	echo "Ok, directory exists :)"
+	filesToRemove=`eos ls ${eosPath}${dirName}/iter_${i} | grep ${pattern}`
+	if [ "${filesToRemove}" == "" ]; then
+	    echo "No files in ${eosPath}${dirName}/iter_${i} matching '${pattern}'"
+	else 
+	    echo "Removing files in ${eosPath}${dirName}/iter_${i} matching '${pattern}'"
+	    for thisfile in $filesToRemove
+	    do
+		eos rm ${eosPath}${dirName}/iter_${i}/${thisfile}
+	    done	
+	fi
+	
+    fi
+
+done
+
+echo "THE END!"
