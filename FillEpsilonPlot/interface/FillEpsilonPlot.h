@@ -30,11 +30,28 @@
 #define NPI0MAX 30000
 #define NL1SEED 128
 //#define SELECTION_TREE
-//#define NEW_CONTCORR
-#define MVA_REGRESSIO
-//#define MVA_REGRESSIO_Tree
-//#define MVA_REGRESSIO_EE
-//#define MVA_REGRESSIO_EE_Tree
+//#define NEW_CONTCORR    // to use Yong's parametric CC, act on both EE and EB
+#define MVA_REGRESSIO     // to use regression in EB
+//#define MVA_REGRESSIO_Tree  // when using regression (defined MVA_REGRESSIO), decide to store some variables in a tree. This is for EB
+//#define MVA_REGRESSIO_EE    // should be as MVA_REGRESSIO but actually it also act as MVA_REGRESSIO_Tree for EE (define it to use regression in EE)
+//#define MVA_REGRESSIO_EE_Tree  // not used anywere apparently
+
+// developing new feature to have Yong's parametric containment corrections in EE and MVA regression in EB
+//
+// We would use regression in 2012 (or 2016) for EB and parametric containment corrections in EE
+// To do it, you can uncomment the following directive and also uncomment MVA_REGRESSIO while keeping NEW_CONTCORR commented
+// the temporary implementation of this solution is done so that REGRESS_AND_PARAM_CONTCORR substitutes MVA_REGRESSIO and NEW_CONTCORR, but it is not harmful
+// to keep MVA_REGRESSIO uncommented
+
+//#define REGRESS_AND_PARAM_CONTCORR
+
+// then in parameters.py you'll have 
+//    if ContainmentCorrection == 'mixed':
+//       useEBContainmentCorrections = 'False'  // no parametric CC in EB
+//       useEEContainmentCorrections = 'True'   // parametric CC in EB
+//       useMVAContainmentCorrections = True    //  regression (eventually used only in EB)
+//       new_pi0ContainmentCorrections = False  // use new 2016 regression: True to use it, False to use old one (useMVAContainmentCorrections must be true anyway)
+
 
 //MVA Stuff
 #if not defined(__CINT__) || defined(__MAKECINT__)
@@ -105,7 +122,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F * EEpMap_DeadXtal;
       TH1F * EBPHI_ConCorr_p;
       TH1F * EBPHI_ConCorr_m;
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
+#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
       EcalEnerCorr containmentCorrections_;
 #endif
       // ----------member data ---------------------------

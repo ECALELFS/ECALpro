@@ -214,13 +214,33 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
     else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
     cout<<"Cut used: EB LOW)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_low_[EcalBarrel]<<", Iso: "<<pi0IsoCut_low_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalBarrel]<<", S4S9: "<<S4S9_cut_low_[EcalBarrel]<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalBarrel]
+	<<", Pt(Clus): "<<gPtCut_low_[EcalBarrel]
+	<<", Iso: "<<pi0IsoCut_low_[EcalBarrel]
+	<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalBarrel]
+	<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalBarrel]
+	<<", S4S9: "<<S4S9_cut_low_[EcalBarrel]<<endl;
     cout<<"Cut used: EB HIGH)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalBarrel]<<", Pt(Clus): "<<gPtCut_high_[EcalBarrel]<<", Iso: "<<pi0IsoCut_high_[EcalBarrel]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalBarrel]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalBarrel]<<", S4S9: "<<S4S9_cut_high_[EcalBarrel]<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalBarrel]
+	<<", Pt(Clus): "<<gPtCut_high_[EcalBarrel]
+	<<", Iso: "<<pi0IsoCut_high_[EcalBarrel]
+	<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalBarrel]
+	<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalBarrel]
+	<<", S4S9: "<<S4S9_cut_high_[EcalBarrel]<<endl;
     cout<<"Cut used: EE LOW)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_low_[EcalEndcap]<<", Iso: "<<pi0IsoCut_low_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalEndcap]<<", S4S9: "<<S4S9_cut_low_[EcalEndcap]<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_low_[EcalEndcap]
+	<<", Pt(Clus): "<<gPtCut_low_[EcalEndcap]
+	<<", Iso: "<<pi0IsoCut_low_[EcalEndcap]
+	<<", Nxtal_1: "<<nXtal_1_cut_low_[EcalEndcap]
+	<<", Nxtal_2: "<<nXtal_2_cut_low_[EcalEndcap]
+	<<", S4S9: "<<S4S9_cut_low_[EcalEndcap]<<endl;
     cout<<"Cut used: EE HIGH)"<<endl;
-    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalEndcap]<<", Pt(Clus): "<<gPtCut_high_[EcalEndcap]<<", Iso: "<<pi0IsoCut_high_[EcalEndcap]<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalEndcap]<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalEndcap]<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
+    cout<<"Pt(pi0): "<<pi0PtCut_high_[EcalEndcap]
+	<<", Pt(Clus): "<<gPtCut_high_[EcalEndcap]
+	<<", Iso: "<<pi0IsoCut_high_[EcalEndcap]
+	<<", Nxtal_1: "<<nXtal_1_cut_high_[EcalEndcap]
+	<<", Nxtal_2: "<<nXtal_2_cut_high_[EcalEndcap]
+	<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
     cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat computation, 1 = yes only even events, 2 = yes only odd events]"<<endl;
 
     useOnlyEEClusterMatchedWithES_ = iConfig.getUntrackedParameter<bool>("useOnlyEEClusterMatchedWithES"); 
@@ -250,7 +270,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     GeometryService::setGeometryName(externalGeometry_);
     GeometryService::setGeometryPtr(geom_);
     // containment corrections
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
+#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
     if(useEEContainmentCorrections_)
 	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath().c_str() );
     if(useEBContainmentCorrections_){
@@ -485,7 +505,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete ebtopology_;
   delete eetopology_;
 
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
+#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
   delete EBPHI_ConCorr_p;
   delete EBPHI_ConCorr_m;
 #endif
@@ -869,7 +889,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	  if(dx <= 0 && dy >=0){ s4s9_tmp[2] += en; }
 	  if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
 	  enFracs.push_back( std::make_pair( RecHitsInWindow[j]->id(), en ) );
-	  // NOTA BENE: sto usando le frazioni per salvare energia rechit
+	  // Note: I'm using fractions to save rechit energy
 	  isUsed.insert(RecHitsInWindow[j]->id());
 
 	}
@@ -933,7 +953,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     else                          { if(s4s9<S4S9_cut_high_[EcalBarrel]) continue;}
 
 
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
+#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
     if(useEBContainmentCorrections_) 
     {
 	e3x3 *=  containmentCorrections_.getContainmentCorrectionsEB(e3x3, seed_id.ieta() );
@@ -1233,7 +1253,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	    double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
 
 	    tempenergy = deltaE + eeclus_iter->energy();
-#if defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)
+#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR) 
 	    if(useEEContainmentCorrections_) tempenergy *= containmentCorrections_.getContainmentPointCorrectionsEE( tempenergy , (eeclus_iter->position()).eta() );
 #endif
 
@@ -1384,7 +1404,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(4.);
 	else                       EventFlow_EE->Fill(4.);
 	float Corr1 = 1., Corr2 = 1.;
-#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO)
+#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
 	if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
 
 	  TLorentzVector G_Sort_1, G_Sort_2;
@@ -1450,18 +1470,18 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //else                                    value_pi01[14] = false ;
 	    if(useMVAContainmentCorrections_)
             {
-            if(new_pi0ContainmentCorrections_)
+	      if(new_pi0ContainmentCorrections_)
                 {
-                float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
-                Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
-                // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
+		  float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
+		  Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
+		  // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
                 }
-            else
+	      else
                 {
-                Correct1 = forest_EB_1->GetResponse(value_pi01);
-                // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
+		  Correct1 = forest_EB_1->GetResponse(value_pi01);
+		  // cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
                 }
-               }
+	    }
 
 	    float value_pi02[14];//#
 	    float new_value_pi02[12];
@@ -2397,7 +2417,10 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
   else       Correction = EBPHI_ConCorr_m->GetBinContent(nBin);    
 
   if(Correction > 0.85){ return 1./Correction;}
-  else{                  cout<<"Cont. Correction too low... I'm using 1. Check if all is right please. (nBin = "<<nBin<<" )"<<endl;  return 1.;}
+  else{               
+    //cout<<"Cont. Correction too low... I'm using 1. Check if all is right please. (nBin = "<<nBin<<" )"<<endl;  
+    return 1.;
+  }
 }
 
 // ------------ method called when starting to processes a run  ------------
