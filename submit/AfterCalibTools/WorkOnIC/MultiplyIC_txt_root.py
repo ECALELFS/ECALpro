@@ -425,8 +425,12 @@ parser.add_option("-S", "--SystErr",
                   type="string",
                   default="none",
                   dest="SystErr")
+parser.add_option("--mapsMergedByHand", 
+                  dest="mapsMergedByHand", action="store_true", default=False, 
+                  help="if calibMap files were merged by hand, names of branches in TTree will not end with '_', need to be aware of it to read branches correctly")
 options, args = parser.parse_args()
 SystE = options.SystErr
+mapsMergedByHand = options.mapsMergedByHand
 pathTXT1 = str(sys.argv[1])
 pathTH2  = str(sys.argv[2])
 OutputF  = str(sys.argv[3])
@@ -460,7 +464,7 @@ EEmIC_Next    = fileTH2Next.Get('calibMap_EEm')
 EEpIC_Next    = fileTH2Next.Get('calibMap_EEp')
 #Read EtaRing
 Endc_x_y_ring="../../../FillEpsilonPlot/data/Endc_x_y_ring.txt"
-print "The File to di the iRing Map is: " + str(Endc_x_y_ring)
+print "The File to do the iRing Map is: " + str(Endc_x_y_ring)
 if not (os.path.isfile(Endc_x_y_ring)):
     print str(Endc_x_y_ring) + " doesn't exist!"
 EtaRing_r  = open(Endc_x_y_ring,'r')
@@ -499,11 +503,19 @@ gROOT.ProcessLine(\
     };")
 mPDG_Pi0 = 0.1349766
 sEB = MyStructEB()
-TreeEB.SetBranchAddress('fit_mean_err_',AddressOf(sEB,'fit_mean_err_'));
-TreeEB.SetBranchAddress('fit_mean_',AddressOf(sEB,'fit_mean_'));
-TreeEB.SetBranchAddress('Chisqu_',AddressOf(sEB,'Chisqu_'));
-TreeEB.SetBranchAddress('ieta_',AddressOf(sEB,'ieta_'));
-TreeEB.SetBranchAddress('iphi_',AddressOf(sEB,'iphi_'));
+if mapsMergedByHand:
+    TreeEB.SetBranchAddress('fit_mean_err',AddressOf(sEB,'fit_mean_err_'));
+    TreeEB.SetBranchAddress('fit_mean',AddressOf(sEB,'fit_mean_'));
+    TreeEB.SetBranchAddress('Chisqu',AddressOf(sEB,'Chisqu_'));
+    TreeEB.SetBranchAddress('ieta',AddressOf(sEB,'ieta_'));
+    TreeEB.SetBranchAddress('iphi',AddressOf(sEB,'iphi_'));
+else:
+    TreeEB.SetBranchAddress('fit_mean_err_',AddressOf(sEB,'fit_mean_err_'));
+    TreeEB.SetBranchAddress('fit_mean_',AddressOf(sEB,'fit_mean_'));
+    TreeEB.SetBranchAddress('Chisqu_',AddressOf(sEB,'Chisqu_'));
+    TreeEB.SetBranchAddress('ieta_',AddressOf(sEB,'ieta_'));
+    TreeEB.SetBranchAddress('iphi_',AddressOf(sEB,'iphi_'));
+
 for nT in range(TreeEB.GetEntries()):
     TreeEB.GetEntry(nT);
     name = str(sEB.ieta_) + "_" + str(sEB.iphi_)
@@ -520,12 +532,20 @@ gROOT.ProcessLine(\
         Int_t   zside_;\
     };")
 sEE = MyStructEE()
-TreeEE.SetBranchAddress('fit_mean_err_',AddressOf(sEE,'fit_mean_err_'));
-TreeEE.SetBranchAddress('fit_mean_',AddressOf(sEE,'fit_mean_'));
-TreeEE.SetBranchAddress('Chisqu_',AddressOf(sEE,'Chisqu_'));
-TreeEE.SetBranchAddress('ix_',AddressOf(sEE,'ix_'));
-TreeEE.SetBranchAddress('iy_',AddressOf(sEE,'iy_'));
-TreeEE.SetBranchAddress('zside_',AddressOf(sEE,'zside_'));
+if mapsMergedByHand:
+    TreeEE.SetBranchAddress('fit_mean_err',AddressOf(sEE,'fit_mean_err_'));
+    TreeEE.SetBranchAddress('fit_mean',AddressOf(sEE,'fit_mean_'));
+    TreeEE.SetBranchAddress('Chisqu',AddressOf(sEE,'Chisqu_'));
+    TreeEE.SetBranchAddress('ix',AddressOf(sEE,'ix_'));
+    TreeEE.SetBranchAddress('iy',AddressOf(sEE,'iy_'));
+    TreeEE.SetBranchAddress('zside',AddressOf(sEE,'zside_'));
+else:
+    TreeEE.SetBranchAddress('fit_mean_err_',AddressOf(sEE,'fit_mean_err_'));
+    TreeEE.SetBranchAddress('fit_mean_',AddressOf(sEE,'fit_mean_'));
+    TreeEE.SetBranchAddress('Chisqu_',AddressOf(sEE,'Chisqu_'));
+    TreeEE.SetBranchAddress('ix_',AddressOf(sEE,'ix_'));
+    TreeEE.SetBranchAddress('iy_',AddressOf(sEE,'iy_'));
+    TreeEE.SetBranchAddress('zside_',AddressOf(sEE,'zside_'));
 for nT in range(TreeEE.GetEntries()):
     TreeEE.GetEntry(nT);
     name = str(sEE.ix_) + "_" + str(sEE.iy_) + "_" + str(sEE.zside_)
