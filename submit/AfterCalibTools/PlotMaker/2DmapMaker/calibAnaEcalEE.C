@@ -71,7 +71,8 @@ void calibAnaEcalEE::setHistograms() {
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);//0.0                                                                                                                            
-  th2dMinZaxisVector.push_back(0.13);
+  if (Pi0orEta == "Pi0") th2dMinZaxisVector.push_back(0.13);
+  else th2dMinZaxisVector.push_back(0.48);
   th2dMinZaxisVector.push_back(0.005);
 
 }
@@ -88,7 +89,8 @@ void calibAnaEcalEE::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(10e9);
   th2dMaxZaxisVector.push_back(10e9); // when this value is very large (bigger than the default) use the default to plot axis                  
   th2dMaxZaxisVector.push_back(0.1);                                                
-  th2dMaxZaxisVector.push_back(0.16);
+  if (Pi0orEta == "Pi0") th2dMaxZaxisVector.push_back(0.16);
+  else th2dMaxZaxisVector.push_back(0.62);
   th2dMaxZaxisVector.push_back(0.020);
 
 }
