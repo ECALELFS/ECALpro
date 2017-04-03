@@ -2254,10 +2254,13 @@ FillEpsilonPlot::GetDeltaR(float eta1, float eta2, float phi1, float phi2){
 float 
 FillEpsilonPlot::DeltaPhi(float phi1, float phi2){
 
-  float diff = fabs(phi2 - phi1);
+  //float diff = fabs(phi2 - phi1);
+  // while (diff >acos(-1)) diff -= 2*acos(-1);
+  // while (diff <= -acos(-1)) diff += 2*acos(-1);
 
-  while (diff >acos(-1)) diff -= 2*acos(-1);
-  while (diff <= -acos(-1)) diff += 2*acos(-1);
+  float diff = phi2 - phi1;
+  while (diff > TMath::Pi()) diff -= 2.*TMath::Pi();
+  while (diff <= -TMath::Pi()) diff += 2.*TMath::Pi();
 
   return diff; 
 
