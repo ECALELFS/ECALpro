@@ -47,8 +47,17 @@
 #include "RooChi2Var.h"
 #include "RooMinuit.h"
 
+#include "DataFormats/DetId/interface/DetId.h"
+#include "DataFormats/EcalDetId/interface/EBDetId.h"
+#include "DataFormats/EcalDetId/interface/EEDetId.h"
+
 using namespace std;
 using namespace RooFit;
+
+int Xtal_ID[170][360]={0};
+int Xtal_Ieta[61200]={0};
+int Xtal_Iphi[61200]={0};
+
 
 void createFits(const string& Barrel_or_Endcap = "Barrel", 
 		const Int_t& min_fitIndex = 0, 
@@ -82,6 +91,18 @@ void createFits(const string& Barrel_or_Endcap = "Barrel",
     convert << i;      // insert the textual representation of 'i' in the characters in the stream                                          
     string Result = convert.str();  
 
+    stringstream os_iR;
+    stringstream os_ieta;
+    stringstream os_iphi;
+    os_iR << i; 
+    os_ieta << Xtal_Ieta[i]; 
+    os_iphi << Xtal_Iphi[i]; 
+
+    string ss_iR = os_iR.str();
+    string ss_ieta = os_ieta.str();
+    string ss_iphi = os_iphi.str();
+
+    string rooplotTitle = "iR = "+ss_iR+" (iEta = "+ss_ieta+"  iPhi = "+ ss_iphi+")";
     string rooplotname = rooplotbasename + Result;
     c = new TCanvas("c",rooplotname.c_str());
     string canvasname = rooplotname + ".png";
@@ -90,6 +111,7 @@ void createFits(const string& Barrel_or_Endcap = "Barrel",
     if (!xframe) {
       cout << "Warning: RooPlot object named \"" << rooplotname << "\" not found in file." <<endl;
     } else {
+      xframe->SetTitle(rooplotTitle.c_str());
       xframe->Draw();
       c->SaveAs((storePath + canvasname).c_str());
     }
@@ -109,6 +131,19 @@ void drawFits(string wwwPath, string eosPath, string dirName, string iterNumber,
   // string dirName = "AlcaP0_fromRun273158_2016_v2";
   // string iterNumber = "iter_6";
   // string tagName = "AlcaP0_fromRun273158_2016_v2_";
+
+  for(int i=0;i<61200;i++)
+  {
+	int det_ID = EBDetId::detIdFromDenseIndex(i);
+
+	EBDetId ebseed(det_ID);
+        int ieta = ebseed.ieta();
+        int iphi = ebseed.iphi();		
+	Xtal_Ieta[i] = ieta;
+	Xtal_Iphi[i] = iphi;
+//	cout<<i<<"   "<<ieta<<"  "<<iphi<<endl;
+  }
+
 
   cout << "Producing fits for Barrel." << endl;
   createFits("Barrel",48300,48350,wwwPath,eosPath,dirName,iterNumber,tagName);
