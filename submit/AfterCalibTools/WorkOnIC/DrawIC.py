@@ -125,6 +125,13 @@ class ICplotter:
 
         for k,p in profiles.iteritems():
             canv = rt.TCanvas("c","",1200,1200)
+            canv.cd();
+            canv.SetTickx(1);
+            canv.SetTicky(1);
+            canv.cd();
+            #canv.SetBottomMargin(0.1);
+            canv.SetRightMargin(0.06);
+            canv.SetLeftMargin(0.18);
             p[2].Draw("p")
             p[1].Draw("p same")
             p[0].Draw("p same")
