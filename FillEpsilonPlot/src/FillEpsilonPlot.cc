@@ -36,7 +36,6 @@ Implementation:
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
-
 #include "DataFormats/EcalRecHit/interface/EcalRecHitCollections.h"
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
 #include "DataFormats/CaloRecHit/interface/CaloID.h"
@@ -86,6 +85,12 @@ Implementation:
 #include "FWCore/Framework/interface/TriggerNamesService.h"
 #include <FWCore/Common/interface/TriggerNames.h>
 #include <DataFormats/Common/interface/TriggerResults.h>
+// for L1
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
+#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmAlgorithm.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
 //#define DEBUG
 
@@ -118,6 +123,8 @@ double max_array(double *A, int n);
 double max(double x, double y);
 int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
+// static string L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_SingleEG10 OR L1_SingleEG15 OR L1_SingleEG18 OR L1_SingleEG24 OR L1_SingleEG26 OR L1_SingleEG28 OR L1_SingleEG30 OR L1_SingleEG32 OR L1_SingleEG34 OR L1_SingleEG36 OR L1_SingleEG38 OR L1_SingleEG40 OR L1_SingleEG45 OR L1_SingleIsoEG18 OR L1_SingleIsoEG20 OR L1_SingleIsoEG22 OR L1_SingleIsoEG24 OR L1_SingleIsoEG26 OR L1_SingleIsoEG28 OR L1_SingleIsoEG30 OR L1_SingleIsoEG32 OR L1_SingleIsoEG34 OR L1_SingleIsoEG36 OR L1_SingleIsoEG18er OR L1_SingleIsoEG20er OR L1_SingleIsoEG22er OR L1_SingleIsoEG24er OR L1_SingleIsoEG26er OR L1_SingleIsoEG28er OR L1_SingleIsoEG30er OR L1_SingleIsoEG32er OR L1_SingleIsoEG34er OR L1_DoubleEG_15_10 OR L1_DoubleEG_18_17 OR L1_DoubleEG_20_18 OR L1_DoubleEG_22_10 OR L1_DoubleEG_23_10 OR L1_DoubleEG_22_12 OR L1_DoubleEG_22_15 OR L1_DoubleEG_24_17 OR L1_DoubleEG_25_12 OR  L1_SingleJet16 OR L1_SingleJet20 OR L1_SingleJet35 OR L1_SingleJet60 OR L1_SingleJet160 OR L1_SingleJet90 OR L1_SingleJet120 OR L1_SingleJet140 OR L1_SingleJet150 OR L1_SingleJet160 OR L1_SingleJet170 OR L1_SingleJet180 OR L1_SingleJet200 OR L1_DoubleJetC40 OR L1_DoubleJetC50 OR L1_DoubleJetC60 OR L1_DoubleJetC80 OR L1_DoubleJetC100 OR L1_DoubleJetC112 OR L1_DoubleJetC120 OR L1_TripleJet_88_72_56_VBF OR L1_TripleJet_84_68_48_VBF OR L1_TripleJet_92_76_64_VBF OR L1_QuadJetC40 OR L1_QuadJetC50 OR L1_QuadJetC60 OR L1_HTT120 OR L1_HTT160 OR L1_HTT200 OR L1_HTT240 OR L1_HTT255 OR L1_HTT270 OR L1_HTT280 OR L1_HTT300 OR L1_HTT320 OR L1_HTT220";
+
 FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 {
     /// to be moved in parameters.py
@@ -140,7 +147,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerResultsToken_               = consumes<edm::TriggerResults>(iConfig.getUntrackedParameter("triggerTag",edm::InputTag("TriggerResults")));
-    L1GTobjmapToken_                   = consumes<L1GlobalTriggerObjectMapRecord>(iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap")));
+    //L1GTobjmapToken_                   = consumes<L1GlobalTriggerObjectMapRecord>(iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap")));
+    // edm::Handle<GlobalAlgBlkBxCollection> & l1results
+    L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("hltGtStage2Digis",edm::InputTag("hltGtStage2Digis")));
     GenPartCollectionToken_            = consumes<GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles")));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
@@ -206,6 +215,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
     GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
     JSONfile_                          = iConfig.getUntrackedParameter<std::string>("JSONfile","");
+
+    L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::string>("L1SeedsPi0Stream");
+    //    L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::vector<std::string>>("L1SeedsPi0Stream");
+
 
     // for MC-truth association
     g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
@@ -439,7 +452,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     triggerComposition = new TH1F("triggerComposition", "Trigger Composition", NL1SEED, -0.5, NL1SEED-0.5);
     areLabelsSet_ = false;
     L1_nameAndNumb.clear();
-    for(int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
+    //for(unsigned int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
 
 #ifdef MVA_REGRESSIO
     EBweight_file_1 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_01_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta01_.c_str() ).fullPath().c_str() );
@@ -469,6 +482,12 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
         forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
         }
 #endif
+    // for L1
+    seedIsInStream = new int[GlobalAlgBlk::maxPhysicsTriggers];
+    algoBitToName = new TString[GlobalAlgBlk::maxPhysicsTriggers];
+    l1flag = new int[GlobalAlgBlk::maxPhysicsTriggers];
+    L1EvtCnt = 0;
+
 }
 
 FillEpsilonPlot::~FillEpsilonPlot()
@@ -527,6 +546,13 @@ FillEpsilonPlot::~FillEpsilonPlot()
   //cout<<"Preselection:: Siamo al primo iter: Scrivo le correzioni"<<endl;
   //PassPreselection
   //}
+
+  // for L1
+  delete[] seedIsInStream;
+  delete[] algoBitToName;
+  delete[] l1flag;
+
+
 }
 
 
@@ -545,21 +571,100 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   EventFlow_EB->Fill(1.); EventFlow_EE->Fill(1.);
   //Trigger Histo
   if( !areLabelsSet_ && L1TriggerInfo_ ){
-    edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+    // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+    // iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
+    // const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
+    // for( int i=0; i<NL1SEED; i++ ){
+    // 	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
+    // 	if(trg){
+    // 	  L1_nameAndNumb[trg->algoName()] = trg->algoBitNumber();
+    // 	  triggerComposition->GetXaxis()->SetBinLabel(trg->algoBitNumber()+1,trg->algoName().c_str());
+    // 	}
+    //  if(!areLabelsSet_){
+    //    areLabelsSet_ = true;
+    // 	  cout << "setting labels of triggerComposition histogram" << endl;
+    //  }
+    // }
+    
+    edm::Handle< GlobalAlgBlkBxCollection > gtReadoutRecord;
     iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
-    const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
-    for( int i=0; i<NL1SEED; i++ ){
-	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
-	if(trg){
-	  L1_nameAndNumb[trg->algoName()] = trg->algoBitNumber();
-	  triggerComposition->GetXaxis()->SetBinLabel(trg->algoBitNumber()+1,trg->algoName().c_str());
+ 
+    if (gtReadoutRecord.isValid()) { 
+
+      const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
+      if (l1results->size() == 0) std::cout << "%L1Results -- No trigger name given in TriggerResults of the input " << std::endl;
+
+ 	
+      edm::ESHandle<L1TUtmTriggerMenu> menu;
+      iSetup.get<L1TUtmTriggerMenuRcd>().get(menu);
+
+      // get the bit/name association         
+      for (auto const & keyval: menu->getAlgorithmMap()) { 
+	std::string const & trigName  = keyval.second.getName(); 
+	unsigned int iTrigIndex = keyval.second.getIndex(); 
+	std::cerr << "bit: " << iTrigIndex << "\tname: " << trigName << std::endl;                                                         
+	algoBitToName[iTrigIndex] = TString( trigName );
+	  
+      } // end algo Map
+
+ 
+      GlobalAlgBlk const &result = l1results->at(0, 0);
+      for (unsigned int itrig = 0; itrig < result.maxPhysicsTriggers; ++itrig) {
+	//      std::cerr << "bit: " << itrig << "\tresult: " << results.getAlgoDecisionFinal(itrig) << std::endl;
+
+	// some indices are empty: name them appropriately
+	if (std::string(algoBitToName[itrig]) == "") algoBitToName[itrig] = Form("EMPTY_%d",itrig);
+
+	//std::string l1triggername = std::string(algoBitToName[itrig]);
+	L1_nameAndNumb[std::string(algoBitToName[itrig])] = itrig;
+	triggerComposition->GetXaxis()->SetBinLabel(itrig+1,algoBitToName[itrig]);
+
+	// check if index is valid
+	if ( std::string(algoBitToName[itrig]).find("EMPTY") != std::string::npos ) {
+
+	  // -1 for non valid index
+	  seedIsInStream[itrig] = -1;
+	  l1flag[itrig] = -2; 
+	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]);  
+
+
+	} else {
+
+	  // check if seed is used by the stream
+	  if ( L1SeedsPi0Stream_.find(algoBitToName[itrig]) != std::string::npos ) {
+
+	    seedIsInStream[itrig] = 1;
+	    bool myflag = result.getAlgoDecisionFinal(itrig) ; 
+	    if (myflag ) { l1flag[itrig] = 1; }
+	    else {l1flag[itrig] =0 ; }
+	    
+	  } else {
+
+	    seedIsInStream[itrig] = 0;
+	    l1flag[itrig] = -1;
+	    triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]);  
+
+	  }
+
 	}
-    }
-    if(!areLabelsSet_){
+	
+	std::cout << "L1 TD: "<<itrig<<" "<<algoBitToName[itrig]<<" " 
+		  << l1flag[itrig] <<" " 
+		  << std::endl;           
+	
+
+      }
+
+      if(!areLabelsSet_){
 	areLabelsSet_ = true;
 	cout << "setting labels of triggerComposition histogram" << endl;
+      }
+
     }
+
   }
+  // end of --> if (!areLabelsSet_ && L1TriggerInfo_)
+
 
   //MC Photons (they will be associated to the clusters later)
   if( isMC_ && MC_Asssoc_ ){
@@ -743,10 +848,16 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     ebclusters_used = ebclusters;
     eeclusters_used = eseeclusters_tot;
   }
+
+  cout << "Check 1 in FillEpsilonPlot::analyze()" << endl;
   if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, EcalBarrel);
+  cout << "Check 2 in FillEpsilonPlot::analyze()" << endl;
   if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, EcalEndcap);
+  cout << "Check 3 in FillEpsilonPlot::analyze()" << endl;
 
   delete estopology_;
+
+  L1EvtCnt++;     
 
 }
 
@@ -2084,11 +2195,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #ifdef DEBUG
   cout << "[DEBUG] Filling Tree" << endl; 
 #endif
+  cout << "Check 1 in compute epsilon" << endl;
   if(MakeNtuple4optimization_){
-    for(int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
+    //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
+    for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = l1flag[i];
     Op_NPi0_rec = nPi0; 
     if(nPi0>0) Tree_Optim->Fill();
   }
+  cout << "Check 2 in compute epsilon" << endl;
 
 }
 
@@ -2298,29 +2412,66 @@ bool FillEpsilonPlot::getTriggerByName( std::string s ) {
 
 bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+  edm::Handle< GlobalAlgBlkBxCollection > gtReadoutRecord;
   iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
-  const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
-  for( int i=0; i<NL1SEED; i++ ){
-    const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
-    if(trg){
-	L1BitCollection_[trg->algoBitNumber()] = trg->algoGtlResult();
-	if( trg->algoGtlResult() ){
-	  triggerComposition->Fill( trg->algoBitNumber() );
+
+  if (gtReadoutRecord.isValid()) {
+
+    const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
+
+    cout << "### CHECK --> event " << L1EvtCnt+1 << " ###" << endl;
+    GlobalAlgBlk const &result = l1results->at(0, 0);
+
+    for (unsigned int itrig = 0; itrig < result.maxPhysicsTriggers; ++itrig) {
+      //      std::cerr << "bit: " << itrig << "\tresult: " << results.getAlgoDecisionFinal(itrig) << std::endl;
+
+      // L1 decision below is 1 if seed fired, 0 if it didn't. 
+      // seedIsInStream[itrig] = -1 if index is not valid, = 0 if index is valid but the seed is not used by the stream
+      if (seedIsInStream[itrig] > 0) { 
+    
+	bool myflag = result.getAlgoDecisionFinal(itrig) ; 
+	if (myflag ) { 
+	  l1flag[itrig] = 1; 
+	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]); 
+	  cout << " itrig = " << itrig << "    ";
+	  cout << " l1flag[itrig] = " << l1flag[itrig] << "    ";
+	  cout << " algoBitToName[itrig] = " << algoBitToName[itrig] << endl;
+	} else {
+	  l1flag[itrig] = 0 ; 
 	}
+
+      } 
+ 
     }
+
   }
-  if( L1_Bit_Sele_!="" ){
-    if ( L1_nameAndNumb.find(L1_Bit_Sele_.Data()) != L1_nameAndNumb.end() ){
-	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap( L1_nameAndNumb[L1_Bit_Sele_.Data()] );
-	return trg->algoGtlResult();
-    }
-    else{
-	cout<<"WARNING!! L1_Bit_Sele_ is not in the list, I will return true!"<<endl;
-	return true;
-    }
-  }
-  else{ return true;}  
+
+  // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
+  // iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
+  // const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
+  // for( int i=0; i<NL1SEED; i++ ){
+  //   const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
+  //   if(trg){
+  // 	L1BitCollection_[trg->algoBitNumber()] = trg->algoGtlResult();
+  // 	if( trg->algoGtlResult() ){
+  // 	  triggerComposition->Fill( trg->algoBitNumber() );
+  // 	}
+  //   }
+  // }
+  // if( L1_Bit_Sele_!="" ){
+  //   if ( L1_nameAndNumb.find(L1_Bit_Sele_.Data()) != L1_nameAndNumb.end() ){
+  // 	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap( L1_nameAndNumb[L1_Bit_Sele_.Data()] );
+  // 	return trg->algoGtlResult();
+  //   }
+  //   else{
+  // 	cout<<"WARNING!! L1_Bit_Sele_ is not in the list, I will return true!"<<endl;
+  // 	return true;
+  //   }
+  // }
+  // else{ return true;}  
+  cout << "Going out of FillEpsilonPlot::getTriggerResult()" << endl;
+
+  return true;
 
   //  edm::Handle< L1GlobalTriggerReadoutRecord > gtReadoutRecord;
   //  iEvent.getByLabel( l1TriggerTag_, gtReadoutRecord);
