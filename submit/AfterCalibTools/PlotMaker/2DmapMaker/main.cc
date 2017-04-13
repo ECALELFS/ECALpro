@@ -30,6 +30,7 @@ Int_t main(int argc, char* argv[]) {
   string tagName(argv[4]);
   string EBorEE(argv[5]);
   string wwwPath(argv[6]);
+  string Pi0orEta(argv[7]);
 
   TChain *chain;
   string Result;          // string which will contain the number used as the loop iterator below (to create the chian of files)
@@ -69,6 +70,7 @@ Int_t main(int argc, char* argv[]) {
 
   if (ana != NULL) {
     ana->setEBorEE(EBorEE);
+    ana->setPi0orEta(Pi0orEta);
     //  ana->setWhichEE("");
     ana->setDirName(dirName);
     ana->setIterNumber(iterNumber);

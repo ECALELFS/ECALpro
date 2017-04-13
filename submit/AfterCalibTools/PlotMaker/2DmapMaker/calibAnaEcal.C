@@ -32,6 +32,7 @@ calibAnaEcal::calibAnaEcal(TTree *tree) : calibAnaEcal_base(tree) {
   // protected data members
 
   EBorEE = "";
+  Pi0orEta = "";
   dirName = "";
   iterNumber = "";
   wwwPath = "";
