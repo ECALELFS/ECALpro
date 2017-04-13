@@ -449,4 +449,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       int nL1SeedsPi0Stream_; // number of seeds used by the stream (given L1SeedsPi0Stream_, it is the number of " OR " +1, e.g. "seed1 OR seed2 OR seed3" has 3 seeds
       int *seedIsInStream;
 
+      // store for each event if AlCa_EcalPi0(Eta)EB(EE)only_v* fired
+      bool EB_HLT, EE_HLT;
+
+      // event info
+      ULong64_t myEvent;
+      int myLumiBlock;
+      int myRun;
+
 };

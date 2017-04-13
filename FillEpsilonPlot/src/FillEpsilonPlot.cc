@@ -395,6 +395,19 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 #endif
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
+	// event info for data
+	Tree_Optim->Branch( "Event",     &myEvent,     "Event/l"); // l is for ULong64_t
+	Tree_Optim->Branch( "LumiBlock", &myLumiBlock, "LumiBlock/I");
+	Tree_Optim->Branch( "Run",       &myRun,       "Run/I");
+	if (HLTResults_) {
+	  if (Are_pi0_) {
+	    Tree_Optim->Branch( "AlCa_EcalPi0EBonly", &EB_HLT, "AlCa_EcalPi0EBonly/O"); // O (capital letter o, not zero) is for a Bool_t
+	    Tree_Optim->Branch( "AlCa_EcalPi0EEonly", &EE_HLT, "AlCa_EcalPi0EEonly/O");	  
+	  } else {
+	    Tree_Optim->Branch( "AlCa_EcalEtaEBonly", &EB_HLT, "AlCa_EcalEtaEBonly/O"); 
+	    Tree_Optim->Branch( "AlCa_EcalEtaEEonly", &EE_HLT, "AlCa_EcalEtaEEonly/O");	  
+	  }
+	}
 	//Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           Form("STr2_L1Seed[%d]/I",NL1SEED));
 	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,         "STr2_NPi0_rec/I");
 	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,       "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
@@ -569,6 +582,10 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
   EventFlow_EB->Fill(1.); EventFlow_EE->Fill(1.);
   //Trigger Histo
+
+  myEvent = iEvent.id().event();
+  myLumiBlock = iEvent.id().luminosityBlock();
+  myRun = iEvent.id().run();
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
@@ -829,7 +846,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   Ncristal_EB.clear(); Ncristal_EE.clear();
   //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
-  bool EB_HLT=true, EE_HLT=true;
+  // Put definition of these variables in FillEpsilonPlot.h, so they are accessible from any method of fillEpsilonPlot
+  EB_HLT=true, EE_HLT=true;
   // Warning: when you are filling ntuples for data, GetHLTResults() should be used, otherwise when entering fillEEClusters()
   // the code crushes saying
  
@@ -2521,7 +2539,7 @@ bool FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
   TRegexp reg(TString( s.c_str()) );
   for (int i = 0 ; i != hltCount; ++i) {
     TString hltName_tstr(HLTNames.triggerName(i));
-    std::string hltName_str(HLTNames.triggerName(i));
+    //std::string hltName_str(HLTNames.triggerName(i));
     //cout<<"hltName_tstr is: "<<hltName_tstr<<" and reg is: "<<s<<endl;
     if ( hltName_tstr.Contains(reg) ){          // If reg contains * ir will say always True. So you ask for ->accept(i) to the first HLTName always.
 	//cout<<"hltName_tstr.Contains(reg) give: "<<hltTriggerResultHandle->accept(i)<<endl;
