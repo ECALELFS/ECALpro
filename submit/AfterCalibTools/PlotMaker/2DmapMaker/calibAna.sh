@@ -8,15 +8,15 @@
 ##############################################
 
 
-iter_ini=4                                                       # first iteration to use
-iter_fin=4                                                      # last iteration to use: it is included in sequence below
-#path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
+iter_ini=1                                                       # first iteration to use
+iter_fin=1                                                      # last iteration to use: it is included in sequence below
+path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
-path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
-dirName="AlcaP0_Eta_IC2017March_2016G_ALL_2012reg_MULTIFIT"                            # dirname (see CalibCode/submit/parameters.py)
-tagName="AlcaP0_Eta_IC2017March_2016G_ALL_2012reg_MULTIFIT_"                           # TagName (see CalibCode/submit/parameters.py) 
+#path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
+dirName="AlcaP0_2016_goldenJson2016_multifit_legacyrereco_GTcustom_EE"                            # dirname (see CalibCode/submit/parameters.py)
+tagName="AlcaP0_2016_goldenJson2016_multifit_legacyrereco_GTcustom_EE_"                           # TagName (see CalibCode/submit/parameters.py) 
 
-Pi0orEta="Eta"  # possible options are Pi0 and Eta
+Pi0orEta="Pi0"  # possible options are Pi0 and Eta
 
 # iter_ini=0                                                          
 # iter_fin=7  # it is included in sequence below                                                        

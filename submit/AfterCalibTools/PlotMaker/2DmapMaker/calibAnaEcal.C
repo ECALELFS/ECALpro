@@ -122,14 +122,16 @@ void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
   hist2d->GetYaxis()->SetTitleOffset(0.8);
   hist2d->SetStats(0);
   hist2d->Draw("COLZ");
-  // after drawing, fix the palette                                                                                                                                  
+  // after drawing, fix the palette                                                                           
+
   gPad->Update();
   TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+  //cout << "hist2d = " << hist2d << "    palette = " << palette << endl;
   if (!palette || palette == NULL) {
     cout << "Error in function draw2Dmap(): palette not found. ABORT" << endl;
     exit(EXIT_FAILURE);
   }
-  // the following lines move the palette. Choose the values you need for the position.                                                                              
+  // the following lines move the palette. Choose the values you need for the position.                                         
   palette->SetX1NDC(0.91);
   palette->SetX2NDC(0.94);
   //palette->SetY1NDC(0.2);                                                                                                                                          
