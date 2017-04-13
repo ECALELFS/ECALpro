@@ -26,9 +26,13 @@
 #include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
 #include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 #include "CalibCode/FillEpsilonPlot/interface/JSON.h"
+// to get L1 info
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
+//L1                                                                                                                                         
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 
 #define NPI0MAX 30000
-#define NL1SEED 128
+#define NL1SEED GlobalAlgBlk::maxPhysicsTriggers  // was 128
 //#define SELECTION_TREE
 //#define NEW_CONTCORR    // to use Yong's parametric CC, act on both EE and EB
 #define MVA_REGRESSIO     // to use regression in EB
@@ -129,6 +133,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::Handle< EBRecHitCollection > ebHandle;
       edm::Handle< EBRecHitCollection > eeHandle;
       edm::Handle< ESRecHitCollection > esHandle;
+      // edm::Handle< edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esHandle;
 
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
@@ -163,7 +168,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
       TString L1_Bit_Sele_;
-      float L1BitCollection_[NL1SEED];
+      //float L1BitCollection_[NL1SEED];
 
       bool Are_pi0_;
       bool useMVAContainmentCorrections_;
@@ -175,9 +180,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::EDGetTokenT<ESRecHitCollection> ESRecHitCollectionToken_;
       edm::InputTag l1TriggerTag_;
       edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_;
-      edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> L1GTobjmapToken_;
+      //edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> L1GTobjmapToken_;
+      edm::EDGetTokenT<GlobalAlgBlkBxCollection> L1GTobjmapToken_;
       edm::InputTag l1InputTag_;
-      std::map<string,int> L1_nameAndNumb;
+      //std::map<string,int> L1_nameAndNumb;
       edm::EDGetTokenT<GenParticleCollection> GenPartCollectionToken_;
 
       edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
@@ -315,7 +321,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #endif
       TTree*  Tree_Optim;
       Int_t   nPi0;
-      Int_t   Op_L1Seed[NL1SEED];
+      //Int_t   Op_L1Seed[NL1SEED];
       Int_t   Op_NPi0_rec;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
       Float_t Op_IsoPi0_rec[NPI0MAX];
@@ -435,5 +441,20 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       /*constexpri*/ double meanlimhigh = 2.0;
       /*constexpr*/ double meanoffset  = meanlimlow + 0.5*(meanlimhigh-meanlimlow);
       /*constexpr*/ double meanscale   = 0.5*(meanlimhigh-meanlimlow);
+
+      // for L1
+      short *l1flag;
+      TString* algoBitToName;
+      std::string L1SeedsPi0Stream_;
+      int nL1SeedsPi0Stream_; // number of seeds used by the stream (given L1SeedsPi0Stream_, it is the number of " OR " +1, e.g. "seed1 OR seed2 OR seed3" has 3 seeds
+      int *seedIsInStream;
+
+      // store for each event if AlCa_EcalPi0(Eta)EB(EE)only_v* fired
+      bool EB_HLT, EE_HLT;
+
+      // event info
+      ULong64_t myEvent;
+      int myLumiBlock;
+      int myRun;
 
 };
