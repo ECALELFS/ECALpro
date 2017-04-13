@@ -183,7 +183,7 @@ def printFillCfg1( outputfile ):
     # outputfile.write(")\n")
     outputfile.write("process.options = cms.untracked.PSet(\n")
     outputfile.write("   wantSummary = cms.untracked.bool(True),\n")
-    outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
+    #outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
     outputfile.write(")\n")
     outputfile.write("process.source = cms.Source('PoolSource',\n")
     #outputfile.write("                            inputCommands = cms.untracked.vstring( #type_Module_instance_process\n")
@@ -350,6 +350,12 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
     if( L1TriggerInfo ):
         outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
+        if not (L1SeedExpression == ""):
+            outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
+            nSeeds = L1SeedExpression.count(" OR ") + 1 
+            outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
+                
+
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
     outputfile.write("process.p = cms.Path()\n")

@@ -123,7 +123,6 @@ double max_array(double *A, int n);
 double max(double x, double y);
 int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
-// static string L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_SingleEG10 OR L1_SingleEG15 OR L1_SingleEG18 OR L1_SingleEG24 OR L1_SingleEG26 OR L1_SingleEG28 OR L1_SingleEG30 OR L1_SingleEG32 OR L1_SingleEG34 OR L1_SingleEG36 OR L1_SingleEG38 OR L1_SingleEG40 OR L1_SingleEG45 OR L1_SingleIsoEG18 OR L1_SingleIsoEG20 OR L1_SingleIsoEG22 OR L1_SingleIsoEG24 OR L1_SingleIsoEG26 OR L1_SingleIsoEG28 OR L1_SingleIsoEG30 OR L1_SingleIsoEG32 OR L1_SingleIsoEG34 OR L1_SingleIsoEG36 OR L1_SingleIsoEG18er OR L1_SingleIsoEG20er OR L1_SingleIsoEG22er OR L1_SingleIsoEG24er OR L1_SingleIsoEG26er OR L1_SingleIsoEG28er OR L1_SingleIsoEG30er OR L1_SingleIsoEG32er OR L1_SingleIsoEG34er OR L1_DoubleEG_15_10 OR L1_DoubleEG_18_17 OR L1_DoubleEG_20_18 OR L1_DoubleEG_22_10 OR L1_DoubleEG_23_10 OR L1_DoubleEG_22_12 OR L1_DoubleEG_22_15 OR L1_DoubleEG_24_17 OR L1_DoubleEG_25_12 OR  L1_SingleJet16 OR L1_SingleJet20 OR L1_SingleJet35 OR L1_SingleJet60 OR L1_SingleJet160 OR L1_SingleJet90 OR L1_SingleJet120 OR L1_SingleJet140 OR L1_SingleJet150 OR L1_SingleJet160 OR L1_SingleJet170 OR L1_SingleJet180 OR L1_SingleJet200 OR L1_DoubleJetC40 OR L1_DoubleJetC50 OR L1_DoubleJetC60 OR L1_DoubleJetC80 OR L1_DoubleJetC100 OR L1_DoubleJetC112 OR L1_DoubleJetC120 OR L1_TripleJet_88_72_56_VBF OR L1_TripleJet_84_68_48_VBF OR L1_TripleJet_92_76_64_VBF OR L1_QuadJetC40 OR L1_QuadJetC50 OR L1_QuadJetC60 OR L1_HTT120 OR L1_HTT160 OR L1_HTT200 OR L1_HTT240 OR L1_HTT255 OR L1_HTT270 OR L1_HTT280 OR L1_HTT300 OR L1_HTT320 OR L1_HTT220";
 
 FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 {
@@ -138,6 +137,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
+    //ESRecHitCollectionToken_           = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> >>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     HLTResultsNameEB_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEB","AlCa_EcalPi0EB");
     HLTResultsNameEE_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEE","AlCa_EcalPi0EE");
@@ -216,9 +216,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
     JSONfile_                          = iConfig.getUntrackedParameter<std::string>("JSONfile","");
 
-    L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::string>("L1SeedsPi0Stream");
-    //    L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::vector<std::string>>("L1SeedsPi0Stream");
-
+    L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::string>("L1SeedsPi0Stream");    
+    nL1SeedsPi0Stream_                 = iConfig.getUntrackedParameter<int>("nL1SeedsPi0Stream");
 
     // for MC-truth association
     g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
@@ -396,7 +395,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 #endif
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
-	Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           "STr2_L1Seed[400]/I");
+	//Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           Form("STr2_L1Seed[%d]/I",NL1SEED));
 	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,         "STr2_NPi0_rec/I");
 	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,       "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,       "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
@@ -448,10 +447,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_iPhi_1on20",    &Op_iPhi_1on20,       "STr2_iPhi_1on20[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_2on20",    &Op_iPhi_2on20,       "STr2_iPhi_2on20[STr2_NPi0_rec]/I");
     }
+
     /// trigger histo
-    triggerComposition = new TH1F("triggerComposition", "Trigger Composition", NL1SEED, -0.5, NL1SEED-0.5);
+    triggerComposition = new TH1F("triggerComposition", "Trigger Composition", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
     areLabelsSet_ = false;
-    L1_nameAndNumb.clear();
+    //L1_nameAndNumb.clear();
     //for(unsigned int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
 
 #ifdef MVA_REGRESSIO
@@ -485,8 +485,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     // for L1
     seedIsInStream = new int[GlobalAlgBlk::maxPhysicsTriggers];
     algoBitToName = new TString[GlobalAlgBlk::maxPhysicsTriggers];
-    l1flag = new int[GlobalAlgBlk::maxPhysicsTriggers];
-    L1EvtCnt = 0;
+    l1flag = new short[GlobalAlgBlk::maxPhysicsTriggers];
 
 }
 
@@ -570,6 +569,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
   EventFlow_EB->Fill(1.); EventFlow_EE->Fill(1.);
   //Trigger Histo
+
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
     // iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
@@ -604,11 +604,12 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	unsigned int iTrigIndex = keyval.second.getIndex(); 
 	std::cerr << "bit: " << iTrigIndex << "\tname: " << trigName << std::endl;                                                         
 	algoBitToName[iTrigIndex] = TString( trigName );
-	  
-      } // end algo Map
 
+      } // end algo Map
  
+      int trigCompBin = 1;
       GlobalAlgBlk const &result = l1results->at(0, 0);
+
       for (unsigned int itrig = 0; itrig < result.maxPhysicsTriggers; ++itrig) {
 	//      std::cerr << "bit: " << itrig << "\tresult: " << results.getAlgoDecisionFinal(itrig) << std::endl;
 
@@ -616,8 +617,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	if (std::string(algoBitToName[itrig]) == "") algoBitToName[itrig] = Form("EMPTY_%d",itrig);
 
 	//std::string l1triggername = std::string(algoBitToName[itrig]);
-	L1_nameAndNumb[std::string(algoBitToName[itrig])] = itrig;
-	triggerComposition->GetXaxis()->SetBinLabel(itrig+1,algoBitToName[itrig]);
+	//L1_nameAndNumb[std::string(algoBitToName[itrig])] = itrig;
 
 	// check if index is valid
 	if ( std::string(algoBitToName[itrig]).find("EMPTY") != std::string::npos ) {
@@ -625,32 +625,38 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	  // -1 for non valid index
 	  seedIsInStream[itrig] = -1;
 	  l1flag[itrig] = -2; 
-	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]);  
-
 
 	} else {
 
-	  // check if seed is used by the stream
-	  if ( L1SeedsPi0Stream_.find(algoBitToName[itrig]) != std::string::npos ) {
+	  // check if seed is used by the stream: seed expression is "seed1 OR seed2 OR seed3 ... "
+	  // the space at the end is important: see parameters.py
+	  if ( L1SeedsPi0Stream_.find((algoBitToName[itrig]+" ")) != std::string::npos ) { 
 
 	    seedIsInStream[itrig] = 1;
 	    bool myflag = result.getAlgoDecisionFinal(itrig) ; 
 	    if (myflag ) { l1flag[itrig] = 1; }
-	    else {l1flag[itrig] =0 ; }
+	    else {l1flag[itrig] = 0 ; }
+	    // save bit for any seed n the stream in the tree
+	    std::string trigName = std::string(algoBitToName[itrig]);
+	    cout << "trigCompBin = " << trigCompBin << "    Seed name = " << algoBitToName[itrig] << endl;
+	    if (trigCompBin <= triggerComposition->GetNbinsX()) triggerComposition->GetXaxis()->SetBinLabel(trigCompBin,trigName.c_str());
+	    else cout << "Warning: trigCompBin is exceeding the allowed number of bins. Check! " << endl;
+	    trigCompBin++;
+	    Tree_Optim->Branch(trigName.c_str(),l1flag+itrig,(trigName+"/S").c_str());   // l1flag+(int)itrig is the pointer to the itrig-th object of l1flag
+	    //Tree_Optim->Branch((trigName+"_Prescl").c_str(),l1Prescl+(int)itrig,(trigName+"_Prescl/I").c_str());  // not implemented yet
 	    
 	  } else {
 
 	    seedIsInStream[itrig] = 0;
 	    l1flag[itrig] = -1;
-	    triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]);  
 
 	  }
 
 	}
 	
-	std::cout << "L1 TD: "<<itrig<<" "<<algoBitToName[itrig]<<" " 
-		  << l1flag[itrig] <<" " 
-		  << std::endl;           
+	// std::cout << "L1 TD: "<<itrig<<" "<<algoBitToName[itrig]<<" " 
+	// 	  << l1flag[itrig] <<" " 
+	// 	  << std::endl;           
 	
 
       }
@@ -817,12 +823,30 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   vs4s9.clear(); vs2s9.clear(); vs2s9.clear(); vSeedTime.clear();
   vs4s9EE.clear(); Es_1.clear(); Es_2.clear(); vSeedTimeEE.clear();
   vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
+  //cout << "I'm before std::vector< CaloCluster > eseeclusters; eseeclusters.clear(); " << endl;
   std::vector< CaloCluster > eseeclusters; eseeclusters.clear();
   std::vector< CaloCluster > eseeclusters_tot; eseeclusters_tot.clear();
   Ncristal_EB.clear(); Ncristal_EE.clear();
+  //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
   bool EB_HLT=true, EE_HLT=true;
-  if( HLTResults_ && (!MakeNtuple4optimization_) ){
+  // Warning: when you are filling ntuples for data, GetHLTResults() should be used, otherwise when entering fillEEClusters()
+  // the code crushes saying
+ 
+ // ----- Begin Fatal Exception 12-Apr-2017 09:58:12 CEST-----------------------
+  //   An exception of category 'ProductNotFound' occurred while
+  //   [0] Processing run: 282814 lumi: 797 event: 1519368689
+  //   [1] Running path 'p'
+  //   [2] Calling event method for module FillEpsilonPlot/'analyzerFillEpsilon'
+  // 	Exception Message:
+  //    Principal::getByToken: Found zero products matching all criteria
+  //    Looking for type: edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> >
+  //    Looking for module label: hltAlCaPi0RecHitsFilterEEonlyRegional
+  //    Looking for productInstanceName: pi0EcalRecHitsES
+
+  // For MC this is not necessary probably (I didn't check)
+  //if( HLTResults_ && (!MakeNtuple4optimization_) ){
+  if( HLTResults_ ){
     if(Are_pi0_){
 	EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
 	EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
@@ -836,10 +860,14 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   edm::ESHandle<EcalChannelStatus> csHandle;
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
   const EcalChannelStatus &channelStatus = *csHandle; 
+  ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
 
   EventFlow_EB->Fill(2.); EventFlow_EE->Fill(2.);
   if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ){ EventFlow_EB->Fill(3.); fillEBClusters(ebclusters, iEvent, channelStatus);}
+  ////cout << "I'm after fillEBClusters(ebclusters, iEvent, channelStatus) " << endl;
   if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ){ EventFlow_EE->Fill(3.); fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);}
+  ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
+
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
   if(isMC_ && MC_Asssoc_) {
     ebclusters_used = MCTruthAssociate(ebclusters,MC_Asssoc_DeltaR,true);
@@ -849,15 +877,10 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     eeclusters_used = eseeclusters_tot;
   }
 
-  cout << "Check 1 in FillEpsilonPlot::analyze()" << endl;
   if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, EcalBarrel);
-  cout << "Check 2 in FillEpsilonPlot::analyze()" << endl;
   if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, EcalEndcap);
-  cout << "Check 3 in FillEpsilonPlot::analyze()" << endl;
-
+  
   delete estopology_;
-
-  L1EvtCnt++;     
 
 }
 
@@ -1097,7 +1120,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
   /*===============================================================*/
 {
 
+  //cout << "I'm before PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle); " << endl;
   PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle);
+  ////cout << "I'm after PreshowerTools esClusteringAlgo(geometry, estopology_, esHandle); " << endl;
 
   std::vector<EcalRecHit> eeseeds;
 
@@ -1347,8 +1372,11 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
           // replace the std PreshowerTools::clusterwindowsize_ = 15 with 5, smaller for 3x3 clusters
           float es_clusterwindowsize = 5;
+	  //cout << "I'm before 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion);
+	  ////cout << "I'm after 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
 	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion);
+	  ////cout << "I'm after 	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion); " << endl;
 
 
 	  double e1 = preshowerclusterp1.energy();
@@ -1406,6 +1434,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
   Ncristal_EE.clear();
   Ncristal_EE = Nxtal_tot; 
   Nxtal.clear();
+  //cout << "Exiting fillEEClusters(...) " << endl;
+
+
 }
 
 
@@ -1515,10 +1546,31 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(4.);
 	else                       EventFlow_EE->Fill(4.);
 	float Corr1 = 1., Corr2 = 1.;
+
+	// Defining few variables to save photon quantities that are used more than once, to avoid recomputing them every time
+	Double_t g1eta = g1->eta();
+	Double_t g2eta = g2->eta();
+	Double_t g1phi = g1->phi();
+	Double_t g2phi = g2->phi();
+	Double_t g1pt = g1->energy()/cosh(g1eta);
+	Double_t g2pt = g2->energy()/cosh(g2eta);
+	TLorentzVector G_Sort_1, G_Sort_2, GSort1plus2;
+	// following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
+	// this is used only in some part activated by defines, therefore compilation error occurs because it is said it is not used
+	double GSort1plus2_EoverCoshEta = 0.0; // this will store G.E()/cosh(G.Eta()), in order to compute it only once
+	if (GSort1plus2_EoverCoshEta > 0.0 ) GSort1plus2_EoverCoshEta = -1.0;  // needed only because sometimes compiler complains that this variable is not used
+	else GSort1plus2_EoverCoshEta = -2.0;
+
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
 	if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
 
-	  TLorentzVector G_Sort_1, G_Sort_2;
+	  // cout << "################################" << endl;
+	  // cout << "### We are in the barrel! ###" << endl;
+	  // cout << "################################" << endl;
+
+
+	  // define G_Sort only once outside the if (...) and initialize them when needed
+	  //	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
 	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
 	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
@@ -1528,13 +1580,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  bool Inverted=false;
 
-          if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
-            G_Sort_1.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
-            G_Sort_2.SetPtEtaPhiE( g2->energy()/cosh(g2->eta()) ,g2->eta(),g2->phi(),g2->energy() );
+          if( g1pt > g2pt ){
+            G_Sort_1.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
+            G_Sort_2.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
           }
           else{
-            G_Sort_1.SetPtEtaPhiE( g2->energy()/cosh(g2->eta()) ,g2->eta(),g2->phi(),g2->energy() );
-            G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
+            G_Sort_1.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
+            G_Sort_2.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
             iEta1=id_2.ieta(); iEta2 = id_1.ieta();
             iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
 #ifdef MVA_REGRESSIO_Tree
@@ -1543,6 +1595,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
             ind1=j; ind2=i;
             Inverted=true;
           }
+	  GSort1plus2 = G_Sort_1 + G_Sort_2;
+	  GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
@@ -1677,45 +1731,54 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
 	  iSM1_mva = iSMod_1; iSM2_mva = iSMod_2;
 
-	  TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
-	  TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+	  // Define just the original vector, the corrected vector has same direction and magnitude scaled by correction
+	  // actually we just need G_sort_1 and G_sort_2, no need to define another object
 
-	  TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
-	  TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
+	  // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
+	  // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+	  // TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
+	  // TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
 
-	  Mass_mva = (mvag1P4 + mvag2P4).M();
-	  MassOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
-	  pi0Eta     = (mvaOrg1P4 + mvaOrg2P4).Eta();
+	  MassOr_mva = GSort1plus2.M();
+	  pi0Eta     = GSort1plus2.Eta();
+	  // get corrected mass from sum of corrected photons
+	  Mass_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
 #endif
 	}
 #endif
 
 	if( subDetId==EcalEndcap && (g1->seed().subdetId()==2) && (g2->seed().subdetId()==2) ){
 
+	  // cout << "################################" << endl;
+	  // cout << "### We are in the endcap! ###" << endl;
+	  // cout << "################################" << endl;
+
 #ifdef MVA_REGRESSIO_EE
-	  TLorentzVector G_Sort_1, G_Sort_2;
+	  // define G_SOrt only once at the beginning
+	  //TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
 	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy();
 	  EEDetId  id_2(g2->seed()); int iX2 = id_2.ix(); int iY2 = id_2.iy();
 
-          if( g1->energy()/cosh(g1->eta()) > g2->energy()/cosh(g2->eta()) ){
-            G_Sort_1.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
-            G_Sort_2.SetPtEtaPhiE( g2->energy()/cosh(g2->eta()) ,g2->eta(),g2->phi(),g2->energy() );
+          if( g1pt > g2pt ){
+            G_Sort_1.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
+            G_Sort_2.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
           }
           else{
-            G_Sort_1.SetPtEtaPhiE( g2->energy()/cosh(g2->eta()) ,g2->eta(),g2->phi(),g2->energy() );
-            G_Sort_2.SetPtEtaPhiE( g1->energy()/cosh(g1->eta()) ,g1->eta(),g1->phi(),g1->energy() );
+            G_Sort_1.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
+            G_Sort_2.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
             iX1=id_2.ix(); iX2 = id_1.ix();
             iY1=id_2.iy(); iY2 = id_1.iy();
             ind1=j; ind2=i;
           }
-
+	  GSort1plus2 = G_Sort_1 + G_Sort_2;
+	  GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
 
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
 	  float new_value_pi01[8];
-	  value_pi01[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
-	  value_pi01[1] = ( G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
+	  value_pi01[0] = ( GSort1plus2_EoverCoshEta );
+	  value_pi01[1] = ( G_Sort_1.E()/ GSort1plus2_EoverCoshEta );
 	  value_pi01[2] = ( G_Sort_1.Pt() );
 	  value_pi01[3] = ( Ncristal_EE[ind1] );
 	  value_pi01[4] = ( Ncristal_EE[ind2] );
@@ -1748,15 +1811,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
                 }
 
-	  cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
-	    <<" ratio E "<< G_Sort_1.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_1.Pt()
+	  cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<GSort1plus2_EoverCoshEta
+	    <<" ratio E "<< G_Sort_1.E()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_1.Pt()
 	    <<" xtal "<<Ncristal_EE[ind1]<<" vs4s9EE "<<vs4s9EE[ind1]<<" vs1s9EE "<<vs1s9EE[ind1]<<" vs2s9EE "<<vs2s9EE[ind1]
 	    <<" ESratio "<<ESratio[ind1]<<" EtaRing_1 "<<EtaRing_1<<endl;
 
 	  float value_pi02[10];
 	  float new_value_pi02[8];
-	  value_pi02[0] = ( (G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()) );
-	  value_pi02[1] = ( G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())) );
+	  value_pi02[0] = ( GSort1plus2_EoverCoshEta );
+	  value_pi02[1] = ( G_Sort_2.E()/GSort1plus2_EoverCoshEta );
 	  value_pi02[2] = ( G_Sort_2.Pt() );
 	  value_pi02[3] = ( Ncristal_EE[ind1] );
 	  value_pi02[4] = ( Ncristal_EE[ind2] );
@@ -1789,98 +1852,147 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
           }
 
-	  cout<<"Correction2: "<<Correct2<<" iX: "<<iX2<<" iY "<<iY2<<" Epi0 "<<(G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta())
-	    <<" ratio E "<< G_Sort_2.E()/((G_Sort_1+G_Sort_2).E()/cosh((G_Sort_1+G_Sort_2).Eta()))<<" Pt "<<G_Sort_2.Pt()
+	  cout<<"Correction2: "<<Correct2<<" iX: "<<iX2<<" iY "<<iY2<<" Epi0 "<<GSort1plus2_EoverCoshEta
+	    <<" ratio E "<< G_Sort_2.E()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_2.Pt()
 	    <<" xtal "<<Ncristal_EE[ind2]<<" vs4s9EE "<<vs4s9EE[ind2]<<" vs1s9EE "<<vs1s9EE[ind2]<<" vs2s9EE "<<vs2s9EE[ind2]
 	    <<" ESratio "<<ESratio[ind2]<<" EtaRing_1 "<<EtaRing_2<<endl;
 
+	  // FIXME: should we uncomment these lines as for the barrel?
 	  //  if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 	  //  else           { Corr1 = Correct2; Corr2 = Correct1; }
 
 	  Correction1EE_mva = Correct1; Correction2EE_mva = Correct2;
 	  iX1_mva = iX1; iX2_mva = iX2; iY1_mva = iY1; iY1_mva = iY2; Pt1EE_mva = G_Sort_1.Pt(); Pt2EE_mva = G_Sort_2.Pt();
 	  EtaRing1_mva = EtaRing_1; EtaRing2_mva = EtaRing_2;
-	  TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
-	  TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
 
-	  TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.E()/cosh(G_Sort_1.Eta()), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
-	  TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.E()/cosh(G_Sort_2.Eta()), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
+	  // Define just the original vector, the corrected vector has same direction and magnitude scaled by correction
+	  // actually we just need G_sort_1 and G_sort_2, no need to define another object
 
-	  MassEE_mva = (mvag1P4 + mvag2P4).M();
-	  MassEEOr_mva = (mvaOrg1P4 + mvaOrg2P4).M();
+	  // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
+	  // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+	  // TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
+	  // TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
+
+	  // get corrected mass from sum of corrected photons
+	  MassEEOr_mva = (GSort1plus2).M();
+	  MassEE_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
 	  TTree_JoshMva_EE->Fill();   
 #endif
 	}
-
-	math::PtEtaPhiMLorentzVector g1P4( (Corr1*g1->energy())/cosh(g1->eta()), g1->eta(), g1->phi(), 0. );
-	math::PtEtaPhiMLorentzVector g2P4( (Corr2*g2->energy())/cosh(g2->eta()), g2->eta(), g2->phi(), 0. );
-	math::PtEtaPhiMLorentzVector pi0P4 = g1P4 + g2P4;
+	
 	// uncorrected versions of photons
-	math::PtEtaPhiMLorentzVector g1P4_nocor( (g1->energy())/cosh(g1->eta()), g1->eta(), g1->phi(), 0. );
-	math::PtEtaPhiMLorentzVector g2P4_nocor( (g2->energy())/cosh(g2->eta()), g2->eta(), g2->phi(), 0. );
-	math::PtEtaPhiMLorentzVector pi0P4_nocor = g1P4_nocor + g2P4_nocor;
+	// math::PtEtaPhiMLorentzVector g1P4_nocor( g1pt, g1eta, g1phi, 0. );
+	// math::PtEtaPhiMLorentzVector g2P4_nocor( g2pt, g2eta, g2phi, 0. );
+	//math::PtEtaPhiMLorentzVector pi0P4_nocor = g1P4_nocor + g2P4_nocor;
+	// here the order is not important (while for the correction we apply corr1 to first cluster in list (not necessarily the leading in pt))
+	double pi0P4_nocor_pt = GSort1plus2.Pt();
+	double pi0P4_nocor_mass = GSort1plus2.M();
+	//corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
+	// this means g1 is not necessarily the leading photon
+	// define corrected photon as the uncorrected
+	//math::PtEtaPhiMLorentzVector pi0P4;
+	TLorentzVector pi0P4;
+	if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
+	else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
+	// eta, pt, phi of corrected photons are used many times. Since their computation is tipically time consuming, store them in doubles for later usage
+	double pi0P4_pt = pi0P4.Pt();
+	double pi0P4_eta = pi0P4.Eta();
+	double pi0P4_phi = pi0P4.Phi();
+	double pi0P4_mass = pi0P4.M();
+	// note that photon eta and phi are not modified by correction (only pT) since Corr * vector modifies the cartesian coordinates of the vector (pT and pZ)
+	// from now on g1pt and g2pt are the corrected values
+	g1pt = g1pt * Corr1;
+	// double g1P4_eta = g1eta; 
+	// double g1P4_phi = g1phi;
+	g2pt = g2pt * Corr2;
+	// double g2P4_eta = g2eta;
+	// double g2P4_phi = g2phi;
+
+	//cout << "pi0P4_nocor_mass, pi0P4_mass " << pi0P4_nocor_mass << "  " << pi0P4_mass << endl;
+
 	//In case ES give same posizion for different clusters
-	if( pi0P4_nocor.mass()<0.03 && pi0P4.mass() < 0.03 ) continue;
+	if( pi0P4_nocor_mass<0.03 && pi0P4_mass < 0.03 ) continue;
 
 #ifdef SELECTION_TREE
 	if( subDetId == EcalBarrel ){ 
-	  Fill_PtPi0_EB( pi0P4.Pt() );
-	  Fill_mpi0_EB( pi0P4.mass() );
-	  Fill_etapi0_EB( pi0P4.eta() );
-	  Fill_phipi0_EB( pi0P4.phi() );
+	  Fill_PtPi0_EB( pi0P4_pt );
+	  Fill_mpi0_EB( pi0P4_mass );
+	  Fill_etapi0_EB( pi0P4_eta );
+	  Fill_phipi0_EB( pi0P4_phi );
 	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
-	  Fill_PtGamma_EB( g1P4.Pt(), g2P4.Pt() );
-	  Fill_EtaGamma_EB( g1P4.eta(), g2P4.eta() );
+	  Fill_PtGamma_EB( g1pt, g2pt );
+	  Fill_EtaGamma_EB( g1eta, g2eta );
 	  // to be implemented
-	  Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
+	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
 	  Fill_S4S9Gamma_EB(vs4s9[0], vs4s9[1]);
 	  //Fill_NxtalEnergGamma_EB(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EB_used ?!? 
 	  //Fill_NxtalEnergGamma2_EB(Nxtal_EnergGamma2);
 	  //
-	  Fill_Epsilon_EB( 0.5 * ( pow(pi0P4.mass()/PI0MASS,2)  - 1. ) );
+	  Fill_Epsilon_EB( 0.5 * ( pow(pi0P4_mass/PI0MASS,2)  - 1. ) );
 	  Pi0Info_EB->Fill();
 	}
 	if( subDetId == EcalEndcap ){
-	  Fill_PtPi0_EE( pi0P4.Pt() );
-	  Fill_mpi0_EE( pi0P4.mass() );
-	  Fill_etapi0_EE( pi0P4.eta() );
-	  Fill_phipi0_EE( pi0P4.phi() );
+	  Fill_PtPi0_EE( pi0P4_pt );
+	  Fill_mpi0_EE( pi0P4_mass );
+	  Fill_etapi0_EE( pi0P4_eta );
+	  Fill_phipi0_EE( pi0P4_phi );
 	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
-	  Fill_PtGamma_EE( g1P4.Pt(), g2P4.Pt() );
-	  Fill_EtaGamma_EE( g1P4.eta(), g2P4.eta() );
+	  Fill_PtGamma_EE( g1pt, g2pt );
+	  Fill_EtaGamma_EE( g1eta, g2eta );
 	  // to be implemented
-	  Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
+	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
 	  Fill_S4S9Gamma_EE(vs4s9[0], vs4s9[1]);
 	  //Fill_NxtalEnergGamma_EE(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EE_used ?!? 
 	  //Fill_NxtalEnergGamma2_EE(Nxtal_EnergGamma2);
 	  //
-	  Fill_Epsilon_EE( 0.5 * ( pow(pi0P4.mass()/PI0MASS,2)  - 1. ) );
+	  Fill_Epsilon_EE( 0.5 * ( pow(pi0P4_mass/PI0MASS,2)  - 1. ) );
 	  Pi0Info_EE->Fill();
 	}
 #endif
+
+	
 #ifdef DEBUG
 	cout << "[DEBUG] Apply kinematic selection cuts" << endl;
 #endif
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( pi0P4_nocor.Pt() < pi0PtCut_low_[subDetId]) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( pi0P4_nocor.Pt() < pi0PtCut_high_[subDetId]) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( pi0P4_nocor.Pt() < pi0PtCut_low_[subDetId]) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( pi0P4_nocor.Pt() < pi0PtCut_high_[subDetId]) continue; }
-	if( g1P4.eta() == g2P4.eta() && g1P4.phi() == g2P4.phi() ) continue;
+
+	if( g1eta == g2eta && g1phi == g2phi ) continue;
+
+	// pi0/eta pT cut
+	if (subDetId == EcalBarrel) {
+
+	  if (fabs(pi0P4_eta)<1)                              { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
+	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+
+	} else if( subDetId == EcalEndcap) {
+	  
+	  if (fabs(pi0P4_eta)<1.8 )                           { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
+	  else if (fabs(pi0P4_eta)>1.8 )                      { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+
+	}
 
 	float nextClu = 999., Drtmp = 999.;
 	for(size_t ind=0; ind<clusters.size(); ++ind){
 	  const CaloCluster* Gtmp = &(clusters[ind]);
-	  double deltaR1 = GetDeltaR(Gtmp->eta(),g1P4.eta(),Gtmp->phi(),g1P4.phi());
-	  double deltaR2 = GetDeltaR(Gtmp->eta(),g2P4.eta(),Gtmp->phi(),g2P4.phi());
+	  double deltaR1 = GetDeltaR(Gtmp->eta(),g1eta,Gtmp->phi(),g1phi);
+	  double deltaR2 = GetDeltaR(Gtmp->eta(),g2eta,Gtmp->phi(),g2phi);
 	  if( ind!=i && ind!=j && (deltaR1<Drtmp || deltaR2<Drtmp ) ){
 	    nextClu = min(deltaR1,deltaR2);
 	    Drtmp = nextClu;
 	  }
 	}
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+
+	// pi0/eta isolation cut (distance to other clusters)
+	if (subDetId == EcalBarrel) {
+
+	  if (fabs(pi0P4_eta)<1)                              { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+
+	} else if( subDetId == EcalEndcap) {
+	  
+	  if (fabs(pi0P4_eta)<1.8 )                           { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
+	  else if (fabs(pi0P4_eta)>1.8 )                      { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+
+	}
 
 	// Implementation of HLT Filter Isolation - Eta Band Isolation 
 	// implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
@@ -1896,21 +2008,28 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
 	  if (GtmpP4.Pt() < 0.5) continue;
 	  // delta R from the pi0 candidates
-	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4.eta(), Gtmp->phi(), pi0P4.phi());
+	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
 	  if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
 	  // cluster must be inside of an eta strip 
-	  double deta = fabs(Gtmp->eta() - pi0P4.eta()); 
+	  double deta = fabs(Gtmp->eta() - pi0P4_eta); 
 	  if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;
 	  hlt_iso += GtmpP4.Pt();
 	}
 	// the cut is taken relative to the pi0 pt
-	hlt_iso /= pi0P4_nocor.Pt();
+	hlt_iso /= pi0P4_nocor_pt;
 	//category break down of cuts
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) < 1 )                          { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta()) > 1. && fabs(pi0P4.eta())<1.5 ){ if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) < 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta()) > 1.8 )                        { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	// pi0/eta isolation cut
+	if (subDetId == EcalBarrel) {
 
+	  if (fabs(pi0P4_eta)<1)                              { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+
+	} else if( subDetId == EcalEndcap) {
+	  
+	  if (fabs(pi0P4_eta)<1.8 )                           { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
+	  else if (fabs(pi0P4_eta)>1.8 )                      { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+
+	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef DEBUG
@@ -1928,27 +2047,39 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  else                           {  Nxtal_EnergGamma = Ncristal_EB[j]; Nxtal_EnergGamma2 = Ncristal_EB[i]; }
 	}
 
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())<1 )                          { if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue; }
-	if( subDetId == EcalBarrel && fabs(pi0P4.eta())>1. && fabs(pi0P4.eta())<1.5 ){ if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())<1.8 )                        { if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue; }
-	if( subDetId == EcalEndcap && fabs(pi0P4.eta())>1.8 )                        { if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue; }
+	if (subDetId == EcalBarrel) {
 
-	if(subDetId==EcalBarrel)
-	{
-	  pi0MassVsIetaEB->Fill( fabs(pi0P4.eta())/0.0174, pi0P4.mass());
-	  pi0MassVsETEB->Fill(pi0P4.Pt(), pi0P4.mass());
+	  if( fabs(pi0P4_eta)<1 ) { 
+	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
+	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
+	  } else if( fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5 )  { 
+	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
+	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
+	  } 
+
+	  pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
+	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	  EventFlow_EB->Fill(5.);
+
+	} else if (subDetId == EcalEndcap) {
+
+	  if( fabs(pi0P4_eta)<1.8 ) { 
+	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
+	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
+	  } else if( fabs(pi0P4_eta)>1.8 )    {
+	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
+	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
+	  }
+
+	  EventFlow_EE->Fill(5.);
+
 	}
-	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(5.);
-	else                       EventFlow_EE->Fill(5.);
+
 #ifdef DEBUG
 	cout << "[DEBUG] Fill Optimization Variables..." << endl;
 #endif
 	//Fill Optimization
-	if( MakeNtuple4optimization_ && pi0P4.mass() > ((Are_pi0_)?0.03:0.2) && pi0P4.mass() < ((Are_pi0_)?0.25:1.) ){
+	if( MakeNtuple4optimization_ && pi0P4_mass > ((Are_pi0_)?0.03:0.2) && pi0P4_mass < ((Are_pi0_)?0.25:1.) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
 	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:0;
@@ -1956,20 +2087,16 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
 	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
 	    Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
-	    Op_mPi0_rec[nPi0]      = pi0P4.mass();
-	    Op_enG1_rec[nPi0]      = g1P4.E();
-	    Op_enG2_rec[nPi0]      = g2P4.E();
-	    Op_etaPi0_rec[nPi0]    = pi0P4.eta();
-	    Op_ptPi0_rec[nPi0]     = pi0P4.Pt();
-	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1P4.eta(), g2P4.eta(), g1P4.phi(), g2P4.phi() );
-	    Op_enG1_nocor[nPi0]    = g1P4_nocor.E();
-	    Op_enG2_nocor[nPi0]    = g2P4_nocor.E();
-	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor.Pt();
-	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor.mass();
-            Op_enG1_true[nPi0]     = Gamma1MC.R();
-            Op_enG2_true[nPi0]     = Gamma2MC.R();
-            Op_DeltaR_1[nPi0]      = reco::deltaR(g1->eta(),g1->phi(), Gamma1MC.Eta(),Gamma1MC.Phi());
-            Op_DeltaR_2[nPi0]      = reco::deltaR(g2->eta(),g2->phi(), Gamma2MC.Eta(),Gamma2MC.Phi());
+	    Op_mPi0_rec[nPi0]      = pi0P4_mass;
+	    Op_enG1_rec[nPi0]      = Corr1 * g1->energy();
+	    Op_enG2_rec[nPi0]      = Corr2 * g2->energy();
+	    Op_etaPi0_rec[nPi0]    = pi0P4_eta;
+	    Op_ptPi0_rec[nPi0]     = pi0P4_pt;
+	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1eta, g2eta, g1phi, g2phi );
+	    Op_enG1_nocor[nPi0]    = g1->energy(); // g1P4_nocor.E();
+	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
+	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor_pt;
+	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor_mass;
 	    Op_Es_e1_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[0];
 	    Op_Es_e1_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[1];
 	    Op_Es_e2_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[0];
@@ -1980,14 +2107,20 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_S2S9_2[nPi0]        = subDetId==EcalBarrel ? vs2s9[1] : vs2s9EE[1];
 	    Op_S1S9_1[nPi0]        = subDetId==EcalBarrel ? vs1s9[0] : vs1s9EE[0];
 	    Op_S1S9_2[nPi0]        = subDetId==EcalBarrel ? vs1s9[1] : vs1s9EE[1];
-	    Op_Eta_1[nPi0]         = g1P4.Eta();
-            Op_Eta_2[nPi0]         = g2P4.Eta();
-	    Op_Phi_1[nPi0]         = g1P4.Phi();
-	    Op_Phi_2[nPi0]         = g2P4.Phi();
+	    Op_Eta_1[nPi0]         = g1eta;
+            Op_Eta_2[nPi0]         = g2eta;
+	    Op_Phi_1[nPi0]         = g1phi;
+	    Op_Phi_2[nPi0]         = g2phi;
 	    Op_Time_1[nPi0]        = subDetId==EcalBarrel ? vSeedTime[0] : vSeedTimeEE[0];
 	    Op_Time_2[nPi0]        = subDetId==EcalBarrel ? vSeedTime[1] : vSeedTimeEE[1];
-            Op_Nxtal_1[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
-            Op_Nxtal_2[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
+	    if( isMC_ && MC_Asssoc_ ) {
+	      Op_Nxtal_1[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
+	      Op_Nxtal_2[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
+	      Op_enG1_true[nPi0]     = Gamma1MC.R();
+	      Op_enG2_true[nPi0]     = Gamma2MC.R();
+	      Op_DeltaR_1[nPi0]      = reco::deltaR(g1eta,g1phi, Gamma1MC.Eta(),Gamma1MC.Phi());
+	      Op_DeltaR_2[nPi0]      = reco::deltaR(g2eta,g2phi, Gamma2MC.Eta(),Gamma2MC.Phi());
+	    }
 
             if( (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) {
 
@@ -2046,7 +2179,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #endif
 	//Check the Conteinment correction for Barrel
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
-	if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.28:0.75) ){
+	if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ){
 	  if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) TTree_JoshMva->Fill();
 	}
 #endif
@@ -2062,21 +2195,21 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  // append w2 to w1
 	  w1.insert( w1.end(), w2.begin(), w2.end() );
 
-	  float r2 = pi0P4.mass()/PI0MASS;
+	  float r2 = pi0P4_mass/PI0MASS;
 	  r2 = r2*r2;
 	  //average <eps> for cand k
 	  float eps_k = 0.5 * ( r2 - 1. );
 	  // compute quantities needed for <eps>_j in each region j
-	  if(subDetId!=EcalBarrel) allEpsilon_EEnw->Fill( pi0P4.mass() );
-	  if(subDetId==EcalBarrel) allEpsilon_EBnw->Fill( pi0P4.mass() );
+	  if(subDetId!=EcalBarrel) allEpsilon_EEnw->Fill( pi0P4_mass );
+	  if(subDetId==EcalBarrel) allEpsilon_EBnw->Fill( pi0P4_mass );
 	  for(RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 	    const uint32_t& iR = (*it).iRegion;
 	    const float& w = (*it).value;
 
 	    if(subDetId==EcalBarrel){
-		if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.23:0.7) ){
-		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w );
-		  allEpsilon_EB->Fill( pi0P4.mass(), w );
+		if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7) ){
+		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  allEpsilon_EB->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EB and probably wrong. Getting iEta and iPhi elsewhere
 		  std::map<int,vector<int>>::iterator it; 
@@ -2086,14 +2219,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		  if( EtaRingCalibEB_ ){
 		    for(auto const &iterator : ListEtaFix_xtalEB){
 			if( iterator.first == iEta ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			}
 		    }
 		  }
 		  if( SMCalibEB_ ){
 		    for(auto const &iterator : ListSMFix_xtalEB){
 			if( iterator.first == iSM ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			}
 		    }
 		  }
@@ -2106,7 +2239,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		  //		    if( EtaRingCalib_ ){
 		  //		      for(auto const &iterator : ListEtaFix_xtalEB){
 		  //			  if( iterator.first == tmp_id.ieta() ){ 
-		  //			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+		  //			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 		  //			  }
 		  //			}
 		  //		    }
@@ -2114,9 +2247,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		}
 	    }
 	    else {
-		if( pi0P4.mass()>((Are_pi0_)?0.03:0.35) && pi0P4.mass()<((Are_pi0_)?0.28:0.75) ){
-		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w );
-		  allEpsilon_EE->Fill( pi0P4.mass(), w );
+		if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ){
+		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  allEpsilon_EE->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EE. Getting ix and iy elsewhere
 		  std::map<int,vector<int>>::iterator it; 
@@ -2127,14 +2260,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEm){
 			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			  }
 			}
 		    }
 		    if( SMCalibEE_ ){
 			for(auto const &iterator : ListQuadFix_xtalEEm){
 			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			  }
 			}
 		    }
@@ -2145,14 +2278,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEp){
 			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			  }
 			}
 		    }
 		    if( SMCalibEE_ ){
 			for(auto const &iterator : ListQuadFix_xtalEEp){
 			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 			  }
 			}
 		    }
@@ -2165,7 +2298,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		  //			if( EtaRingCalib_ ){
 		  //			  for(auto const &iterator : ListEtaFix_xtalEEm){
 		  //			    if( iterator.first == GetRing( tmp_id.ix(),tmp_id.iy(),VectRing,false) ){ 
-		  //				for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+		  //				for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 		  //			    }
 		  //			  }
 		  //			}
@@ -2176,7 +2309,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 		  //			if( EtaRingCalib_ ){
 		  //			  for(auto const &iterator : ListEtaFix_xtalEEp){
 		  //			    if( iterator.first == GetRing( tmp_id.ix(),tmp_id.iy(),VectRing,false) ){ 
-		  //				for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4.mass() : eps_k, w ); }
+		  //				for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
 		  //			    }
 		  //			  }
 		  //			}
@@ -2195,15 +2328,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #ifdef DEBUG
   cout << "[DEBUG] Filling Tree" << endl; 
 #endif
-  cout << "Check 1 in compute epsilon" << endl;
   if(MakeNtuple4optimization_){
     //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
-    for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = l1flag[i];
+    //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = l1flag[i];
     Op_NPi0_rec = nPi0; 
     if(nPi0>0) Tree_Optim->Fill();
   }
-  cout << "Check 2 in compute epsilon" << endl;
-
+ 
 }
 
 
@@ -2419,7 +2550,6 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
 
     const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
 
-    cout << "### CHECK --> event " << L1EvtCnt+1 << " ###" << endl;
     GlobalAlgBlk const &result = l1results->at(0, 0);
 
     for (unsigned int itrig = 0; itrig < result.maxPhysicsTriggers; ++itrig) {
@@ -2433,9 +2563,9 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
 	if (myflag ) { 
 	  l1flag[itrig] = 1; 
 	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]); 
-	  cout << " itrig = " << itrig << "    ";
-	  cout << " l1flag[itrig] = " << l1flag[itrig] << "    ";
-	  cout << " algoBitToName[itrig] = " << algoBitToName[itrig] << endl;
+	  // cout << " itrig = " << itrig << "    ";
+	  // cout << " l1flag[itrig] = " << l1flag[itrig] << "    ";
+	  // cout << " algoBitToName[itrig] = " << algoBitToName[itrig] << endl;	  
 	} else {
 	  l1flag[itrig] = 0 ; 
 	}
@@ -2469,7 +2599,7 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
   //   }
   // }
   // else{ return true;}  
-  cout << "Going out of FillEpsilonPlot::getTriggerResult()" << endl;
+  //cout << "Going out of FillEpsilonPlot::getTriggerResult()" << endl;
 
   return true;
 

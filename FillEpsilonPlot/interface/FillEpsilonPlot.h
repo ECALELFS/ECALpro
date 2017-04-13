@@ -133,6 +133,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::Handle< EBRecHitCollection > ebHandle;
       edm::Handle< EBRecHitCollection > eeHandle;
       edm::Handle< ESRecHitCollection > esHandle;
+      // edm::Handle< edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esHandle;
 
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
@@ -182,7 +183,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> L1GTobjmapToken_;
       edm::EDGetTokenT<GlobalAlgBlkBxCollection> L1GTobjmapToken_;
       edm::InputTag l1InputTag_;
-      std::map<string,int> L1_nameAndNumb;
+      //std::map<string,int> L1_nameAndNumb;
       edm::EDGetTokenT<GenParticleCollection> GenPartCollectionToken_;
 
       edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
@@ -320,7 +321,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 #endif
       TTree*  Tree_Optim;
       Int_t   nPi0;
-      Int_t   Op_L1Seed[NL1SEED];
+      //Int_t   Op_L1Seed[NL1SEED];
       Int_t   Op_NPi0_rec;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
       Float_t Op_IsoPi0_rec[NPI0MAX];
@@ -442,11 +443,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       /*constexpr*/ double meanscale   = 0.5*(meanlimhigh-meanlimlow);
 
       // for L1
-      int *l1flag;
+      short *l1flag;
       TString* algoBitToName;
-      int L1EvtCnt;
-      //std::vector<std::string> L1SeedsPi0Stream_;
       std::string L1SeedsPi0Stream_;
+      int nL1SeedsPi0Stream_; // number of seeds used by the stream (given L1SeedsPi0Stream_, it is the number of " OR " +1, e.g. "seed1 OR seed2 OR seed3" has 3 seeds
       int *seedIsInStream;
 
 };
