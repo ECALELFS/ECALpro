@@ -64,7 +64,7 @@
      //gSystem->Load(FWLiteLib);
      // AutoLibraryLoader::enable();
      gSystem->Load("libFWCoreFWLite.so");
-     FWLiteEnabler::enable()
+     FWLiteEnabler::enable();
    }
     const Int_t NRGBs = 5;
     const Int_t NCont = 255;
