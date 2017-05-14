@@ -1978,13 +1978,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta pT cut
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1)                              { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
-	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	  if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
+	  else if (fabs(pi0P4_eta)<1.5) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
 
 	} else if( subDetId == EcalEndcap) {
 	  
-	  if (fabs(pi0P4_eta)<1.8 )                           { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
-	  else if (fabs(pi0P4_eta)>1.8 )                      { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	  if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
+	  else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
 
 	}
 
@@ -2002,13 +2002,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta isolation cut (distance to other clusters)
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1)                              { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
-	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	  if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	  else if (fabs(pi0P4_eta)<1.5) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 
 	} else if( subDetId == EcalEndcap) {
 	  
-	  if (fabs(pi0P4_eta)<1.8 )                           { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
-	  else if (fabs(pi0P4_eta)>1.8 )                      { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	  if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
+	  else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 
 	}
 
@@ -2039,13 +2039,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta isolation cut
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1)                              { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
-	  else if (fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	  if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	  else if (fabs(pi0P4_eta)<1.5) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
 
 	} else if( subDetId == EcalEndcap) {
 	  
-	  if (fabs(pi0P4_eta)<1.8 )                           { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
-	  else if (fabs(pi0P4_eta)>1.8 )                      { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	  if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
+	  else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
 
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2067,10 +2067,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	if (subDetId == EcalBarrel) {
 
-	  if( fabs(pi0P4_eta)<1 ) { 
+	  if( fabs(pi0P4_eta)<1. ) { 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
-	  } else if( fabs(pi0P4_eta)>1. && fabs(pi0P4_eta)<1.5 )  { 
+	  } else if( fabs(pi0P4_eta)<1.5 )  { 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	  } 
@@ -2084,7 +2084,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  if( fabs(pi0P4_eta)<1.8 ) { 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
-	  } else if( fabs(pi0P4_eta)>1.8 )    {
+	  } else {
 	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	  }
