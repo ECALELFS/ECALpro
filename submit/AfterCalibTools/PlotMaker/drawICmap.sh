@@ -12,13 +12,15 @@
 # dirName="AlcaP0_2016_json2p07fb"
 # tagName="AlcaP0_2016_json2p07fb_"
 
-iter_ini=3
-iter_fin=3  # it is included in sequence below                     
+iter_ini=0
+iter_fin=5  # it is included in sequence below                     
 
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
-dirName="AlcaP0_2016H_23SeptReReco_EBonly_reg2012"
-tagName="AlcaP0_2016H_23SeptReReco_EBonly_reg2012_"
+#eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"
+#eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"
+dirName="AlcaP0_2016H_mar2017newCond_reg2012"
+tagName="AlcaP0_2016H_mar2017newCond_reg2012_"
 
 ECALdetToSkip=""
 

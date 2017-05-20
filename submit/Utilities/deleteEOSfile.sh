@@ -1,10 +1,10 @@
 #! /bin/bash
 
 iter_ini=0
-iter_fin=4  # it is included in sequence below                                                                           
+iter_fin=7  # it is included in sequence below                                                                           
 
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
-dirName="AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD"
+dirName="AlcaP0_2016_json3p99fb_weight_extV2_4more"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)

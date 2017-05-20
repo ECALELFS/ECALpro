@@ -1,24 +1,26 @@
 #!/bin/bash
 
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/" 
-dirName="AlcaP0_2016_json3p99fb_weight_YongCC"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="4"                                                          # number n of iterations (iter_0 to iter_{n-1})
-tagName="AlcaP0_2016_json3p99fb_weight_YongCC_"                           # TagName (see CalibCode/submit/parameters.py)  
+#eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
+#eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
+dirName="AlcaP0_2016CD_mar2017newCond_reg2012"                            # dirname (see CalibCode/submit/parameters.py)  
+iter_number="2"                                                          # number n of iterations (iter_0 to iter_{n-1})
+tagName="AlcaP0_2016CD_mar2017newCond_reg2012_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
 wwwTargetDir="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/${dirName}/TestConvergence/"               
 
 nJump=1
 # leave extension as "noExtension" in you don't need to add additional steps that start from the one above
-# format is newDirName,newIterNumber,newTagName
+# format is newDirName_ext1,newIterNumber_ext1,newTagName_ext1:newDirName_ext2,newIterNumber_ext2,newTagName_ext2 and so on (different extensions separated by : )
 #extension="noExtension"
-extension="AlcaP0_2016_json3p99fb_weight_YongCC_ext1,2,AlcaP0_2016_json3p99fb_weight_YongCC_ext1_"
+extension="AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD,5,AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD_"
 detectorToSkip="no"   # detectorToSkip = "no" to skip nothing, "EB" to skip EB, "EE" to skip EE
 
 if [ "${extension}" != "noExtension" ]
 then
     echo "Extension added: will store plots in --> ${wwwTargetDir}extension/ (if it exists)"
-    wwwTargetDir=${wwwTargetDir}extension/
+    wwwTargetDir=${wwwTargetDir}extension
 fi
 
 for option in "$@";
@@ -50,6 +52,7 @@ then
     return 0
 fi
 # copy output to wwwTargetDir if it exists and remove local directory, otherwise just keep in local
-test -d ${wwwTargetDir}/ && cp ./plot_${dirName}/* ${wwwTargetDir}/ && rm -r ./plot_${dirName}/
+test -d ${wwwTargetDir}/ && cp ./plot_${dirName}/* ${wwwTargetDir}/ && rm -r ./plot_${dirName}/ 
+
 
 echo "THE END!"

@@ -352,7 +352,8 @@ void Convergence::run(const string& detectorToSkip = "no") {
           Tree->GetEntry(iEntry);
           Tree1->GetEntry(iEntry);
           
-          if( coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && coeff1!=0 /*&& Ndof>10 && Ndof1>10*/){
+          //if( coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && coeff1!=0 /*&& Ndof>10 && Ndof1>10*/){
+	  if( coeff1!=1. && coeff!=1. && coeff1!=coeff && coeff!=0 && coeff1!=0){
             
             h1->Fill((coeff1-coeff));
             // now fill histograms for different  ietaRing

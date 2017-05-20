@@ -46,7 +46,7 @@ void drawICmap(const string& wwwPath = "",
 	       const string& ECALdetToSkip = "") 
 {
 
-  gStyle->SetPalette(107, 0);  // 1:raibow palette ; 107 kVisibleSpectrum                                               
+  gStyle->SetPalette(107, 0);  // 1:raibow palette ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
   gStyle->SetNumberContours(50); // default is 20 
 
   string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
