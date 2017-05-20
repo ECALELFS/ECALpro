@@ -599,7 +599,8 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
     from ROOT import *
     from PhysicsTools.PythonAnalysis import *
     gSystem.Load("libFWCoreFWLite.so")
-    AutoLibraryLoader.enable()
+    #AutoLibraryLoader.enable()
+    FWLiteEnabler.enable()
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
         f = TFile('$TMPDIR/' + NameTag + calibMapName, 'recreate')
     else:
@@ -785,6 +786,13 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
        TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
        TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
        TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
+
+    print "Printing list of files on eos ..."
+    print "############################"
+    cmdEosLs = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/"
+    eosFileList = subprocess.Popen([cmdEosLs], stdout=subprocess.PIPE, shell=True);
+    print eosFileList.communicate()
+    print "############################"
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()
