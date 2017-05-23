@@ -17,7 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -57,15 +57,15 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2016B_All_june2016_purified.list'
-dirname          = 'AlcaP0_2016_json3p99fb_weight_extV2_4more'
+inputlist_n      = 'InputList/2017A_All.list'
+dirname          = 'AlcaP0_2017'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2016_json3p99fb_weight_extV2_4more_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2017_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 4
-SubmitFurtherIterationsFromExisting = True
+SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016_json3p99fb_weight_extV2/iter_3/AlcaP0_2016_json3p99fb_weight_extV2_calibMap.root"
@@ -293,7 +293,7 @@ intercalibTagRecord='';intercalibTag='';intercalibDB=''
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_DummyFirstStableBeams2017.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -303,7 +303,7 @@ triggerTag         = 'InputTag("TriggerResults")'    # Run Fill EB only if the H
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '80X_dataRun2_Prompt_v8' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
+globaltag          = '90X_dataRun2_Prompt_v3' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = True
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
