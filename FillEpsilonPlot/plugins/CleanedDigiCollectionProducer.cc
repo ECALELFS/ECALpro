@@ -57,8 +57,8 @@ CleanedDigiCollectionProducer::filter (edm::Event& iEvent,
      }
    
    //Create empty output collections
-   std::auto_ptr< EBDigiCollection > cleanedEBDigiCollection (new EBDigiCollection()) ;
-   std::auto_ptr< EEDigiCollection > cleanedEEDigiCollection (new EEDigiCollection()) ;
+   std::unique_ptr< EBDigiCollection > cleanedEBDigiCollection (new EBDigiCollection()) ;
+   std::unique_ptr< EEDigiCollection > cleanedEEDigiCollection (new EEDigiCollection()) ;
    
    for(EBDigiCollection::const_iterator itdg=ebDigisHandle->begin(); itdg!=ebDigisHandle->end(); ++itdg) {
      DetId detid(itdg->id());
@@ -73,8 +73,8 @@ CleanedDigiCollectionProducer::filter (edm::Event& iEvent,
 
    // Populate the new collections
    bool pass = (cleanedEBDigiCollection->size() > 0 && cleanedEEDigiCollection->size() > 0);
-   iEvent.put( cleanedEBDigiCollection,cleanedEBDigiCollection_ );
-   iEvent.put( cleanedEEDigiCollection,cleanedEEDigiCollection_ );
+   iEvent.put( std::move(cleanedEBDigiCollection),cleanedEBDigiCollection_ );
+   iEvent.put( std::move(cleanedEEDigiCollection),cleanedEEDigiCollection_ );
    
    if(filter_) return pass;
    else return true;
