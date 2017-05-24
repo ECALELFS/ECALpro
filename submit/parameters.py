@@ -17,7 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -57,14 +57,14 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/AlCaP0_2016H_run282814_purified_test.list'
-dirname          = 'test_eosCp_v2'
+inputlist_n      = 'InputList/2017A_All.list'
+dirname          = 'AlcaP0_2017'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'test_eosCp_v2_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2017_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 2
+nIterations      = 4
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
@@ -94,7 +94,7 @@ L1Seed = ""                                         # You can ask that one Bit i
 
 # copy paste here the list of seeds from the stream. It is used only if you decide to store L1 info in the ntuples produced by FillEpsilonPlots.cc
 # L1TriggerInfo must be True to use this expression
-L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_SingleEG10 OR L1_SingleEG15 OR L1_SingleEG18 OR L1_SingleEG24 OR L1_SingleEG26 OR L1_SingleEG28 OR L1_SingleEG30 OR L1_SingleEG32 OR L1_SingleEG34 OR L1_SingleEG36 OR L1_SingleEG38 OR L1_SingleEG40 OR L1_SingleEG45 OR L1_SingleIsoEG18 OR L1_SingleIsoEG20 OR L1_SingleIsoEG22 OR L1_SingleIsoEG24 OR L1_SingleIsoEG26 OR L1_SingleIsoEG28 OR L1_SingleIsoEG30 OR L1_SingleIsoEG32 OR L1_SingleIsoEG34 OR L1_SingleIsoEG36 OR L1_SingleIsoEG18er OR L1_SingleIsoEG20er OR L1_SingleIsoEG22er OR L1_SingleIsoEG24er OR L1_SingleIsoEG26er OR L1_SingleIsoEG28er OR L1_SingleIsoEG30er OR L1_SingleIsoEG32er OR L1_SingleIsoEG34er OR L1_DoubleEG_15_10 OR L1_DoubleEG_18_17 OR L1_DoubleEG_20_18 OR L1_DoubleEG_22_10 OR L1_DoubleEG_23_10 OR L1_DoubleEG_22_12 OR L1_DoubleEG_22_15 OR L1_DoubleEG_24_17 OR L1_DoubleEG_25_12 OR  L1_SingleJet16 OR L1_SingleJet20 OR L1_SingleJet35 OR L1_SingleJet60 OR L1_SingleJet90 OR L1_SingleJet120 OR L1_SingleJet140 OR L1_SingleJet150 OR L1_SingleJet160 OR L1_SingleJet170 OR L1_SingleJet180 OR L1_SingleJet200 OR L1_DoubleJetC40 OR L1_DoubleJetC50 OR L1_DoubleJetC60 OR L1_DoubleJetC80 OR L1_DoubleJetC100 OR L1_DoubleJetC112 OR L1_DoubleJetC120 OR L1_TripleJet_88_72_56_VBF OR L1_TripleJet_84_68_48_VBF OR L1_TripleJet_92_76_64_VBF OR L1_QuadJetC40 OR L1_QuadJetC50 OR L1_QuadJetC60 OR L1_HTT120 OR L1_HTT160 OR L1_HTT200 OR L1_HTT240 OR L1_HTT255 OR L1_HTT270 OR L1_HTT280 OR L1_HTT300 OR L1_HTT320 OR L1_HTT220 " 
+L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_SingleEG10 OR L1_SingleEG15 OR L1_SingleEG18 OR L1_SingleEG24 OR L1_SingleEG26 OR L1_SingleEG28 OR L1_SingleEG30 OR L1_SingleEG32 OR L1_SingleEG34 OR L1_SingleEG36 OR L1_SingleEG38 OR L1_SingleEG40 OR L1_SingleEG45 OR L1_SingleIsoEG18 OR L1_SingleIsoEG20 OR L1_SingleIsoEG22 OR L1_SingleIsoEG24 OR L1_SingleIsoEG26 OR L1_SingleIsoEG28 OR L1_SingleIsoEG30 OR L1_SingleIsoEG32 OR L1_SingleIsoEG34 OR L1_SingleIsoEG36 OR L1_SingleIsoEG18er2p1 OR L1_SingleIsoEG20er2p1 OR L1_SingleIsoEG22er2p1 OR L1_SingleIsoEG24er2p1 OR L1_SingleIsoEG26er2p1 OR L1_SingleIsoEG28er2p1 OR L1_SingleIsoEG30er2p1 OR L1_SingleIsoEG32er2p1 OR L1_SingleIsoEG34er2p1 OR L1_DoubleEG_15_10 OR L1_DoubleEG_18_17 OR L1_DoubleEG_20_18 OR L1_DoubleEG_22_10 OR L1_DoubleEG_23_10 OR L1_DoubleEG_22_12 OR L1_DoubleEG_22_15 OR L1_DoubleEG_24_17 OR L1_DoubleEG_25_12 OR  L1_SingleJet16 OR L1_SingleJet20 OR L1_SingleJet35 OR L1_SingleJet60 OR L1_SingleJet90 OR L1_SingleJet120 OR L1_SingleJet140 OR L1_SingleJet150 OR L1_SingleJet160 OR L1_SingleJet170 OR L1_SingleJet180 OR L1_SingleJet200 OR L1_DoubleJet40er3p0 OR L1_DoubleJet50er3p0 OR L1_DoubleJet60er3p0 OR L1_DoubleJet80er3p0 OR L1_DoubleJet100er3p0 OR L1_DoubleJet112er3p0 OR L1_DoubleJet120er3p0 OR L1_TripleJet_88_72_56_VBF OR L1_TripleJet_84_68_48_VBF OR L1_TripleJet_92_76_64_VBF OR L1_QuadJet40er3p0 OR L1_QuadJet50er3p0 OR L1_QuadJet60er3p0 OR L1_HTT120er OR L1_HTT160er OR L1_HTT200er OR L1_HTT240er OR L1_HTT255er OR L1_HTT270er OR L1_HTT280er OR L1_HTT300er OR L1_HTT320er OR L1_HTT220er " 
 # NOTE: leave a space at the end! It is needed to search a seed name in the string without ambiguity 
 # for instance, if you look for 'L1_SingleJet16' in the string, it also matches 'L1_SingleJet160', while if you search for 'L1_SingleJet16 ' there is no ambiguity
 # it also relies on a space between each name and the 'OR'
@@ -347,7 +347,7 @@ linearCorrectionsTagRecord='EcalLinearCorrectionsRcd';linearCorrectionsTag='Ecal
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_DummyFirstStableBeams2017.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -357,7 +357,7 @@ triggerTag         = 'InputTag("TriggerResults")'    # Run Fill EB only if the H
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '80X_dataRun2_2016LegacyRepro_Candidate_v2' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
+globaltag          = '90X_dataRun2_Prompt_v3' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = True
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now

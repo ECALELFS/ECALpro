@@ -358,7 +358,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
-    outputfile.write("process.p = cms.Path()\n")
+    outputfile.write("process.p = cms.EndPath()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")
@@ -419,7 +419,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + startingCalibMap + "')\n")
         else:
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
-    outputfile.write("process.p = cms.Path(process.fitEpsilon)\n")
+    outputfile.write("process.p = cms.EndPath(process.fitEpsilon)\n")
 
 
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
