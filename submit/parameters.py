@@ -17,7 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -26,15 +26,15 @@ myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.sele
 myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
 myeoslsl = myeosls + '-l '
 myeosmkdir = myeoscmd + 'mkdir '
-myeosstage = myeoscmd + 'cp '  
-#myeosstage = 'cmsStage -f '
+#myeosstage = myeoscmd + 'cp '  
+myeosstage = 'cmsStage -f '
 # I called it myeosstage instead of myeoscp to remember that it substitutes cmsStage command
 # as a convention, when adding commands like: command = myeoscmd + "some_option ", just leave a space AFTER the some_option, not before
 # note that code used cmsStage -f, but eos cp doesn't support -f option
 # also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
 # work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-myPrefixToEosPath = 'root://eoscms//eos/cms'
-#myPrefixToEosPath = ''
+#myPrefixToEosPath = 'root://eoscms//eos/cms'
+myPrefixToEosPath = ''
 # will modify calibJobHandler.py with this prefix to destination
 #
 # end of my additions
@@ -47,31 +47,31 @@ storageSite      = "T2_CH_CERN"
 unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 if(isCRAB):
-   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/' #For reason of space is better the group area
+   eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/' #For reason of space is better the group area
    if(isOtherT2):
-       eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/mciprian/piZero2016/'
+       eosPath = '/pnfs/roma1.infn.it/data/cms/store/user/mciprian/piZero2017/'
        voGroup     = "itcms"
        storageSite = "T2_IT_Rome"
-       outLFN      = "/store/user/mciprian/piZero2016/"
+       outLFN      = "/store/user/mciprian/piZero2017/"
 #MC and Selection Optimization
 isMC = False
-MakeNtuple4optimization = False
+MakeNtuple4optimization = True
 #InputList and Folder name
 inputlist_n      = 'InputList/2017A_All.list'
-dirname          = 'AlcaP0_2017'
+dirname          = 'AlcaP0_2017_v2'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2017_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlcaP0_2017_v2_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 4
+nIterations      = 2
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016H_mar2017newCond_reg2012/iter_5/AlcaP0_2016H_mar2017newCond_reg2012_calibMap.root"
 #N files
-ijobmax          = 5                     # 5 number of files per job
+ijobmax          = 4                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
@@ -94,6 +94,7 @@ L1Seed = ""                                         # You can ask that one Bit i
 
 # copy paste here the list of seeds from the stream. It is used only if you decide to store L1 info in the ntuples produced by FillEpsilonPlots.cc
 # L1TriggerInfo must be True to use this expression
+# if L1TriggerInfo is false, an empty string is passed to FillEpsilonPlot, and the number od seeds is set to 1 (because it is used by an histogram than cannot have 0 bins
 L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_SingleEG10 OR L1_SingleEG15 OR L1_SingleEG18 OR L1_SingleEG24 OR L1_SingleEG26 OR L1_SingleEG28 OR L1_SingleEG30 OR L1_SingleEG32 OR L1_SingleEG34 OR L1_SingleEG36 OR L1_SingleEG38 OR L1_SingleEG40 OR L1_SingleEG45 OR L1_SingleIsoEG18 OR L1_SingleIsoEG20 OR L1_SingleIsoEG22 OR L1_SingleIsoEG24 OR L1_SingleIsoEG26 OR L1_SingleIsoEG28 OR L1_SingleIsoEG30 OR L1_SingleIsoEG32 OR L1_SingleIsoEG34 OR L1_SingleIsoEG36 OR L1_SingleIsoEG18er2p1 OR L1_SingleIsoEG20er2p1 OR L1_SingleIsoEG22er2p1 OR L1_SingleIsoEG24er2p1 OR L1_SingleIsoEG26er2p1 OR L1_SingleIsoEG28er2p1 OR L1_SingleIsoEG30er2p1 OR L1_SingleIsoEG32er2p1 OR L1_SingleIsoEG34er2p1 OR L1_DoubleEG_15_10 OR L1_DoubleEG_18_17 OR L1_DoubleEG_20_18 OR L1_DoubleEG_22_10 OR L1_DoubleEG_23_10 OR L1_DoubleEG_22_12 OR L1_DoubleEG_22_15 OR L1_DoubleEG_24_17 OR L1_DoubleEG_25_12 OR  L1_SingleJet16 OR L1_SingleJet20 OR L1_SingleJet35 OR L1_SingleJet60 OR L1_SingleJet90 OR L1_SingleJet120 OR L1_SingleJet140 OR L1_SingleJet150 OR L1_SingleJet160 OR L1_SingleJet170 OR L1_SingleJet180 OR L1_SingleJet200 OR L1_DoubleJet40er3p0 OR L1_DoubleJet50er3p0 OR L1_DoubleJet60er3p0 OR L1_DoubleJet80er3p0 OR L1_DoubleJet100er3p0 OR L1_DoubleJet112er3p0 OR L1_DoubleJet120er3p0 OR L1_TripleJet_88_72_56_VBF OR L1_TripleJet_84_68_48_VBF OR L1_TripleJet_92_76_64_VBF OR L1_QuadJet40er3p0 OR L1_QuadJet50er3p0 OR L1_QuadJet60er3p0 OR L1_HTT120er OR L1_HTT160er OR L1_HTT200er OR L1_HTT240er OR L1_HTT255er OR L1_HTT270er OR L1_HTT280er OR L1_HTT300er OR L1_HTT320er OR L1_HTT220er " 
 # NOTE: leave a space at the end! It is needed to search a seed name in the string without ambiguity 
 # for instance, if you look for 'L1_SingleJet16' in the string, it also matches 'L1_SingleJet160', while if you search for 'L1_SingleJet16 ' there is no ambiguity
@@ -326,6 +327,11 @@ EBContCorr = 'correctionsEB.root'
 useOnlyEEClusterMatchedWithES = 'True'
 
 #-----------------------------------------------------------------------------------
+
+#####################
+# if you don't want to overwrite the global tag, set overWriteGlobalTag = False, otherwise, it will be customized based on the following tags  
+#####################
+overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 laserTagRecord='';laserTag='';laserDB=''
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
@@ -347,8 +353,7 @@ linearCorrectionsTagRecord='EcalLinearCorrectionsRcd';linearCorrectionsTag='Ecal
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_DummyFirstStableBeams2017.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
-overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
+json_file          = 'Cert_testFirstStableBeams2017.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"

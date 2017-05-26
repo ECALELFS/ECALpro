@@ -350,11 +350,13 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
     if( L1TriggerInfo ):
         outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
-        if not (L1SeedExpression == ""):
-            outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
-            nSeeds = L1SeedExpression.count(" OR ") + 1 
-            outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
-                
+        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
+        nSeeds = L1SeedExpression.count(" OR ") + 1 
+        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
+    else:
+        # if L1TriggerInfo is false, pass following two variables anyway, because FIllEpsilonPlot.cc expects to get them, even though they won't be used
+        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"\")\n")
+        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(0)\n")
 
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
