@@ -699,7 +699,12 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
+        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
+        # use the following to match last part of the path after last "/" character
+        # remove largest pattern from beginning matching "/" with as many character as possible before it
+        # e.g. /store/bla/bla/file.root --> file.root
+        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
+
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\"\n")
@@ -803,7 +808,12 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
+        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
+        # use the following to match last part of the path after last "/" character
+        # remove largest pattern from beginning matching "/" with as many character as possible before it
+        # e.g. /store/bla/bla/file.root --> file.root
+        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
+
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\"\n")
@@ -838,11 +848,11 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
         for f in filesToMerge:
             f = f.strip()
             if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-                outputfile.write(myeosstage + "root://eoscms//eos/cms" + f + " /tmp \n")
+                outputfile.write(myeosstage + "root://eoscms//eos/cms" + f + " /tmp/ \n")
             elif "cmsStage -f" in myeosstage:
-                outputfile.write(myeosstage + f + " /tmp \n")        
+                outputfile.write(myeosstage + f + " /tmp/ \n")        
             else:
-                outputfile.write("cmsStage -f " + f + " /tmp \n")
+                outputfile.write("cmsStage -f " + f + " /tmp/ \n")
             strippedFiles.append(ntpath.basename(f))
         outputfile.write("filesHadd=\"/tmp/" + " /tmp/".join(strippedFiles) + "\"\n")
         outputfile.write("echo \"hadd -k " + mergedfile_n + " $filesHadd\"\n")
