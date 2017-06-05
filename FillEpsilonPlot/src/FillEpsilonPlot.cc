@@ -2100,7 +2100,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	if( MakeNtuple4optimization_ && pi0P4_mass > ((Are_pi0_)?0.03:0.2) && pi0P4_mass < ((Are_pi0_)?0.25:1.) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
 	  else{
-	    Op_Pi0recIsEB[nPi0]    = subDetId==EcalBarrel? 1:0;
+	    Op_Pi0recIsEB[nPi0]    = (subDetId==EcalBarrel)? 1:0;
 	    Op_IsoPi0_rec[nPi0]    = nextClu;  
 	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
 	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
@@ -2115,25 +2115,25 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
 	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor_pt;
 	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor_mass;
-	    Op_Es_e1_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[0];
-	    Op_Es_e1_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_1[1];
-	    Op_Es_e2_1[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[0];
-	    Op_Es_e2_2[nPi0]       = subDetId==EcalBarrel ? 0. : Es_2[1];
-	    Op_S4S9_1[nPi0]        = subDetId==EcalBarrel ? vs4s9[0] : vs4s9EE[0];
-	    Op_S4S9_2[nPi0]        = subDetId==EcalBarrel ? vs4s9[1] : vs4s9EE[1];
-	    Op_S2S9_1[nPi0]        = subDetId==EcalBarrel ? vs2s9[0] : vs2s9EE[0];
-	    Op_S2S9_2[nPi0]        = subDetId==EcalBarrel ? vs2s9[1] : vs2s9EE[1];
-	    Op_S1S9_1[nPi0]        = subDetId==EcalBarrel ? vs1s9[0] : vs1s9EE[0];
-	    Op_S1S9_2[nPi0]        = subDetId==EcalBarrel ? vs1s9[1] : vs1s9EE[1];
+	    Op_Es_e1_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[0];
+	    Op_Es_e1_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[1];
+	    Op_Es_e2_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[0];
+	    Op_Es_e2_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[1];
+	    Op_S4S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[0] : vs4s9EE[0];
+	    Op_S4S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[1] : vs4s9EE[1];
+	    Op_S2S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[0] : vs2s9EE[0];
+	    Op_S2S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[1] : vs2s9EE[1];
+	    Op_S1S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[0] : vs1s9EE[0];
+	    Op_S1S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[1] : vs1s9EE[1];
 	    Op_Eta_1[nPi0]         = g1eta;
             Op_Eta_2[nPi0]         = g2eta;
 	    Op_Phi_1[nPi0]         = g1phi;
 	    Op_Phi_2[nPi0]         = g2phi;
-	    Op_Time_1[nPi0]        = subDetId==EcalBarrel ? vSeedTime[0] : vSeedTimeEE[0];
-	    Op_Time_2[nPi0]        = subDetId==EcalBarrel ? vSeedTime[1] : vSeedTimeEE[1];
+	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[0] : vSeedTimeEE[0];
+	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[1] : vSeedTimeEE[1];
 	    if( isMC_ && MC_Asssoc_ ) {
-	      Op_Nxtal_1[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
-	      Op_Nxtal_2[nPi0]       = subDetId==EcalBarrel ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
+	      Op_Nxtal_1[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
+	      Op_Nxtal_2[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
 	      Op_enG1_true[nPi0]     = Gamma1MC.R();
 	      Op_enG2_true[nPi0]     = Gamma2MC.R();
 	      Op_DeltaR_1[nPi0]      = reco::deltaR(g1eta,g1phi, Gamma1MC.Eta(),Gamma1MC.Phi());
