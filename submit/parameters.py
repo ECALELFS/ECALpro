@@ -26,15 +26,15 @@ myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.sele
 myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
 myeoslsl = myeosls + '-l '
 myeosmkdir = myeoscmd + 'mkdir '
-#myeosstage = myeoscmd + 'cp '  
-myeosstage = 'cmsStage -f '
+myeosstage = myeoscmd + 'cp '  
+#myeosstage = 'cmsStage -f '
 # I called it myeosstage instead of myeoscp to remember that it substitutes cmsStage command
 # as a convention, when adding commands like: command = myeoscmd + "some_option ", just leave a space AFTER the some_option, not before
 # note that code used cmsStage -f, but eos cp doesn't support -f option
 # also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
 # work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-#myPrefixToEosPath = 'root://eoscms//eos/cms'
-myPrefixToEosPath = ''
+myPrefixToEosPath = 'root://eoscms//eos/cms'
+#myPrefixToEosPath = ''
 # will modify calibJobHandler.py with this prefix to destination
 #
 # end of my additions
@@ -55,13 +55,13 @@ if(isCRAB):
        outLFN      = "/store/user/mciprian/piZero2017/"
 #MC and Selection Optimization
 isMC = False
-MakeNtuple4optimization = True
+MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/2017A_All.list'
-dirname          = 'AlcaP0_2017_v2'
+inputlist_n      = 'InputList/debug_2017A.list'
+dirname          = 'debug_finalTest_v2' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlcaP0_2017_v2_'                   # Tag to the names to avoid overlap
+NameTag          = 'debug_finalTest_v2_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
 nIterations      = 2
@@ -71,7 +71,7 @@ startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is Tru
 if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016H_mar2017newCond_reg2012/iter_5/AlcaP0_2016H_mar2017newCond_reg2012_calibMap.root"
 #N files
-ijobmax          = 4                     # 5 number of files per job
+ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
 fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
 if( isCRAB and isOtherT2 ):
