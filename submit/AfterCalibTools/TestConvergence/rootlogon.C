@@ -1,4 +1,8 @@
 // This is the file rootlogon.C
 {
-gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/");
+  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/");
+  gSystem->Load("libFWCoreFWLite.so");
+  //AutoLibraryLoader::enable();                                                                                                                         
+  FWLiteEnabler::enable();
 }
+

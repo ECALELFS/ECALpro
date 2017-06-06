@@ -12,6 +12,15 @@ def printFillCfg1( outputfile ):
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
     outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
 
+    # if (nThread > 1 ):
+    #     outputfile.write("\n")
+    #     outputfile.write("process.options = cms.untracked.PSet(\n")
+    #     outputfile.write("    numberOfThreads = cms.untracked.uint32( 4 ),\n")
+    #     outputfile.write("    numberOfStreams = cms.untracked.uint32( 0 ),\n")
+    #     outputfile.write("    sizeOfStackForThreadsInKB = cms.untracked.uint32( 10*1024 )\n")
+    #     outputfile.write(")\n\n")
+
+
     if(globaltag_New):
        outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
     else:
@@ -88,47 +97,59 @@ def printFillCfg1( outputfile ):
            outputfile.write("process.ecalRecHit.EBuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEB')\n")
         outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)\n")
 
-    if (overWriteGlobalTag):
-        if not( alphaTagRecord=='' and alphaTag=='' and alphaDB=='' ):        
-           outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
-           if not(laserTag==''):
-              outputfile.write("        cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + laserTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + laserDB + "')\n")
-              outputfile.write('     ),\n')
-           outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
-           outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
-           outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-           if(GeVTagRecord=='' and alphaTag==''):
-              outputfile.write('     )\n')
-           if not(GeVTagRecord==''):
-              outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + GeVTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + GeVDB + "')\n")
-              if(alphaTag2==''):
-                 outputfile.write('     )\n')
-           if not(alphaTag==''):
-              outputfile.write('     ),\n')
-              outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
-              outputfile.write("             tag = cms.string('" + alphaTag + "'),\n")
-              outputfile.write("             connect = cms.untracked.string('" + alphaDB + "')\n")
-              outputfile.write('     )\n')
-           outputfile.write(')\n\n')
+    if (overWriteGlobalTag):        
+        outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
+        if not(laserTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + laserTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + laserTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + laserDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(alphaTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + alphaTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + alphaTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + alphaDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(GeVTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + GeVTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + GeVDB + "')\n")
+            outputfile.write('     ),\n')
         if not(pulseShapeTag==''):
-            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
-            outputfile.write("     tag = cms.string('" + pulseShapeTag + "'),\n")
-            outputfile.write("     connect = cms.string('" + pulseShapeDB + "')\n")
-            outputfile.write('     )\n')
-            outputfile.write(')\n\n')
+            outputfile.write("              tag = cms.string('" + pulseShapeTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + pulseShapeDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(pedestalTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + pedestalTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + pedestalTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + pedestalDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(laserAlphaTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + laserAlphaTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + laserAlphaTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + laserAlphaDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(ESIntercalibTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + ESIntercalibTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + ESIntercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + ESIntercalibDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(ESEEIntercalibTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + ESEEIntercalibTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + ESEEIntercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + ESEEIntercalibDB + "')\n")
+            outputfile.write('     ),\n')
         if not(intercalibTag==''):
-            outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
             outputfile.write("     cms.PSet(record = cms.string('" + intercalibTagRecord + "'),\n")
-            outputfile.write("     tag = cms.string('" + intercalibTag + "'),\n")
-            outputfile.write("     connect = cms.string('" + intercalibDB + "')\n")
-            outputfile.write('     )\n')
-            outputfile.write(')\n\n')
+            outputfile.write("              tag = cms.string('" + intercalibTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + intercalibDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(linearCorrectionsTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + linearCorrectionsTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + linearCorrectionsTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + linearCorrectionsDB + "')\n")
+            outputfile.write('     ),\n')
+        outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
     outputfile.write('if correctHits:\n')
@@ -162,7 +183,7 @@ def printFillCfg1( outputfile ):
     # outputfile.write(")\n")
     outputfile.write("process.options = cms.untracked.PSet(\n")
     outputfile.write("   wantSummary = cms.untracked.bool(True),\n")
-    outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
+    #outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
     outputfile.write(")\n")
     outputfile.write("process.source = cms.Source('PoolSource',\n")
     #outputfile.write("                            inputCommands = cms.untracked.vstring( #type_Module_instance_process\n")
@@ -329,6 +350,14 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
     if( L1TriggerInfo ):
         outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
+        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
+        nSeeds = L1SeedExpression.count(" OR ") + 1 
+        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
+    else:
+        # if L1TriggerInfo is false, pass following two variables anyway, because FIllEpsilonPlot.cc expects to get them, even though they won't be used
+        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"\")\n")
+        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(0)\n")
+
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
     outputfile.write("process.p = cms.EndPath()\n")
@@ -652,11 +681,11 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -670,7 +699,12 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
+        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
+        # use the following to match last part of the path after last "/" character
+        # remove largest pattern from beginning matching "/" with as many character as possible before it
+        # e.g. /store/bla/bla/file.root --> file.root
+        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
+
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\"\n")
@@ -703,8 +737,8 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
 #     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
 # #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
 #     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
+#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
 #     elif "cmsStage -f" in myeosstage:
 #         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
 #         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -756,11 +790,11 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
+        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
+        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     elif "cmsStage -f" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
@@ -774,7 +808,12 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     if( isCRAB ):
         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
     else:
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
+        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
+        # use the following to match last part of the path after last "/" character
+        # remove largest pattern from beginning matching "/" with as many character as possible before it
+        # e.g. /store/bla/bla/file.root --> file.root
+        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
+
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\"\n")
@@ -795,7 +834,7 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
     
     fileWithList = open(listReduced,"r")
     files = fileWithList.readlines()
@@ -809,11 +848,11 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
         for f in filesToMerge:
             f = f.strip()
             if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-                outputfile.write(myeosstage + "root://eoscms/eos/cms" + f + " /tmp \n")
+                outputfile.write(myeosstage + "root://eoscms//eos/cms" + f + " /tmp/ \n")
             elif "cmsStage -f" in myeosstage:
-                outputfile.write(myeosstage + f + " /tmp \n")        
+                outputfile.write(myeosstage + f + " /tmp/ \n")        
             else:
-                outputfile.write("cmsStage -f " + f + " /tmp \n")
+                outputfile.write("cmsStage -f " + f + " /tmp/ \n")
             strippedFiles.append(ntpath.basename(f))
         outputfile.write("filesHadd=\"/tmp/" + " /tmp/".join(strippedFiles) + "\"\n")
         outputfile.write("echo \"hadd -k " + mergedfile_n + " $filesHadd\"\n")

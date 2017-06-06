@@ -65,7 +65,7 @@ class ICplotter:
         self.data = self.loadICs(icfile)
         self.name = name
 
-    def plotIC2D(self,partition,zhwidth=0.07,errwidth=0.005):
+    def plotIC2D(self,partition,zhwidth=0.07,errwidth=0.005,outdirname=''):
         #rt.gStyle.SetOptStat(0)
         customROOTstyle()
         plots2D = []
@@ -125,6 +125,13 @@ class ICplotter:
 
         for k,p in profiles.iteritems():
             canv = rt.TCanvas("c","",1200,1200)
+            canv.cd();
+            canv.SetTickx(1);
+            canv.SetTicky(1);
+            canv.cd();
+            #canv.SetBottomMargin(0.1);
+            canv.SetRightMargin(0.06);
+            canv.SetLeftMargin(0.18);
             p[2].Draw("p")
             p[1].Draw("p same")
             p[0].Draw("p same")
@@ -132,9 +139,12 @@ class ICplotter:
             leg.AddEntry(p[1], 'Syst. error', 'LP')
             leg.AddEntry(p[2], 'Tot. error', 'LP')
             leg.Draw()
-            canv.SaveAs('%s.pdf' % p[2].GetName())
-            canv.SaveAs('%s.png' % p[2].GetName())
-            
+            if outdirname == '':
+                canv.SaveAs('%s.pdf' % p[2].GetName())
+                canv.SaveAs('%s.png' % p[2].GetName())
+            else:
+                canv.SaveAs('%s/%s.pdf' % (outdirname, p[2].GetName()))
+                canv.SaveAs('%s/%s.png' % (outdirname, p[2].GetName()))
 
         for p in plots2D:
             xsize = 1200
@@ -142,10 +152,15 @@ class ICplotter:
             canv = rt.TCanvas("c","",xsize,ysize)
             if p.GetDimension()==2: p.Draw("colz")
             else: p.Draw()
-            canv.SaveAs('%s.pdf' % p.GetName())
-            canv.SaveAs('%s.png' % p.GetName())
+            if outdirname == '':
+                canv.SaveAs('%s.pdf' % p.GetName())
+                canv.SaveAs('%s.png' % p.GetName())
+            else:
+                canv.SaveAs('%s/%s.pdf' % (outdirname, p.GetName()))
+                canv.SaveAs('%s/%s.png' % (outdirname, p.GetName()))
 
-    def compareIC2D(self,data2,partition,zwidth=0.07):
+
+    def compareIC2D(self,data2,partition,zwidth=0.07,outdirname=''):
         #rt.gStyle.SetOptStat(0)
         customROOTstyle()
         plots = []
@@ -186,9 +201,14 @@ class ICplotter:
             canv = rt.TCanvas("c","",xsize,ysize)
             if p.GetDimension()==2: p.Draw("colz")
             else: p.Draw()
-            canv.SaveAs('%s.pdf' % p.GetName())
-            canv.SaveAs('%s.png' % p.GetName())
-             
+            if outdirname == '':
+                canv.SaveAs('%s.pdf' % p.GetName())
+                canv.SaveAs('%s.png' % p.GetName())
+            else:
+                canv.SaveAs('%s/%s.pdf' % (outdirname, p.GetName()))
+                canv.SaveAs('%s/%s.png' % (outdirname, p.GetName()))
+                
+
 if __name__ == "__main__":
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options] tag1.txt tag2.txt")
@@ -197,22 +217,36 @@ if __name__ == "__main__":
     parser.add_option("--max-EE", dest="max_EE",  type="float", default=0.5, help="width of the z-axis for IC maps for endcaps")
     parser.add_option("--max-err-EB", dest="max_err_EB",  type="float", default=0.005, help="width of the y-axis for IC 1D error profile for barrel")
     parser.add_option("--max-err-EE", dest="max_err_EE",  type="float", default=0.2, help="width of the y-axis for IC 1D error profile for endcaps")
+    parser.add_option("--noEB", dest="exclude_EB", action="store_true", default=False, help="ignore barrel (useful when you only produced IC for endcap")
+    parser.add_option("--noEE", dest="exclude_EE", action="store_true", default=False, help="ignore endcap (useful when you only produced IC for barrel")
+    parser.add_option("-o","--output-dir", dest="output_dir",  type="string", default='', help="output directory where plots are stored")
 
     (options, args) = parser.parse_args()
     if len(args) < 1: raise RuntimeError, 'Expecting at least the tag txt file'
 
     inputfile = args[0]
     name = inputfile.split('.')[0] if options.name == '' else options.name
+    if options.name == '':
+        name = name.split('/')[-1]  # get file name removing path (take last element after splitting on "/")
+
+    if options.output_dir != '':
+        print "Creating local folder to store output --> " + options.output_dir 
+        folderCreation = subprocess.Popen(['mkdir -p ' + options.output_dir], stdout=subprocess.PIPE, shell=True);
+        folderCreation.communicate()
 
     icp = ICplotter(inputfile,name)
-    icp.plotIC2D('EcalBarrel',options.max_EB,options.max_err_EB)
-    icp.plotIC2D('EcalEndcapMinus',options.max_EE,options.max_err_EE)
-    icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE)
+    if not options.exclude_EB:
+        icp.plotIC2D('EcalBarrel',options.max_EB,options.max_err_EB,options.output_dir)
+    if not options.exclude_EE:
+        icp.plotIC2D('EcalEndcapMinus',options.max_EE,options.max_err_EE,options.output_dir)
+        icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE,options.output_dir)
 
     if len(args)==2:    
         comparefile = args[1]
         data2 = icp.loadICs(comparefile)
-        icp.compareIC2D(data2,'EcalBarrel',options.max_EB)
-        icp.compareIC2D(data2,'EcalEndcapMinus',options.max_EE)
-        icp.compareIC2D(data2,'EcalEndcapPlus',options.max_EE)
+        if not options.exclude_EB:
+            icp.compareIC2D(data2,'EcalBarrel',options.max_EB,options.output_dir)
+        if not options.exclude_EE:
+            icp.compareIC2D(data2,'EcalEndcapMinus',options.max_EE,options.output_dir)
+            icp.compareIC2D(data2,'EcalEndcapPlus',options.max_EE,options.output_dir)
 
