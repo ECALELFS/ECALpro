@@ -439,6 +439,16 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
         print 'Done with final hadd'
 
+
+    if MakeNtuple4optimization:
+        print """MakeNtuple4optimization is set to True in parameters.py
+From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
+each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
+Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations
+If this is not the case, modify FillEpsilonPlot.cc
+"""
+        quit()
+
     # N of Fit to send
     nEB = 61199/nFit
     if (61199%nFit != 0) :
@@ -787,12 +797,12 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
        TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
        TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
-    print "Printing list of files on eos ..."
-    print "############################"
-    cmdEosLs = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/"
-    eosFileList = subprocess.Popen([cmdEosLs], stdout=subprocess.PIPE, shell=True);
-    print eosFileList.communicate()
-    print "############################"
+    # print "Printing list of files on eos ..."
+    # print "############################"
+    # cmdEosLs = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/"
+    # eosFileList = subprocess.Popen([cmdEosLs], stdout=subprocess.PIPE, shell=True);
+    # print eosFileList.communicate()
+    # print "############################"
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()
