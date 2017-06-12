@@ -437,8 +437,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_enG1_nocor",    &Op_enG1_nocor,       "STr2_enG1_nocor[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_enG2_nocor",    &Op_enG2_nocor,       "STr2_enG2_nocor[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_mPi0_nocor",    &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,       "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,          "STr2_Es_e1_1[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,          "STr2_Es_e1_2[STr2_NPi0_rec]/F");
@@ -456,10 +454,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_Phi_2",         &Op_Phi_2,            "STr2_Phi_2[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Time_1",        &Op_Time_1,           "STr2_Time_1[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Time_2",        &Op_Time_2,           "STr2_Time_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iEtaiX_1",      &Op_iEtaiX_1,         "STr2_iEtaiX_1[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iEtaiX_2",      &Op_iEtaiX_2,         "STr2_iEtaiX_2[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhiiY_1",      &Op_iPhiiY_1,         "STr2_iPhiiY_1[STr2_NPi0_rec]/I");
@@ -472,6 +466,14 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_iEta_2on2520",  &Op_iEta_2on2520,     "STr2_iEta_2on2520[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_1on20",    &Op_iPhi_1on20,       "STr2_iPhi_1on20[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_2on20",    &Op_iPhi_2on20,       "STr2_iPhi_2on20[STr2_NPi0_rec]/I");
+	if( isMC_ && MC_Asssoc_ ) {
+	  Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
+	  Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
+	}
     }
 
     /// trigger histo
