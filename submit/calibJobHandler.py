@@ -247,6 +247,10 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                   Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $5}'"  # was print $4, but I added an option to hadd command appearing in the printed string
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
+               # FoutGrep is something like the following
+               # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
+               # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
+               # removing (' and `\n', None)
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep)[2:]
                else:
@@ -264,7 +268,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
                    print ""  #to separate different steps
-                   print "loop: iter " + str(line_index)
+                   print "loop: line " + str(line_index)
                    line_index += 1
                    if(fastHadd):
                       #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
@@ -447,7 +451,7 @@ each crystal are not saved and therefore the Fit part will crash because these h
 Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations
 If this is not the case, modify FillEpsilonPlot.cc
 """
-        quit()
+#        quit()
 
     # N of Fit to send
     nEB = 61199/nFit
