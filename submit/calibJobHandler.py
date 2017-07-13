@@ -374,9 +374,11 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                 print "checking the presence and the sanity of hadded file: " + eosFile
                 testHaddFile = subprocess.Popen([testHaddFile_s], stdout=subprocess.PIPE, shell=True);
                 output = testHaddFile.communicate()[0]
-                print "output = ",output
-                fsize = int(output.split()[4]) if len(output)>0 else 0
-                if 'o such file' in output or fsize<1000:
+                fsize = 0
+                if len(output)>0:
+                    print "output = ",output
+                    fsize = int(output.split()[4])
+                if len(output)==0 or fsize<1000:
                     print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
                     Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + "_recovery_" + str(HaddRecoveryAttempt) + ".log"
@@ -448,7 +450,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         print """MakeNtuple4optimization is set to True in parameters.py
 From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
 each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
-Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations
+Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
 If this is not the case, modify FillEpsilonPlot.cc
 """
 #        quit()
@@ -989,13 +991,13 @@ If this is not the case, modify FillEpsilonPlot.cc
     print output
 
     for iTrial in range(20):
-        if('o such file' in output):
+        if(len(output)>0):
+            break
+        else:
             print '[trial #' + str(iTrial) + '] ' + NameTag + calibMapName + ' is not available. Trying again in 30s...'
             time.sleep(30)
             checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
             output = checkFileAvailability.communicate()[0]
-        else:
-            break
 
     print "Done with iteration " + str(iters)
     if( ONLYHADD or ONLYFINHADD or ONLYFIT):
