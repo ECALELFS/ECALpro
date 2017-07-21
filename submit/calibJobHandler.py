@@ -130,6 +130,53 @@ for iters in range(nIterations):
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
             datalines2 = (checkJobs2.communicate()[0]).splitlines()
         print 'Done with the Fill part'
+
+        ##########
+        # only for ntuples, resubmit failed *EcalNtp*.root jobs
+        ##########
+        if MakeNtuple4optimization:
+
+            NtpRecoveryAttempt = 0
+            goodNtp = 0
+            while goodNtp < njobs and NtpRecoveryAttempt < 3:
+                goodNtp = 0
+                for ih in range(Nlist):
+                    eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
+                    testNtpFile_s = myeoslsl + ' ' + eosFile
+                    print "checking the presence and the sanity of EcalNtp file: " + eosFile
+                    testNtpFile = subprocess.Popen([testNtpFile_s], stdout=subprocess.PIPE, shell=True);
+                    output = testNtpFile.communicate()[0]
+                    fsize = 0
+                    if len(output)>0:
+                        print "output = ",output
+                        fsize = int(output.split()[4])
+                    if len(output)==0 or fsize<1000:
+                        print "The file " + eosFile + " is not present, or empty. Resubmitting ..."
+                        Ntp_src_n = srcPath + "/Fill/submit_iter_" + str(iters) + "_job_" + str(ijob) + ".sh"
+                        Ntp_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + "_recovery_" + str(NtpRecoveryAttempt) + ".log"
+                        Ntpsubmit_s = "bsub -q " + queue + " -o " + Ntp_log_n + " bash " + Ntp_src_n
+                        print Ntpsubmit_s
+                        subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
+                        outJobs = subJobs.communicate()
+                        print outJobs
+                        time.sleep(1)
+                    else: goodNtp += 1
+
+                checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+                datalines = (checkJobs.communicate()[0]).splitlines()
+
+                # Daemon cheking running jobs
+                print "Checking recovery of Ntp ..."
+                while len(datalines)>=num :
+                   time.sleep(5)
+                   checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+                   datalines = (checkJobs.communicate()[0]).splitlines()
+
+                NtpRecoveryAttempt += 1
+
+                print 'Done with Ntp recovery'
+
+
     #Crab start from HADD, but it need to rebuild the list of files. So he has this additional part
     if ( mode == 'CRAB' ):
         getGoodfile_str = ''
@@ -219,6 +266,16 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
         else:
             printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
+
+
+
+    if MakeNtuple4optimization:
+        print """MakeNtuple4optimization is set to True in parameters.py
+Code will stop know before adding the *EcalNtp*.root files.
+It is better that you run on all the output files using a TChain. Indeed, these are big files, and the hadd part is slow and the jobs can fail in producing the output. 
+"""
+        print "Done with iteration " + str(iters)
+        quit()
 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
@@ -447,13 +504,15 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
 
 
     if MakeNtuple4optimization:
+        # it actually stopped already before hadding files
         print """MakeNtuple4optimization is set to True in parameters.py
 From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
 each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
 Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
 If this is not the case, modify FillEpsilonPlot.cc
 """
-#        quit()
+        print "Done with iteration " + str(iters)
+        quit()
 
     # N of Fit to send
     nEB = 61199/nFit
