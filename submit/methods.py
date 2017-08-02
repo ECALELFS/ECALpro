@@ -680,8 +680,16 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     else:
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    outputfile.write("files=`cat " + listReduced + "`\n")
+    # loop to remove only *EcalNtp*.root files that would be copied by this script, i.e. those in listReduced
+    outputfile.write("for file in $files;\n")
+    outputfile.write("do\n")
+    outputfile.write("   EcalNtpFile=\"${file##*/}\"\n")
+    outputfile.write("   test -e /tmp/$EcalNtpFile && rm -rf /tmp/$EcalNtpFile\n")
+    outputfile.write("done\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    outputfile.write("test -e /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root && rm -rf /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root\n")
 #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
@@ -692,7 +700,7 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     else:
         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-    outputfile.write("files=`cat " + listReduced + "`\n")
+    #outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("filesHadd=''\n")
     outputfile.write("for file in $files;\n")
     outputfile.write("do\n")
@@ -704,7 +712,6 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
         # remove largest pattern from beginning matching "/" with as many character as possible before it
         # e.g. /store/bla/bla/file.root --> file.root
         outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
-
     outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
     outputfile.write("done\n")
     outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\"\n")
@@ -714,8 +721,15 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     else:
         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    # loop to remove only *EcalNtp*.root files that would be copied by this script, i.e. those in listReduced
+    outputfile.write("for file in $files;\n")
+    outputfile.write("do\n")
+    outputfile.write("   EcalNtpFile=\"${file##*/}\"\n")
+    outputfile.write("   test -e /tmp/$EcalNtpFile && rm -rf /tmp/$EcalNtpFile\n")
+    outputfile.write("done\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
+    #outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
+    outputfile.write("test -e /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root && rm -rf /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root\n")
 
 
 ####################################

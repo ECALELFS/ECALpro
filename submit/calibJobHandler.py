@@ -130,6 +130,53 @@ for iters in range(nIterations):
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
             datalines2 = (checkJobs2.communicate()[0]).splitlines()
         print 'Done with the Fill part'
+
+        ##########
+        # only for ntuples, resubmit failed *EcalNtp*.root jobs
+        ##########
+        if MakeNtuple4optimization:
+
+            NtpRecoveryAttempt = 0
+            goodNtp = 0
+            while goodNtp < njobs and NtpRecoveryAttempt < 3:
+                goodNtp = 0
+                for ih in range(Nlist):
+                    eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
+                    testNtpFile_s = myeoslsl + ' ' + eosFile
+                    print "checking the presence and the sanity of EcalNtp file: " + eosFile
+                    testNtpFile = subprocess.Popen([testNtpFile_s], stdout=subprocess.PIPE, shell=True);
+                    output = testNtpFile.communicate()[0]
+                    fsize = 0
+                    if len(output)>0:
+                        print "output = ",output
+                        fsize = int(output.split()[4])
+                    if len(output)==0 or fsize<1000:
+                        print "The file " + eosFile + " is not present, or empty. Resubmitting ..."
+                        Ntp_src_n = srcPath + "/Fill/submit_iter_" + str(iters) + "_job_" + str(ijob) + ".sh"
+                        Ntp_log_n = logPath + "/fillEpsilonPlot_iter_" + str(iters) + "_job_" + str(ijob) + "_recovery_" + str(NtpRecoveryAttempt) + ".log"
+                        Ntpsubmit_s = "bsub -q " + queue + " -o " + Ntp_log_n + " bash " + Ntp_src_n
+                        print Ntpsubmit_s
+                        subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
+                        outJobs = subJobs.communicate()
+                        print outJobs
+                        time.sleep(1)
+                    else: goodNtp += 1
+
+                checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+                datalines = (checkJobs.communicate()[0]).splitlines()
+
+                # Daemon cheking running jobs
+                print "Checking recovery of Ntp ..."
+                while len(datalines)>=num :
+                   time.sleep(5)
+                   checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+                   datalines = (checkJobs.communicate()[0]).splitlines()
+
+                NtpRecoveryAttempt += 1
+
+                print 'Done with Ntp recovery'
+
+
     #Crab start from HADD, but it need to rebuild the list of files. So he has this additional part
     if ( mode == 'CRAB' ):
         getGoodfile_str = ''
@@ -220,6 +267,16 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
             printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
         Fhadd_cfg_f.close()
 
+
+
+    if MakeNtuple4optimization:
+        print """MakeNtuple4optimization is set to True in parameters.py
+Code will stop know before adding the *EcalNtp*.root files.
+It is better that you run on all the output files using a TChain. Indeed, these are big files, and the hadd part is slow and the jobs can fail in producing the output. 
+"""
+        print "Done with iteration " + str(iters)
+        quit()
+
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
         print 'Now adding files...'
@@ -247,6 +304,10 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                   Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $5}'"  # was print $4, but I added an option to hadd command appearing in the printed string
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
+               # FoutGrep is something like the following
+               # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
+               # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
+               # removing (' and `\n', None)
                if(fastHadd):
                   FoutGrep_2 = str(FoutGrep)[2:]
                else:
@@ -264,7 +325,7 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
                    print ""  #to separate different steps
-                   print "loop: iter " + str(line_index)
+                   print "loop: line " + str(line_index)
                    line_index += 1
                    if(fastHadd):
                       #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
@@ -370,9 +431,11 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                 print "checking the presence and the sanity of hadded file: " + eosFile
                 testHaddFile = subprocess.Popen([testHaddFile_s], stdout=subprocess.PIPE, shell=True);
                 output = testHaddFile.communicate()[0]
-                print "output = ",output
-                fsize = int(output.split()[4]) if len(output)>0 else 0
-                if 'o such file' in output or fsize<1000:
+                fsize = 0
+                if len(output)>0:
+                    print "output = ",output
+                    fsize = int(output.split()[4])
+                if len(output)==0 or fsize<1000:
                     print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
                     Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + "_recovery_" + str(HaddRecoveryAttempt) + ".log"
@@ -438,6 +501,18 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
                FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
                Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
         print 'Done with final hadd'
+
+
+    if MakeNtuple4optimization:
+        # it actually stopped already before hadding files
+        print """MakeNtuple4optimization is set to True in parameters.py
+From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
+each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
+Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
+If this is not the case, modify FillEpsilonPlot.cc
+"""
+        print "Done with iteration " + str(iters)
+        quit()
 
     # N of Fit to send
     nEB = 61199/nFit
@@ -787,12 +862,12 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
        TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
        TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
-    print "Printing list of files on eos ..."
-    print "############################"
-    cmdEosLs = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/"
-    eosFileList = subprocess.Popen([cmdEosLs], stdout=subprocess.PIPE, shell=True);
-    print eosFileList.communicate()
-    print "############################"
+    # print "Printing list of files on eos ..."
+    # print "############################"
+    # cmdEosLs = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/"
+    # eosFileList = subprocess.Popen([cmdEosLs], stdout=subprocess.PIPE, shell=True);
+    # print eosFileList.communicate()
+    # print "############################"
 
     for thisfile_s in ListFinaHadd:
         thisfile_s = thisfile_s.rstrip()
@@ -975,13 +1050,13 @@ p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" 
     print output
 
     for iTrial in range(20):
-        if('o such file' in output):
+        if(len(output)>0):
+            break
+        else:
             print '[trial #' + str(iTrial) + '] ' + NameTag + calibMapName + ' is not available. Trying again in 30s...'
             time.sleep(30)
             checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
             output = checkFileAvailability.communicate()[0]
-        else:
-            break
 
     print "Done with iteration " + str(iters)
     if( ONLYHADD or ONLYFINHADD or ONLYFIT):

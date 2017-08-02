@@ -166,9 +166,9 @@ for iter in range(nIterations):
             ntpfile = ntpfile.rstrip()
             if ntpfile != '':
                 if(line != lastline):
-                    fill_cfg_f.write("        '" + ntpfile + "',\n")
+                    fill_cfg_f.write("        '" + prefixSourceFile + ntpfile + "',\n")
                 else:
-                    fill_cfg_f.write("        '" + ntpfile + "'\n")
+                    fill_cfg_f.write("        '" + prefixSourceFile + ntpfile + "'\n")
 
         # print the last part of the cfg file
         if( isCRAB ):

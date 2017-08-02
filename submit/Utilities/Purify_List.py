@@ -16,6 +16,7 @@ fileJson = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13T
 if not( os.path.isfile(fileJson) ):
    print "WARNING!!! " + str(fileJson) + " not found!"
 fileNEW = '../InputList/DAS2017_Run2017C_fill6031_purified.list'
+
 if ( os.path.isfile(fileNEW) ):
    os.remove(fileNEW)
 #open
