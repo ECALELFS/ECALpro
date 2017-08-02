@@ -17,12 +17,13 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
 #   
-myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select '  #this call directly the eos command (note that eos is an alias, see link above)
+#myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select '  #this call directly the eos command (note that eos is an alias, see link above)
+myeoscmd = 'eos ' # from July 2017 we can use eos on lxbatch from inside scripts 
 myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
 myeoslsl = myeosls + '-l '
 myeosmkdir = myeoscmd + 'mkdir '
@@ -33,7 +34,8 @@ myeosstage = myeoscmd + 'cp '
 # note that code used cmsStage -f, but eos cp doesn't support -f option
 # also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
 # work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-myPrefixToEosPath = 'root://eoscms//eos/cms'
+myPrefixToEosPath = 'root://eoscms/'
+prefixSourceFile = 'root://cms-xrd-global.cern.ch/'  # last / is left on purpose; tipically it can be '', but if source files are not on eos you need this prefix in PoolSource
 #myPrefixToEosPath = ''
 # will modify calibJobHandler.py with this prefix to destination
 #
@@ -55,20 +57,19 @@ if(isCRAB):
        outLFN      = "/store/user/mciprian/piZero2017/"
 #MC and Selection Optimization
 isMC = False
-MakeNtuple4optimization = False
+MakeNtuple4optimization = True
 #InputList and Folder name
-inputlist_n      = 'InputList/debug_2017A.list'
-dirname          = 'debug_finalTest_v2' #'AlcaP0_2017_v3'
+inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
+dirname          = 'reference' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'debug_finalTest_v2_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
+NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 2
+nIterations      = 1
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
-if (SubmitFurtherIterationsFromExisting):  # choose path of the calibMap you want to start from
    startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016H_mar2017newCond_reg2012/iter_5/AlcaP0_2016H_mar2017newCond_reg2012_calibMap.root"
 #N files
 ijobmax          = 5                     # 5 number of files per job
@@ -78,7 +79,7 @@ if( isCRAB and isOtherT2 ):
    fastHadd      = False                 # No fastHadd on a different T2
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = '2012reg' # Option: 'No', '2012reg', '2016reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+ContainmentCorrection = 'No' # Option: 'No', '2012reg', '2016reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
 
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
@@ -86,7 +87,7 @@ RemoveDead_Map  = ""
 #RemoveDead_Map  = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
 
 #L1 Bit Collection
-L1TriggerInfo = False;                              # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != ""), to save L1 branches in ntuples MakeNtuple4optimization must be True
+L1TriggerInfo = True;                              # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != ""), to save L1 branches in ntuples MakeNtuple4optimization must be True
 hltGtDigis = 'InputTag("simGtDigis")'               # Not used anymore in the Fill.cc -> To take the info to Fill the L1 Bit histo
 triggerTag = 'InputTag("TriggerResults")'           # To run the FillEB only if the HLTName for EB is present
 hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'   # To fill the L1 Trigger fired
@@ -111,106 +112,106 @@ useEE_EtSeed = 'False'
 EE_Seed_Et   = '0.0'
 EE_Seed_E    = '1.0' #1.5 for 40PU25
 #Selection
-CutOnHLTIso = "False"
+CutOnHLTIso = "True"
 if(Are_pi0):
    #inner barrel
    Pi0PtCutEB_low = '2.6'
    gPtCutEB_low = '1.3'
    Pi0IsoCutEB_low = '0.5'
    Pi0HLTIsoCutEB_low = "999"
-   nXtal_1_EB_low = '0'
-   nXtal_2_EB_low = '0'
+   nXtal_1_EB_low = '7'
+   nXtal_2_EB_low = '7'
    S4S9_EB_low = '0.83'
    #outer barrel 
    Pi0PtCutEB_high = '2.6'
    gPtCutEB_high = '1.3'
    Pi0IsoCutEB_high = '0.5'
    Pi0HLTIsoCutEB_high = '999'
-   nXtal_1_EB_high = '0'
-   nXtal_2_EB_high = '0'
+   nXtal_1_EB_high = '7'
+   nXtal_2_EB_high = '7'
    S4S9_EB_high = '0.83'
    #low eta EE
-   Pi0PtCutEE_low = '3.0'
-   gPtCutEE_low = '0.95'
-   Pi0IsoCutEE_low = '.0'
+   Pi0PtCutEE_low = '3.75'
+   gPtCutEE_low = '1.1'
+   Pi0IsoCutEE_low = '0.5'
    Pi0HLTIsoCutEE_low = '999'
-   nXtal_1_EE_low = '5'
-   nXtal_2_EE_low = '5'
+   nXtal_1_EE_low = '7'
+   nXtal_2_EE_low = '7'
    S4S9_EE_low = '0.95'
    #high eta EE
-   Pi0PtCutEE_high = '1.5'
-   gPtCutEE_high = '0.65'
-   Pi0IsoCutEE_high = '0.0'
+   Pi0PtCutEE_high = '2.0'
+   gPtCutEE_high = '0.95'
+   Pi0IsoCutEE_high = '0.5'
    Pi0HLTIsoCutEE_high = '999'
-   nXtal_1_EE_high = '5'
-   nXtal_2_EE_high = '5'
+   nXtal_1_EE_high = '7'
+   nXtal_2_EE_high = '7'
    S4S9_EE_high = '0.95'
    if MakeNtuple4optimization:
    #inner barrel
-      Pi0PtCutEB_low = '2.6'
-      gPtCutEB_low = '1.3'
-      Pi0IsoCutEB_low = '0.5'
-      Pi0HLTIsoCutEB_low = "999"
-      nXtal_1_EB_low = '0'
-      nXtal_2_EB_low = '0'
-      S4S9_EB_low = '0.83'
+      Pi0PtCutEB_low = '0.0'
+      gPtCutEB_low = '0.5'
+      Pi0IsoCutEB_low = '0.0'
+      Pi0HLTIsoCutEB_low = "0.5"
+      nXtal_1_EB_low = '4'
+      nXtal_2_EB_low = '4'
+      S4S9_EB_low = '0.75'
       #outer barrel 
-      Pi0PtCutEB_high = '2.6'
-      gPtCutEB_high = '1.3'
-      Pi0IsoCutEB_high = '0.5'
-      Pi0HLTIsoCutEB_high = '999'
+      Pi0PtCutEB_high = '0.0'
+      gPtCutEB_high = '0.5'
+      Pi0IsoCutEB_high = '0.0'
+      Pi0HLTIsoCutEB_high = '0.5'
       nXtal_1_EB_high = '0'
       nXtal_2_EB_high = '0'
-      S4S9_EB_high = '0.83'
+      S4S9_EB_high = '0.9'
       #low eta EE
-      Pi0PtCutEE_low = '3.0'
-      gPtCutEE_low = '0.95'
-      Pi0IsoCutEE_low = '.0'
-      Pi0HLTIsoCutEE_low = '999'
-      nXtal_1_EE_low = '5'
-      nXtal_2_EE_low = '5'
-      S4S9_EE_low = '0.95'
+      Pi0PtCutEE_low = '0.0'
+      gPtCutEE_low = '0.5'
+      Pi0IsoCutEE_low = '0.0'
+      Pi0HLTIsoCutEE_low = '0.5'
+      nXtal_1_EE_low = '4'
+      nXtal_2_EE_low = '4'
+      S4S9_EE_low = '0.75'
       #high eta EE
-      Pi0PtCutEE_high = '1.5'
-      gPtCutEE_high = '0.65'
+      Pi0PtCutEE_high = '0.0'
+      gPtCutEE_high = '0.5'
       Pi0IsoCutEE_high = '0.0'
-      Pi0HLTIsoCutEE_high = '999'
-      nXtal_1_EE_high = '5'
-      nXtal_2_EE_high = '5'
-      S4S9_EE_high = '0.95'
+      Pi0HLTIsoCutEE_high = '0.5'
+      nXtal_1_EE_high = '4'
+      nXtal_2_EE_high = '4'
+      S4S9_EE_high = '0.75'
 #ETA
 else:
    #inner barrel
-   Pi0PtCutEB_low = '2.6'
+   Pi0PtCutEB_low = '3.0'
    gPtCutEB_low = '1.3'
-   Pi0IsoCutEB_low = '0.5'
-   Pi0HLTIsoCutEB_low = "999"
-   nXtal_1_EB_low = '0'
-   nXtal_2_EB_low = '0'
+   Pi0IsoCutEB_low = '0.0'
+   Pi0HLTIsoCutEB_low = "0.5"
+   nXtal_1_EB_low = '7'
+   nXtal_2_EB_low = '7'
    S4S9_EB_low = '0.83'
    #outer barrel 
-   Pi0PtCutEB_high = '2.6'
-   gPtCutEB_high = '1.3'
-   Pi0IsoCutEB_high = '0.5'
-   Pi0HLTIsoCutEB_high = '999'
-   nXtal_1_EB_high = '0'
-   nXtal_2_EB_high = '0'
+   Pi0PtCutEB_high = '3.0'
+   gPtCutEB_high = '1.4'
+   Pi0IsoCutEB_high = '0.0'
+   Pi0HLTIsoCutEB_high = '0.5'
+   nXtal_1_EB_high = '7'
+   nXtal_2_EB_high = '7'
    S4S9_EB_high = '0.83'
    #low eta EE
-   Pi0PtCutEE_low = '3.0'
+   Pi0PtCutEE_low = '2.0'
    gPtCutEE_low = '0.95'
-   Pi0IsoCutEE_low = '.0'
-   Pi0HLTIsoCutEE_low = '999'
-   nXtal_1_EE_low = '5'
-   nXtal_2_EE_low = '5'
+   Pi0IsoCutEE_low = '0.0'
+   Pi0HLTIsoCutEE_low = '0.5'
+   nXtal_1_EE_low = '4'
+   nXtal_2_EE_low = '4'
    S4S9_EE_low = '0.95'
    #high eta EE
-   Pi0PtCutEE_high = '1.5'
+   Pi0PtCutEE_high = '2.0'
    gPtCutEE_high = '0.65'
    Pi0IsoCutEE_high = '0.0'
-   Pi0HLTIsoCutEE_high = '999'
-   nXtal_1_EE_high = '5'
-   nXtal_2_EE_high = '5'
+   Pi0HLTIsoCutEE_high = '0.5'
+   nXtal_1_EE_high = '4'
+   nXtal_2_EE_high = '4'
    S4S9_EE_high = '0.95'
    # #inner barrel
    # Pi0PtCutEB_low = '1'
@@ -353,7 +354,7 @@ linearCorrectionsTagRecord='EcalLinearCorrectionsRcd';linearCorrectionsTag='Ecal
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_testFirstStableBeams2017.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
@@ -362,7 +363,7 @@ triggerTag         = 'InputTag("TriggerResults")'    # Run Fill EB only if the H
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '90X_dataRun2_Prompt_v3' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
+globaltag          = '92X_dataRun2_Prompt_v4' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = True
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
