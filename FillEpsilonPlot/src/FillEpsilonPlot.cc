@@ -1600,7 +1600,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  // cout << "################################" << endl;
 	  // cout << "### We are in the barrel! ###" << endl;
-	  // cout << "################################" << endl;	  
+	  // cout << "################################" << endl;
+	  
 	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
 	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
 	  //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
@@ -1623,8 +1624,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
             ind1=j; ind2=i;
             Inverted=true;
           }
-	  GSort1plus2 = G_Sort_1 + G_Sort_2;
-	  GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
@@ -1782,6 +1781,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  // cout << "################################" << endl;
 	  // cout << "### We are in the endcap! ###" << endl;
 	  // cout << "################################" << endl;
+
 	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
 	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
 	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
@@ -2012,6 +2012,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
 	  else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 	  EventFlow_EE_debug->Fill(2.);
+
 	}
 
 	// Implementation of HLT Filter Isolation - Eta Band Isolation 

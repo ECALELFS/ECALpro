@@ -60,17 +60,17 @@ isMC = False
 MakeNtuple4optimization = True
 #InputList and Folder name
 inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
-dirname          = 'reference' #'AlcaP0_2017_v3'
+dirname          = 'b50_s00' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1
+nIterations      = 5
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
-SubmitFurtherIterationsFromExisting = False
+SubmitFurtherIterationsFromExisting = True
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
-   startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/AlcaP0_2016H_mar2017newCond_reg2012/iter_5/AlcaP0_2016H_mar2017newCond_reg2012_calibMap.root"
+startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 35                    # 35 number of files per hadd
@@ -354,7 +354,7 @@ linearCorrectionsTagRecord='EcalLinearCorrectionsRcd';linearCorrectionsTag='Ecal
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/DCSOnly/json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'json_DCSONLY.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
