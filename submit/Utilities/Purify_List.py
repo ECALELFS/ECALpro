@@ -9,13 +9,13 @@ import subprocess, time, sys, os, string
 ######
 
 #file name
-fileList = '../InputList/data_HLTPhysics1_Run2016H-v1_run283685_RAW.txt'
+fileList = '../InputList/DAS2017_Run2017C_fill6031.list'
 if not( os.path.isfile(fileList) ):
    print "WARNING!!! " + str(fileList) + " not found!"
-fileJson = '../../FillEpsilonPlot/data/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
+fileJson = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/DCSOnly/json_DCSONLY.txt'
 if not( os.path.isfile(fileJson) ):
    print "WARNING!!! " + str(fileJson) + " not found!"
-fileNEW = '../InputList/data_HLTPhysics1_Run2016H-v1_run283685_RAW_purified_with_lastJSON2016.list'
+fileNEW = '../InputList/DAS2017_Run2017C_fill6031_purified.list'
 if ( os.path.isfile(fileNEW) ):
    os.remove(fileNEW)
 #open

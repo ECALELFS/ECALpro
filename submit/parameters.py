@@ -17,7 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
 #eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
+eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -57,14 +57,14 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/debug_2017A.list'
-dirname          = 'debug_finalTest_v2' #'AlcaP0_2017_v3'
+inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
+dirname          = 'reference' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'debug_finalTest_v2_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
+NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 2
+nIterations      = 1
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
