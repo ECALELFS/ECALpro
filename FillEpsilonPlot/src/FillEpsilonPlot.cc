@@ -674,9 +674,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	    if (trigCompBin <= triggerComposition->GetNbinsX()) triggerComposition->GetXaxis()->SetBinLabel(trigCompBin,trigName.c_str());
 	    else cout << "Warning: trigCompBin is exceeding the allowed number of bins. Check! " << endl;
 	    trigCompBin++;
-	    Tree_Optim->Branch(trigName.c_str(),l1flag+itrig,(trigName+"/S").c_str());   // l1flag+(int)itrig is the pointer to the itrig-th object of l1flag
+	    if(MakeNtuple4optimization_) Tree_Optim->Branch(trigName.c_str(),l1flag+itrig,(trigName+"/S").c_str());   // l1flag+(int)itrig is the pointer to the itrig-th object of l1flag
 	    //Tree_Optim->Branch((trigName+"_Prescl").c_str(),l1Prescl+(int)itrig,(trigName+"_Prescl/I").c_str());  // not implemented yet
-	    
 	  } else {
 
 	    seedIsInStream[itrig] = 0;
@@ -702,7 +701,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   }
   // end of --> if (!areLabelsSet_ && L1TriggerInfo_)
-
 
   //MC Photons (they will be associated to the clusters later)
   if( isMC_ && MC_Asssoc_ ){

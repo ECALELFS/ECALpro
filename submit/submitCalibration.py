@@ -273,43 +273,23 @@ env_script_f.close()
 changePermission = subprocess.Popen(['chmod 777 ' + env_script_n], stdout=subprocess.PIPE, shell=True);
 debugout = changePermission.communicate()
 
-if( isCRAB ):
-    for iter in range(nIterations):
-        CRAB1_n =  workdir + "/CRAB_files/crab_eos_" + str(iter) + ".py"
-        CRAB1_f = open( CRAB1_n, 'w' )
-        printCrab( CRAB1_f, iter)
-        CopyFill = subprocess.Popen(['cp ' +cfgFillPath + '/fillEpsilonPlot_iter_' + str(iter) + '_job_0.py ' + workdir + '/CRAB_files/fillEpsilonPlot_iter_' + str(iter) + '.py' ], stdout=subprocess.PIPE, shell=True);
-        CopyFill.communicate()
-        CrabSendHadd_n =  workdir + "/CRAB_files/HaddSendafterCrab_" + str(iter) + ".sh"
-        CrabSendHadd_f = open( CrabSendHadd_n, 'w' )
-        printCrabHadd( CrabSendHadd_f, str(iter), pwd)
-    #Instructions
-    print "---------------------------------"
-    print "Here it is how it works with CRAB:"
-    print "--> 1) You will run the crab_eos_0.cfg I wrote for you in: " + workdir + "/CRAB_files/crab_eos.cfg: \n  --->crab submit -c crab_eos_X.py"
-    print "--> 2) When all the outputs are on EOS you will launch the second part of the script to do the HADD and the FIT with the command:\n  --->bsub -q " + queueForDaemon + " 'bash " + workdir + "/CRAB_files/HaddSendafterCrab_XXX.sh'"
-    print "--> 3) Once it has finished you will re-run CRAB importing the constant you produced" #!!! this part is not clear.
-    print "--> 4) Then you repeat all these steps for all the iterations you need. Good luck."
-    # in the futur launch a script that send crab automatically
+# configuring calibration handler
 
+if not options.create:
+    print "[calib] Number of jobs created = " + str(njobs)
+    print "[calib] Submitting calibration handler"
+    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+    print "[calib]  '-- " + submit_s
+    # submitting calibration handler
+    submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+    output = (submitJobs.communicate()[0]).splitlines()
+    print "[calib]  '-- " + output[0]
+
+    #    print "usage thisPyton.py pwd njobs queue"
 else:
-    # configuring calibration handler
-    
-    if not options.create:
-        print "[calib] Number of jobs created = " + str(njobs)
-        print "[calib] Submitting calibration handler"
-        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
-        print "[calib]  '-- " + submit_s
-        # submitting calibration handler
-        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = (submitJobs.communicate()[0]).splitlines()
-        print "[calib]  '-- " + output[0]
-    
-        #    print "usage thisPyton.py pwd njobs queue"
-    else:
-        print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
-        submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
-        print "To run the whole code use the following command."
-        print submit_s
+    print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
+    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
+    print "To run the whole code use the following command."
+    print submit_s
 
 

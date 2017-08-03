@@ -57,7 +57,8 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
+#inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
+inputlist_n      = 'InputList/debug2017.list'
 dirname          = 'reference' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
@@ -70,7 +71,7 @@ SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
 startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b00_s01.root"
 #N files
-ijobmax          = 5                     # 5 number of files per job
+ijobmax          = 1                     # 5 number of files per job
 nHadd            = 20                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
