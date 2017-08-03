@@ -16,8 +16,7 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
-#eosPath = '/store/caf/user/zhicaiz'
-eosPath = '/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017'
+eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -34,7 +33,6 @@ myeosstage = myeoscmd + 'cp '
 # note that code used cmsStage -f, but eos cp doesn't support -f option
 # also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
 # work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-myPrefixToEosPath = 'root://eoscms/'
 prefixSourceFile = 'root://cms-xrd-global.cern.ch/'  # last / is left on purpose; tipically it can be '', but if source files are not on eos you need this prefix in PoolSource
 #myPrefixToEosPath = ''
 # will modify calibJobHandler.py with this prefix to destination
@@ -57,10 +55,10 @@ if(isCRAB):
        outLFN      = "/store/user/mciprian/piZero2017/"
 #MC and Selection Optimization
 isMC = False
-MakeNtuple4optimization = True
+MakeNtuple4optimization = False
 #InputList and Folder name
 inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
-dirname          = 'b50_s00' #'AlcaP0_2017_v3'
+dirname          = 'reference' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -68,15 +66,12 @@ queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cm
 queue            = 'cmscaf1nd'
 nIterations      = 5
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
-SubmitFurtherIterationsFromExisting = True
+SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
-startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
+startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b00_s01.root"
 #N files
 ijobmax          = 5                     # 5 number of files per job
-nHadd            = 35                    # 35 number of files per hadd
-fastHadd         = True                  # From 7_4_X we can use this faster mathod. But files have to be copied on /tmp/ to be converted in .db
-if( isCRAB and isOtherT2 ):
-   fastHadd      = False                 # No fastHadd on a different T2
+nHadd            = 20                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = 'No' # Option: 'No', '2012reg', '2016reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings

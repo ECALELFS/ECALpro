@@ -176,99 +176,6 @@ for iters in range(nIterations):
 
                 print 'Done with Ntp recovery'
 
-
-    #Crab start from HADD, but it need to rebuild the list of files. So he has this additional part
-    if ( mode == 'CRAB' ):
-        getGoodfile_str = ''
-        if( storageSite=="T2_CH_CERN" ):
-           for Extra_path in ListPaths:
-               print 'LETS TRY: ' + Extra_path
-               #print 'Getting Good file: ' + "cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
-               #getGoodfile = subprocess.Popen(["cmsLs " + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | grep -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
-               print 'Getting Good file: ' + myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $5}' | grep root | grep -\
-v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile +"_"
-               getGoodfile = subprocess.Popen([myeosls + eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + Extra_path +  " | awk '{print $5}' | grep root | gre\
-p -v epsilonPlots | grep -v Barrel | grep -v Endcap | grep " + outputFile + "_" ], stdout=subprocess.PIPE, shell=True)
-               getGoodfile_c = getGoodfile.communicate()
-               getGoodfile_str += str(getGoodfile_c)
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
-           for Extra_path in ListPaths:
-               print 'LETS TRY: ' + Extra_path
-               print 'Getting Good file: ' + "ls /pnfs/iihe/cms/" + outLFN + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $1}' | grep root | awk '{print\"dcap://maite.iihe.ac.be/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + "/" + Extra_path + "/\"$0}'"
-               getGoodfile = subprocess.Popen(["ls /pnfs/iihe/cms/" + outLFN + "/iter_" + str(iters) + "/" + Extra_path + " | awk '{print $1}' | grep root | awk '{print\"dcap://maite.iihe.ac.be/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + "/" + Extra_path +"/\"$0}'"], stdout=subprocess.PIPE, shell=True)
-               getGoodfile_c = getGoodfile.communicate()
-               getGoodfile_str += str(getGoodfile_c)
-        getGoodfile_str = getGoodfile_str.replace("\\n", " ")
-        getGoodfile_str = getGoodfile_str.replace("'", "")
-        getGoodfile_str = getGoodfile_str.replace("(", "")
-        getGoodfile_str = getGoodfile_str.replace(")", "")
-        getGoodfile_str = getGoodfile_str.replace("None", "")
-        getGoodfile_str = getGoodfile_str.replace(",", "")
-        getGoodfile_list = getGoodfile_str.split()
-        NrelJob = float(len(getGoodfile_list))
-        Nlist_flo = float(NrelJob/nHadd) + 1.
-        if ( NrelJob%nHadd == 0 ): Nlist_flo -= 1
-        Nlist = int(Nlist_flo)
-        print "Number of Hadds in parallel (CRAB): " + str(Nlist)
-        #Remove Old .list and create new ones
-        rmOLDlist = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_*.list" ], stdout=subprocess.PIPE, shell=True)
-        rmOLDlist_c = rmOLDlist.communicate()
-        rmOLDlist1 = subprocess.Popen(["rm -rf " + srcPath + "/hadd/hadd_iter_" + str(iters) + "_final.list" ], stdout=subprocess.PIPE, shell=True)
-        rmOLDlist1_c = rmOLDlist1.communicate()
-        haddSrc_n_s = list()
-        haddSrc_f_s = list()
-        haddSrc_final_n_s = srcPath + "/hadd/hadd_iter_" + str(iters) + "_final.list"
-        haddSrc_final_f_s = open(  haddSrc_final_n_s, 'w')
-        for num_list in range(Nlist):
-            haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iters) + "_step_" + str(num_list)+ ".list")
-            haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
-            if(fastHadd):
-               fileToAdd_final_n_s = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
-            else:
-               fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
-            if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
-               fileToAdd_final_n_s = "dcap://maite.iihe.ac.be/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
-            for nj in range(nHadd):
-                nEff = num_list*nHadd+nj
-                if( nEff < len(getGoodfile_list) ):
-                    if(fastHadd):
-                        fileToAdd_n_s = str(getGoodfile_list[nEff]) + '\n'
-                    else:
-                        fileToAdd_n_s = 'root://eoscms//eos/cms' + str(getGoodfile_list[nEff]) + '\n'
-                    if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
-                       fileToAdd_n_s = str(getGoodfile_list[nEff]) + '\n'
-                    haddSrc_f_s[num_list].write(fileToAdd_n_s)
-            haddSrc_final_f_s.write(fileToAdd_final_n_s)
-            haddSrc_f_s[num_list].close()
-        haddSrc_final_f_s.close()
-        #Remove Old .sh and create new ones
-        rmOLDsh = subprocess.Popen(["rm -rf " + srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_*.sh" ], stdout=subprocess.PIPE, shell=True)
-        rmOLDsh_c = rmOLDsh.communicate()
-        dest = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
-           dest = "srm://maite.iihe.ac.be:8444/pnfs/iihe/cms" + outLFN + "/iter_" + str(iters) + "/"
-        for num_list in range(Nlist):   
-            hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(num_list) + ".sh"
-            hadd_cfg_f = open( hadd_cfg_n, 'w' )
-            HaddOutput = NameTag + "epsilonPlots_" + str(num_list) + ".root"
-            if(fastHadd):
-                printParallelHaddFAST(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd, num_list )
-            else:
-                printParallelHadd(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd )
-            hadd_cfg_f.close()
-            changePermission = subprocess.Popen(['chmod 777 ' + hadd_cfg_n], stdout=subprocess.PIPE, shell=True);
-            debugout = changePermission.communicate()
-        # print Final hadd
-        Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iters) + ".sh"
-        Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
-        if(fastHadd):
-            printFinalHaddRegroup(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
-        else:
-            printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
-        Fhadd_cfg_f.close()
-
-
-
     if MakeNtuple4optimization:
         print """MakeNtuple4optimization is set to True in parameters.py
 Code will stop know before adding the *EcalNtp*.root files.
@@ -298,24 +205,15 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             #Before each HADD we need ot check if the all the files in the list are present
             #BUT we do that only if you are working on batch
             if not( RunCRAB ):
-               if(fastHadd):
-                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
-               else:
-                  Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | awk '{print $5}'"  # was print $4, but I added an option to hadd command appearing in the printed string
+               Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
                myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
                FoutGrep = myGrep.communicate()
                # FoutGrep is something like the following
                # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
                # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
                # removing (' and `\n', None)
-               if(fastHadd):
-                  FoutGrep_2 = str(FoutGrep)[2:]
-               else:
-                  FoutGrep_2 = str(FoutGrep)[3:]
-               if(fastHadd):
-                  FoutGrep_2 = str(FoutGrep_2)[:-11]
-               else:
-                  FoutGrep_2 = str(FoutGrep_2)[:-10]
+               FoutGrep_2 = str(FoutGrep)[2:]
+               FoutGrep_2 = str(FoutGrep_2)[:-11]
                print 'Checking ' + str(FoutGrep_2)
                #Chech The size for each line
                f = open( str(FoutGrep_2) )
@@ -327,9 +225,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                    print ""  #to separate different steps
                    print "loop: line " + str(line_index)
                    line_index += 1
-                   if(fastHadd):
-                      #print "CHECK in fastHadd ~line 265: filetoCheck = " + filetoCheck 
-                      filetoCheck = "root://eoscms//eos/cms" + filetoCheck
+                   filetoCheck = "root://eoscms//eos/cms" + filetoCheck
                    if( NumToRem!=0 ):
                       Num = NumToRem - 1
                       f2 = open(str(FoutGrep_2) + str(Num))

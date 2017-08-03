@@ -7,11 +7,7 @@ from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")    
 parser.add_option("-c", "--create",           dest="create", action="store_true", default=False, help="Do not submit the jobs, only create the subfolders")
 (options, args) = parser.parse_args()
-
-if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ): # Beacause in IIHE the pwd give a link to the area, and you don't want that
-    pwd         = os.getenv('PWD')
-else:
-    pwd         = os.getcwd()
+pwd = os.getcwd()
 
 if not options.create:
     #-------- check if you have right access to queues --------#
@@ -112,16 +108,10 @@ for iter in range(nIterations):
     for num_list in range(Nlist):
         haddSrc_n_s.append( srcPath + "/hadd/hadd_iter_" + str(iter) + "_step_" + str(num_list)+ ".list")
         haddSrc_f_s.append( open(  haddSrc_n_s[num_list], 'w') )
-        if(fastHadd):
-            fileToAdd_final_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
-        else:
-            fileToAdd_final_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
+        fileToAdd_final_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + 'epsilonPlots_' + str(num_list) + '.root\n'
         for nj in range(nHadd):
             nEff = num_list*nHadd+nj
-            if(fastHadd):
-                fileToAdd_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
-            else:
-                fileToAdd_n_s = 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
+            fileToAdd_n_s = eosPath + '/' + dirname + '/iter_' + str(iter) + '/' + NameTag + outputFile + '_' + str(nEff) + '.root\n'
             if(nEff < NrelJob) :
                 haddSrc_f_s[num_list].write(fileToAdd_n_s)
         haddSrc_final_f_s.write(fileToAdd_final_n_s)
@@ -129,25 +119,19 @@ for iter in range(nIterations):
     haddSrc_final_f_s.close()
 
     # create Hadd cfg file
-    dest = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
+    dest = eosPath + '/' + dirname + '/iter_' + str(iter) + '/'
     for num_list in range(Nlist):
         hadd_cfg_n = cfgHaddPath + "/HaddCfg_iter_" + str(iter) + "_job_" + str(num_list) + ".sh"
         hadd_cfg_f = open( hadd_cfg_n, 'w' )
         HaddOutput = NameTag + "epsilonPlots_" + str(num_list) + ".root"
-        if(fastHadd):
-            printParallelHaddFAST(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd, num_list )
-        else:
-            printParallelHadd(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd )
+        printParallelHaddFAST(hadd_cfg_f, HaddOutput, haddSrc_n_s[num_list], dest, pwd, num_list )
         hadd_cfg_f.close()
         changePermission = subprocess.Popen(['chmod 777 ' + hadd_cfg_n], stdout=subprocess.PIPE, shell=True);
         debugout = changePermission.communicate()
     # print Final hadd
     Fhadd_cfg_n = cfgHaddPath + "/Final_HaddCfg_iter_" + str(iter) + ".sh"
     Fhadd_cfg_f = open( Fhadd_cfg_n, 'w' )
-    if(fastHadd):
-        printFinalHaddRegroup(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
-    else:
-        printFinalHadd(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
+    printFinalHaddRegroup(Fhadd_cfg_f, haddSrc_final_n_s, dest, pwd )
     Fhadd_cfg_f.close()
     # loop over the whole list
     while (len(inputlist_v) > 0):
@@ -181,7 +165,7 @@ for iter in range(nIterations):
         fillSrc_n = srcPath + "/Fill/submit_iter_" + str(iter) + "_job_" + str(ijob) + ".sh"
         fillSrc_f = open( fillSrc_n, 'w')
         source_s = NameTag +outputFile + "_" + str(ijob) + ".root"
-        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
+        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + source_s
         logpathFill = pwd + "/" + dirname + "/log/" + "fillEpsilonPlot_iter_" + str(iter) + "_job_" + str(ijob) + ".log"
         printSubmitSrc(fillSrc_f, fill_cfg_n, "/tmp/" + source_s, destination_s , pwd, logpathFill)
         fillSrc_f.close()
@@ -232,7 +216,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EB_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
+        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EB_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Barrel_" + str(nFit) + "_" + calibMapName, destination_s, pwd, logpath)
@@ -257,7 +241,7 @@ for iter in range(nIterations):
         # print source file for batch submission of FitEpsilonPlot task
         fitSrc_n = srcPath + "/Fit/submit_EE_" + str(nFit) + "_iter_" + str(iter) + ".sh"
         fitSrc_f = open( fitSrc_n, 'w')
-        destination_s = myPrefixToEosPath + eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
+        destination_s = eosPath + '/' + dirname + '/iter_' + str(iter) + "/" + NameTag + "Endcap_" + str(nFit) + "_" + calibMapName
         logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_EE_" + str(nFit) + "_iter_" + str(iter) + ".log"
         if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
             printSubmitFitSrc(fitSrc_f, fit_cfg_n, "$TMPDIR/" + NameTag + "Endcap_" + str(nFit)+ "_" + calibMapName, destination_s, pwd, logpath)
