@@ -1,13 +1,13 @@
 #!/bin/bash                                                                        
                                                                                   
-iter_ini=7
-iter_fin=7  # it is included in sequence below                                   
+iter_ini=3
+iter_fin=3  # it is included in sequence below                                   
 
 eosPrefix="root://eoscms//eos/cms"                                        
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"                             
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
-dirName="AlcaP0_2016_json3p99fb_weight_8iter_noCC"
-tagName="AlcaP0_2016_json3p99fb_weight_8iter_noCC_"
+dirName="AlcaP0_2016EF_mar2017newCond_reg2012_ext1"
+tagName="AlcaP0_2016EF_mar2017newCond_reg2012_ext2_"
 
 skipHaddFile="no"   # yes or no, decide if you need to merge files on eos, if not, skipping saves a lot of time
 
@@ -34,10 +34,12 @@ do
 	mergedFile="${tagName}Barrel_fitRes.root"
 	hadd -f $mergedFile $barrel_list
 	eos cp $mergedFile ${eosPrefix}${eosPath}${dirName}/iter_${i}/
+	rm $mergedFile
 	echo "... and now for endcap ..."
 	mergedFile="${tagName}Endcap_fitRes.root"
 	hadd -f $mergedFile $endcap_list
 	eos cp $mergedFile ${eosPrefix}${eosPath}${dirName}/iter_${i}/
+	rm $mergedFile
     fi	
 
     iterNumber="iter_$i"
