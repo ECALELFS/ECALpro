@@ -8,17 +8,20 @@ import subprocess, time, sys, os, string
 #fileNEW: OutPut: the original list cleaned removing the file not in the JSON file
 ######
 
+if len(sys.argv)<3:
+   print "Usage: Purify_List.py filelist.txt json.txt"
+   exit(0)
+
 #file name
-#fileList = '../InputList/data_HLTPhysics1_Run2016H-v1_run283685_RAW.txt'
-fileList = '../InputList/AlCaP0_2017_upTo31July2017.list'
+fileList = sys.argv[1]
 if not( os.path.isfile(fileList) ):
    print "WARNING!!! " + str(fileList) + " not found!"
-#fileJson = '../../FillEpsilonPlot/data/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'
-fileJson = '../../FillEpsilonPlot/data/json_DCSONLY.txt'
+fileJson = sys.argv[2]
 if not( os.path.isfile(fileJson) ):
    print "WARNING!!! " + str(fileJson) + " not found!"
-#fileNEW = '../InputList/data_HLTPhysics1_Run2016H-v1_run283685_RAW_purified_with_lastJSON2016.list'
-fileNEW = '../InputList/AlCaP0_2017_upTo31July2017_purified_json_DCSONLY.list'
+
+fileNEW = "purified_"+os.path.basename(fileList)
+
 if ( os.path.isfile(fileNEW) ):
    os.remove(fileNEW)
 #open

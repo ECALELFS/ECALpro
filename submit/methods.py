@@ -224,9 +224,9 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.isCRAB  = cms.untracked.bool(True)\n")
     else:
         if (SubmitFurtherIterationsFromExisting and iteration == 0):
-            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + startingCalibMap + "')\n")
+            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
-            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
     outputfile.write("process.analyzerFillEpsilon.useEBContainmentCorrections = cms.untracked.bool(" + useEBContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.useEEContainmentCorrections = cms.untracked.bool(" + useEEContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContainmentCorrections + "')\n")
@@ -416,11 +416,11 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
-        outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
+        outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
         if (SubmitFurtherIterationsFromExisting and iteration == 0):
-            outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + startingCalibMap + "')\n")
+            outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
-            outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('root://eoscms//eos/cms" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+            outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
     outputfile.write("process.p = cms.EndPath(process.fitEpsilon)\n")
 
 
@@ -437,36 +437,26 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-    if not(isCRAB): #If CRAB you have to put the correct path, anbd you do it on calibJobHandler.py, not on ./submitCalibration.py
-       destrooplot = destination.replace("calibMap","fitRes")
-       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-           outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
-           outputfile.write("echo 'eos cp /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
-       else:
-           outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")           
-           outputfile.write("echo 'cmsStage -f /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
-       outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
-       outputfile.write(myeosstage + " /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
-       outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
-       outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
-       outputfile.write("echo 'rm -f /tmp/Fit_Stored.root' >> " + logpath + " \n")
-       outputfile.write("rm -f /tmp/Fit_Stored.root >> " + logpath + " 2>&1 \n")
+    destrooplot = destination.replace("calibMap","fitRes")
+    outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
+    outputfile.write("echo 'cp /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
+    outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+    outputfile.write("cp /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
+    outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
+    outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+    outputfile.write("echo 'rm -f /tmp/Fit_Stored.root' >> " + logpath + " \n")
+    outputfile.write("rm -f /tmp/Fit_Stored.root >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n") this line produces problem when running in CMSSW_8_0_3, anyway we don't use crab
-    if ( not isOtherT2 and isCRAB ):
-        outputfile.write("setenv X509_USER_PROXY " + CRAB_CopyCert + "\n")
     if not(Silent):
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
-        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-            outputfile.write("echo 'eos cp " + source + " " + destination + "'\n")
-        else:
-            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "'\n")
-        outputfile.write(myeosstage + source + " " + destination + "\n")
+        outputfile.write("echo 'cp " + source + " " + destination + "'\n")
+        outputfile.write("cp " + source + " " + destination + "\n")
         outputfile.write("echo 'rm -f " + source + "'\n")
         outputfile.write("rm -f " + source + "\n")
     else:
@@ -474,200 +464,10 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-            outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
-        else:
-            outputfile.write("echo 'cmsStage -f " + source + " " + destination + "' >> " + logpath  + "\n")
-        outputfile.write(myeosstage + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")
+        outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
-
-def printCrab(outputfile, iter):
-    #outputfile.write("[CMSSW]\n")
-    #outputfile.write("pset=fillEpsilonPlot_iter_" + str(iter) + ".py\n")
-    #outputfile.write("events_per_job=" + events_per_job + "\n")
-    #outputfile.write("total_number_of_events="+ total_number_of_events +"\n")
-    #outputfile.write("datasetpath=" + CRAB_Data_Path + "\n")
-    #outputfile.write("output_file=" + NameTag + outputFile + "_0.root\n")
-    #outputfile.write("\n")
-    #outputfile.write("[USER]\n")
-    #outputfile.write("ui_working_dir=" + dirname + "_iter_" + str(iter) + "_CRAB\n")
-    #outputfile.write("return_data=0\n")
-    #outputfile.write("copy_data=1\n")
-    #outputfile.write("storage_element = srm-eoscms.cern.ch\n")
-    #outputfile.write("storage_path=/srm/v2/server?SFN=/eos/cms/store\n")
-    #outputfile.write("user_remote_dir=" + CRAB_Storage + dirname + "/iter_" + str(iter) + "\n")
-    #outputfile.write("check_user_remote_dir=0\n")
-    #outputfile.write("\n")
-    #outputfile.write("[CRAB]\n")
-    #outputfile.write("\n")
-    #outputfile.write("scheduler=remoteGlidein\n")
-    #outputfile.write("jobtype=cmssw\n")
-    ##outputfile.write("from CRABClient.client_utilities import getBasicConfig\n")
-    ##outputfile.write("config = getBasicConfig()\n")
-    outputfile.write("from CRABClient.UserUtilities import config\n")
-    outputfile.write("config = config()\n")
-    outputfile.write("config.General.requestName = 'CRAB_Folder'\n")
-    outputfile.write("config.General.workArea = 'crab_projects'\n")
-    outputfile.write("config.General.transferLogs = True\n")
-    outputfile.write("config.JobType.pluginName = 'Analysis'\n")
-    outputfile.write("config.JobType.psetName = 'fillEpsilonPlot_iter_" + str(iter) + ".py'\n")
-    outputfile.write("config.Data.inputDataset = '" + CRAB_Data_Path + "'\n")
-    outputfile.write("config.Data.splitting = 'FileBased'\n")
-    outputfile.write("config.Data.unitsPerJob = " + str(unitsPerJob) + "\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" ):
-       outputfile.write("config.Data.outLFNDirBase = '" + outLFN + "/iter_" + str(iter) + "'\n")
-       outputfile.write("config.User.voGroup = '" + voGroup + "'\n") #Only needed from lxplus, not from m-machines
-    else:
-       outputfile.write("config.Data.inputDBS = 'global'\n")
-       outputfile.write("config.Data.outLFNDirBase = '" + eosPath + "/" + dirname + "/" + "iter_" + str(iter) + "/'\n")
-    outputfile.write("config.Site.storageSite = '" + storageSite + "'\n")
-    outputfile.write("config.JobType.outputFiles = ['" + NameTag + outputFile + "_0.root']\n")
-    outputfile.write("config.Data.publication = False\n")
-
-def printCrabHadd(outputfile, iter, pwd):
-    outputfile.write("#!/bin/bash\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("#qsub -q localgrid@cream02 " + pwd + "/" + dirname + "/CRAB_files/HaddSendafterCrab_" + iter + ".sh\n")
-       outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
-       outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
-       outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
-    else:
-       outputfile.write("#bsub -q " + queueForDaemon + " 'bash " + pwd + "/" + dirname + "/CRAB_files/HaddSendafterCrab_" + iter + ".sh'\n")
-    outputfile.write("cd " + pwd + "\n")
-    outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("AddPath='putPATHhere' #Use path1~path2 if you have more folder from CRAB. The ICs will go to the 1st path\n")
-    outputfile.write("AddPathOLDIter='putPATHhere' #Empty if iter 0, Additional path of previous iter, otherwise\n")
-    outputfile.write("echo 'python calibJobHandler.py CRAB " + iter + " " + queue + "' $AddPath $AddPathOLDIter\n")
-    outputfile.write("if [ '$AddPath' == 'putPATHhere' -o '$AddPathOLDIter' == 'putPATHhere' ]; then\n")
-    outputfile.write("   echo 'Wrong Use of HaddSendafterCrab_X.sh, add the additional path of the CRAB output'\n")
-    outputfile.write("else\n")
-    outputfile.write("   python calibJobHandler.py CRAB " + iter + " " + queue + " $AddPath $AddPathOLDIter;\n")
-    outputfile.write("fi\n")
-
-def printParallelHadd(outputfile, outFile, list, destination, pwd):
-    import os, sys, imp, re
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
-    outputfile.write("#!/bin/bash\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
-       outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
-       outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
-    outputfile.write("eval `scramv1 runtime -sh`\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("echo 'hadd -f -k $TMPDIR/" + outFile + " @" + list + "'\n")
-       outputfile.write("hadd -f -k $TMPDIR/" + outFile + " @" + list  + "\n")
-       outputfile.write("echo 'srmcp file:///$TMPDIR/" + outFile + " " + destination + "/" + outFile + "'\n")
-       outputfile.write("srmcp file:///$TMPDIR/" + outFile + " " + destination + "/" + outFile + "\n")
-       outputfile.write("rm -f $TMPDIR/" + outFile + "\n")
-    else:
-       outputfile.write("echo 'hadd -f -k /tmp/" + outFile + " @" + list + "'\n")
-       outputfile.write("hadd -f -k /tmp/" + outFile + " @" + list  + "\n")
-       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
-           outputfile.write("echo 'eos cp /tmp/" + outFile + " " + destination + "'\n")
-       else:
-           outputfile.write("echo 'cmsStage -f /tmp/" + outFile + " " + destination + "'\n")
-       outputfile.write(myeosstage + "/tmp/" + outFile + " " + destination + "\n")
-       outputfile.write("rm -f /tmp/" + outFile + "\n")
-
-def printFinalHadd(outputfile, list, destination, pwd):
-    import os, sys, imp, re
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
-    outputfile.write("#!/bin/bash\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
-       outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-       # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
-       outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
-    outputfile.write("eval `scramv1 runtime -sh`\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       outputfile.write("echo 'hadd -f -k $TMPDIR/" + NameTag + "epsilonPlots.root @" + list + "'\n")
-       outputfile.write("hadd -f -k $TMPDIR/" + NameTag + "epsilonPlots.root @" + list  + "\n")
-       outputfile.write("echo 'srmcp file:///$TMPDIR/" + NameTag + "epsilonPlots.root " + destination + "/epsilonPlots.root" + "'\n")
-       outputfile.write("srmcp file:///$TMPDIR/" + NameTag + "epsilonPlots.root " + destination + "/epsilonPlots.root" + "\n")
-       outputfile.write("rm -f $TMPDIR/" + NameTag + "epsilonPlots.root\n")
-    else:
-       outputfile.write("echo 'hadd -f -k /tmp/" + NameTag + "epsilonPlots.root @" + list + "'\n")
-       outputfile.write("hadd -f -k /tmp/" + NameTag + "epsilonPlots.root @" + list  + "\n")
-       if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:       
-           outputfile.write("echo 'eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
-       else:
-           outputfile.write("echo 'cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "'\n")
-       outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
-       outputfile.write("rm -f /tmp/" + NameTag + "epsilonPlots.root\n")
-
-# following function is copied and modified just after. Keep it commented for reference for now
-
-# def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
-#     import os, sys, imp, re
-#     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
-#     outputfile.write("#!/bin/bash\n")
-#     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-#          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-#          print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-#          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-#     else:
-#          outputfile.write("cd " + pwd + "\n")
-#     outputfile.write("eval `scramv1 runtime -sh`\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-# #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
-#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms/eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-#     elif "cmsStage -f" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
-#     else:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-#     outputfile.write("files=`cat " + listReduced + "`\n")
-#     outputfile.write("filesHadd=''\n")
-#     outputfile.write("for file in $files;\n")
-#     outputfile.write("do\n")
-#     if( isCRAB ):
-#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
-#     else:
-#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
-#     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
-#     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
-#     outputfile.write('   echo "outEncode is: $outEncode"\n')
-#     outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
-#     outputfile.write('   then\n')
-#     outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
-#     outputfile.write('      then\n')
-#     outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
-#     outputfile.write("      fi\n")
-#     outputfile.write("   fi\n")
-#     outputfile.write("done\n")
-#     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
-#     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
-#     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root /tmp/" + NameTag + "FinalFile.pb\n")
-#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
-#     else:
-#         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
-#     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-
-#############################################################
-
-# copying and modifying previous method
 
 def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
     import os, sys, imp, re
@@ -681,116 +481,13 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
-    # loop to remove only *EcalNtp*.root files that would be copied by this script, i.e. those in listReduced
+    outputfile.write("haddstr=''\n")
     outputfile.write("for file in $files;\n")
     outputfile.write("do\n")
-    outputfile.write("   EcalNtpFile=\"${file##*/}\"\n")
-    outputfile.write("   test -e /tmp/$EcalNtpFile && rm -rf /tmp/$EcalNtpFile\n")
+    outputfile.write("   haddstr=$haddstr\" \"$file\n")
     outputfile.write("done\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("test -e /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root && rm -rf /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root\n")
-#if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
-    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-    elif "cmsStage -f" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
-    else:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\"  /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-    #outputfile.write("files=`cat " + listReduced + "`\n")
-    outputfile.write("filesHadd=''\n")
-    outputfile.write("for file in $files;\n")
-    outputfile.write("do\n")
-    if( isCRAB ):
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
-    else:
-        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")  # since I added a directory on eos, must print 10th position, not 9th
-        # use the following to match last part of the path after last "/" character
-        # remove largest pattern from beginning matching "/" with as many character as possible before it
-        # e.g. /store/bla/bla/file.root --> file.root
-        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
-    outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
-    outputfile.write("done\n")
-    outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\"\n")
-    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root $filesHadd\n")
-    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
-    else:
-        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\"\n")
-    outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root " + destination + "\n")
-    # loop to remove only *EcalNtp*.root files that would be copied by this script, i.e. those in listReduced
-    outputfile.write("for file in $files;\n")
-    outputfile.write("do\n")
-    outputfile.write("   EcalNtpFile=\"${file##*/}\"\n")
-    outputfile.write("   test -e /tmp/$EcalNtpFile && rm -rf /tmp/$EcalNtpFile\n")
-    outputfile.write("done\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + outputFile + "_*\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("test -e /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root && rm -rf /tmp/" + NameTag + "epsilonPlots_" + str(numList) + ".root\n")
-
-
-####################################
-
-# commented as previous function. Will use modifyed version below
-
-# def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
-#     import os, sys, imp, re
-#     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
-#     outputfile.write("#!/bin/bash\n")
-#     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-#          print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-#          print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-#          outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-#     else:
-#          outputfile.write("cd " + pwd + "\n")
-#     outputfile.write("eval `scramv1 runtime -sh`\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-# #if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
-#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-#     elif "cmsStage -f" in myeosstage:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
-#     else:
-#         outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\"\n")
-#         outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-#     outputfile.write("files=`cat " + listReduced + "`\n")
-#     outputfile.write("filesHadd=''\n")
-#     outputfile.write("for file in $files;\n")
-#     outputfile.write("do\n")
-#     if( isCRAB ):
-#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
-#     else:
-#         outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
-#     outputfile.write("   echo \"-> outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\"\n")
-#     outputfile.write("   outEncode=$( { fastHadd encode -o /tmp/${SUBSTRING}.pb /tmp/${SUBSTRING}; } 2>&1 )\n")
-#     outputfile.write('   echo "outEncode is: $outEncode"\n')
-#     outputfile.write('   if [[ "$outEncode" =~ "DEBUG: Encoding" ]]\n')
-#     outputfile.write('   then\n')
-#     outputfile.write('      if [[ ! "$outEncode" =~ "Error" ]]\n')
-#     outputfile.write('      then\n')
-#     outputfile.write('        filesHadd="$filesHadd /tmp/${SUBSTRING}.pb"\n')
-#     outputfile.write("      fi\n")
-#     outputfile.write("   fi\n")
-#     outputfile.write("done\n")
-#     outputfile.write("echo \"fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\"\n")
-#     outputfile.write("fastHadd add -o /tmp/" + NameTag + "FinalFile.pb $filesHadd\n")
-#     outputfile.write("fastHadd convert -o /tmp/" + NameTag + "epsilonPlots.root /tmp/" + NameTag + "FinalFile.pb\n")
-#     if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-#         outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-#     else:
-#         outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-#     outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-#     outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")
-
-
-##############################################################
+    outputfile.write("echo \"hadd -f -k " + destination + "/" + NameTag + "epsilonPlots_" + str(numList) + ".root $haddstr\"\n")
+    outputfile.write("hadd -f -k " + destination + "/" + NameTag + "epsilonPlots_" + str(numList) + ".root $haddstr\n")
 
 def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     import os, sys, imp, re
@@ -803,43 +500,14 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     else:
          outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
-#if we leave "cmsStage -f" to cpy file from eos to /tmp, then ok, otherwise, with "eos cp" files on eos must be preceeded by "root://eoscms//eos/cms". In the lines below $0 is a file read from listreduced, which will be of the form /store/blabla/file.root 
-    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"eos cp root://eoscms//eos/cms\\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "root://eoscms//eos/cms\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
-    elif "cmsStage -f" in myeosstage:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"" + myeosstage + "\"$0 \" /tmp/\"}' " + listReduced + " | bash\n")        
-    else:
-        outputfile.write("echo \"Copying files locally: awk '{print \"cmsStage -f \\\"$\\0 \\\" /tmp/\"}' " + listReduced + " | bash\"\n")
-        outputfile.write("awk '{print \"cmsStage -f \"$0 \" /tmp/\"}' " + listReduced + " | bash\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
-    outputfile.write("filesHadd=''\n")
+    outputfile.write("haddstr=''\n")
     outputfile.write("for file in $files;\n")
     outputfile.write("do\n")
-    if( isCRAB ):
-        outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $14 }'`\n")
-    else:
-        #outputfile.write("   SUBSTRING=`echo ${file} | awk -F / '{ print $10 }'`\n")   # since I added a directory on eos, must print 10th position, not 9th
-        # use the following to match last part of the path after last "/" character
-        # remove largest pattern from beginning matching "/" with as many character as possible before it
-        # e.g. /store/bla/bla/file.root --> file.root
-        outputfile.write("   SUBSTRING=\"${file##*/}\"\n")
-
-    outputfile.write('   filesHadd="$filesHadd /tmp/$SUBSTRING"\n')
+    outputfile.write('   haddstr="$haddstr\" \"$file\n')
     outputfile.write("done\n")
-    outputfile.write("echo \"hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\"\n")
-    outputfile.write("hadd -k /tmp/" + NameTag + "epsilonPlots.root $filesHadd\n")
-    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-    else:
-        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-    outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-
-
+    outputfile.write("echo \"hadd -f -k " + destination + "/" + NameTag + "epsilonPlots.root $haddstr\"\n")
+    outputfile.write("hadd -f -k " + destination + "/" + NameTag + "epsilonPlots.root $haddstr\n")
 
 def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10):
     import os, sys, imp, re, ntpath
@@ -847,44 +515,26 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    #outputfile.write("rm -rf /tmp/" + NameTag + "FinalFile*\n")  # removing this line, we don't have a file named like this (we had it in another function, not anymore)
-    
     fileWithList = open(listReduced,"r")
     files = fileWithList.readlines()
     idx=0
     grouped_files = []
     while len(files)>0:
         filesToMerge = files[:grouping]
-        mergedfile_n = "/tmp/hadded_epsilon_"+str(idx)+".root"
-        outputfile.write("echo Copying files locally\n")
+        mergedfile_n = ("%s/hadded_epsilon_"+str(idx)+".root") % destination
         strippedFiles = []
         for f in filesToMerge:
             f = f.strip()
-            if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-                outputfile.write(myeosstage + "root://eoscms//eos/cms" + f + " /tmp/ \n")
-            elif "cmsStage -f" in myeosstage:
-                outputfile.write(myeosstage + f + " /tmp/ \n")        
-            else:
-                outputfile.write("cmsStage -f " + f + " /tmp/ \n")
             strippedFiles.append(ntpath.basename(f))
-        outputfile.write("filesHadd=\"/tmp/" + " /tmp/".join(strippedFiles) + "\"\n")
-        outputfile.write("echo \"hadd -k " + mergedfile_n + " $filesHadd\"\n")
-        outputfile.write("hadd -k " + mergedfile_n + " $filesHadd\n")
-        outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n\n")
+        outputfile.write(("filesHadd=\"{eos}/" + " {eos}/".join(strippedFiles) + "\"\n").format(eos=destination))
+        outputfile.write("echo \"hadd -f -k " + mergedfile_n + " $filesHadd\"\n")
+        outputfile.write("hadd -f -k " + mergedfile_n + " $filesHadd\n")
 
         grouped_files.append(mergedfile_n)
         idx += 1
         files = files[grouping:]
 
     outputfile.write("echo now hadding the intermediate hadded files: " + " ".join(grouped_files) + "\n")
-    outputfile.write("hadd -k /tmp/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
-
-    if "/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select" in myeosstage:
-        outputfile.write("echo \"eos cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-    else:
-        outputfile.write("echo \"cmsStage -f /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-    outputfile.write(myeosstage + "/tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "hadded_epsilon*\n")
+    outputfile.write("hadd -f -k " + destination + "/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
+    outputfile.write("rm " + destination + "/" + "hadded_epsilon*\n")
 

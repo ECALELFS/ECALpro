@@ -4,7 +4,7 @@ import subprocess, time, sys, os
 from methods import *
 
 if len(sys.argv) != 7:
-    print str(sys.argv) + "is a wrong number of srguments (It sould be 7)."
+    print str(sys.argv) + "is a wrong number of srguments (" + str(len(sys.argv)) +" given, while it sould be 7)."
     print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs+1(goes from j=0 to n<YOUR_Number)"
     print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
     sys.exit(1)
@@ -45,7 +45,10 @@ print "[resubmit] Submitting calibration handler"
 submit_s = "bsub -q " + queueForDaemon + " -o " + workdir + "/resume-calibration.log source " + env_script_n
 print "[resubmit]  '-- " + submit_s
 
-# submitting calibration handler
+submitting calibration handler
 submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
 output = (submitJobs.communicate()[0]).splitlines()
 print "[resubmit]  '-- " + output[0]
+
+# for interactive debugging
+#os.system("bash "+env_script_n)
