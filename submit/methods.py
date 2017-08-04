@@ -521,27 +521,20 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     grouped_files = []
     while len(files)>0:
         filesToMerge = files[:grouping]
-        mergedfile_n = "/tmp/hadded_epsilon_"+str(idx)+".root"
-        outputfile.write("echo Copying files locally\n")
+        mergedfile_n = ("%s/hadded_epsilon_"+str(idx)+".root") % destination
         strippedFiles = []
         for f in filesToMerge:
             f = f.strip()
-            outputfile.write("cp " + f + " /tmp/ \n")
             strippedFiles.append(ntpath.basename(f))
-        outputfile.write("filesHadd=\"/tmp/" + " /tmp/".join(strippedFiles) + "\"\n")
-        outputfile.write("echo \"hadd -k " + mergedfile_n + " $filesHadd\"\n")
-        outputfile.write("hadd -k " + mergedfile_n + " $filesHadd\n")
-        outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n\n")
+        outputfile.write(("filesHadd=\"{eos}/" + " {eos}/".join(strippedFiles) + "\"\n").format(eos=destination))
+        outputfile.write("echo \"hadd -f -k " + mergedfile_n + " $filesHadd\"\n")
+        outputfile.write("hadd -f -k " + mergedfile_n + " $filesHadd\n")
 
         grouped_files.append(mergedfile_n)
         idx += 1
         files = files[grouping:]
 
     outputfile.write("echo now hadding the intermediate hadded files: " + " ".join(grouped_files) + "\n")
-    outputfile.write("hadd -k /tmp/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
-
-    outputfile.write("echo \"cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\"\n")
-    outputfile.write("cp /tmp/" + NameTag + "epsilonPlots.root " + destination + "\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "epsilonPlots*\n")
-    outputfile.write("rm -rf /tmp/" + NameTag + "hadded_epsilon*\n")
+    outputfile.write("hadd -f -k " + destination + "/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
+    outputfile.write("rm " + destination + "/" + "hadded_epsilon*\n")
 

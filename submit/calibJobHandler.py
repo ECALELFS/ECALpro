@@ -222,51 +222,36 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                NumToRem = 0
                line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
-                   print ""  #to separate different steps
-                   print "loop: line " + str(line_index)
                    line_index += 1
                    if( NumToRem!=0 ):
                       Num = NumToRem - 1
                       f2 = open(str(FoutGrep_2) + str(Num))
                       lines = f2.readlines()
                       f2.close()
-                   filetoCheck2 = str(filetoCheck)[22:]
-                   #print "CHECK ~line 273: filetoCheck2 = " + filetoCheck2
-                   #CheckComm = 'cmsLs -l ' + str(filetoCheck2)  #cmsLs is deprecated since January 2016, must use eos ls
-                   #print "CHECK: ~line 273"
-                   CheckComm = myeoslsl + str(filetoCheck2)
-                   #printn CheckComm
-                   myCheck =  subprocess.Popen([CheckComm], stdout=subprocess.PIPE, shell=True )
-                   #print myCheck
-                   Check_output = myCheck.communicate()
-                   #print "Chek_output = " + Check_output
-                   #print "CHECK: ~line 278"
-                   #If file is not present, remove it from the list
-                   if "('', None)" in str(Check_output):   # WARNING: output for missing file is --> "('', None)", not "No such ...". Probably it changed when I use eos ls instead of old cmsLs
-                      print 'HADD::MISSING: ' + str(filetoCheck2)
+                   if not os.path.exists(filetoCheck.strip()):
+                      print 'HADD::MISSING: ' + str(filetoCheck)
                       print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                       f1 = open(str(FoutGrep_2) + str(NumToRem),"w")
                       updated_list = str(FoutGrep_2) + str(NumToRem)
                       NumToRem = NumToRem + 1
                       for line in lines:
-                          if line!=str(filetoCheck2):
+                          if line!=str(filetoCheck):
                                f1.write(line)
                           else:                              
                               print "Not printing " + str(line) + " in updated file " + str(updated_list)
                       f1.close()
                    else:
-                      Splitted =  str(Check_output).split( );
-                      print "size: " + str(Splitted[4])
-                      #If is corrupted (size too small), remove it from the list
-                      if( int(Splitted[4])<10000 ):
-                           print 'HADD::Bad size for: ' + str(filetoCheck2)
+                       filesize = os.path.getsize(filetoCheck.strip())
+                       #If is corrupted (size too small), remove it from the list
+                       if( filesize<10000 ):
+                           print 'HADD::Bad size for: ' + str(filetoCheck)
                            print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
                            f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
                            updated_list = str(FoutGrep_2) + str(NumToRem)
                            NumToRem = NumToRem + 1
                            lines1 = f1.readlines() # don'tunderstand the purpose of this line
                            for line in lines: 
-                               if line!=str(filetoCheck2):
+                               if line!=str(filetoCheck):
                                     f1.write(line)
                                else:                              
                                    print "Not printing " + str(line) + " in updated file " + str(updated_list)
@@ -286,33 +271,23 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             outJobs = subJobs.communicate()
             print outJobs
             time.sleep(5)
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-           checkJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-           datalines = (checkJobs.communicate()[0]).splitlines()
-        else:
-           checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-           datalines = (checkJobs.communicate()[0]).splitlines()
+        checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+        datalines = (checkJobs.communicate()[0]).splitlines()
 
         print 'Waiting for all the hadd...'
 
         # Daemon cheking running jobs
         while len(datalines)>=num :
-            if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-               time.sleep(5)
-               checkJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-               datalines = (checkJobs.communicate()[0]).splitlines()
-            else:
-               for entry in datalines:
-                   entry = entry.rstrip()
-                   entry = entry.split()[0]
-                   #print entry
-                   if(entry.find('JOBID')!=-1): continue
-                   i = int(entry)
+            for entry in datalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
 
-               time.sleep(5)
-
-               checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-               datalines = (checkJobs.communicate()[0]).splitlines()
+            time.sleep(5)
+            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            datalines = (checkJobs.communicate()[0]).splitlines()
         print 'Done with various hadd'
 
         # Check if all the hadds are there and files are not empty
@@ -322,15 +297,9 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             goodHadds = 0
             for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
-                testHaddFile_s = myeoslsl + ' ' + eosFile
-                print "checking the presence and the sanity of hadded file: " + eosFile
-                testHaddFile = subprocess.Popen([testHaddFile_s], stdout=subprocess.PIPE, shell=True);
-                output = testHaddFile.communicate()[0]
-                fsize = 0
-                if len(output)>0:
-                    print "output = ",output
-                    fsize = int(output.split()[4])
-                if len(output)==0 or fsize<1000:
+                filesize=0
+                if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
+                if filesize<1000:
                     print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
                     Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + "_recovery_" + str(HaddRecoveryAttempt) + ".log"
@@ -361,40 +330,28 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         print 'Now The Final One...'
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
         FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-             FHsubmit_s = "qsub -q localgrid@cream02 -o /dev/null -e /dev/null " + FHadd_src_n
-        else:
-             FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
+        FHsubmit_s = "bsub -q " + queue + " -o " + FHadd_log_n + " bash " + FHadd_src_n
         FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
         FoutJobs = FsubJobs.communicate()
         print FoutJobs
         time.sleep(5)
 
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-           FcheckJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-           Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
-        else:
-           FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-           Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+        FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+        Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
         print 'Waiting for the Final hadd...'
         # Daemon cheking running jobs
         while len(Fdatalines)>=num :
-            if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-               time.sleep(5)
-               FcheckJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-               Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
-            else:
-               for entry in Fdatalines:
-                   entry = entry.rstrip()
-                   entry = entry.split()[0]
-                   #print entry
-                   if(entry.find('JOBID')!=-1): continue
-                   i = int(entry)
+            for entry in Fdatalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
 
-               time.sleep(5)
+            time.sleep(5)
 
-               FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-               Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
+            FcheckJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            Fdatalines = (FcheckJobs.communicate()[0]).splitlines()
         print 'Done with final hadd'
 
 
