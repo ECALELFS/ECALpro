@@ -331,6 +331,19 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EventFlow_EE  = new TH1F("EventFlow_EE", "EventFlow EE", 6, -0.5, 5.5 );
     EventFlow_EE->GetXaxis()->SetBinLabel(1,"All Events"); EventFlow_EE->GetXaxis()->SetBinLabel(2,"JSON"); EventFlow_EE->GetXaxis()->SetBinLabel(3,"Trigger Res");
     EventFlow_EE->GetXaxis()->SetBinLabel(4,"HLT"); EventFlow_EE->GetXaxis()->SetBinLabel(5,"Initial Comb."); EventFlow_EE->GetXaxis()->SetBinLabel(6,"Final Comb.");
+    EventFlow_EB_debug  = new TH1F("EventFlow_EB_debug", "EventFlow EB", 5, -0.5, 4.5 );
+    EventFlow_EB_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
+    EventFlow_EB_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
+    EventFlow_EB_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
+    EventFlow_EB_debug->GetXaxis()->SetBinLabel(4,"hltiso");
+    EventFlow_EB_debug->GetXaxis()->SetBinLabel(5,"nxtal");
+    EventFlow_EE_debug  = new TH1F("EventFlow_EE_debug", "EventFlow EE", 5, -0.5, 4.5 );
+    EventFlow_EE_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
+    EventFlow_EE_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
+    EventFlow_EE_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
+    EventFlow_EE_debug->GetXaxis()->SetBinLabel(4,"hltiso");
+    EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"nxtal");
+
     allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
@@ -424,8 +437,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_enG1_nocor",    &Op_enG1_nocor,       "STr2_enG1_nocor[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_enG2_nocor",    &Op_enG2_nocor,       "STr2_enG2_nocor[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_mPi0_nocor",    &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,       "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,          "STr2_Es_e1_1[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,          "STr2_Es_e1_2[STr2_NPi0_rec]/F");
@@ -443,10 +454,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_Phi_2",         &Op_Phi_2,            "STr2_Phi_2[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Time_1",        &Op_Time_1,           "STr2_Time_1[STr2_NPi0_rec]/F");
 	Tree_Optim->Branch( "STr2_Time_2",        &Op_Time_2,           "STr2_Time_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iEtaiX_1",      &Op_iEtaiX_1,         "STr2_iEtaiX_1[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iEtaiX_2",      &Op_iEtaiX_2,         "STr2_iEtaiX_2[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhiiY_1",      &Op_iPhiiY_1,         "STr2_iPhiiY_1[STr2_NPi0_rec]/I");
@@ -459,6 +466,14 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_iEta_2on2520",  &Op_iEta_2on2520,     "STr2_iEta_2on2520[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_1on20",    &Op_iPhi_1on20,       "STr2_iPhi_1on20[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_2on20",    &Op_iPhi_2on20,       "STr2_iPhi_2on20[STr2_NPi0_rec]/I");
+	if( isMC_ && MC_Asssoc_ ) {
+	  Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
+	  Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
+	  Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
+	}
     }
 
     /// trigger histo
@@ -659,9 +674,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	    if (trigCompBin <= triggerComposition->GetNbinsX()) triggerComposition->GetXaxis()->SetBinLabel(trigCompBin,trigName.c_str());
 	    else cout << "Warning: trigCompBin is exceeding the allowed number of bins. Check! " << endl;
 	    trigCompBin++;
-	    Tree_Optim->Branch(trigName.c_str(),l1flag+itrig,(trigName+"/S").c_str());   // l1flag+(int)itrig is the pointer to the itrig-th object of l1flag
+	    if(MakeNtuple4optimization_) Tree_Optim->Branch(trigName.c_str(),l1flag+itrig,(trigName+"/S").c_str());   // l1flag+(int)itrig is the pointer to the itrig-th object of l1flag
 	    //Tree_Optim->Branch((trigName+"_Prescl").c_str(),l1Prescl+(int)itrig,(trigName+"_Prescl/I").c_str());  // not implemented yet
-	    
 	  } else {
 
 	    seedIsInStream[itrig] = 0;
@@ -687,7 +701,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   }
   // end of --> if (!areLabelsSet_ && L1TriggerInfo_)
-
 
   //MC Photons (they will be associated to the clusters later)
   if( isMC_ && MC_Asssoc_ ){
@@ -865,14 +878,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // For MC this is not necessary probably (I didn't check)
   //if( HLTResults_ && (!MakeNtuple4optimization_) ){
   if( HLTResults_ ){
-    if(Are_pi0_){
-	EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
-	EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
-    }
-    else{
-	EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_);
-	EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
-    }
+    EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
+    EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
   }
   //get status from DB
   edm::ESHandle<EcalChannelStatus> csHandle;
@@ -1561,8 +1568,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #ifdef DEBUG
 	cout << "\n[DEBUG] New Pair of Clusters"<< endl;
 #endif
-	if( subDetId==EcalBarrel ) EventFlow_EB->Fill(4.);
-	else                       EventFlow_EE->Fill(4.);
+	if( subDetId==EcalBarrel ) {EventFlow_EB->Fill(4.); EventFlow_EB_debug->Fill(0.);}
+	else                       {EventFlow_EE->Fill(4.); EventFlow_EE_debug->Fill(0.);}
 	float Corr1 = 1., Corr2 = 1.;
 
 	// Defining few variables to save photon quantities that are used more than once, to avoid recomputing them every time
@@ -1572,23 +1579,31 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	Double_t g2phi = g2->phi();
 	Double_t g1pt = g1->energy()/cosh(g1eta);
 	Double_t g2pt = g2->energy()/cosh(g2eta);
+	// following two object store the two photons ordered by pt
 	TLorentzVector G_Sort_1, G_Sort_2, GSort1plus2;
-	// following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
-	// this is used only in some part activated by defines, therefore compilation error occurs because it is said it is not used
-	double GSort1plus2_EoverCoshEta = 0.0; // this will store G.E()/cosh(G.Eta()), in order to compute it only once
-	if (GSort1plus2_EoverCoshEta > 0.0 ) GSort1plus2_EoverCoshEta = -1.0;  // needed only because sometimes compiler complains that this variable is not used
-	else GSort1plus2_EoverCoshEta = -2.0;
 
+	if( g1pt > g2pt ){
+	  G_Sort_1.SetPtEtaPhiE( g1pt, g1eta, g1phi, g1->energy() );
+	  G_Sort_2.SetPtEtaPhiE( g2pt, g2eta, g2phi, g2->energy() );
+	}
+	else{
+	  G_Sort_1.SetPtEtaPhiE( g2pt, g2eta, g2phi, g2->energy() );
+	  G_Sort_2.SetPtEtaPhiE( g1pt, g1eta, g1phi, g1->energy() );
+	}
+
+	GSort1plus2 = G_Sort_1 + G_Sort_2;
+	  
 #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
 	if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
 
 	  // cout << "################################" << endl;
 	  // cout << "### We are in the barrel! ###" << endl;
 	  // cout << "################################" << endl;
+	  
+	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
+	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
+	  //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
 
-
-	  // define G_Sort only once outside the if (...) and initialize them when needed
-	  //	  TLorentzVector G_Sort_1, G_Sort_2;
 	  int ind1 = i, ind2 = j;
 	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
 	  EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
@@ -1598,13 +1613,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  bool Inverted=false;
 
-          if( g1pt > g2pt ){
-            G_Sort_1.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
-            G_Sort_2.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
-          }
-          else{
-            G_Sort_1.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
-            G_Sort_2.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
+          if( g1pt < g2pt ){
             iEta1=id_2.ieta(); iEta2 = id_1.ieta();
             iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
 #ifdef MVA_REGRESSIO_Tree
@@ -1613,8 +1622,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
             ind1=j; ind2=i;
             Inverted=true;
           }
-	  GSort1plus2 = G_Sort_1 + G_Sort_2;
-	  GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
@@ -1765,32 +1772,27 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	}
 #endif
 
+#ifdef MVA_REGRESSIO_EE
+
 	if( subDetId==EcalEndcap && (g1->seed().subdetId()==2) && (g2->seed().subdetId()==2) ){
 
 	  // cout << "################################" << endl;
 	  // cout << "### We are in the endcap! ###" << endl;
 	  // cout << "################################" << endl;
 
-#ifdef MVA_REGRESSIO_EE
-	  // define G_SOrt only once at the beginning
-	  //TLorentzVector G_Sort_1, G_Sort_2;
+	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
+	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
+	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
+
 	  int ind1 = i, ind2 = j;
 	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy();
 	  EEDetId  id_2(g2->seed()); int iX2 = id_2.ix(); int iY2 = id_2.iy();
 
-          if( g1pt > g2pt ){
-            G_Sort_1.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
-            G_Sort_2.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
-          }
-          else{
-            G_Sort_1.SetPtEtaPhiE( g2pt ,g2eta,g2phi,g2->energy() );
-            G_Sort_2.SetPtEtaPhiE( g1pt ,g1eta,g1phi,g1->energy() );
+          if( g1pt < g2pt ){
             iX1=id_2.ix(); iX2 = id_1.ix();
             iY1=id_2.iy(); iY2 = id_1.iy();
             ind1=j; ind2=i;
           }
-	  GSort1plus2 = G_Sort_1 + G_Sort_2;
-	  GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
 
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
@@ -1895,8 +1897,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  MassEEOr_mva = (GSort1plus2).M();
 	  MassEE_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
 	  TTree_JoshMva_EE->Fill();   
-#endif
 	}
+#endif
 	
 	// uncorrected versions of photons
 	// math::PtEtaPhiMLorentzVector g1P4_nocor( g1pt, g1eta, g1phi, 0. );
@@ -1907,8 +1909,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	double pi0P4_nocor_mass = GSort1plus2.M();
 	//corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
 	// this means g1 is not necessarily the leading photon
-	// define corrected photon as the uncorrected
-	//math::PtEtaPhiMLorentzVector pi0P4;
 	TLorentzVector pi0P4;
 	if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
 	else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
@@ -1918,11 +1918,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	double pi0P4_phi = pi0P4.Phi();
 	double pi0P4_mass = pi0P4.M();
 	// note that photon eta and phi are not modified by correction (only pT) since Corr * vector modifies the cartesian coordinates of the vector (pT and pZ)
-	// from now on g1pt and g2pt are the corrected values
-	g1pt = g1pt * Corr1;
 	// double g1P4_eta = g1eta; 
 	// double g1P4_phi = g1phi;
-	g2pt = g2pt * Corr2;
 	// double g2P4_eta = g2eta;
 	// double g2P4_phi = g2phi;
 
@@ -1938,7 +1935,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_etapi0_EB( pi0P4_eta );
 	  Fill_phipi0_EB( pi0P4_phi );
 	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
-	  Fill_PtGamma_EB( g1pt, g2pt );
+	  Fill_PtGamma_EB( g1pt * Corr1, g2pt * Corr2 );
 	  Fill_EtaGamma_EB( g1eta, g2eta );
 	  // to be implemented
 	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
@@ -1955,7 +1952,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_etapi0_EE( pi0P4_eta );
 	  Fill_phipi0_EE( pi0P4_phi );
 	  //adding other variables  WARNING: MUST STILL ADD TO TTREE DEFINITION 
-	  Fill_PtGamma_EE( g1pt, g2pt );
+	  Fill_PtGamma_EE( g1pt * Corr1, g2pt * Corr2 );
 	  Fill_EtaGamma_EE( g1eta, g2eta );
 	  // to be implemented
 	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
@@ -1980,11 +1977,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	  EventFlow_EB_debug->Fill(1.);
 
-	} else if( subDetId == EcalEndcap) {
+	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
 	  else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	  EventFlow_EE_debug->Fill(1.);
 
 	}
 
@@ -2004,11 +2003,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	  EventFlow_EB_debug->Fill(2.);
 
-	} else if( subDetId == EcalEndcap) {
+	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
 	  else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	  EventFlow_EE_debug->Fill(2.);
 
 	}
 
@@ -2024,7 +2025,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  const CaloCluster* Gtmp = &(clusters[ind]);
 	  TLorentzVector GtmpP4;  
 	  GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
-	  if (GtmpP4.Pt() < 0.5) continue;
+	  if (GtmpP4.Pt() < 0.5) continue;  // FIXME: based on the stream, it should represent "ptMinForIsolation*"
 	  // delta R from the pi0 candidates
 	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
 	  if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
@@ -2041,11 +2042,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	  EventFlow_EB_debug->Fill(3.);
 
-	} else if( subDetId == EcalEndcap) {
+	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
 	  else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	  EventFlow_EE_debug->Fill(3.);
 
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2077,9 +2080,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
 	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	  EventFlow_EB_debug->Fill(4.);
 	  EventFlow_EB->Fill(5.);
 
-	} else if (subDetId == EcalEndcap) {
+	} else {
 
 	  if( fabs(pi0P4_eta)<1.8 ) { 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
@@ -2088,7 +2092,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	  }
-
+	  EventFlow_EE_debug->Fill(4.);
 	  EventFlow_EE->Fill(5.);
 
 	}
@@ -2658,8 +2662,8 @@ void FillEpsilonPlot::endJob(){
   if(MakeNtuple4optimization_){
     Tree_Optim->Write();
   }
-  EventFlow_EB->Write();
-  EventFlow_EE->Write();
+  EventFlow_EB->Write();  EventFlow_EB_debug->Write();
+  EventFlow_EE->Write();  EventFlow_EE_debug->Write();
   allEpsilon_EB->Write();
   allEpsilon_EBnw->Write();
   allEpsilon_EE->Write();
