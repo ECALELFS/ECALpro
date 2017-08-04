@@ -57,7 +57,7 @@ if(isCRAB):
 isMC = False
 MakeNtuple4optimization = False
 #InputList and Folder name
-inputlist_n      = 'InputList/DAS2017_Run2017C_fill6031_purified.list'
+inputlist_n      = 'InputList/DAS2017_Run2017C_run300226_300401.list'
 dirname          = 'reference' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
@@ -68,7 +68,7 @@ nIterations      = 5
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
-startingCalibMap = "/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b00_s01.root"
+startingCalibMap = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
 #N files
 ijobmax          = 5                     # 5 number of files per job
 nHadd            = 20                    # 35 number of files per hadd
