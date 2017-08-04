@@ -132,13 +132,13 @@ for iters in range(nIterations):
         print 'Done with the Fill part'
 
         ##########
-        # only for ntuples, resubmit failed *EcalNtp*.root jobs
+        # only for ntuples, resubmit failed *EcalNtp*.root jobs (max number of resubmission is hardcoded, currently it is only 2 in order not to waste too much time)
         ##########
         if MakeNtuple4optimization:
 
             NtpRecoveryAttempt = 0
             goodNtp = 0
-            while goodNtp < njobs and NtpRecoveryAttempt < 3:
+            while goodNtp < njobs and NtpRecoveryAttempt < 2:
                 goodNtp = 0
                 for ih in range(Nlist):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"

@@ -58,16 +58,17 @@ if(isCRAB):
        outLFN      = "/store/user/mciprian/piZero2017/"
 #MC and Selection Optimization
 isMC = False
-MakeNtuple4optimization = True
+MakeNtuple4optimization = False
+useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored
 #InputList and Folder name
-inputlist_n      = 'InputList/AlCaP0_fromZeroBias_2017AB.list'
-dirname          = 'AlCaP0_FromZeroBias_2017AB_TreeOptim' #'AlcaP0_2017_v3'
+inputlist_n      = 'InputList/AlCaP0_2017_upTo31July2017_purified_json_DCSONLY.list'
+dirname          = 'AlCaP0_IC2017_upTo31July2017_noCC' #'AlcaP0_2017_v3'
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
-NameTag          = 'AlCaP0_FromZeroBias_2017AB_TreeOptim_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
+NameTag          = 'AlCaP0_IC2017_upTo31July2017_noCC_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1
+nIterations      = 6
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 SubmitFurtherIterationsFromExisting = False
 startingCalibMap = '' # used  only if SubmitFurtherIterationsFromExisting is True
@@ -89,7 +90,7 @@ RemoveDead_Map  = ""
 #RemoveDead_Map  = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
 
 #L1 Bit Collection
-L1TriggerInfo = True;                              # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != ""), to save L1 branches in ntuples MakeNtuple4optimization must be True
+L1TriggerInfo = False;                              # If we want to Fill the L1 Trigger Bit Histo (and if we perform the cut based on a L1Bit of L1Seed != ""), to save L1 branches in ntuples MakeNtuple4optimization must be True
 hltGtDigis = 'InputTag("simGtDigis")'               # Not used anymore in the Fill.cc -> To take the info to Fill the L1 Bit histo
 triggerTag = 'InputTag("TriggerResults")'           # To run the FillEB only if the HLTName for EB is present
 hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'   # To fill the L1 Trigger fired
@@ -117,21 +118,21 @@ EE_Seed_E    = '1.0' #1.5 for 40PU25
 CutOnHLTIso = "True"
 if(Are_pi0):
    #inner barrel
-   Pi0PtCutEB_low = '2.6'
-   gPtCutEB_low = '1.3'
+   Pi0PtCutEB_low = '2.1'
+   gPtCutEB_low = '0.9'
    Pi0IsoCutEB_low = '0.5'
    Pi0HLTIsoCutEB_low = "999"
    nXtal_1_EB_low = '7'
    nXtal_2_EB_low = '7'
-   S4S9_EB_low = '0.83'
+   S4S9_EB_low = '0.88' #0.83
    #outer barrel 
-   Pi0PtCutEB_high = '2.6'
-   gPtCutEB_high = '1.3'
+   Pi0PtCutEB_high = '2.0'
+   gPtCutEB_high = '0.9'
    Pi0IsoCutEB_high = '0.5'
    Pi0HLTIsoCutEB_high = '999'
    nXtal_1_EB_high = '7'
    nXtal_2_EB_high = '7'
-   S4S9_EB_high = '0.83'
+   S4S9_EB_high = '0.9' #0.83
    #low eta EE
    Pi0PtCutEE_low = '3.75'
    gPtCutEE_low = '1.1'
@@ -162,9 +163,9 @@ if(Are_pi0):
       gPtCutEB_high = '0.5'
       Pi0IsoCutEB_high = '0.0'
       Pi0HLTIsoCutEB_high = '0.5'
-      nXtal_1_EB_high = '0'
-      nXtal_2_EB_high = '0'
-      S4S9_EB_high = '0.9'
+      nXtal_1_EB_high = '4'
+      nXtal_2_EB_high = '4'
+      S4S9_EB_high = '0.75'
       #low eta EE
       Pi0PtCutEE_low = '0.0'
       gPtCutEE_low = '0.5'
@@ -181,6 +182,39 @@ if(Are_pi0):
       nXtal_1_EE_high = '4'
       nXtal_2_EE_high = '4'
       S4S9_EE_high = '0.75'
+      if useStreamSelection:
+      #inner barrel
+         Pi0PtCutEB_low = '2.0'
+         gPtCutEB_low = '0.65'
+         Pi0IsoCutEB_low = '0.0'
+         Pi0HLTIsoCutEB_low = "0.5"
+         nXtal_1_EB_low = '0'
+         nXtal_2_EB_low = '0'
+         S4S9_EB_low = '0.88'
+      #outer barrel 
+         Pi0PtCutEB_high = '1.75'
+         gPtCutEB_high = '0.65'
+         Pi0IsoCutEB_high = '0.0'
+         Pi0HLTIsoCutEB_high = '0.5'
+         nXtal_1_EB_high = '0'
+         nXtal_2_EB_high = '0'
+         S4S9_EB_high = '0.9'
+      #low eta EE
+         Pi0PtCutEE_low = '3.75'
+         gPtCutEE_low = '1.1'
+         Pi0IsoCutEE_low = '0.0'
+         Pi0HLTIsoCutEE_low = '0.5'
+         nXtal_1_EE_low = '0'
+         nXtal_2_EE_low = '0'
+         S4S9_EE_low = '0.85'
+      #high eta EE
+         Pi0PtCutEE_high = '2.0'
+         gPtCutEE_high = '0.95'
+         Pi0IsoCutEE_high = '0.0'
+         Pi0HLTIsoCutEE_high = '0.5'
+         nXtal_1_EE_high = '0'
+         nXtal_2_EE_high = '0'
+         S4S9_EE_high = '0.92'
 #ETA
 else:
    #inner barrel
@@ -280,6 +314,39 @@ else:
       nXtal_1_EE_high = '0'
       nXtal_2_EE_high = '0'
       S4S9_EE_high = '0.6'
+      if useStreamSelection:
+      #inner barrel
+         Pi0PtCutEB_low = '3.0'
+         gPtCutEB_low = '0.65'
+         Pi0IsoCutEB_low = '0.0'
+         Pi0HLTIsoCutEB_low = "0.5"
+         nXtal_1_EB_low = '0'
+         nXtal_2_EB_low = '0'
+         S4S9_EB_low = '0.9'
+      #outer barrel 
+         Pi0PtCutEB_high = '3.0'
+         gPtCutEB_high = '1.4'
+         Pi0IsoCutEB_high = '0.0'
+         Pi0HLTIsoCutEB_high = '0.5'
+         nXtal_1_EB_high = '0'
+         nXtal_2_EB_high = '0'
+         S4S9_EB_high = '0.9'
+      #low eta EE
+         Pi0PtCutEE_low = '3.0'
+         gPtCutEE_low = '1.0'
+         Pi0IsoCutEE_low = '0.0'
+         Pi0HLTIsoCutEE_low = '0.5'
+         nXtal_1_EE_low = '0'
+         nXtal_2_EE_low = '0'
+         S4S9_EE_low = '0.9'
+      #high eta EE
+         Pi0PtCutEE_high = '3.0'
+         gPtCutEE_high = '1.0'
+         Pi0IsoCutEE_high = '0.0'
+         Pi0HLTIsoCutEE_high = '0.5'
+         nXtal_1_EE_high = '0'
+         nXtal_2_EE_high = '0'
+         S4S9_EE_high = '0.9'
 
 #containment corrections
 if ContainmentCorrection == 'No':
@@ -356,7 +423,7 @@ linearCorrectionsTagRecord='EcalLinearCorrectionsRcd';linearCorrectionsTag='Ecal
 isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/   # 'Cert_testFirstStableBeams2017.txt'
+json_file          = 'json_DCSONLY.txt' if isMC==False else '' #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/   # 'Cert_testFirstStableBeams2017.txt'
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
