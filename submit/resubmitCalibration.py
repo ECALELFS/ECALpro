@@ -45,7 +45,7 @@ print "[resubmit] Submitting calibration handler"
 submit_s = "bsub -q " + queueForDaemon + " -o " + workdir + "/resume-calibration.log source " + env_script_n
 print "[resubmit]  '-- " + submit_s
 
-submitting calibration handler
+# submitting calibration handler
 submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
 output = (submitJobs.communicate()[0]).splitlines()
 print "[resubmit]  '-- " + output[0]
