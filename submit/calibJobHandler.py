@@ -140,7 +140,7 @@ for iters in range(nIterations):
             goodNtp = 0
             while goodNtp < njobs and NtpRecoveryAttempt < 2:
                 goodNtp = 0
-                for ih in range(Nlist):
+                for ih in range(njobs):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
                     testNtpFile_s = myeoslsl + ' ' + eosFile
                     print "checking the presence and the sanity of EcalNtp file: " + eosFile
@@ -200,8 +200,6 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             Hadd_log_n = logPath + "/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".log"
             Hsubmit_s = "bsub -q " + queue + " -o " + Hadd_log_n + " bash " + Hadd_src_n
-            if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-               Hsubmit_s = "qsub -q localgrid@cream02 -o /dev/null -e /dev/null " +  Hadd_src_n
             #Before each HADD we need ot check if the all the files in the list are present
             #BUT we do that only if you are working on batch
             if not( RunCRAB ):
@@ -220,9 +218,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                lines = f.readlines()
                f.close()
                NumToRem = 0
-               line_index = 0  # index just for debugging purpose (to separate steps) when filling calibration.log file
                for filetoCheck in lines:
-                   line_index += 1
                    if( NumToRem!=0 ):
                       Num = NumToRem - 1
                       f2 = open(str(FoutGrep_2) + str(Num))
@@ -249,7 +245,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                            f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
                            updated_list = str(FoutGrep_2) + str(NumToRem)
                            NumToRem = NumToRem + 1
-                           lines1 = f1.readlines() # don'tunderstand the purpose of this line
+                           #lines1 = f1.readlines() # don'tunderstand the purpose of this line
                            for line in lines: 
                                if line!=str(filetoCheck):
                                     f1.write(line)
