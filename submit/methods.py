@@ -344,6 +344,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.JSONfile = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
     if GeometryFromFile:
        outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
+    if isDebug:
+        outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
     if MakeNtuple4optimization:
