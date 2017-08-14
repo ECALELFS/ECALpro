@@ -91,6 +91,12 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     StoreForTest_ = iConfig.getUntrackedParameter<bool>("StoreForTest","false");
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
 
+    fitFileName_ = outfilename_;
+    std::string strToReplace = "calibMap";
+    fitFileName_.replace(outfilename_.find(strToReplace.c_str()),strToReplace.size(),"Fit_Stored");
+    fitFileName_ = "/tmp/" + fitFileName_;
+
+
     /// setting calibration type
     calibTypeString_ = iConfig.getUntrackedParameter<std::string>("CalibType");
     if(     calibTypeString_.compare("xtal")    == 0 ) { calibTypeNumber_ = xtal;    regionalCalibration_ = &xtalCalib; } 
@@ -859,8 +865,8 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 FitEpsilonPlot::beginJob()
 {
     if(StoreForTest_){
-	  outfileTEST_ = new TFile("/tmp/Fit_Stored.root","RECREATE");
-	  if(!outfileTEST_) cout<<"WARNING: file with fit not created."<<endl;
+      outfileTEST_ = new TFile(fitFileName_.c_str(),"RECREATE");
+      if(!outfileTEST_) cout << "WARNING: file " << fitFileName_ << " with fit not created." << endl;
     }
 }
 
@@ -870,9 +876,9 @@ FitEpsilonPlot::endJob()
 {
     saveCoefficients();
     if(StoreForTest_){
-	  cout<<"Fit stored in /tmp/Fit_Stored.root"<<endl;
-	  outfileTEST_->Write();
-	  outfileTEST_->Close();
+      cout << "Fit stored in " << fitFileName_ << endl;
+      outfileTEST_->Write();
+      outfileTEST_->Close();
     }
 }
 
