@@ -403,32 +403,23 @@ If this is not the case, modify FillEpsilonPlot.cc
         print output
 
     # checking number of running/pending jobs
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        checkJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-        datalines = (checkJobs.communicate()[0]).splitlines()
-    else:
-        checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-        datalines = (checkJobs.communicate()[0]).splitlines()
+    checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+    datalines = (checkJobs.communicate()[0]).splitlines()
     print 'Waiting for fit jobs to be finished...'
 
     #Daemon cheking running jobs
     while len(datalines)>=num :
-        if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-            time.sleep(5)
-            checkJobs = subprocess.Popen(['qstat -u $USER localgrid@cream02'], stdout=subprocess.PIPE, shell=True);
-            datalines = (checkJobs.communicate()[0]).splitlines()
-        else:
-            for entry in datalines:
-                entry = entry.rstrip()
-                entry = entry.split()[0]
-                #print entry
-                if(entry.find('JOBID')!=-1): continue
-                i = int(entry)
+        for entry in datalines:
+            entry = entry.rstrip()
+            entry = entry.split()[0]
+            #print entry
+            if(entry.find('JOBID')!=-1): continue
+            i = int(entry)
 
-            time.sleep(5)
+        time.sleep(5)
 
-            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-            datalines = (checkJobs.communicate()[0]).splitlines()
+        checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+        datalines = (checkJobs.communicate()[0]).splitlines()
 
     print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
 
@@ -438,10 +429,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     gSystem.Load("libFWCoreFWLite.so")
     #AutoLibraryLoader.enable()
     FWLiteEnabler.enable()
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        f = TFile('$TMPDIR/' + NameTag + calibMapName, 'recreate')
-    else:
-        f = TFile('/tmp/' + NameTag + calibMapName, 'recreate')
+    f = TFile(eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName, 'recreate')
     #Run only on EB or EE if needed
     ListFinaHadd = list()
     if Barrel_or_Endcap=='ONLY_BARREL':
@@ -782,31 +770,6 @@ If this is not the case, modify FillEpsilonPlot.cc
     f.cd()
     f.Write()
     f.Close()
-
-    print 'Now staging calibMap.root on EOS'
-    stage_s_fin = 'cp /tmp/' + NameTag + calibMapName + ' ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
-    print stage_s_fin
-    stageCalibFile = subprocess.Popen([stage_s_fin], stdout=subprocess.PIPE, shell=True);
-    print stageCalibFile.communicate()
-    print 'Done with staging the final ' + NameTag + calibMapName
-
-    # checking that calibMap.root is actually available on EOS
-    print "Checking availabilty of " + NameTag + calibMapName
-    #checkFileAvailability_s = 'cmsLs ' + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
-    checkFileAvailability_s = myeosls + eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + NameTag + calibMapName
-    print checkFileAvailability_s
-    checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
-    output = checkFileAvailability.communicate()[0]
-    print output
-
-    for iTrial in range(20):
-        if(len(output)>0):
-            break
-        else:
-            print '[trial #' + str(iTrial) + '] ' + NameTag + calibMapName + ' is not available. Trying again in 30s...'
-            time.sleep(30)
-            checkFileAvailability = subprocess.Popen([checkFileAvailability_s], stdout=subprocess.PIPE, shell=True);
-            output = checkFileAvailability.communicate()[0]
 
     print "Done with iteration " + str(iters)
     if( ONLYHADD or ONLYFINHADD or ONLYFIT):
