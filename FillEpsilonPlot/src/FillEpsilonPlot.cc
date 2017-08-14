@@ -92,8 +92,6 @@ Implementation:
 #include "CondFormats/L1TObjects/interface/L1TUtmAlgorithm.h"
 #include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
-//#define DEBUG
-
 using std::cout;
 using std::endl;
 using std::map;
@@ -131,8 +129,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
-    useMVAContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
-    new_pi0ContainmentCorrections_                           = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
+    useMVAContainmentCorrections_      = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
+    new_pi0ContainmentCorrections_     = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
 
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
@@ -218,6 +216,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     L1SeedsPi0Stream_                  = iConfig.getUntrackedParameter<std::string>("L1SeedsPi0Stream");    
     nL1SeedsPi0Stream_                 = iConfig.getUntrackedParameter<int>("nL1SeedsPi0Stream");
+
+    isDebug_                           = iConfig.getUntrackedParameter<bool>("isDebug",false);
 
     // for MC-truth association
     g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
@@ -331,18 +331,20 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EventFlow_EE  = new TH1F("EventFlow_EE", "EventFlow EE", 6, -0.5, 5.5 );
     EventFlow_EE->GetXaxis()->SetBinLabel(1,"All Events"); EventFlow_EE->GetXaxis()->SetBinLabel(2,"JSON"); EventFlow_EE->GetXaxis()->SetBinLabel(3,"Trigger Res");
     EventFlow_EE->GetXaxis()->SetBinLabel(4,"HLT"); EventFlow_EE->GetXaxis()->SetBinLabel(5,"Initial Comb."); EventFlow_EE->GetXaxis()->SetBinLabel(6,"Final Comb.");
-    EventFlow_EB_debug  = new TH1F("EventFlow_EB_debug", "EventFlow EB", 5, -0.5, 4.5 );
-    EventFlow_EB_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
-    EventFlow_EB_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
-    EventFlow_EB_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
-    EventFlow_EB_debug->GetXaxis()->SetBinLabel(4,"hltiso");
-    EventFlow_EB_debug->GetXaxis()->SetBinLabel(5,"nxtal");
-    EventFlow_EE_debug  = new TH1F("EventFlow_EE_debug", "EventFlow EE", 5, -0.5, 4.5 );
-    EventFlow_EE_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
-    EventFlow_EE_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
-    EventFlow_EE_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
-    EventFlow_EE_debug->GetXaxis()->SetBinLabel(4,"hltiso");
-    EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"nxtal");
+    if (isDebug_) {
+      EventFlow_EB_debug  = new TH1F("EventFlow_EB_debug", "EventFlow EB", 5, -0.5, 4.5 );
+      EventFlow_EB_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
+      EventFlow_EB_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
+      EventFlow_EB_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
+      EventFlow_EB_debug->GetXaxis()->SetBinLabel(4,"hltiso");
+      EventFlow_EB_debug->GetXaxis()->SetBinLabel(5,"nxtal");
+      EventFlow_EE_debug  = new TH1F("EventFlow_EE_debug", "EventFlow EE", 5, -0.5, 4.5 );
+      EventFlow_EE_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
+      EventFlow_EE_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
+      EventFlow_EE_debug->GetXaxis()->SetBinLabel(3,"isocut"); 
+      EventFlow_EE_debug->GetXaxis()->SetBinLabel(4,"hltiso");
+      EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"nxtal");
+    }
 
     allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
@@ -825,9 +827,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   }
 
 
-#ifdef DEBUG
-  cout << "\n --------------- [DEBUG] Beginning New Event ------------------"<< endl;
-#endif
+  if (isDebug_) cout << "\n --------------- [DEBUG] Beginning New Event ------------------"<< endl;
+
   using namespace edm;
   nPi0=0;
   //For Syst error SystOrNot_=1 or 2, for normal calib is 0
@@ -1556,20 +1557,20 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 {
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
     throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
-#ifdef DEBUG
-  cout << "[DEBUG] Beginning cluster loop.."<< endl;
-#endif
+
+  if (isDebug_) cout << "[DEBUG] Beginning cluster loop.."<< endl;
+
   // loop over clusters to make Pi0
   size_t i=0;
   for(std::vector<CaloCluster>::const_iterator g1  = clusters.begin(); g1 != clusters.end(); ++g1, ++i) 
   {
     size_t j=i+1;
     for(std::vector<CaloCluster>::const_iterator g2 = g1+1; g2 != clusters.end(); ++g2, ++j ) {
-#ifdef DEBUG
-	cout << "\n[DEBUG] New Pair of Clusters"<< endl;
-#endif
-	if( subDetId==EcalBarrel ) {EventFlow_EB->Fill(4.); EventFlow_EB_debug->Fill(0.);}
-	else                       {EventFlow_EE->Fill(4.); EventFlow_EE_debug->Fill(0.);}
+
+        if (isDebug_) cout << "\n[DEBUG] New Pair of Clusters"<< endl;
+
+	if( subDetId==EcalBarrel ) {EventFlow_EB->Fill(4.); if (isDebug_) EventFlow_EB_debug->Fill(0.);}
+	else                       {EventFlow_EE->Fill(4.); if (isDebug_) EventFlow_EE_debug->Fill(0.);}
 	float Corr1 = 1., Corr2 = 1.;
 
 	// Defining few variables to save photon quantities that are used more than once, to avoid recomputing them every time
@@ -1966,9 +1967,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #endif
 
 	
-#ifdef DEBUG
-	cout << "[DEBUG] Apply kinematic selection cuts" << endl;
-#endif
+
+	if (isDebug_) cout << "[DEBUG] Apply kinematic selection cuts" << endl;
 
 	if( g1eta == g2eta && g1phi == g2phi ) continue;
 
@@ -1977,13 +1977,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	  EventFlow_EB_debug->Fill(1.);
+	  if (isDebug_) EventFlow_EB_debug->Fill(1.);
 
 	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
 	  else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	  EventFlow_EE_debug->Fill(1.);
+	  if (isDebug_) EventFlow_EE_debug->Fill(1.);
 
 	}
 
@@ -2003,22 +2003,22 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	  EventFlow_EB_debug->Fill(2.);
+	  if (isDebug_) EventFlow_EB_debug->Fill(2.);
 
 	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
 	  else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	  EventFlow_EE_debug->Fill(2.);
+	  if (isDebug_) EventFlow_EE_debug->Fill(2.);
 
 	}
 
 	// Implementation of HLT Filter Isolation - Eta Band Isolation 
 	// implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
 	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
-#ifdef DEBUG
-	cout << "[DEBUG] Running HLT Isolation" << endl;
-#endif
+
+	if (isDebug_) cout << "[DEBUG] Running HLT Isolation" << endl;
+
 	float hlt_iso = 0;
 	for(size_t ind=0; ind < clusters.size(); ++ind){
 	  if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
@@ -2042,20 +2042,19 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
 	  else if (fabs(pi0P4_eta)<1.5) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	  EventFlow_EB_debug->Fill(3.);
+	  if (isDebug_) EventFlow_EB_debug->Fill(3.);
 
 	} else {
 	  
 	  if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
 	  else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	  EventFlow_EE_debug->Fill(3.);
+	  if (isDebug_) EventFlow_EE_debug->Fill(3.);
 
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef DEBUG
-	cout << "[DEBUG] N Cristal Cuts" << endl;
-#endif
+	if (isDebug_) cout << "[DEBUG] N Cristal Cuts" << endl;
+
 
 	int Nxtal_EnergGamma = 0;
 	int Nxtal_EnergGamma2 = 0;
@@ -2080,7 +2079,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
 	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
-	  EventFlow_EB_debug->Fill(4.);
+	  if (isDebug_) EventFlow_EB_debug->Fill(4.);
 	  EventFlow_EB->Fill(5.);
 
 	} else {
@@ -2092,14 +2091,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	  }
-	  EventFlow_EE_debug->Fill(4.);
+	  if (isDebug_) EventFlow_EE_debug->Fill(4.);
 	  EventFlow_EE->Fill(5.);
 
 	}
 
-#ifdef DEBUG
-	cout << "[DEBUG] Fill Optimization Variables..." << endl;
-#endif
+	if (isDebug_) cout << "[DEBUG] Fill Optimization Variables..." << endl;
+
 	//Fill Optimization
 	if( MakeNtuple4optimization_ && pi0P4_mass > ((Are_pi0_)?0.03:0.2) && pi0P4_mass < ((Are_pi0_)?0.25:1.) ){
 	  if( nPi0>NPI0MAX-2 ){ cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; }
@@ -2196,9 +2194,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
           nPi0++;
 	  }
 	}
-#ifdef DEBUG
-	cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
-#endif
+
+	if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
+
 	//Check the Conteinment correction for Barrel
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
 	if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ){
@@ -2207,9 +2205,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 #endif
 
 	if (!MakeNtuple4optimization_) {
-#ifdef DEBUG
-	  cout << "[DEBUG] computing region weights" << endl; 
-#endif
+
+	  if (isDebug_) cout << "[DEBUG] computing region weights" << endl; 
+
 	  // compute region weights
 	  RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
 	  RegionWeightVector w2 = regionalCalibration_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
@@ -2341,15 +2339,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    }
 	  }  
 	} // end filling histograms with mass
-#ifdef DEBUG
-	cout << "[DEBUG] End of Cluster Loop" << endl;
-#endif
+
+	if (isDebug_) cout << "[DEBUG] End of Cluster Loop" << endl;
+
 
     } // loop over clusters (g2)
   } // loop over clusters to make pi0 
-#ifdef DEBUG
-  cout << "[DEBUG] Filling Tree" << endl; 
-#endif
+
+  if (isDebug_) cout << "[DEBUG] Filling Tree" << endl; 
+
   if(MakeNtuple4optimization_){
     //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
     //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = l1flag[i];
@@ -2364,9 +2362,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
   void 
 FillEpsilonPlot::beginJob()
 {
-#ifdef DEBUG
-  cout << "[DEBUG] beginJob" << endl;
-#endif
+
+  if (isDebug_) cout << "[DEBUG] beginJob" << endl;
+
   /// testing the EE eta ring
   TH2F eep("eep","EE+",102,0.5,101.5,102,-0.5,101.5);
   TH2F eem("eem","EE-",102,0.5,101.5,102,-0.5,101.5);
@@ -2662,8 +2660,8 @@ void FillEpsilonPlot::endJob(){
   if(MakeNtuple4optimization_){
     Tree_Optim->Write();
   }
-  EventFlow_EB->Write();  EventFlow_EB_debug->Write();
-  EventFlow_EE->Write();  EventFlow_EE_debug->Write();
+  EventFlow_EB->Write();  if (isDebug_) EventFlow_EB_debug->Write();
+  EventFlow_EE->Write();  if (isDebug_) EventFlow_EE_debug->Write();
   allEpsilon_EB->Write();
   allEpsilon_EBnw->Write();
   allEpsilon_EE->Write();
