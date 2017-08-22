@@ -344,6 +344,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
        outputfile.write("process.analyzerFillEpsilon.JSONfile = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
     if GeometryFromFile:
        outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
+    if isDebug:
+        outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
     if MakeNtuple4optimization:
@@ -437,15 +439,16 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+    sourcerooplot = source.replace("calibMap","fitRes")
     destrooplot = destination.replace("calibMap","fitRes")
     outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
-    outputfile.write("echo 'cp /tmp/Fit_Stored.root " + destrooplot + "' >> " + logpath  + "\n")
+    outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
     outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("cp /tmp/Fit_Stored.root " + destrooplot + " >> " + logpath + " 2>&1 \n")
+    outputfile.write("cp " + sourcerooplot + " " + destrooplot + " >> " + logpath + " 2>&1 \n")
     outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
     outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f /tmp/Fit_Stored.root' >> " + logpath + " \n")
-    outputfile.write("rm -f /tmp/Fit_Stored.root >> " + logpath + " 2>&1 \n")
+    outputfile.write("echo 'rm -f " + sourcerooplot + "' >> " + logpath + " \n")
+    outputfile.write("rm -f " + sourcerooplot + " >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
@@ -471,6 +474,9 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
 
 def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
     import os, sys, imp, re
+    destinationWithFinalSlash = destination 
+    if not destinationWithFinalSlash.endswith("/"):
+        destinationWithFinalSlash = destination + "/"
     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
@@ -482,15 +488,18 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")
-    outputfile.write("for file in $files;\n")
+    outputfile.write("for file in ${files};\n")
     outputfile.write("do\n")
-    outputfile.write("   haddstr=$haddstr\" \"$file\n")
+    outputfile.write("   haddstr=\"${haddstr} ${file}\"\n")
     outputfile.write("done\n")
-    outputfile.write("echo \"hadd -f -k " + destination + "/" + NameTag + "epsilonPlots_" + str(numList) + ".root $haddstr\"\n")
-    outputfile.write("hadd -f -k " + destination + "/" + NameTag + "epsilonPlots_" + str(numList) + ".root $haddstr\n")
+    outputfile.write("echo \"hadd -f -k " + destinationWithFinalSlash + NameTag + "epsilonPlots_" + str(numList) + ".root ${haddstr}\"\n")
+    outputfile.write("hadd -f -k " + destinationWithFinalSlash + NameTag + "epsilonPlots_" + str(numList) + ".root ${haddstr}\n")
 
 def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     import os, sys, imp, re
+    destinationWithFinalSlash = destination 
+    if not destinationWithFinalSlash.endswith("/"):
+        destinationWithFinalSlash = destination + "/"
     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
     if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
@@ -502,15 +511,18 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")
-    outputfile.write("for file in $files;\n")
+    outputfile.write("for file in ${files};\n")
     outputfile.write("do\n")
-    outputfile.write('   haddstr="$haddstr\" \"$file\n')
+    outputfile.write('   haddstr="${haddstr} ${file}"\n')
     outputfile.write("done\n")
-    outputfile.write("echo \"hadd -f -k " + destination + "/" + NameTag + "epsilonPlots.root $haddstr\"\n")
-    outputfile.write("hadd -f -k " + destination + "/" + NameTag + "epsilonPlots.root $haddstr\n")
+    outputfile.write("echo \"hadd -f -k " + destinationWithFinalSlash + NameTag + "epsilonPlots.root ${haddstr}\"\n")
+    outputfile.write("hadd -f -k " + destinationWithFinalSlash + NameTag + "epsilonPlots.root ${haddstr}\n")
 
 def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10):
     import os, sys, imp, re, ntpath
+    destinationWithFinalSlash = destination 
+    if not destinationWithFinalSlash.endswith("/"):
+        destinationWithFinalSlash = destination + "/"
     CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
@@ -521,20 +533,20 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     grouped_files = []
     while len(files)>0:
         filesToMerge = files[:grouping]
-        mergedfile_n = ("%s/hadded_epsilon_"+str(idx)+".root") % destination
+        mergedfile_n = ("%s" + "hadded_epsilon_"+str(idx)+".root") % destinationWithFinalSlash
         strippedFiles = []
         for f in filesToMerge:
             f = f.strip()
             strippedFiles.append(ntpath.basename(f))
-        outputfile.write(("filesHadd=\"{eos}/" + " {eos}/".join(strippedFiles) + "\"\n").format(eos=destination))
-        outputfile.write("echo \"hadd -f -k " + mergedfile_n + " $filesHadd\"\n")
-        outputfile.write("hadd -f -k " + mergedfile_n + " $filesHadd\n")
+        outputfile.write(("filesHadd=\"{eos}" + " {eos}".join(strippedFiles) + "\"\n").format(eos=destinationWithFinalSlash))
+        outputfile.write("echo \"hadd -f -k " + mergedfile_n + " ${filesHadd}\"\n")
+        outputfile.write("hadd -f -k " + mergedfile_n + " ${filesHadd}\n")
 
         grouped_files.append(mergedfile_n)
         idx += 1
         files = files[grouping:]
 
-    outputfile.write("echo now hadding the intermediate hadded files: " + " ".join(grouped_files) + "\n")
-    outputfile.write("hadd -f -k " + destination + "/" +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
-    outputfile.write("rm " + destination + "/" + "hadded_epsilon*\n")
+    outputfile.write("echo \"now hadding the intermediate hadded files: " + " ".join(grouped_files) + "\"\n")
+    outputfile.write("hadd -f -k " + destinationWithFinalSlash +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
+    outputfile.write("rm " + destinationWithFinalSlash + "hadded_epsilon*\n")
 

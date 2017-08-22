@@ -8,21 +8,17 @@
 ##############################################
 
 
-iter_ini=1                                                       # first iteration to use
-iter_fin=1                                                      # last iteration to use: it is included in sequence below
-path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
+iter_ini=4                                                      # first iteration to use
+iter_fin=4                                                      # last iteration to use: it is included in sequence below
+#path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
-dirName="AlcaP0_2016_goldenJson2016_multifit_legacyrereco_GTcustom_EE"                            # dirname (see CalibCode/submit/parameters.py)
-tagName="AlcaP0_2016_goldenJson2016_multifit_legacyrereco_GTcustom_EE_"                           # TagName (see CalibCode/submit/parameters.py) 
+path="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"  # path to directory on eos
+dirName="AlCaP0_IC2017_upTo31July2017_noCC"                            # dirname (see CalibCode/submit/parameters.py)
+#tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
+tagName="${dirName}_"
 
-Pi0orEta="Pi0"  # possible options are Pi0 and Eta
-
-# iter_ini=0                                                          
-# iter_fin=7  # it is included in sequence below                                                        
-# path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"    
-# dirName="AlcaP0_2016_json2p07minus0p8fb"                                               
-# tagName="AlcaP0_2016_json2p07minus0p8fb_"
+Pi0orEta="Pi0"  # possible options are Pi0 and Eta, axis ranges are set a little differently
 
 wwwBasePath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"   # base directory where plots are stored (other directories are created inside this path) 
 
@@ -55,6 +51,10 @@ do
 	skipEEp=true
     elif [ $option = "-noEEm" ]; then
 	skipEEm=true
+    elif [ $option = "-pi0" ]; then
+	Pi0orEta="Pi0"
+    elif [ $option = "-eta" ]; then
+	Pi0orEta="Eta"
     fi
 done
 

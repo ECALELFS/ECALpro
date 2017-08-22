@@ -231,7 +231,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       math::XYZPoint Gamma2MC;
       bool isCRAB_;
       bool MakeNtuple4optimization_;
-
+      bool isDebug_; 
       /// all the three options have to be instantiated to allow the
       //choice at runtime
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;

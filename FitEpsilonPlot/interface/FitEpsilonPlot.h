@@ -69,6 +69,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::string epsilonPlotFileName_;
       std::string calibMapPath_; 
       std::string Barrel_orEndcap_; 
+      std::string fitFileName_;
 
       std::string EEoEB_; 
       bool isNot_2010_; 
