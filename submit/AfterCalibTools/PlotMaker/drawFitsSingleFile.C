@@ -64,7 +64,7 @@ int Xtal_Iz[14648]={0};
 
 // WARNING: GETTING IX, IY AND ZSIDE FROM DETID HASHEDINDEX MUST BE TESTED
 // IT LOOKS LIKE SOME INDICES ARE OVERWRITTEN
-
+// Actually it looks like some objects are written twice in the file. In the following, a check is made to avoid drawing the same object twice
 
 void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& BarrelOrEndcap = "Barrel", const string& outputDIR = "./", const Int_t nFitToPlot = 10) {
 
@@ -124,8 +124,12 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
   TIter next(f->GetListOfKeys());
   TKey *key = NULL;
   Int_t iloop = 0;
+  string previousObjectName = "";
 
   while ((key = (TKey*)next()) && iloop < nFitToPlot) {
+
+    // it seems there are duplicated objects in these files, so check that next object name is different from previous one
+    // could just use entries for which iloop is even, but then if we fix the bug we should remember to modify this patch
 
     TClass *cl = gROOT->GetClass(key->GetClassName());
     if (!cl->InheritsFrom("RooPlot")) continue;
@@ -139,6 +143,17 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     string rooplotname(xframe->GetName());
     string rooplotTitle = "";
     string canvasname = "";
+
+    if (iloop == 0) {
+      
+      previousObjectName = rooplotname;
+
+    } else {
+
+      if (rooplotname == previousObjectName) continue;
+      else previousObjectName = rooplotname;
+
+    }
 
     // get crystal index number from RooPlot name in file (name looks like Fit_n_<Number> )
     string rooplotnameTag = "Fit_n_";
@@ -158,12 +173,15 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       string ss_ieta = os_ieta.str();
       string ss_iphi = os_iphi.str();
       
-      rooplotTitle = "iR = " + ss_iR + " (iEta = " + ss_ieta + "  iPhi = " + ss_iphi + ")";
+      //rooplotTitle = "iR = " + ss_iR + " (iEta = " + ss_ieta + "  iPhi = " + ss_iphi + ")";
+      rooplotTitle = "i#eta = " + ss_ieta + "  i#phi = " + ss_iphi;
       c = new TCanvas("c",rooplotname.c_str());
       canvasname = rooplotname + "_ieta" + ss_ieta + "_iphi" + ss_iphi + ".png";
     
     } else {
 
+      // if (fitIndex < 6390 || fitIndex > 6399) continue;
+      
       stringstream os_ix;
       stringstream os_iy;
       stringstream os_iz;
@@ -177,7 +195,9 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       string ss_iy = os_iy.str();
       string ss_iz = os_iz.str();
       
-      rooplotTitle = "iR = " + ss_iR + " (iX = " + ss_ix + "  iY = " + ss_iy + "  iZ = " + ss_iz + ")";
+      //rooplotTitle = "iR = " + ss_iR + " (iX = " + ss_ix + "  iY = " + ss_iy + "  iZ = " + ss_iz + ")";
+      if (Xtal_Iz[fitIndex] > 0) rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE+";
+      else rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE-";
       c = new TCanvas("c",rooplotname.c_str());
       canvasname = rooplotname + "_ix" + ss_ix + "_iy" + ss_iy + "_iz" + ss_iz + ".png";
 
@@ -185,9 +205,30 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       
     if (xframe) {
       xframe->SetTitle(rooplotTitle.c_str());
+      xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
+      xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");
       xframe->Draw();
       c->SaveAs((outputDIR + canvasname).c_str());
     }
+
+
+    // TFile* outputFile = NULL;
+
+    // if ( (BarrelOrEndcap == "Barrel" && fitIndex == 30003) || (BarrelOrEndcap == "Endcap" && fitIndex == 6397) ) {
+      
+    //   outputFile = new TFile((outputDIR + "pi0Mass_singleXtal_Rooplot.root").c_str(),"UPDATE");
+    //   if (!outputFile || outputFile->IsZombie()) {
+    // 	cout << "Error: file not opened. Exit" << endl;
+    // 	exit(EXIT_FAILURE);
+    //   }
+    //   outputFile->cd();
+      
+    //   xframe->Write();
+    //   outputFile->Close();
+    //   delete outputFile;
+    
+    // }
+
     delete c;
 
     iloop++;

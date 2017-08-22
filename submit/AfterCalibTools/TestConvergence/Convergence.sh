@@ -1,11 +1,11 @@
 #!/bin/bash
 
-eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/" 
+eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
-dirName="AlcaP0_2016CD_mar2017newCond_reg2012"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="2"                                                          # number n of iterations (iter_0 to iter_{n-1})
-tagName="AlcaP0_2016CD_mar2017newCond_reg2012_"                           # TagName (see CalibCode/submit/parameters.py)  
+dirName="AlCaP0_IC2017_upTo31July2017_noCC"                            # dirname (see CalibCode/submit/parameters.py)  
+iter_number="5"                                                          # number n of iterations (iter_0 to iter_{n-1})
+tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
 wwwTargetDir="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/${dirName}/TestConvergence/"               
@@ -13,15 +13,9 @@ wwwTargetDir="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/${dirName}/TestCo
 nJump=1
 # leave extension as "noExtension" in you don't need to add additional steps that start from the one above
 # format is newDirName_ext1,newIterNumber_ext1,newTagName_ext1:newDirName_ext2,newIterNumber_ext2,newTagName_ext2 and so on (different extensions separated by : )
-#extension="noExtension"
-extension="AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD,5,AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD_"
+extension="noExtension"
+#extension="AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD,5,AlcaP0_2016CD_mar2017newCond_reg2012_fromIter1Run2016CD_"
 detectorToSkip="no"   # detectorToSkip = "no" to skip nothing, "EB" to skip EB, "EE" to skip EE
-
-if [ "${extension}" != "noExtension" ]
-then
-    echo "Extension added: will store plots in --> ${wwwTargetDir}extension/ (if it exists)"
-    wwwTargetDir=${wwwTargetDir}extension
-fi
 
 for option in "$@";
 do
@@ -29,8 +23,17 @@ do
         detectorToSkip="EB"
     elif [ "$option" = "-noEE" ]; then
         detectorToSkip="EE"
+    elif [ "$option" = "-noext" ]; then
+	extension="noExtension"
     fi
 done
+
+
+if [ "${extension}" != "noExtension" ]
+then
+    echo "Extension added: will store plots in --> ${wwwTargetDir}extension/ (if it exists)"
+    wwwTargetDir=${wwwTargetDir}extension
+fi
 
 
 #compile Convergence.C
