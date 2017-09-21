@@ -458,5 +458,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       ULong64_t myEvent;
       int myLumiBlock;
       int myRun;
+      int myBunchCrossing;
 
 };

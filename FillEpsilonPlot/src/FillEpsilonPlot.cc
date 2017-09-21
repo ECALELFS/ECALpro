@@ -414,6 +414,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "Event",     &myEvent,     "Event/l"); // l is for ULong64_t
 	Tree_Optim->Branch( "LumiBlock", &myLumiBlock, "LumiBlock/I");
 	Tree_Optim->Branch( "Run",       &myRun,       "Run/I");
+	Tree_Optim->Branch( "BunchCrossing",       &myBunchCrossing,       "BunchCrossing/I");
 	if (HLTResults_) {
 	  if (Are_pi0_) {
 	    Tree_Optim->Branch( "AlCa_EcalPi0EBonly", &EB_HLT, "AlCa_EcalPi0EBonly/O"); // O (capital letter o, not zero) is for a Bool_t
@@ -603,6 +604,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
   myRun = iEvent.id().run();
+  myBunchCrossing = iEvent.id().bunchCrossing();
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
@@ -1573,6 +1575,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	else                       {EventFlow_EE->Fill(4.); if (isDebug_) EventFlow_EE_debug->Fill(0.);}
 	float Corr1 = 1., Corr2 = 1.;
 
+	// g1 and g2 are ordered with the energy of the seed, but their respective clusters don't necessarily follow the same order
+	// also, their pTs are not necessarily ordered 
 	// Defining few variables to save photon quantities that are used more than once, to avoid recomputing them every time
 	Double_t g1eta = g1->eta();
 	Double_t g2eta = g2->eta();
