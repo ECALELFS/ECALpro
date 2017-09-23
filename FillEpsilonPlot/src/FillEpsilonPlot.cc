@@ -604,7 +604,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
   myRun = iEvent.id().run();
-  myBunchCrossing = iEvent.id().bunchCrossing();
+  myBunchCrossing = iEvent.bunchCrossing();
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
