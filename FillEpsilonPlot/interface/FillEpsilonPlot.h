@@ -379,7 +379,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> Es_2;
 
       std::string ContCorr_EB_;
-      TH1F *triggerComposition;
+      TH1F *triggerComposition;      
+      TH1F *triggerComposition_EB; // require that HLT in EB fired
+      TH1F *triggerComposition_EE; // require that HLT in EE fired
       bool areLabelsSet_;
 
       std::map< std::string, int > l1TrigNames_;

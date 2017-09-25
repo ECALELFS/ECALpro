@@ -93,7 +93,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
-    fitFileName_.replace(outfilename_.find(strToReplace.c_str()),strToReplace.size(),"Fit_Stored");
+    fitFileName_.replace(outfilename_.find(strToReplace.c_str()),strToReplace.size(),"fitRes");
     fitFileName_ = "/tmp/" + fitFileName_;
 
 
@@ -568,7 +568,7 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		    if(integral>70.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.25:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.075:0.4, Are_pi0_? 0.24:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
@@ -656,8 +656,9 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  sigma.setRange(0.003, 0.030);
     }
 
-    RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
-    Nsig.setVal( h->GetSum()*0.1);
+    //RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
+    RooRealVar Nsig("Nsig","#pi^{0} yield",h->Integral()*0.15,0.,h->Integral()*10.0);
+    //Nsig.setVal( h->GetSum()*0.1);
 
     RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 
@@ -678,7 +679,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
     RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
-    RooRealVar cb2("cb2","cb2", 0.1,  0.,1.);
+    RooRealVar cb2("cb2","cb2", 0.1,  -1.,1.);
     RooRealVar cb3("cb3","cb3",-0.1, -0.5,0.5);
     RooRealVar cb4("cb4","cb4", 0.1, -1.,1.);
     RooRealVar cb5("cb5","cb5", 0.1, -1.,1.);
@@ -689,7 +690,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooChebychev bkg("bkg","bkg model", x, RooArgList(cb0,cb1,cb2,cb3) );
 
     RooArgList cbpars(cb0,cb1,cb2);
-    //    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
+    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
     //if(mode==Pi0EE) cbpars.add( cb4);
     //if(mode==Pi0EE) cbpars.add( cb5);
 
@@ -716,8 +717,9 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3,p4,p5,p6) );
     //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3) );
 
-    RooRealVar Nbkg("Nbkg","background yield",1.e3,0.,1.e8);
-    Nbkg.setVal( h->GetSum()*0.8 );
+    //RooRealVar Nbkg("Nbkg","background yield",1.e3,0.,1.e8);
+    RooRealVar Nbkg("Nbkg","background yield",h->Integral()*0.85,0.,h->Integral()*10.0);
+    //Nbkg.setVal( h->GetSum()*0.8 );
 
     RooAbsPdf* model=0;
 
