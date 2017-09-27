@@ -690,26 +690,29 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooChebychev bkg("bkg","bkg model", x, RooArgList(cb0,cb1,cb2,cb3) );
 
     RooArgList cbpars(cb0,cb1,cb2);
-    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
     //if(mode==Pi0EE) cbpars.add( cb4);
     //if(mode==Pi0EE) cbpars.add( cb5);
 
-    if(mode==Pi0EB && niter==1){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-0.3,0.3);
-	  cbpars.add( cb4 );
+    // try to use a second order polynomial, if the fit is bad add other terms
+    // if you start with many terms, the fit creates strange curvy shapes trying to fit the statistical fluctuations
+    // 2nd order means a curve with no change of concavity
+    
+    if(niter==1){
+      cbpars.add( cb3);
     }
-    if(mode==Pi0EB && niter==2){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-1,1);
-	  cbpars.add( cb4 );
+    if(niter==2){
+      cb3.setRange(-1,1.);
+      cb4.setRange(-0.3,0.3);
+      cbpars.add( cb3);
+      cbpars.add( cb4 );     
     }
-    if(mode==Pi0EB && niter==3){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-1,1);
-	  cb5.setRange(-0.5, 0.5);
-	  cbpars.add( cb4 );
-	  cbpars.add( cb5 );
+    if(niter==3){
+      cb3.setRange(-1,1.);
+      cb4.setRange(-1,1);
+      cb5.setRange(-0.5, 0.5);
+      cbpars.add( cb3);
+      cbpars.add( cb4 );
+      cbpars.add( cb5 );
     }
 
     RooChebychev bkg("bkg","bkg model", x, cbpars );
@@ -844,13 +847,26 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     lat.DrawLatex(xmin,yhi-5.*ypass, line);
 
     Pi0FitResult fitres = pi0res;
+    //xframe->chiSquare() is the chi2 not reduced, i.e., that whose expected value is the number of degrees of freedom
+    // E[X^2]=v; Var[X^2]=2v --> fit is bad if |X^2-v|>5*sqrt(2v) (v will be large and we use a 5 gaussian sigma window for this estimate)
+
     //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
-    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
+    bool badChi2 = fabs(xframe->chiSquare() - pi0res.dof) > 5.0 * sqrt(2. * pi0res.dof);
+
+    if(mode==Pi0EB && ( badChi2 || fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
     }
-    if(StoreForTest_ && niter==0){
+    if(mode==Pi0EE && ( badChi2 || fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))<0.0000001 ) ){
+	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
+	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
+	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
+    }
+
+    // save last version of fit made
+    // if(StoreForTest_ && niter==0){
+    if(StoreForTest_){
 	  std::stringstream ind;
 	  ind << (int) HistoIndex;
 	  TString nameHistofit = "Fit_n_" + ind.str();
