@@ -480,7 +480,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     }
 
     /// trigger histo
-    triggerComposition = new TH1F("triggerComposition", "Trigger Composition", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
+    if (L1TriggerInfo_) {
+      triggerComposition = new TH1F("triggerComposition", "Trigger Composition", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);    
+      triggerComposition_EB = new TH1F("triggerComposition_EB", "Trigger Composition in EB", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
+      triggerComposition_EE = new TH1F("triggerComposition_EE", "Trigger Composition in EE", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
+    }
     areLabelsSet_ = false;
     //L1_nameAndNumb.clear();
     //for(unsigned int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
@@ -541,6 +545,8 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete pi0MassVsIetaEB;
   delete pi0MassVsETEB;
   delete triggerComposition;
+  delete triggerComposition_EB;
+  delete triggerComposition_EE;
 
 #ifdef SELECTION_TREE
   delete CutVariables_EB;
@@ -848,22 +854,14 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   estopology_ = new EcalPreshowerTopology(geoHandle);
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
 
-  //L1 Trigget bit list (and cut if L1_Bit_Sele_ is not empty)
-  if( L1TriggerInfo_ ){ if( !getTriggerResult(iEvent, iSetup) ) return; }
-  //Vectors
-  std::vector< CaloCluster > ebclusters;
-  ebclusters.clear();
-  vs4s9.clear(); vs2s9.clear(); vs2s9.clear(); vSeedTime.clear();
-  vs4s9EE.clear(); Es_1.clear(); Es_2.clear(); vSeedTimeEE.clear();
-  vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
-  //cout << "I'm before std::vector< CaloCluster > eseeclusters; eseeclusters.clear(); " << endl;
-  std::vector< CaloCluster > eseeclusters; eseeclusters.clear();
-  std::vector< CaloCluster > eseeclusters_tot; eseeclusters_tot.clear();
-  Ncristal_EB.clear(); Ncristal_EE.clear();
-  //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
-  // Put definition of these variables in FillEpsilonPlot.h, so they are accessible from any method of fillEpsilonPlot
+  ///////////////////////
+  // I moved the evaluation of HLT before that of the L1 seeds because the triggerComposition histogram is filled inside getTriggerResult() method
+  // Since I have also the triggerComposition for EB or EE only, I need to know in advance if HLT_EB or HLT_EE fired (one of them should have fired)
+  ///////////////////////////////
+  // I put definition of these variables in FillEpsilonPlot.h, so they are accessible from any method of fillEpsilonPlot
   EB_HLT=true, EE_HLT=true;
+
   // Warning: when you are filling ntuples for data, GetHLTResults() should be used, otherwise when entering fillEEClusters()
   // the code crushes saying
  
@@ -884,6 +882,26 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
     EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
   }
+
+
+  //L1 Trigget bit list (and cut if L1_Bit_Sele_ is not empty)
+  // this function is not meant to apply the global L1 seed expression to accept or not the event
+  // it can reject events if you decide to select one or more specific seeds (this must still be implemented)
+  if( L1TriggerInfo_ ){ if( !getTriggerResult(iEvent, iSetup) ) return; }
+
+
+  //Vectors
+  std::vector< CaloCluster > ebclusters;
+  ebclusters.clear();
+  vs4s9.clear(); vs2s9.clear(); vs2s9.clear(); vSeedTime.clear();
+  vs4s9EE.clear(); Es_1.clear(); Es_2.clear(); vSeedTimeEE.clear();
+  vs2s9EE.clear(); vs2s9EE.clear(); ESratio.clear();
+  //cout << "I'm before std::vector< CaloCluster > eseeclusters; eseeclusters.clear(); " << endl;
+  std::vector< CaloCluster > eseeclusters; eseeclusters.clear();
+  std::vector< CaloCluster > eseeclusters_tot; eseeclusters_tot.clear();
+  Ncristal_EB.clear(); Ncristal_EE.clear();
+  //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
+
   //get status from DB
   edm::ESHandle<EcalChannelStatus> csHandle;
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
@@ -2577,6 +2595,22 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
 
     const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
 
+    ////////////////////
+    ////////////////////
+    // here we redo the association bit number <--> bit name
+    // the reason is that this is not a constant 
+    //e.g. during data taking in 2017 I noticed the number associated to a name changed, for instance SingleJet16 was 130 and then it became 131)
+    edm::ESHandle<L1TUtmTriggerMenu> menu;
+    iSetup.get<L1TUtmTriggerMenuRcd>().get(menu);
+    // get the bit/name association         
+    for (auto const & keyval: menu->getAlgorithmMap()) { 
+      std::string const & trigName  = keyval.second.getName(); 
+      unsigned int iTrigIndex = keyval.second.getIndex(); 
+      algoBitToName[iTrigIndex] = TString( trigName );  
+    } // end algo Map
+    ////////////////////
+    ////////////////////
+
     GlobalAlgBlk const &result = l1results->at(0, 0);
 
     for (unsigned int itrig = 0; itrig < result.maxPhysicsTriggers; ++itrig) {
@@ -2590,6 +2624,8 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
 	if (myflag ) { 
 	  l1flag[itrig] = 1; 
 	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]); 
+	  if (HLT_EB) triggerComposition_EB->Fill(algoBitToName[itrig], l1flag[itrig]); 
+	  if (HLT_EE) triggerComposition_EE->Fill(algoBitToName[itrig], l1flag[itrig]); 
 	  // cout << " itrig = " << itrig << "    ";
 	  // cout << " l1flag[itrig] = " << l1flag[itrig] << "    ";
 	  // cout << " algoBitToName[itrig] = " << algoBitToName[itrig] << endl;	  
@@ -2678,7 +2714,11 @@ void FillEpsilonPlot::endJob(){
   Occupancy_EB->Write();
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
-  triggerComposition->Write();
+  if (L1TriggerInfo_) {
+    triggerComposition->Write();
+    triggerComposition_EB->Write();
+    triggerComposition_EE->Write();
+  }
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
