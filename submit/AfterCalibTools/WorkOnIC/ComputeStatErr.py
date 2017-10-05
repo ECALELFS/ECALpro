@@ -130,7 +130,7 @@ for iEta in range(MIN_ETA,2*MAX_ETA+2):
        if( iEta!=MAX_ETA+1 ):
            Sig_EB.SetBinContent(iEta,iPhi, ic_even-ic_odd)
            Sig_EB_Diff_iEta.Fill(iEta-86,ic_even-ic_odd)
-           print str(ic_even) + "  " + str(ic_odd) + " " + str(iEta) 
+           #print str(ic_even) + "  " + str(ic_odd) + " " + str(iEta) 
            t.iC_eve=float(ic_even); t.iC_odd=float(ic_odd); t.eta=int(iEta-86); t.phi=int(iPhi);
            mytree_EB.Fill()
 #EEm

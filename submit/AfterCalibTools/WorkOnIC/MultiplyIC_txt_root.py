@@ -25,11 +25,12 @@ def usage():
 
 def MultiplyICFromTXT(options):
 #Read the IC in the txt file (they should be never zero) and I multiply them for my IC. If mine are 1, I moltiply them anyway.
+    systerr = options.SystErr
     for iEB in range(len(IC_EB_1)):
         OricalibMap_EB.SetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]), float(IC_EB_1[iEB][2]) )
         OriCoef_EB.Fill( float(IC_EB_1[iEB][2]) )
         myIC = EBIC.GetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]) )
-        myIC_syst = EBIC_Next.GetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]) )
+        myIC_syst = EBIC_Next.GetBinContent( int(IC_EB_1[iEB][0]) + 86 , int(IC_EB_1[iEB][1]) ) if systerr != "none" else 1.0
         if(float(myIC)==0. and not options.exclude_EB):
             print "MultiplyICFromTXT::WARNING, my IC is Zero in EB"
         if(float(myIC)==1. and float(IC_EB_1[iEB][2])!=1.):
@@ -44,7 +45,7 @@ def MultiplyICFromTXT(options):
             OricalibMap_EEm.SetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]), float(IC_EE_1[iEE][3]) )
             OriCoef_EEm.Fill( float(IC_EE_1[iEE][3]) )
             myIC = EEmIC.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
-            myIC_syst = EEmIC_Next.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
+            myIC_syst = EEmIC_Next.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) ) if systerr != "none" else 1.0
             if(float(myIC)==0. and not options.exclude_EE):
                 print "MultiplyICFromTXT::WARNING, my IC is Zero in EEm"
             if(float(myIC)==1. and float(IC_EE_1[iEE][3])!=1.):
@@ -58,7 +59,7 @@ def MultiplyICFromTXT(options):
             OricalibMap_EEp.SetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]), float(IC_EE_1[iEE][3]) )
             OriCoef_EEp.Fill( float(IC_EE_1[iEE][3]) )
             myIC = EEpIC.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
-            myIC_syst = EEpIC_Next.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) )
+            myIC_syst = EEpIC_Next.GetBinContent( int(IC_EE_1[iEE][0]), int(IC_EE_1[iEE][1]) ) if systerr != "none" else 1.0
             if(float(myIC)==0. and not options.exclude_EE):
                 print "MultiplyICFromTXT::WARNING, my IC is Zero in EEp"
             if(float(myIC)==1. and float(IC_EE_1[iEE][3])!=1.):
@@ -446,7 +447,7 @@ parser.add_option("--noEB", dest="exclude_EB", action="store_true", default=Fals
 parser.add_option("--noEE", dest="exclude_EE", action="store_true", default=False, help="ignore endcap (useful when you only produced IC for barrel")
 
 options, args = parser.parse_args()
-SystE = options.SystErr
+SystErr = options.SystErr
 mapsMergedByHand = options.mapsMergedByHand
 #doOnlyEndcap = True if options.exclude_EB else False
 #doOnlyBarrel = True if options.exclude_EE else False
@@ -474,13 +475,14 @@ TreeEE   = fileTH2.Get("calibEE")
 nominal_iter = [x for x in pathTH2.split('/') if 'iter' in x]
 nominal_iter_num = int([int(i) for i in nominal_iter[0].split('_') if 'iter' not in i][0])
 next_iter = 'iter_' + str(nominal_iter_num-1)
-pathTH2Next = re.sub(nominal_iter[0], next_iter, pathTH2)
-print 'pathTH2Next = ',pathTH2Next
-fileTH2Next  = ROOT.TFile.Open(pathTH2Next)
-print "Opened ",pathTH2Next
-EBIC_Next     = fileTH2Next.Get('calibMap_EB')
-EEmIC_Next    = fileTH2Next.Get('calibMap_EEm')
-EEpIC_Next    = fileTH2Next.Get('calibMap_EEp')
+if options.SystErr != "none":
+    pathTH2Next = re.sub(nominal_iter[0], next_iter, pathTH2)
+    print 'pathTH2Next = ',pathTH2Next
+    fileTH2Next  = ROOT.TFile.Open(pathTH2Next)
+    print "Opened ",pathTH2Next
+    EBIC_Next     = fileTH2Next.Get('calibMap_EB')
+    EEmIC_Next    = fileTH2Next.Get('calibMap_EEm')
+    EEpIC_Next    = fileTH2Next.Get('calibMap_EEp')
 #Read EtaRing
 Endc_x_y_ring="../../../FillEpsilonPlot/data/Endc_x_y_ring.txt"
 print "The File to do the iRing Map is: " + str(Endc_x_y_ring)
@@ -606,11 +608,11 @@ MultiplyICFromTXT(options)
 #Write txt
 print 'Executing WriteTXT1 for IC_fromECALpro.txt'
 name = OutputF + "/IC_fromECALpro.txt"
-(EBIC_syst,EEmIC_syst,EEpIC_syst) = (None,None,None) if SystE!="ITplus1" else (EBIC_Next,EEmIC_Next,EEpIC_Next) 
+(EBIC_syst,EEmIC_syst,EEpIC_syst) = (None,None,None) if SystErr!="ITplus1" else (EBIC_Next,EEmIC_Next,EEpIC_Next) 
 WriteTXT(options, EBIC,EEmIC,EEpIC,name,"none","mine",EBIC_syst,EEmIC_syst,EEpIC_syst)
 print 'Executing WriteTXT1 for IC_fromECALpro_Absolute.txt'
 name = OutputF + "/IC_fromECALpro_Absolute.txt"
-(EBIC_syst,EEmIC_syst,EEpIC_syst) = (None,None,None) if SystE!="ITplus1" else (NewcalibMap_syst_EB,NewcalibMap_syst_EEm,NewcalibMap_syst_EEp) 
+(EBIC_syst,EEmIC_syst,EEpIC_syst) = (None,None,None) if SystErr!="ITplus1" else (NewcalibMap_syst_EB,NewcalibMap_syst_EEm,NewcalibMap_syst_EEp) 
 WriteTXT(options, NewcalibMap_EB,NewcalibMap_EEm,NewcalibMap_EEp,name,"ErrorFromMyIC","abs",EBIC_syst,EEmIC_syst,EEpIC_syst) #ErrorFromMyIC does that if I have no IC, you place the Original IC with 999. error.
 #Average to 1 Globally
 print 'Executing AverageGlobally'
