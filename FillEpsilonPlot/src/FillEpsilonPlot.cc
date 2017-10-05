@@ -194,19 +194,19 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     pi0IsoCut_high_[EcalBarrel]        = iConfig.getUntrackedParameter<double>("Pi0IsoCutEB_high");
     pi0IsoCut_low_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_low");
     pi0IsoCut_high_[EcalEndcap]        = iConfig.getUntrackedParameter<double>("Pi0IsoCutEE_high");
-    nXtal_1_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<double>("nXtal_1_EE_low");
-    nXtal_1_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("nXtal_1_EE_high");
-    nXtal_2_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<double>("nXtal_2_EE_low");
-    nXtal_2_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<double>("nXtal_2_EE_high");
-    nXtal_1_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<double>("nXtal_1_EB_low");
-    nXtal_1_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("nXtal_1_EB_high");
-    nXtal_2_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<double>("nXtal_2_EB_low");
-    nXtal_2_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<double>("nXtal_2_EB_high");
+    nXtal_1_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<int>("nXtal_1_EE_low");
+    nXtal_1_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<int>("nXtal_1_EE_high");
+    nXtal_2_cut_low_[EcalEndcap]       = iConfig.getUntrackedParameter<int>("nXtal_2_EE_low");
+    nXtal_2_cut_high_[EcalEndcap]      = iConfig.getUntrackedParameter<int>("nXtal_2_EE_high");
+    nXtal_1_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<int>("nXtal_1_EB_low");
+    nXtal_1_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<int>("nXtal_1_EB_high");
+    nXtal_2_cut_low_[EcalBarrel]       = iConfig.getUntrackedParameter<int>("nXtal_2_EB_low");
+    nXtal_2_cut_high_[EcalBarrel]      = iConfig.getUntrackedParameter<int>("nXtal_2_EB_high");
     S4S9_cut_low_[EcalBarrel]          = iConfig.getUntrackedParameter<double>("S4S9_EB_low");
     S4S9_cut_high_[EcalBarrel]         = iConfig.getUntrackedParameter<double>("S4S9_EB_high");
     S4S9_cut_low_[EcalEndcap]          = iConfig.getUntrackedParameter<double>("S4S9_EE_low");
     S4S9_cut_high_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("S4S9_EE_high");
-    SystOrNot_                         = iConfig.getUntrackedParameter<double>("SystOrNot",0);
+    SystOrNot_                         = iConfig.getUntrackedParameter<int>("SystOrNot",0);
     isMC_                              = iConfig.getUntrackedParameter<bool>("isMC",false);
     MC_Asssoc_                         = iConfig.getUntrackedParameter<bool>("MC_Asssoc",false);
     MC_Asssoc_DeltaR                   = iConfig.getUntrackedParameter<double>("MC_Asssoc_DeltaR",0.1);
@@ -857,7 +857,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   ///////////////////////
   // I moved the evaluation of HLT before that of the L1 seeds because the triggerComposition histogram is filled inside getTriggerResult() method
-  // Since I have also the triggerComposition for EB or EE only, I need to know in advance if HLT_EB or HLT_EE fired (one of them should have fired)
+  // Since I have also the triggerComposition for EB or EE only, I need to know in advance if EB_HLT or EE_HLT fired (one of them should have fired)
   ///////////////////////////////
   // I put definition of these variables in FillEpsilonPlot.h, so they are accessible from any method of fillEpsilonPlot
   EB_HLT=true, EE_HLT=true;
@@ -2624,8 +2624,8 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
 	if (myflag ) { 
 	  l1flag[itrig] = 1; 
 	  triggerComposition->Fill(algoBitToName[itrig], l1flag[itrig]); 
-	  if (HLT_EB) triggerComposition_EB->Fill(algoBitToName[itrig], l1flag[itrig]); 
-	  if (HLT_EE) triggerComposition_EE->Fill(algoBitToName[itrig], l1flag[itrig]); 
+	  if (EB_HLT) triggerComposition_EB->Fill(algoBitToName[itrig], l1flag[itrig]); 
+	  if (EE_HLT) triggerComposition_EE->Fill(algoBitToName[itrig], l1flag[itrig]); 
 	  // cout << " itrig = " << itrig << "    ";
 	  // cout << " l1flag[itrig] = " << l1flag[itrig] << "    ";
 	  // cout << " algoBitToName[itrig] = " << algoBitToName[itrig] << endl;	  
