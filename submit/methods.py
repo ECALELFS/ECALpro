@@ -227,6 +227,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
             outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
             outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+        if SubmitFurtherIterationsFromExisting:
+            if SystOrNot != 0:
+                outputfile.write("process.analyzerFillEpsilon.SystOrNot = cms.untracked.int32(" + str(SystOrNot) + ")\n")
+
     outputfile.write("process.analyzerFillEpsilon.useEBContainmentCorrections = cms.untracked.bool(" + useEBContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.useEEContainmentCorrections = cms.untracked.bool(" + useEEContainmentCorrections + ")\n")
     outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContainmentCorrections + "')\n")
@@ -327,14 +331,14 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_high = cms.untracked.double(" + Pi0HLTIsoCutEB_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_low = cms.untracked.double(" + Pi0HLTIsoCutEE_low + ")\n")
     outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_high = cms.untracked.double(" + Pi0HLTIsoCutEE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_low = cms.untracked.double(" +  nXtal_1_EB_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_high = cms.untracked.double(" +  nXtal_1_EB_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_low = cms.untracked.double(" +  nXtal_2_EB_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_high = cms.untracked.double(" +  nXtal_2_EB_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_low = cms.untracked.double(" +  nXtal_1_EE_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_high = cms.untracked.double(" +  nXtal_1_EE_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_low = cms.untracked.double(" +  nXtal_2_EE_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_high = cms.untracked.double(" +  nXtal_2_EE_high+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_low = cms.untracked.int32(" +  nXtal_1_EB_low+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_high = cms.untracked.int32(" +  nXtal_1_EB_high+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_low = cms.untracked.int32(" +  nXtal_2_EB_low+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_high = cms.untracked.int32(" +  nXtal_2_EB_high+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_low = cms.untracked.int32(" +  nXtal_1_EE_low+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_high = cms.untracked.int32(" +  nXtal_1_EE_high+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_low = cms.untracked.int32(" +  nXtal_2_EE_low+ ")\n")
+    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_high = cms.untracked.int32(" +  nXtal_2_EE_high+ ")\n")
     outputfile.write("process.analyzerFillEpsilon.S4S9_EB_low = cms.untracked.double(" + S4S9_EB_low + ")\n")
     outputfile.write("process.analyzerFillEpsilon.S4S9_EB_high = cms.untracked.double(" + S4S9_EB_high + ")\n")
     outputfile.write("process.analyzerFillEpsilon.S4S9_EE_low = cms.untracked.double(" + S4S9_EE_low + ")\n")
@@ -423,6 +427,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+
     outputfile.write("process.p = cms.EndPath(process.fitEpsilon)\n")
 
 
