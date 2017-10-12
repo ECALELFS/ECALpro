@@ -65,14 +65,14 @@ class ICplotter:
         self.data = self.loadICs(icfile)
         self.name = name
 
-    def plotIC2D(self,partition,zhwidth=0.07,errwidth=0.005,outdirname=''):
+    def plotIC2D(self,partition,zhwidth=0.07,errwidth=0.005,outdirname='', norm_etaring=False):
         #rt.gStyle.SetOptStat(0)
         customROOTstyle()
         plots2D = []
         profiles = {}
 
         if partition=='EcalBarrel': 
-            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',360,1,360,170,-85,85)
+            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',360,1,360,171,-85.5,85.5)
             h.GetXaxis().SetTitle('i#phi')
             h.GetYaxis().SetTitle('i#eta')
         else: 
@@ -81,9 +81,9 @@ class ICplotter:
             h.GetYaxis().SetTitle('iy')
 
         if partition=='EcalBarrel': 
-            hsterr = rt.TProfile(str(h.GetName()).replace('ic_2d','icsterr_1d'),'',85,0,84)
+            hsterr = rt.TProfile(str(h.GetName()).replace('ic_2d','icsterr_1d'),'',85,0.5,85.5)
         else: 
-            hsterr = rt.TProfile(str(h.GetName()).replace('ic_2d','icsterr_1d'),'',38,0,37)
+            hsterr = rt.TProfile(str(h.GetName()).replace('ic_2d','icsterr_1d'),'',38,0.5,38.5)
             
         hsterr.GetXaxis().SetTitle('#eta ring')
         hsterr.GetYaxis().SetRangeUser(0,errwidth)
@@ -114,7 +114,32 @@ class ICplotter:
             
         h.GetZaxis().SetRangeUser(zmin,zmax)
         
-        plots2D.append(h)
+        hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+    
+        if norm_etaring and partition=='EcalBarrel':
+            hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+            for ieta in range (1,172): # range excludes last value, so we have 171 values, but ieta = 0 doesn't exist, so we have 170 eta rings in EB
+                if ieta == 86: 
+                    continue
+                ICsum_etaring = 0.0
+                xtalsInEtaRing = 0.0
+                # if xtal is dead, bin content is 0, do not count it in the average
+                for iphi in range (1,361):
+                    if h.GetBinContent(iphi,ieta) > 0.00001:
+                        ICsum_etaring += h.GetBinContent(iphi,ieta)
+                        xtalsInEtaRing += 1.0
+                    #print "iphi, ieta, ICsum_etaring = %s %s %s" % (str(iphi), str(ieta), str(ICsum_etaring))
+                ICsum_etaring = ICsum_etaring / xtalsInEtaRing
+
+                average = 0.0
+                for iphi in range (1,h.GetNbinsX()+1):
+                    hnorm1.Fill(iphi,ieta-86,h.GetBinContent(iphi,ieta)/ICsum_etaring)
+                    average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
+                    
+                #print "etaring %s: average %s" % (str(ieta-86),str(average))
+            plots2D.append(hnorm1)
+        else:
+            plots2D.append(h)
 
         leg = rt.TLegend(0.2,0.7,0.5,0.85)
         leg.SetFillColor(0)
@@ -220,6 +245,7 @@ if __name__ == "__main__":
     parser.add_option("--noEB", dest="exclude_EB", action="store_true", default=False, help="ignore barrel (useful when you only produced IC for endcap")
     parser.add_option("--noEE", dest="exclude_EE", action="store_true", default=False, help="ignore endcap (useful when you only produced IC for barrel")
     parser.add_option("-o","--output-dir", dest="output_dir",  type="string", default='', help="output directory where plots are stored")
+    parser.add_option("--normalize-etaring", dest="normalize_etaring", action="store_true", default=False, help="Normalize IC 2D map to 1 for each eta-ring")
 
     (options, args) = parser.parse_args()
     if len(args) < 1: raise RuntimeError, 'Expecting at least the tag txt file'
@@ -233,13 +259,15 @@ if __name__ == "__main__":
         print "Creating local folder to store output --> " + options.output_dir 
         folderCreation = subprocess.Popen(['mkdir -p ' + options.output_dir], stdout=subprocess.PIPE, shell=True);
         folderCreation.communicate()
+        if os.path.exists("/afs/cern.ch"): 
+            os.system("cp /afs/cern.ch/user/g/gpetrucc/php/index.php "+os.path.dirname(options.output_dir))
 
     icp = ICplotter(inputfile,name)
     if not options.exclude_EB:
-        icp.plotIC2D('EcalBarrel',options.max_EB,options.max_err_EB,options.output_dir)
+        icp.plotIC2D('EcalBarrel',options.max_EB,options.max_err_EB,options.output_dir, options.normalize_etaring)
     if not options.exclude_EE:
-        icp.plotIC2D('EcalEndcapMinus',options.max_EE,options.max_err_EE,options.output_dir)
-        icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE,options.output_dir)
+        icp.plotIC2D('EcalEndcapMinus',options.max_EE,options.max_err_EE,options.output_dir,options.normalize_etaring)
+        icp.plotIC2D('EcalEndcapPlus',options.max_EE,options.max_err_EE,options.output_dir,options.normalize_etaring)
 
     if len(args)==2:    
         comparefile = args[1]
