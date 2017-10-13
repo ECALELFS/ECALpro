@@ -761,24 +761,24 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     // original fit
     // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
     // better to use RooMinimizer
-    // RooMinuit m(nll);
-    // m.setVerbose(kFALSE);
-    // //m.setVerbose(kTRUE);
-    // m.migrad();
-    // //m.hesse();
-    // RooFitResult* res = m.save() ;
+    RooMinuit m(nll);
+    m.setVerbose(kFALSE);
+    //m.setVerbose(kTRUE);
+    m.migrad();
+    //m.hesse();
+    RooFitResult* res = m.save() ;
 
-    // alternative fit (results are pretty much the same
-    RooMinimizer mfit(nll);
-    mfit.setVerbose(kFALSE);
-    mfit.setPrintLevel(-1);
-    cout << "######### Minimize" << endl;
-    mfit.minimize("Minuit2","minimize");
-    cout << "######### Minimize hesse " << endl;
-    mfit.minimize("Minuit2","hesse");
-    cout<<"######### Estimate minos errors for all parameters"<<endl;
-    mfit.minos(RooArgSet(Nsig,Nbkg));
-    RooFitResult* res = mfit.save() ;
+    // alternative fit (results are pretty much the same)
+    // RooMinimizer mfit(nll);
+    // mfit.setVerbose(kFALSE);
+    // mfit.setPrintLevel(-1);
+    // cout << "######### Minimize" << endl;
+    // mfit.minimize("Minuit2","minimize");
+    // cout << "######### Minimize hesse " << endl;
+    // mfit.minimize("Minuit2","hesse");
+    // cout<<"######### Estimate minos errors for all parameters"<<endl;
+    // mfit.minos(RooArgSet(Nsig,Nbkg));
+    // RooFitResult* res = mfit.save() ;
 
 
     RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
@@ -812,14 +812,15 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     pi0res.nFitParam = res->floatParsFinal().getSize();
 
 
-    //RooPlot*  xframe = x.frame(h->GetNbinsX());
-    RooPlot*  xframe = x.frame(xlo, xhi);
+    RooPlot*  xframe = x.frame(h->GetNbinsX());
+    //RooPlot*  xframe = x.frame(xlo, xhi);
+    xframe->SetName((nameHistofit+Form("_rp")).Data());
     xframe->SetTitle(h->GetTitle());
     dh.plotOn(xframe, Name("data"));
     model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
     model->plotOn(xframe, Name("model"));
 
-    // TMAth::Prob() uses Chi2, not reduce Chi2, while xframe->chiSquare() returns the reduced Chi2
+    // TMAth::Prob() uses Chi2, not reduced Chi2, while xframe->chiSquare() returns the reduced Chi2
     pi0res.chi2 = xframe->chiSquare("model","data",pi0res.nFitParam) * pi0res.dof;
     pi0res.probchi2 = TMath::Prob(pi0res.chi2, ndof);
 
@@ -917,7 +918,6 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     // save last version of fit made
     // if(StoreForTest_ && niter==0){
     if(StoreForTest_){
-      xframe->SetName((nameHistofit+Form("_rp")).Data());
       outfileTEST_->cd();
       xframe->Write();
       canvas->Write();
