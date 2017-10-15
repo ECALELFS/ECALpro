@@ -2,6 +2,7 @@
 
 import subprocess, time, sys, os
 from methods import *
+#from parameters import *
 
 from optparse import OptionParser                                                                                                                                                                                                                                     
 parser = OptionParser(usage="%prog [options]")    
@@ -19,6 +20,9 @@ if not options.create:
         print "[calib] Missing access to queues"
         if not( isCRAB and storageSite=="T2_BE_IIHE" ):
             sys.exit(1)
+#-------- copy regression files -------#
+if ContainmentCorrection == '2017reg':
+	os.system("cp /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/zhicaiz/GBRForest_2017/* ../FillEpsilonPlot/data/")
 
 #-------- create folders --------#
 
