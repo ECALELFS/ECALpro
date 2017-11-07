@@ -53,7 +53,7 @@ MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 inputlist_n      = 'InputList/purified_AlCaP0_2017_upTo21September2017.list' # 'InputList/test.list' #
-dirname          = 'AlCaP0_IC2017_upTo21September2017_2012regression' # 'test' 
+dirname          = 'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -64,7 +64,7 @@ nIterations      = 7 # 7
 
 SubmitFurtherIterationsFromExisting = False
 # maybe I don't need the root://eoscms/ prefix if eos is mounted
-startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_IC2017_upTo21September2017/iter_6/AlCaP0_IC2017_upTo21September2017_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
+startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_IC2017_upTo21September2017_2012regression_ext1_fromIter_0/iter_0/AlCaP0_IC2017_upTo21September2017_2012regression_ext1_fromIter_0_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
 SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It works only if you submit this new iteration from an existing one, therefore SubmitFurtherIterationsFromExisting must be set true. Tipically 0 is the default and has no real effect, it is like submitting usual iterations.  
 #startingCalibMap = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
 
