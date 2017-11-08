@@ -106,9 +106,9 @@ void EcalCalibMap<Type>::loadCalibMapFromFile(const char* cfile)
     TH2F* hmap = (TH2F*) f->Get("calibMap_EB");
     TH2F* hmap_EEp = (TH2F*) f->Get("calibMap_EEp");
     TH2F* hmap_EEm = (TH2F*) f->Get("calibMap_EEm");
-    if(!hmap)     throw cms::Exception("LoadCalibMap") << "cannot find TH2F::calibMap in the file provided\n";
-    if(!hmap_EEp) throw cms::Exception("LoadCalibMap") << "cannot find TH2F::hmap_EEp in the file provided\n";
-    if(!hmap_EEm) throw cms::Exception("LoadCalibMap") << "cannot find TH2F::hmap_EEm in the file provided\n";
+    if(!hmap)     throw cms::Exception("LoadCalibMap") << "cannot find TH2F::calibMap_EB in the file provided\n";
+    if(!hmap_EEp) throw cms::Exception("LoadCalibMap") << "cannot find TH2F::calibMap_EEp in the file provided\n";
+    if(!hmap_EEm) throw cms::Exception("LoadCalibMap") << "cannot find TH2F::calibMap_EEm in the file provided\n";
 
     std::cout << "loading constants from TH2F::calibMap in <" << cfile << "> ..." << std::endl;
 

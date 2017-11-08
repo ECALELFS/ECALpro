@@ -61,8 +61,10 @@
    }
    if (foundIt){
      //cout << "Loading: " << FWLiteLib << endl;
-     gSystem->Load(FWLiteLib);
-     AutoLibraryLoader::enable();
+     //gSystem->Load(FWLiteLib);
+     // AutoLibraryLoader::enable();
+     gSystem->Load("libFWCoreFWLite.so");
+     FWLiteEnabler::enable();
    }
     const Int_t NRGBs = 5;
     const Int_t NCont = 255;

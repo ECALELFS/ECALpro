@@ -29,6 +29,7 @@ Implementation:
 #include "TTree.h"
 #include "TLatex.h"
 #include "TMath.h"
+#include "TCanvas.h"
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -54,6 +55,7 @@ Implementation:
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
 #include "RooMinuit.h"
+#include "RooMinimizer.h"
 
 #include "CalibCode/FitEpsilonPlot/interface/FitEpsilonPlot.h"
 
@@ -90,6 +92,12 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     Are_pi0_ = iConfig.getUntrackedParameter<bool>("Are_pi0");
     StoreForTest_ = iConfig.getUntrackedParameter<bool>("StoreForTest","false");
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
+
+    fitFileName_ = outfilename_;
+    std::string strToReplace = "calibMap";
+    fitFileName_.replace(outfilename_.find(strToReplace.c_str()),strToReplace.size(),"fitRes");
+    fitFileName_ = "/tmp/" + fitFileName_;
+
 
     /// setting calibration type
     calibTypeString_ = iConfig.getUntrackedParameter<std::string>("CalibType");
@@ -493,8 +501,11 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			  r2 = r2*r2;
 			  //cout<<"EBMEAN::"<<j<<":"<<mean<<" Saved if: "<<fitres.SoB<<">(isNot_2010_ ? 0.04:0.1) "<<(fitres.chi2/fitres.dof)<<" < 0.2 "<<fabs(mean-0.15)<<" >0.0000001) "<<endl;
 			  //if( fitres.SoB>(isNot_2010_ ? 0.04:0.1) && (fitres.chi2/fitres.dof)< 0.5 && fabs(mean-0.15)>0.0000001) mean = 0.5 * ( r2 - 1. );
-			  if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))>0.0000001) mean = 0.5 * ( r2 - 1. );
-			  else                                              mean = 0.;
+			  //if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))>0.0000001) mean = 0.5 * ( r2 - 1. );
+			  if( fabs(mean-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB)) > 0.0000001 )
+			    mean = 0.5 * ( r2 - 1. );
+			  else 
+			    mean = 0.;
 		    }
 		    else{
 			  mean = 0.;
@@ -562,15 +573,21 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		    if(integral>70.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.25:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.075:0.4, Are_pi0_? 0.24:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
 			  r2 = r2*r2;
 			  //cout<<"EEMEAN::"<<jR<<":"<<mean<<" Saved if: "<<fitres.SoB<<">0.3 "<<(fitres.chi2/fitres.dof)<<" < (isNot_2010_? 0.07:0.35) "<<fabs(mean-0.14)<<" >0.0000001) "<<endl;
 			  //if( (fitres.chi2/fitres.dof)<0.3 && fitres.SoB>(isNot_2010_? 0.07:0.35) && fabs(mean-0.14)>0.0000001 ) mean = 0.5 * ( r2 - 1. );
-			  if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))>0.0000001 ) mean = 0.5 * ( r2 - 1. );
-			  else                                              mean = 0.;
+			  //if( fitres.chi2 < 5 && fabs(mean-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))>0.0000001 ) mean = 0.5 * ( r2 - 1. );
+			  // do not use Chi2 for goodness of fit. If I have many events, then the chi2 will be huge because the model will not pass through all data points
+			  // on the oter hand, if I have few events, the statistical uncertainty is large and the Chi2 tends to be little
+			  // better not to use Chi2
+			  if(fabs(mean-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))>0.0000001 ) 
+			    mean = 0.5 * ( r2 - 1. );
+			  else
+			    mean = 0.;
 		    }
 		    else
 		    {
@@ -631,6 +648,17 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 {
     //-----------------------------------------------------------------------------------
 
+    std::stringstream ind;
+    ind << (int) HistoIndex;
+    TString nameHistofit = "Fit_n_" + ind.str() + Form("_attempt%d",niter);
+
+    // add canvas to save rooplot on top (will save this in the file)
+    TCanvas* canvas = new TCanvas((nameHistofit+Form("_c")).Data(),"",600,700);
+    canvas->cd();
+    canvas->SetTickx(1);
+    canvas->SetTicky(1);
+    canvas->cd();
+    canvas->SetRightMargin(0.06);
 
     RooRealVar x("x","#gamma#gamma invariant mass",xlo, xhi, "GeV/c^2");
 
@@ -650,8 +678,9 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 	  sigma.setRange(0.003, 0.030);
     }
 
-    RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
-    Nsig.setVal( h->GetSum()*0.1);
+    //RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
+    RooRealVar Nsig("Nsig","#pi^{0} yield",h->Integral()*0.15,0.,h->Integral()*10.0);
+    //Nsig.setVal( h->GetSum()*0.1);
 
     RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 
@@ -672,7 +701,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
     RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
-    RooRealVar cb2("cb2","cb2", 0.1,  0.,1.);
+    RooRealVar cb2("cb2","cb2", 0.1,  -1.,1.);
     RooRealVar cb3("cb3","cb3",-0.1, -0.5,0.5);
     RooRealVar cb4("cb4","cb4", 0.1, -1.,1.);
     RooRealVar cb5("cb5","cb5", 0.1, -1.,1.);
@@ -683,26 +712,29 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooChebychev bkg("bkg","bkg model", x, RooArgList(cb0,cb1,cb2,cb3) );
 
     RooArgList cbpars(cb0,cb1,cb2);
-    //    if(mode==Pi0EB || mode==Pi0EE) cbpars.add( cb3);
     //if(mode==Pi0EE) cbpars.add( cb4);
     //if(mode==Pi0EE) cbpars.add( cb5);
 
-    if(mode==Pi0EB && niter==1){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-0.3,0.3);
-	  cbpars.add( cb4 );
+    // try to use a second order polynomial, if the fit is bad add other terms
+    // if you start with many terms, the fit creates strange curvy shapes trying to fit the statistical fluctuations
+    // 2nd order means a curve with no change of concavity
+    
+    if(niter==1){
+      cbpars.add( cb3);
     }
-    if(mode==Pi0EB && niter==2){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-1,1);
-	  cbpars.add( cb4 );
+    if(niter==2){
+      cb3.setRange(-1,1.);
+      cb4.setRange(-0.3,0.3);
+      cbpars.add( cb3);
+      cbpars.add( cb4 );     
     }
-    if(mode==Pi0EB && niter==3){
-	  cb3.setRange(-1,1.);
-	  cb4.setRange(-1,1);
-	  cb5.setRange(-0.5, 0.5);
-	  cbpars.add( cb4 );
-	  cbpars.add( cb5 );
+    if(niter==3){
+      cb3.setRange(-1,1.);
+      cb4.setRange(-1,1);
+      cb5.setRange(-0.5, 0.5);
+      cbpars.add( cb3);
+      cbpars.add( cb4 );
+      cbpars.add( cb5 );
     }
 
     RooChebychev bkg("bkg","bkg model", x, cbpars );
@@ -710,8 +742,9 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3,p4,p5,p6) );
     //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3) );
 
-    RooRealVar Nbkg("Nbkg","background yield",1.e3,0.,1.e8);
-    Nbkg.setVal( h->GetSum()*0.8 );
+    //RooRealVar Nbkg("Nbkg","background yield",1.e3,0.,1.e8);
+    RooRealVar Nbkg("Nbkg","background yield",h->Integral()*0.85,0.,h->Integral()*10.0);
+    //Nbkg.setVal( h->GetSum()*0.8 );
 
     RooAbsPdf* model=0;
 
@@ -724,6 +757,10 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
     //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
+
+    // original fit
+    // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
+    // better to use RooMinimizer
     RooMinuit m(nll);
     m.setVerbose(kFALSE);
     //m.setVerbose(kTRUE);
@@ -731,10 +768,24 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //m.hesse();
     RooFitResult* res = m.save() ;
 
-    RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
-    int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
+    // alternative fit (results are pretty much the same)
+    // RooMinimizer mfit(nll);
+    // mfit.setVerbose(kFALSE);
+    // mfit.setPrintLevel(-1);
+    // cout << "######### Minimize" << endl;
+    // mfit.minimize("Minuit2","minimize");
+    // cout << "######### Minimize hesse " << endl;
+    // mfit.minimize("Minuit2","hesse");
+    // cout<<"######### Estimate minos errors for all parameters"<<endl;
+    // mfit.minos(RooArgSet(Nsig,Nbkg));
+    // RooFitResult* res = mfit.save() ;
 
-    // compute S/B
+
+    RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
+    // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
+    //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
+    int ndof = h->FindBin(xhi) - h->FindBin(xlo) - res->floatParsFinal().getSize();
+
 
     //compute S/B and chi2
     x.setRange("sobRange",mean.getVal()-3.*sigma.getVal(), mean.getVal()+3.*sigma.getVal());
@@ -758,24 +809,33 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     pi0res.SoBerr =  pi0res.SoB*sqrt( pow(pi0res.Serr/pi0res.S,2) + 
 		pow(pi0res.Berr/pi0res.B,2) ) ;
     pi0res.dof = ndof;
+    pi0res.nFitParam = res->floatParsFinal().getSize();
+
 
     RooPlot*  xframe = x.frame(h->GetNbinsX());
+    //RooPlot*  xframe = x.frame(xlo, xhi);
+    xframe->SetName((nameHistofit+Form("_rp")).Data());
     xframe->SetTitle(h->GetTitle());
-    dh.plotOn(xframe);
+    dh.plotOn(xframe, Name("data"));
     model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
-    model->plotOn(xframe);
+    model->plotOn(xframe, Name("model"));
+
+    // TMAth::Prob() uses Chi2, not reduced Chi2, while xframe->chiSquare() returns the reduced Chi2
+    pi0res.chi2 = xframe->chiSquare("model","data",pi0res.nFitParam) * pi0res.dof;
+    pi0res.probchi2 = TMath::Prob(pi0res.chi2, ndof);
 
     xframe->Draw();
-    pi0res.probchi2 = TMath::Prob(xframe->chiSquare(), ndof);
-    pi0res.chi2 = xframe->chiSquare();
+
     cout << "FIT_EPSILON: Nsig: " << Nsig.getVal() 
-	  << " nsig 3sig: " << normSig*Nsig.getVal()
-	  << " nbkg 3sig: " << normBkg*Nbkg.getVal()
-	  << " S/B: " << pi0res.SoB << " +/- " << pi0res.SoBerr
-	  << " chi2: " << xframe->chiSquare()
-	  << " DOF: " << pi0res.dof
-	  << " prob(chi2): " << pi0res.probchi2
-					<< endl;
+	 << " nsig 3sig: " << normSig*Nsig.getVal()
+	 << " nbkg 3sig: " << normBkg*Nbkg.getVal()
+	 << " S/B: " << pi0res.SoB << " +/- " << pi0res.SoBerr
+	 << " chi2: " << pi0res.chi2
+	 << " chi2 reduced: " << pi0res.chi2 / pi0res.dof
+	 << " DOF: " << pi0res.dof
+	 << " N(fit.param.): " << pi0res.nFitParam
+	 << " prob(chi2): " << pi0res.probchi2
+	 << endl;
 
     if(mode==Pi0EB){
 	  EBmap_Signal[HistoIndex]=pi0res.S;
@@ -814,7 +874,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     lat.SetTextSize(0.040);
     lat.SetTextColor(1);
 
-    float xmin(0.55), yhi(0.80), ypass(0.05);
+    float xmin(0.58), yhi(0.80), ypass(0.05);
     if(mode==EtaEB) yhi=0.30;
     sprintf(line,"Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
     lat.DrawLatex(xmin,yhi, line);
@@ -829,28 +889,41 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     sprintf(line,"S/B(3#sigma): %.2f", pi0res.SoB );
     lat.DrawLatex(xmin,yhi-3.*ypass, line);
 
-    sprintf(line,"#Chi^2: %.2f", xframe->chiSquare()/pi0res.dof );
+    sprintf(line,"#Chi^{2}: %.2f (%d dof)", pi0res.chi2, pi0res.dof );
     lat.DrawLatex(xmin,yhi-4.*ypass, line);
 
-    sprintf(line,"Attempt: %d", niter );
+    sprintf(line,"B param. %d", cbpars.getSize() );
     lat.DrawLatex(xmin,yhi-5.*ypass, line);
 
+    canvas->RedrawAxis("sameaxis");
+
     Pi0FitResult fitres = pi0res;
+    //xframe->chiSquare() is the chi2 reduced, i.e., that whose expected value is 1
+    // E[X^2]=v; Var[X^2]=2v --> fit is bad if |X^2-v|>5*sqrt(2v) 
+
     //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
-    if(mode==Pi0EB && ( xframe->chiSquare()>5 || fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
+    //bool badChi2 = fabs(xframe->chiSquare() - pi0res.dof) > 5.0 * sqrt(2. * pi0res.dof);
+
+    if(mode==Pi0EB && ( fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
     }
-    if(StoreForTest_ && niter==0){
-	  std::stringstream ind;
-	  ind << (int) HistoIndex;
-	  TString nameHistofit = "Fit_n_" + ind.str();
-	  xframe->SetName(nameHistofit.Data());
-	  outfileTEST_->cd();
-	  xframe->Write();
+    if(mode==Pi0EE && ( fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))<0.0000001 ) ){
+	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
+	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
+	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
     }
 
+    // save last version of fit made
+    // if(StoreForTest_ && niter==0){
+    if(StoreForTest_){
+      outfileTEST_->cd();
+      xframe->Write();
+      canvas->Write();
+    }
+
+    delete canvas;
     return fitres;
 }
 
@@ -859,8 +932,8 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 FitEpsilonPlot::beginJob()
 {
     if(StoreForTest_){
-	  outfileTEST_ = new TFile("/tmp/Fit_Stored.root","RECREATE");
-	  if(!outfileTEST_) cout<<"WARNING: file with fit not created."<<endl;
+      outfileTEST_ = new TFile(fitFileName_.c_str(),"RECREATE");
+      if(!outfileTEST_) cout << "WARNING: file " << fitFileName_ << " with fit not created." << endl;
     }
 }
 
@@ -870,9 +943,9 @@ FitEpsilonPlot::endJob()
 {
     saveCoefficients();
     if(StoreForTest_){
-	  cout<<"Fit stored in /tmp/Fit_Stored.root"<<endl;
-	  outfileTEST_->Write();
-	  outfileTEST_->Close();
+      cout << "Fit stored in " << fitFileName_ << endl;
+      outfileTEST_->Write();
+      outfileTEST_->Close();
     }
 }
 

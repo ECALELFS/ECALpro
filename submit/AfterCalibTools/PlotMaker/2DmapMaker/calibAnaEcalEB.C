@@ -13,26 +13,24 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdlib> //as stdlib.h                                                                                                                                        
+#include <cstdlib> //as stdlib.h                                                                                                                                   
 #include <cstdio>
 #include <cmath>
-#include <sstream> //to use ostringstream to convert numbers to string in c++                                                                                           
+#include <sstream> //to use ostringstream to convert numbers to string in c++                                                                             
+
 using namespace std;
 
 #ifdef calibAnaEcalEB_cxx
 
 calibAnaEcalEB::calibAnaEcalEB(TTree *tree) : calibAnaEcal(tree) {
 
-  ////////////////////////////                                                                                                                                         
-  //initializing data members                                                                                                                                          
-  ///////////////////////////                                                                                                                                          
-  
-  //////////////////////////                                                                                                                                           
-  // protected data members                                                                                                                                            
-
+  ////////////////////////////                                                                                  
+  //initializing data members                                                                                                                                         
+  ///////////////////////////                                                                                                                                         
+  //////////////////////////                                                                                                                                         
+  // protected data members                                                                                                                                           
   EBorEE = "EB";
-
-  ////////////////////////////////                                                                                                                                     
+  ////////////////////////////////                                                                                                                            
   // public data members                    
 
   // ieta and iphi are integer, but we create bins for histograms such that, e.g., the bin with (ieta = 2 ) goes from 1.5 to 2.5
@@ -53,29 +51,35 @@ calibAnaEcalEB::calibAnaEcalEB(TTree *tree) : calibAnaEcal(tree) {
 
 }
 
-//===============================================                                                                                                                      
-
+//===============================================                                                                                                
 void calibAnaEcalEB::setHistograms() {
 
   calibAnaEcal::setHistograms();
+
+  //cout << "[DEBUG] calibAnaEcalEB::setHistograms() : iter " << this->getIterNumber() << endl; 
 
   // X in 2D map is iphi for EB
   mean_iphiProfile = new TProfile("mean_iphiProfile",Form("fit_mean profile in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap);
 
   // I was using these values starting for SoverB, SoverSqrtSplusB, SigmaMeanOverMean, mean,                                                                          
-  // set only some of them with h->GetBinContent(h->GetMinimumBin()) and h->GetBinContent(h->GetMaximumBin())                                                          
+  // set only some of them with h->GetBinContent(h->GetMinimumBin()) and h->GetBinContent(h->GetMaximumBin())                                               
   th2dMinZaxisVector.push_back(0.0);  // was set to hSignal->GetBinContent(hSignal->GetMinimumBin())                                                                  
-  th2dMinZaxisVector.push_back(0.0);  // hBackground->GetBinContent(hBackground->GetMinimumBin())                                                                      
+  th2dMinZaxisVector.push_back(0.0);  // hBackground->GetBinContent(hBackground->GetMinimumBin())                                                           
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0005);//0.0                                                                 
-  th2dMinZaxisVector.push_back(0.130);
-  th2dMinZaxisVector.push_back(0.005);
-
+  if (Pi0orEta == "Pi0") {
+    if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMinZaxisVector.push_back(0.130);
+    else                            th2dMinZaxisVector.push_back(0.130);
+    th2dMinZaxisVector.push_back(0.005);
+  } else {
+    th2dMinZaxisVector.push_back(0.500);
+    th2dMinZaxisVector.push_back(0.008);
+  }
 
 }
 
-//===============================================                                                                                                                      
+//===============================================                                                                                                         
 
 void calibAnaEcalEB::set2DmapMaxZaxisVector() {
 
@@ -84,12 +88,18 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(10e9);
   th2dMaxZaxisVector.push_back(10e9); // when this value is very large (bigger than the default) use the default to plot axis                  
   th2dMaxZaxisVector.push_back(0.0125);//0.02                                                  
-  th2dMaxZaxisVector.push_back(0.140);
-  th2dMaxZaxisVector.push_back(0.015);
+  if (Pi0orEta == "Pi0") {
+    if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMaxZaxisVector.push_back(0.140);
+    else                            th2dMaxZaxisVector.push_back(0.140);
+    th2dMaxZaxisVector.push_back(0.015);
+  } else {
+    th2dMaxZaxisVector.push_back(0.600);
+    th2dMaxZaxisVector.push_back(0.025);
+  }
 
 }
 
-//===============================================                                                                                                                      
+//===============================================                                                                                                          
 
 void calibAnaEcalEB::draw2Dmap(TH2D* hist2d) {
 
@@ -97,7 +107,7 @@ void calibAnaEcalEB::draw2Dmap(TH2D* hist2d) {
 
 }
 
-//===============================================                                                                                                                      
+//===============================================                                                                                                           
 
 void calibAnaEcalEB::drawProfile(TProfile *profile, const string& yAxisName) {
  
@@ -105,7 +115,7 @@ void calibAnaEcalEB::drawProfile(TProfile *profile, const string& yAxisName) {
    
 }
 
-//===============================================                                                                                                                      
+//===============================================                                                                                            
 
 void calibAnaEcalEB::Init(TTree* tree) {
 
@@ -123,14 +133,14 @@ void calibAnaEcalEB::Init(TTree* tree) {
 
 }
 
-//===============================================                                                                                                                      
+//===============================================                                                                                                 
 
 void calibAnaEcalEB::Loop()
 {  
 
   if (fChain == 0) return;
 
-  setHistograms();
+  this->setHistograms();
 
   Long64_t nentries = fChain->GetEntriesFast();
 
@@ -143,12 +153,12 @@ void calibAnaEcalEB::Loop()
       
     if (jentry % 100000 == 0) cout << jentry << endl;
 
-    if ((abs(Backgr) > 0.00001) && (abs(Signal) > 0.00001)) { // avoid empty crystals due to masked towers or whatever                                                 
+    if ((abs(Backgr) > 0.00001) && (abs(Signal) > 0.00001)) { // avoid empty crystals due to masked towers or whatever                                              
 
       normalizedS = Signal * fit_Snorm;
       normalizedB = Backgr * fit_Bnorm;
 
-      // to avoid that in 2D maps points below lower threshold in z axis are drawn white (as if they are empty), fill with the maximum between threshold and value     
+      // to avoid that in 2D maps points below lower threshold in z axis are drawn white (as if they are empty), fill with the maximum between threshold and value  
       hSignal->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[0],(Double_t)normalizedS));
       hBackground->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[1],(Double_t)normalizedB));
       SoverB->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[2],(Double_t)normalizedS/normalizedB));
@@ -157,7 +167,7 @@ void calibAnaEcalEB::Loop()
       mean->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[5],(Double_t)fit_mean));
       sigma->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
 
-      Double_t eta = ieta * 0.0174532925; // 0.0174532925 = pi/180; in the barrel eta is simply proportional to ieta                                                   
+      Double_t eta = ieta * 0.0174532925; // 0.0174532925 = pi/180; in the barrel eta is simply proportional to ieta                                       
 
       hSignal_etaProfile->Fill((Double_t)eta,normalizedS);
       hBackground_etaProfile->Fill((Double_t)eta,normalizedB);
@@ -191,7 +201,10 @@ void calibAnaEcalEB::Loop()
   mean_iphiProfile->GetXaxis()->SetTitleSize(0.06);
   mean_iphiProfile->GetXaxis()->SetTitleOffset(0.7);
   mean_iphiProfile->GetYaxis()->SetTitle("mean [GeV]");
-  mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
+  if (Pi0orEta == "Pi0") {
+    if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
+    else                                   mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
+  } else mean_iphiProfile->GetYaxis()->SetRangeUser(0.5,0.6);
   mean_iphiProfile->GetYaxis()->SetTitleSize(0.055);
   mean_iphiProfile->GetYaxis()->SetTitleOffset(0.8);
   mean_iphiProfile->SetStats(0);

@@ -71,7 +71,10 @@ void calibAnaEcalEE::setHistograms() {
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);//0.0                                                                                                                            
-  th2dMinZaxisVector.push_back(0.13);
+  if (Pi0orEta == "Pi0") {
+    if (this->getIterNumber() == "iter_0") th2dMinZaxisVector.push_back(0.11);
+    else th2dMinZaxisVector.push_back(0.13);
+  } else th2dMinZaxisVector.push_back(0.48);
   th2dMinZaxisVector.push_back(0.005);
 
 }
@@ -88,7 +91,10 @@ void calibAnaEcalEE::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(10e9);
   th2dMaxZaxisVector.push_back(10e9); // when this value is very large (bigger than the default) use the default to plot axis                  
   th2dMaxZaxisVector.push_back(0.1);                                                
-  th2dMaxZaxisVector.push_back(0.16);
+  if (Pi0orEta == "Pi0") {
+    if (this->getIterNumber() == "iter_0") th2dMaxZaxisVector.push_back(0.16);
+    else                                   th2dMaxZaxisVector.push_back(0.145);
+  } else th2dMaxZaxisVector.push_back(0.62);
   th2dMaxZaxisVector.push_back(0.020);
 
 }
@@ -171,7 +177,7 @@ void calibAnaEcalEE::Loop()
 
   if (fChain == 0) return;
 
-  setHistograms();
+  this->setHistograms();
 
   // open file with EE maps to get etaRing given iX and iY
   // the file was created using convert_eerings_dat_to_TH2.C

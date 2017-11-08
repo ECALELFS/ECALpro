@@ -83,12 +83,14 @@ class calibAnaEcal : public calibAnaEcal_base {
 
   // getter
   std::string getEBorEE() const { return EBorEE; }
+  std::string getPi0orEta() const { return Pi0orEta; }
   //std::string getWhichEE() const { return whichEE; }
   std::string getDirName() const { return dirName; }
   std::string getIterNumber() const { return iterNumber; }
   std::string getWwwPath() const { return wwwPath; }
   // setter
   void setEBorEE(const std::string input) { EBorEE = input; }
+  void setPi0orEta(const std::string input) { Pi0orEta = input; }
   //  void setWhichEE(const std::string input) { whichEE = input; }
   void setDirName(const std::string input) { dirName = input; }
   void setIterNumber(const std::string input) { iterNumber = input; }
@@ -96,6 +98,7 @@ class calibAnaEcal : public calibAnaEcal_base {
   
  protected:
   std::string EBorEE; // can be : EB, EEp, EEm
+  std::string Pi0orEta; // can be : Pi0, Eta
   //  std::string whichEE;  // if EB, whichEE is "", else if EE then whichEE can be EEp or EEm
   std::string dirName;
   std::string iterNumber;

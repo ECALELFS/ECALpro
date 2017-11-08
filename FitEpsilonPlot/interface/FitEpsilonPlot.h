@@ -16,16 +16,18 @@
 enum calibGranularity{ xtal, tt, etaring };
 
 struct Pi0FitResult {
-   RooFitResult* res;
-   float S;     // signal in 3 sigma region
-   float Serr;
-   float B;     // bkg in 3 sigma region
-   float Berr; 
-   float  SoB;  // S/B
-   float  SoBerr;
-   float chi2;
-   int dof;
-   float probchi2;
+  RooFitResult* res;
+  float S;     // signal in 3 sigma region
+  float Serr;
+  float B;     // bkg in 3 sigma region
+  float Berr; 
+  float  SoB;  // S/B
+  float  SoBerr;
+  float chi2;
+  //float chi2red; // reduced chi2
+  int dof; // after subtracting number of model parameters
+  int nFitParam;  // number of parameters in the fit model
+  float probchi2; // after subtracting fit parameters 
 };
 
 class FitEpsilonPlot : public edm::EDAnalyzer {
@@ -69,6 +71,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::string epsilonPlotFileName_;
       std::string calibMapPath_; 
       std::string Barrel_orEndcap_; 
+      std::string fitFileName_;
 
       std::string EEoEB_; 
       bool isNot_2010_; 
