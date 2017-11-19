@@ -61,6 +61,14 @@ void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat
 
   TH2F *hEEp = new TH2F("hEEp","cystals map in EE+",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
   TH2F *hEEm = new TH2F("hEEm","cystals map in EE-",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+
+  // fill histograms with some value that will not be used for ietarings
+  for (Int_t ix = 1; ix <= 100; ix++) {
+    for (Int_t iy = 1; iy <= 100; iy++) {
+      hEEp->SetBinContent(ix, iy, -1);
+      hEEm->SetBinContent(ix, iy, -1);
+    }
+  }
   
   // file.dat format is --> a b c d, that is --> iX, iY, Z side, etaRing                 
   Int_t a,b, c, d;
@@ -69,8 +77,8 @@ void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat
 
     while (inputFile >> a >> b >> c >> d) {
 
-      if (c > 0) hEEp->Fill((Float_t)a,(Float_t)b,(Float_t)d);  
-      else       hEEm->Fill((Float_t)a,(Float_t)b,(Float_t)d);
+      if (c > 0) hEEp->SetBinContent((Float_t)a,(Float_t)b,(Float_t)d);  
+      else       hEEm->SetBinContent((Float_t)a,(Float_t)b,(Float_t)d);
 
     }
 
