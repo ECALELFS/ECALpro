@@ -59,6 +59,13 @@ void calibAnaEcal::setHistograms() {
   SigmaMeanOverMean = new TH2D("SigmaMeanOverMean",Form("sigma(fit_mean)/fit_mean in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap); //mean is the fit mean (should be the pi0 peak mass)  
   mean = new TH2D("mean",Form("fit_mean in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
   sigma = new TH2D("sigma",Form("fit_sigma in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+  chisquare = new TH2D("chisquare",Form("#Chi^{2} in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+
+  if (EBorEE == "EB")
+    chisquare_vs_etaring = new TH2D("chisquare_vs_etaring",Form("#Chi^{2} in %s vs #eta-ring",EBorEE.c_str()),NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap,100,0,100);
+  else {
+    chisquare_vs_etaring = new TH2D("chisquare_vs_etaring",Form("#Chi^{2} in %s vs #eta-ring",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile,100,0,100);
+  }
 
   th2dVector.push_back(hSignal);
   th2dVector.push_back(hBackground);
@@ -67,6 +74,7 @@ void calibAnaEcal::setHistograms() {
   th2dVector.push_back(SigmaMeanOverMean);
   th2dVector.push_back(mean);
   th2dVector.push_back(sigma);
+  th2dVector.push_back(chisquare);
 
   hSignal_etaProfile = new TProfile("hSignal_etaProfile",Form("Signal profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   hBackground_etaProfile = new TProfile("hBackground_etaProfile",Form("Background profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
@@ -75,6 +83,7 @@ void calibAnaEcal::setHistograms() {
   SigmaMeanOverMean_etaProfile = new TProfile("SigmaMeanOverMean_etaProfile",Form("sigma(fit_mean)/fit_mean profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   mean_etaProfile = new TProfile("mean_etaProfile",Form("fit_mean profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   sigma_etaProfile = new TProfile("sigma_etaProfile",Form("fit_sigma profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
+  chisquare_etaProfile = new TProfile("chisquare_etaProfile",Form("#Chi^{2} profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
 
   profileEtaVector.push_back(hSignal_etaProfile);
   profileEtaVector.push_back(hBackground_etaProfile);
@@ -83,6 +92,7 @@ void calibAnaEcal::setHistograms() {
   profileEtaVector.push_back(SigmaMeanOverMean_etaProfile);
   profileEtaVector.push_back(mean_etaProfile);
   profileEtaVector.push_back(sigma_etaProfile);
+  profileEtaVector.push_back(chisquare_etaProfile);
 
   profileYaxisTitle.push_back("events");
   profileYaxisTitle.push_back("events");
@@ -91,7 +101,7 @@ void calibAnaEcal::setHistograms() {
   profileYaxisTitle.push_back("#sigma(mean)/mean");
   profileYaxisTitle.push_back("mean [GeV]");
   profileYaxisTitle.push_back("#sigma [GeV]");
-
+  profileYaxisTitle.push_back("#Chi^{2}");
 
 }
 
@@ -107,6 +117,7 @@ void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
   canvasName = "c_" + canvasName;
   TCanvas *c = new TCanvas(canvasName.c_str(),canvasName.c_str());
   string name = wwwPath + hist2d->GetName() + "_" + EBorEE;  // name  (with path) of file to save canvas: EBorEE can be "EB" or "EEp" or "EEm" 
+  c->SetRightMargin(0.18);
 
   hist2d->Draw("COLZ");
   if (EBorEE == "EB") {
@@ -119,23 +130,23 @@ void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
   hist2d->GetXaxis()->SetTitleSize(0.06);
   hist2d->GetXaxis()->SetTitleOffset(0.7);
   hist2d->GetYaxis()->SetTitleSize(0.06);
-  hist2d->GetYaxis()->SetTitleOffset(0.8);
+  hist2d->GetYaxis()->SetTitleOffset(0.7);
   hist2d->SetStats(0);
   hist2d->Draw("COLZ");
   // after drawing, fix the palette                                                                           
 
   gPad->Update();
-  TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
-  //cout << "hist2d = " << hist2d << "    palette = " << palette << endl;
-  if (!palette || palette == NULL) {
-    cout << "Error in function draw2Dmap(): palette not found. ABORT" << endl;
-    exit(EXIT_FAILURE);
-  }
-  // the following lines move the palette. Choose the values you need for the position.                                         
-  palette->SetX1NDC(0.91);
-  palette->SetX2NDC(0.94);
-  //palette->SetY1NDC(0.2);                                                                                                                                          
-  //palette->SetY2NDC(0.8);                                                                                                                                          
+  // TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+  //// //cout << "hist2d = " << hist2d << "    palette = " << palette << endl;
+  // if (!palette || palette == NULL) {
+  //   cout << "Error in function draw2Dmap(): palette not found. ABORT" << endl;
+  //   exit(EXIT_FAILURE);
+  // }
+  //// the following lines move the palette. Choose the values you need for the position.                                         
+  // palette->SetX1NDC(0.91);
+  // palette->SetX2NDC(0.94);
+  // //palette->SetY1NDC(0.2);                                                                                                                                          
+  // //palette->SetY2NDC(0.8);                                                                                                                                          
   gPad->Modified();
   gPad->Update();
   // end of palette fixes                                                                                                                                             
@@ -172,6 +183,69 @@ void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
 
 }
 
+//===============================================
+
+void calibAnaEcal::drawChisquare(TH2D* hist2d = NULL, const Bool_t drawProfileX = true) {
+  
+  gStyle->SetPalette(57, 0);  // 1:raibow palette  ; 57: kBird (blue to yellow, default one) ; 107: kVisibleSpectrum
+  gStyle->SetNumberContours(50); // default is 20
+
+  string canvasName(hist2d->GetName());
+  canvasName = "c_" + canvasName;
+  TCanvas *c = new TCanvas(canvasName.c_str(),canvasName.c_str());
+  string name = wwwPath + hist2d->GetName() + "_" + EBorEE;  // name  (with path) of file to save canvas: EBorEE can be "EB" or "EEp" or "EEm" 
+  c->SetRightMargin(0.18);
+
+  hist2d->Draw("COLZ");
+  // hist2d->Draw("SCAT");
+  // hist2d->SetMarkerStyle(3);
+  // hist2d->SetMarkerColor(kRed+1);
+  if (EBorEE == "EB") {
+    hist2d->GetXaxis()->SetTitle("i #eta");
+    hist2d->GetYaxis()->SetTitle("#Chi^{2}");
+  } else {
+    hist2d->GetXaxis()->SetTitle("#eta-ring");
+    hist2d->GetYaxis()->SetTitle("#Chi^{2}");
+  } 
+  hist2d->GetXaxis()->SetTitleSize(0.06);
+  hist2d->GetXaxis()->SetTitleOffset(0.7);
+  hist2d->GetYaxis()->SetTitleSize(0.06);
+  hist2d->GetYaxis()->SetTitleOffset(0.7);
+  hist2d->SetStats(111110);
+  hist2d->Draw("COLZ");
+  //hist2d->Draw("SCAT");
+  // after drawing, fix the palette                                                                           
+
+  gPad->Update();
+  // TPaletteAxis *palette = (TPaletteAxis*)hist2d->GetListOfFunctions()->FindObject("palette");
+  // //cout << "hist2d = " << hist2d << "    palette = " << palette << endl;
+  // if (!palette || palette == NULL) {
+  //   cout << "Error in function draw2Dmap(): palette not found. ABORT" << endl;
+  //   exit(EXIT_FAILURE);
+  // }
+  // the following lines move the palette. Choose the values you need for the position.                                         
+  // palette->SetX1NDC(0.91);
+  // palette->SetX2NDC(0.94);
+  // //palette->SetY1NDC(0.2);                                                                                                                                          
+  // //palette->SetY2NDC(0.8);                                                                                                                                          
+  gPad->Modified();
+  gPad->Update();
+
+  TProfile* h2DProfile = NULL;
+  if (drawProfileX) {
+    h2DProfile = hist2d->ProfileX(Form("%s_pfx",hist2d->GetName()));
+    h2DProfile->SetMarkerColor(kBlack);
+    h2DProfile->SetMarkerStyle(20);
+    h2DProfile->SetMarkerSize(1);
+    h2DProfile->Draw("EPsame");
+  }
+
+  // end of palette fixes                                                                                                                                             
+  c->SaveAs((name + ".pdf").c_str());
+  c->SaveAs((name + ".png").c_str());
+
+
+}
 
 //===============================================
 

@@ -76,6 +76,7 @@ void calibAnaEcalEB::setHistograms() {
     th2dMinZaxisVector.push_back(0.500);
     th2dMinZaxisVector.push_back(0.008);
   }
+  th2dMinZaxisVector.push_back(0.0);//0.0
 
 }
 
@@ -96,7 +97,7 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
     th2dMaxZaxisVector.push_back(0.600);
     th2dMaxZaxisVector.push_back(0.025);
   }
-
+  th2dMaxZaxisVector.push_back(70);
 }
 
 //===============================================                                                                                                          
@@ -166,6 +167,9 @@ void calibAnaEcalEB::Loop()
       SigmaMeanOverMean->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[4],(Double_t)fit_mean_err/fit_mean));
       mean->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[5],(Double_t)fit_mean));
       sigma->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
+      chisquare->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[7],(Double_t)Chisqu));
+
+      chisquare_vs_etaring->Fill((Double_t)ieta,(Double_t)Chisqu * (Double_t)Ndof);
 
       Double_t eta = ieta * 0.0174532925; // 0.0174532925 = pi/180; in the barrel eta is simply proportional to ieta                                       
 
@@ -176,6 +180,7 @@ void calibAnaEcalEB::Loop()
       SigmaMeanOverMean_etaProfile->Fill((Double_t)eta, fit_mean_err/fit_mean);
       mean_etaProfile->Fill((Double_t)eta, fit_mean);
       sigma_etaProfile->Fill((Double_t)eta, fit_sigma);
+      chisquare_etaProfile->Fill((Double_t)eta, Chisqu);
 
       mean_iphiProfile->Fill((Double_t)iphi, fit_mean);
 
@@ -212,6 +217,10 @@ void calibAnaEcalEB::Loop()
   c_mean_iphi_prof->SaveAs( (wwwPath + mean_iphiProfile->GetName() + "_EB.pdf").c_str() );
   c_mean_iphi_prof->SaveAs( (wwwPath + mean_iphiProfile->GetName() + "_EB.png").c_str() );
 
+  drawChisquare(chisquare_vs_etaring, true);
+
 }
+
+
 
 #endif
