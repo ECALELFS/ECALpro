@@ -107,7 +107,11 @@ class ICplotter:
         for k,v in self.data.iteritems():
             if k.subdet() != partition: continue
             if(v.staterr < 999): 
-                h.Fill(k.y,k.x,max(zmin,min(zmax,v.val)))
+                # for EB, the file as ieta in x, but in the histogram ieta is in the y axis
+                if k.subdet() == "EcalBarrel":
+                    h.Fill(k.y,k.x,max(zmin,min(zmax,v.val)))
+                else:
+                    h.Fill(k.x,k.y,max(zmin,min(zmax,v.val)))
                 hsterr.Fill(ering.etaring(k),v.staterr)
                 hsyerr.Fill(ering.etaring(k),v.systerr)
                 htoterr.Fill(ering.etaring(k),v.toterr)
@@ -116,28 +120,52 @@ class ICplotter:
         
         hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
     
-        if norm_etaring and partition=='EcalBarrel':
-            hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
-            for ieta in range (1,172): # range excludes last value, so we have 171 values, but ieta = 0 doesn't exist, so we have 170 eta rings in EB
-                if ieta == 86: 
-                    continue
-                ICsum_etaring = 0.0
-                xtalsInEtaRing = 0.0
-                # if xtal is dead, bin content is 0, do not count it in the average
-                for iphi in range (1,361):
-                    if h.GetBinContent(iphi,ieta) > 0.00001:
-                        ICsum_etaring += h.GetBinContent(iphi,ieta)
-                        xtalsInEtaRing += 1.0
-                    #print "iphi, ieta, ICsum_etaring = %s %s %s" % (str(iphi), str(ieta), str(ICsum_etaring))
-                ICsum_etaring = ICsum_etaring / xtalsInEtaRing
+        if norm_etaring:
+            if partition=='EcalBarrel':
+                hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+                for ieta in range (1,172): # range excludes last value, so we have 171 values, but ieta = 0 doesn't exist, so we have 170 eta rings in EB
+                    if ieta == 86: 
+                        continue
+                    ICsum_etaring = 0.0
+                    xtalsInEtaRing = 0.0
+                    # if xtal is dead, bin content is 0, do not count it in the average
+                    for iphi in range (1,361):
+                        if h.GetBinContent(iphi,ieta) > 0.00001:
+                            ICsum_etaring += h.GetBinContent(iphi,ieta)
+                            xtalsInEtaRing += 1.0
+                        #print "iphi, ieta, ICsum_etaring = %s %s %s" % (str(iphi), str(ieta), str(ICsum_etaring))
+                    ICsum_etaring = ICsum_etaring / xtalsInEtaRing
 
-                average = 0.0
-                for iphi in range (1,h.GetNbinsX()+1):
-                    hnorm1.Fill(iphi,ieta-86,h.GetBinContent(iphi,ieta)/ICsum_etaring)
-                    average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
-                    
-                #print "etaring %s: average %s" % (str(ieta-86),str(average))
-            plots2D.append(hnorm1)
+                    average = 0.0
+                    for iphi in range (1,h.GetNbinsX()+1):
+                        hnorm1.Fill(iphi,ieta-86,h.GetBinContent(iphi,ieta)/ICsum_etaring)
+                        average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
+                    #print "etaring %s: average %s" % (str(ieta-86),str(average))
+
+                plots2D.append(hnorm1)
+            else:
+                hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+                f_ietaring = rt.TFile("/afs/cern.ch/user/m/mciprian/public/ECALproTools/EE_xyzToEtaRing/eerings_modified.root")
+                h_ietaring = f_ietaring.Get("hEEm") if "Minus" in partition else f_ietaring.Get("hEEp")              
+                for ietaring in range (0,39):
+                    ICsum_etaring = 0.0
+                    xtalsInEtaRing = 0.0
+                    for ix in range (1,101):
+                        for iy in range (1,101):
+                            if h_ietaring.GetBinContent(ix,iy) == ietaring:
+                                ICsum_etaring += h.GetBinContent(ix,iy)
+                                xtalsInEtaRing += 1.0
+                    ICsum_etaring = ICsum_etaring / xtalsInEtaRing
+                                
+                    average = 0.0
+                    for ix in range (1,101):
+                        for iy in range (1,101):
+                            if h_ietaring.GetBinContent(ix,iy) == ietaring:
+                                hnorm1.Fill(ix,iy,h.GetBinContent(ix,iy)/ICsum_etaring)
+                                average += h.GetBinContent(ix,iy)/(xtalsInEtaRing * ICsum_etaring)                       
+                    #print "etaring %s: average %s" % (str(ietaring),str(average))
+
+                plots2D.append(hnorm1)
         else:
             plots2D.append(h)
 
