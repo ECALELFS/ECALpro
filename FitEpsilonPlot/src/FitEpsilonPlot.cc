@@ -96,7 +96,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
     fitFileName_.replace(outfilename_.find(strToReplace.c_str()),strToReplace.size(),"fitRes");
-    fitFileName_ = "/tmp/" + fitFileName_;
+    fitFileName_ = outputDir_ + "/" + fitFileName_;
 
 
     /// setting calibration type
@@ -197,9 +197,7 @@ void FitEpsilonPlot::saveCoefficients()
     char fileName[200];
     sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
     outfile_ = new TFile(fileName,"RECREATE");
-    cout << "FIT_EPSILON: Saving Calibration Coefficients in " << endl;
-    //@cout << string(fileName) << " ... ";
-    cout <<"FIT_EPSILON: "<< string(fileName) << " ... ";
+    cout << "FIT_EPSILON: Saving Calibration Coefficients in " << string(fileName) << " ... " << endl;;
     if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
     outfile_->cd();
 
@@ -758,27 +756,27 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
     //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
 
-    // original fit
-    // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
-    // better to use RooMinimizer
-    RooMinuit m(nll);
-    m.setVerbose(kFALSE);
-    //m.setVerbose(kTRUE);
-    m.migrad();
-    //m.hesse();
-    RooFitResult* res = m.save() ;
+    // // original fit
+    // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
+    // // better to use RooMinimizer
+    // RooMinuit m(nll);
+    // m.setVerbose(kFALSE);
+    // //m.setVerbose(kTRUE);
+    // m.migrad();
+    // //m.hesse();
+    // RooFitResult* res = m.save() ;
 
     // alternative fit (results are pretty much the same)
-    // RooMinimizer mfit(nll);
-    // mfit.setVerbose(kFALSE);
-    // mfit.setPrintLevel(-1);
-    // cout << "######### Minimize" << endl;
-    // mfit.minimize("Minuit2","minimize");
-    // cout << "######### Minimize hesse " << endl;
-    // mfit.minimize("Minuit2","hesse");
-    // cout<<"######### Estimate minos errors for all parameters"<<endl;
-    // mfit.minos(RooArgSet(Nsig,Nbkg));
-    // RooFitResult* res = mfit.save() ;
+    RooMinimizer mfit(nll);
+    mfit.setVerbose(kFALSE);
+    mfit.setPrintLevel(-1);
+    cout << "######### Minimize" << endl;
+    mfit.minimize("Minuit2","minimize");
+    cout << "######### Minimize hesse " << endl;
+    mfit.minimize("Minuit2","hesse");
+    cout<<"######### Estimate minos errors for all parameters"<<endl;
+    mfit.minos(RooArgSet(Nsig,Nbkg));
+    RooFitResult* res = mfit.save() ;
 
 
     RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
@@ -943,7 +941,7 @@ FitEpsilonPlot::endJob()
 {
     saveCoefficients();
     if(StoreForTest_){
-      cout << "Fit stored in " << fitFileName_ << endl;
+      cout << "FIT_EPSILON: Fit stored in " << fitFileName_ << endl;
       outfileTEST_->Write();
       outfileTEST_->Close();
     }
