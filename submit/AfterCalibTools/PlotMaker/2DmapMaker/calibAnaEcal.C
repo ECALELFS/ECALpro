@@ -5,6 +5,7 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <TLegend.h>
 #include <TProfile.h>
 #include <TPaletteAxis.h>
 
@@ -189,6 +190,8 @@ void calibAnaEcal::drawChisquare(TH2D* hist2d = NULL, const Bool_t drawProfileX 
   
   gStyle->SetPalette(57, 0);  // 1:raibow palette  ; 57: kBird (blue to yellow, default one) ; 107: kVisibleSpectrum
   gStyle->SetNumberContours(50); // default is 20
+  gStyle->SetOptStat(1000111110);
+
 
   string canvasName(hist2d->GetName());
   canvasName = "c_" + canvasName;
@@ -211,7 +214,6 @@ void calibAnaEcal::drawChisquare(TH2D* hist2d = NULL, const Bool_t drawProfileX 
   hist2d->GetXaxis()->SetTitleOffset(0.7);
   hist2d->GetYaxis()->SetTitleSize(0.06);
   hist2d->GetYaxis()->SetTitleOffset(0.7);
-  hist2d->SetStats(111110);
   hist2d->Draw("COLZ");
   //hist2d->Draw("SCAT");
   // after drawing, fix the palette                                                                           
@@ -239,6 +241,14 @@ void calibAnaEcal::drawChisquare(TH2D* hist2d = NULL, const Bool_t drawProfileX 
     h2DProfile->SetMarkerSize(1);
     h2DProfile->Draw("EPsame");
   }
+  TLegend leg(0.35,0.12,0.80,0.18);
+  leg.SetFillStyle(0);
+  leg.SetFillColor(0);
+  leg.SetBorderSize(0);
+  //leg.SetTextFont(62);
+  if (drawProfileX) leg.AddEntry(h2DProfile,"mean #Chi^{2}","PLE");
+  leg.Draw("same");
+
 
   // end of palette fixes                                                                                                                                             
   c->SaveAs((name + ".pdf").c_str());
