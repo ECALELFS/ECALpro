@@ -66,11 +66,15 @@ int Xtal_Iz[14648]={0};
 // IT LOOKS LIKE SOME INDICES ARE OVERWRITTEN
 // Actually it looks like some objects are written twice in the file. In the following, a check is made to avoid drawing the same object twice
 
-void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& BarrelOrEndcap = "Barrel", const string& outputDIR = "./", const Int_t nFitToPlot = 10) {
+void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& BarrelOrEndcap = "Barrel", const string& outputDIR = "./", const Int_t nFitsToPlot = 10, 
+			const Int_t fitIndexToPlot = -1) {
+
+  // if fitIndexToPlot >= 0 we just look for plot with that index and plot that one
+  // otherwise just plot nFitsToPlot plots from fitResFileOnEos file
 
   // fitResFileOnEos is the file on EOS you want to run on. It must start with --> root://eoscms//eos/cms/store/....
   // outputDIR is the output directory were plotted fits are stored. It is created if not existing
-  // nFitToPlot is the number of fit to plot. A loop on objects in file is made and the first nFitToPlot objects are drawn
+  // nFitsToPlot is the number of fits to plot. A loop on objects in file is made and the first nFitsToPlot objects are drawn
 
   // EB
   if (BarrelOrEndcap == "Barrel") {
@@ -126,7 +130,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
   Int_t iloop = 0;
   string previousObjectName = "";
 
-  while ((key = (TKey*)next()) && iloop < nFitToPlot) {
+  while ((key = (TKey*)next()) && iloop < nFitsToPlot) {
 
     // it seems there are duplicated objects in these files, so check that next object name is different from previous one
     // could just use entries for which iloop is even, but then if we fix the bug we should remember to modify this patch
@@ -141,6 +145,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     }
 
     string rooplotname(xframe->GetName());
+    if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) == string::npos)) continue;
     string rooplotTitle = "";
     string canvasname = "";
 
@@ -155,11 +160,17 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
 
     }
 
-    // get crystal index number from RooPlot name in file (name looks like Fit_n_<Number> )
+    // get crystal index number from RooPlot name in file (name looks like Fit_n_<Number>_attempt<N>_rp, where N = 0,1,2... indicates the fit attempt 
+    // (if first fails another one with modified parameter is made))
     string rooplotnameTag = "Fit_n_";
     string fitIndexStr = ""; 
     fitIndexStr.assign(rooplotname, rooplotnameTag.size(), string::npos);
     Int_t fitIndex = std::stoi(fitIndexStr);
+
+    string fitAttemptNumber = ""; 
+    fitAttemptNumber.assign(rooplotname, rooplotname.find("attempt")+7, rooplotname.find("attempt")+8);
+    Int_t fitAttemptNumber_int = atoi(fitAttemptNumber.c_str());
+    //cout << "fit attempt: " << fitAttemptNumber_int << endl;
 
     if (BarrelOrEndcap == "Barrel") {
 
@@ -231,7 +242,11 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
 
     delete c;
 
-    iloop++;
+    // if for a given crystal we have more than one fit, do not increase loop counter when evaluating the attempts
+    // iloop should refer to the nuber of crystals to plot, not actual fits to plot in total
+    if (fitAttemptNumber_int == 0) iloop++;
+
+    if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) != string::npos)) break;
 
   }
 
