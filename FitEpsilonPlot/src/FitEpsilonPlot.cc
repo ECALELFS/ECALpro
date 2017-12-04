@@ -779,6 +779,19 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     RooFitResult* res = mfit.save() ;
 
 
+    // alternative fit (results are pretty much the same)
+    // RooMinimizer mfit(nll);
+    // mfit.setVerbose(kFALSE);
+    // mfit.setPrintLevel(-1);
+    // cout << "######### Minimize" << endl;
+    // mfit.minimize("Minuit2","minimize");
+    // cout << "######### Minimize hesse " << endl;
+    // mfit.minimize("Minuit2","hesse");
+    // cout<<"######### Estimate minos errors for all parameters"<<endl;
+    // mfit.minos(RooArgSet(Nsig,Nbkg));
+    // RooFitResult* res = mfit.save() ;
+
+
     RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();

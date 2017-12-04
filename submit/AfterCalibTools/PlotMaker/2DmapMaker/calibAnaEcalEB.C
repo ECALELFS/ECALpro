@@ -98,6 +98,7 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
     th2dMaxZaxisVector.push_back(0.025);
   }
   th2dMaxZaxisVector.push_back(70);
+
 }
 
 //===============================================                                                                                                          

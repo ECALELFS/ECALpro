@@ -3,7 +3,7 @@
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
-dirName="AlCaP0_IC2017_upTo31July2017_noCC"                            # dirname (see CalibCode/submit/parameters.py)  
+dirName="AlCaP0_IC2017_upTo21September2017_2012regression_v2"                            # dirname (see CalibCode/submit/parameters.py)  
 iter_number="5"                                                          # number n of iterations (iter_0 to iter_{n-1})
 tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 

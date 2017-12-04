@@ -16,8 +16,7 @@ SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 #PATH
-#eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
-eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/zhicaiz'
+eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
 #
 #adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
 #See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
@@ -60,7 +59,7 @@ Silent           = False                 # True->Fill modules is silent; False->
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1 # 7
+nIterations      = 7 # 7
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 
 SubmitFurtherIterationsFromExisting = False

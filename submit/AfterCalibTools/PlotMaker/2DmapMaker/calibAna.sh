@@ -14,7 +14,8 @@ iter_fin=4                                                      # last iteration
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
 path="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"  # path to directory on eos
-dirName="AlCaP0_IC2017_upTo21September2017"                            # dirname (see CalibCode/submit/parameters.py)
+#dirName="AlcaP0_Run2016G_sel16_reg12"                            # dirname (see CalibCode/submit/parameters.py)
+dirName="AlcaP0_Run2016G_sel17optim_reg12_v2"
 #tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
 tagName="${dirName}_"
 
