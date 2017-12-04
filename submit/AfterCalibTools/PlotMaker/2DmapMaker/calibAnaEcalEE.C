@@ -39,7 +39,7 @@ calibAnaEcalEE::calibAnaEcalEE(TTree *tree) : calibAnaEcal(tree) {
 
   // iX and iY are integer, but we create bins for histograms such that, e.g., the bin with (iX = 2 ) goes from 1.5 to 2.5       
   // note that 0 < iX <= 100, same for iY. 
-  // However, we make maps with 102 bins on both x and y axis so that there is a 1 bin white margin in the plots (this is just a style choice
+  // However, we make maps with 102 bins on both x and y axis so that there is a 1 bin white margin in the plots (this is just a style choice)
   NbinsX_2Dmap = 102;
   lowerX_2Dmap = -0.5;
   upperX_2Dmap = 101.5;
@@ -76,6 +76,7 @@ void calibAnaEcalEE::setHistograms() {
     else th2dMinZaxisVector.push_back(0.13);
   } else th2dMinZaxisVector.push_back(0.48);
   th2dMinZaxisVector.push_back(0.005);
+  th2dMinZaxisVector.push_back(0.0);
 
 }
 
@@ -96,6 +97,7 @@ void calibAnaEcalEE::set2DmapMaxZaxisVector() {
     else                                   th2dMaxZaxisVector.push_back(0.145);
   } else th2dMaxZaxisVector.push_back(0.62);
   th2dMaxZaxisVector.push_back(0.020);
+  th2dMaxZaxisVector.push_back(70);
 
 }
 
@@ -234,6 +236,9 @@ void calibAnaEcalEE::Loop()
       SigmaMeanOverMean->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[4],(Double_t)fit_mean_err/fit_mean));
       mean->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[5],(Double_t)fit_mean));
       sigma->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
+      chisquare->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[7],(Double_t)Chisqu));
+
+      chisquare_vs_etaring->Fill(etaRing,(Double_t)Chisqu*(Double_t)Ndof);
 
       hSignal_etaProfile->Fill((Double_t)etaRing,normalizedS);
       hBackground_etaProfile->Fill((Double_t)etaRing,normalizedB);
@@ -242,6 +247,7 @@ void calibAnaEcalEE::Loop()
       SigmaMeanOverMean_etaProfile->Fill((Double_t)etaRing, fit_mean_err/fit_mean);
       mean_etaProfile->Fill((Double_t)etaRing, fit_mean);
       sigma_etaProfile->Fill((Double_t)etaRing, fit_sigma);
+      chisquare_etaProfile->Fill((Double_t)etaRing, Chisqu);
 
     }
 
@@ -258,6 +264,8 @@ void calibAnaEcalEE::Loop()
     drawProfile(profileEtaVector[i], profileYaxisTitle[i]);
 
   }
+
+  drawChisquare(chisquare_vs_etaring, true);
 
 }
 

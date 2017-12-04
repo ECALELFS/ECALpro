@@ -1649,7 +1649,16 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  float Correct1(1.), Correct2(1.);
 	  if(Are_pi0_){
 	    float value_pi01[14];
-	    float new_value_pi01[12];
+	    //input list for regression in 2017 EB:
+	    //enG_rec
+	    //Nxtal
+	    //S4S9
+	    //S2S9
+	    //iEta
+	    //iPhi
+	    //SM_dist: 
+	    //M_dist:
+	    float new_value_pi01[8]; 
 
 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
@@ -1666,18 +1675,17 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
 	    value_pi01[13] = ( iPhi1%20 );
 	    
-	    new_value_pi01[0] = ( G_Sort_1.E() );
-            new_value_pi01[1] = ( G_Sort_1.Eta() );
-            new_value_pi01[2] = ( G_Sort_1.Phi() );
-            new_value_pi01[3] = ( Ncristal_EB[ind1] );
-            new_value_pi01[4] = ( vs4s9[ind1] );
-            new_value_pi01[5] = ( vs2s9[ind1] );
-            new_value_pi01[6] = ( iEta1 );
-            new_value_pi01[7] = ( iPhi1 );
-            new_value_pi01[8] = ( iEta1%5 );
-            new_value_pi01[9] = ( iEta1%2 );
-            new_value_pi01[10] = ( iEta1%20 );
-            new_value_pi01[11] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+	    new_value_pi01[0] = ( g1->energy() );
+            new_value_pi01[1] = ( Ncristal_EB[i] );
+            new_value_pi01[2] = ( vs4s9[i] );
+            new_value_pi01[3] = ( vs2s9[i] );
+            new_value_pi01[4] = ( id_1.ieta() );
+            new_value_pi01[5] = ( id_1.iphi() );
+	    float temp_SM_dist_1 = ((id_1.iphi()-1)%20<10)*((id_1.iphi()-1)%20) + (((id_1.iphi()-1)%20)>=10)*(19-(id_1.iphi()-1)%20);
+	    float temp_M_dist_1  = (abs(id_1.ieta())<=25)*(((abs(id_1.ieta())-1)%25<12)*((abs(id_1.ieta())-1)%25) + (((abs(id_1.ieta())-1)%25)>=12)*(24-(abs(id_1.ieta())-1)%25))
+                               +(abs(id_1.ieta())>25) * (((abs(id_1.ieta())-26)%20<10)*((abs(id_1.ieta())-26)%20) + (((abs(id_1.ieta())-26)%20)>=10)*(19-(abs(id_1.ieta())-26)%20));
+            new_value_pi01[6] = ( temp_SM_dist_1 );
+            new_value_pi01[7] = ( temp_M_dist_1 );
 
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
 	    //else                                    value_pi01[14] = false ;
@@ -1697,7 +1705,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    }
 
 	    float value_pi02[14];//#
-	    float new_value_pi02[12];
+	    float new_value_pi02[8];
 
 	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
 	    value_pi02[1] = ( G_Sort_2.Pt() );
@@ -1716,18 +1724,18 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
 	    //else                                    value_pi02[14] = false ;
 	   
-	    new_value_pi02[0] = ( G_Sort_2.E() );
-            new_value_pi02[1] = ( G_Sort_2.Eta() );
-            new_value_pi02[2] = ( G_Sort_2.Phi() );
-            new_value_pi02[3] = ( Ncristal_EB[ind2] );
-            new_value_pi02[4] = ( vs4s9[ind2] );
-            new_value_pi02[5] = ( vs2s9[ind2] );
-            new_value_pi02[6] = ( iEta2 );
-            new_value_pi02[7] = ( iPhi2 );
-            new_value_pi02[8] = ( iEta2%5 );
-            new_value_pi02[9] = ( iEta2%2 );
-            new_value_pi02[10] = ( iEta2%20 );
-            new_value_pi02[11] = ((TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::     Abs(iEta2)/iEta2)%20) );
+	    new_value_pi02[0] = ( g2->energy() );
+            new_value_pi02[1] = ( Ncristal_EB[j] );
+            new_value_pi02[2] = ( vs4s9[j] );
+            new_value_pi02[3] = ( vs2s9[j] );
+            new_value_pi02[4] = ( id_2.ieta() );
+            new_value_pi02[5] = ( id_2.iphi() );
+	    float temp_SM_dist_2 = ((id_2.iphi()-1)%20<10)*((id_2.iphi()-1)%20) + (((id_2.iphi()-1)%20)>=10)*(19-(id_2.iphi()-1)%20);
+	    float temp_M_dist_2  = (abs(id_2.ieta())<=25)*(((abs(id_2.ieta())-1)%25<12)*((abs(id_2.ieta())-1)%25) + (((abs(id_2.ieta())-1)%25)>=12)*(24-(abs(id_2.ieta())-1)%25))
+                               +(abs(id_2.ieta())>25) * (((abs(id_2.ieta())-26)%20<10)*((abs(id_2.ieta())-26)%20) + (((abs(id_2.ieta())-26)%20)>=10)*(19-(abs(id_2.ieta())-26)%20));
+            new_value_pi02[6] = ( temp_SM_dist_2 );
+            new_value_pi02[7] = ( temp_M_dist_2 );
+
 
 	    if(useMVAContainmentCorrections_)
             {
@@ -1768,9 +1776,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    value_pi02[9] = ( iPhi2%20 );
 	    Correct2 = forest_EB_2->GetResponse(value_pi02);
 	  }
-
-	  if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
+	
+	  // new regression trained in 2017: photon order is based on seed energy (energy in overlapped crystal taken by the first photon)
+	  // old regression trained in 2012: photon order is based on photon Pt
+	  if( (!Inverted) || new_pi0ContainmentCorrections_) { Corr1 = Correct1; Corr2 = Correct2; }
 	  else           { Corr1 = Correct2; Corr2 = Correct1; }
+
 	  //WARNIGN no CC for now! Put back in CKM 20/10/2015
 	  //	  Corr1 = 1.; Corr2 = 1.; 
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
@@ -1819,7 +1830,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  int EtaRing_1=GetRing( iX1, iY1, VectRing, false), EtaRing_2=GetRing( iX2, iY2, VectRing, false);
 	  float value_pi01[10];
-	  float new_value_pi01[8];
+	    //input list for regression in 2017 EE:
+	    //enG_rec
+	    //Nxtal
+	    //S4S9
+	    //S2S9
+	    //iX
+	    //iY
+	  float new_value_pi01[6];
 	  value_pi01[0] = ( GSort1plus2_EoverCoshEta );
 	  value_pi01[1] = ( G_Sort_1.E()/ GSort1plus2_EoverCoshEta );
 	  value_pi01[2] = ( G_Sort_1.Pt() );
@@ -1830,14 +1848,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  value_pi01[7] = ( vs2s9EE[ind1] );
 	  value_pi01[8] = ( ESratio[ind1] );
 	  value_pi01[9] = ( EtaRing_1 );
-	    new_value_pi01[0] = ( G_Sort_1.E() );
-            new_value_pi01[1] = ( G_Sort_1.Eta() );
-            new_value_pi01[2] = ( G_Sort_1.Phi() );
-            new_value_pi01[3] = ( Ncristal_EE[ind1] );
-            new_value_pi01[4] = ( vs4s9[ind1] );
-            new_value_pi01[5] = ( vs2s9[ind1] );
-            new_value_pi01[6] = ( iX1 );
-            new_value_pi01[7] = ( iY1 );
+	  
+	  new_value_pi01[0] = ( g1->energy() );
+          new_value_pi01[1] = ( Ncristal_EE[i] );
+          new_value_pi01[2] = ( vs4s9[i] );
+          new_value_pi01[3] = ( vs2s9[i] );
+          new_value_pi01[4] = ( id_1.ix() );
+          new_value_pi01[5] = ( id_1.iy() );
 	   
            float  Correct1 = 1.0;
           if(Are_pi0_ && useMVAContainmentCorrections_)
@@ -1860,7 +1877,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    <<" ESratio "<<ESratio[ind1]<<" EtaRing_1 "<<EtaRing_1<<endl;
 
 	  float value_pi02[10];
-	  float new_value_pi02[8];
+	  float new_value_pi02[6];
 	  value_pi02[0] = ( GSort1plus2_EoverCoshEta );
 	  value_pi02[1] = ( G_Sort_2.E()/GSort1plus2_EoverCoshEta );
 	  value_pi02[2] = ( G_Sort_2.Pt() );
@@ -1871,14 +1888,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  value_pi02[7] = ( vs2s9EE[ind2] );
 	  value_pi02[8] = ( ESratio[ind2] );
 	  value_pi02[9] = ( EtaRing_2 );
-	    new_value_pi02[0] = ( G_Sort_2.E() );
-            new_value_pi02[1] = ( G_Sort_2.Eta() );
-            new_value_pi02[2] = ( G_Sort_2.Phi() );
-            new_value_pi02[3] = ( Ncristal_EE[ind2] );
-            new_value_pi02[4] = ( vs4s9[ind2] );
-            new_value_pi02[5] = ( vs2s9[ind2] );
-            new_value_pi02[6] = ( iX2 );
-            new_value_pi02[7] = ( iY2 );
+
+	  new_value_pi02[0] = ( g2->energy() );
+          new_value_pi02[1] = ( Ncristal_EE[j] );
+          new_value_pi02[2] = ( vs4s9[j] );
+          new_value_pi02[3] = ( vs2s9[j] );
+          new_value_pi02[4] = ( id_2.ix() );
+          new_value_pi02[5] = ( id_2.iy() );
 
 	 float  Correct2 = 1.0;
           if(Are_pi0_ && useMVAContainmentCorrections_)
@@ -1903,6 +1919,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  // FIXME: should we uncomment these lines as for the barrel?
 	  //  if( !Inverted ){ Corr1 = Correct1; Corr2 = Correct2; }
 	  //  else           { Corr1 = Correct2; Corr2 = Correct1; }
+
+	  //at least for 2017 regression:
+	  if(new_pi0ContainmentCorrections_) { Corr1 = Correct1; Corr2 = Correct2; }
 
 	  Correction1EE_mva = Correct1; Correction2EE_mva = Correct2;
 	  iX1_mva = iX1; iX2_mva = iX2; iY1_mva = iY1; iY1_mva = iY2; Pt1EE_mva = G_Sort_1.Pt(); Pt2EE_mva = G_Sort_2.Pt();

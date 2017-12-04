@@ -30,6 +30,7 @@ class calibAnaEcal : public calibAnaEcal_base {
   virtual void setHistograms();
   virtual void draw2Dmap(TH2D*);
   virtual void drawProfile(TProfile*, const std::string& );
+  virtual void drawChisquare(TH2D*, const Bool_t drawProfileX);
   virtual void setVerticalRangeInHisto();
   virtual void Init(TTree *);
   virtual void Loop();
@@ -41,6 +42,9 @@ class calibAnaEcal : public calibAnaEcal_base {
   TH2D *SigmaMeanOverMean = NULL; 
   TH2D *mean = NULL;
   TH2D *sigma = NULL;
+  TH2D *chisquare = NULL;
+
+  TH2D *chisquare_vs_etaring = NULL; // 2D plots chi^2 vs etaring
 
   // # of bins, lower and upper edges for TH2D. Will be set differently in the derived class for EB and EE
   // X is iphi or iX, Y is ieta or iY
@@ -59,6 +63,7 @@ class calibAnaEcal : public calibAnaEcal_base {
   TProfile *SigmaMeanOverMean_etaProfile;
   TProfile *mean_etaProfile;
   TProfile *sigma_etaProfile;
+  TProfile *chisquare_etaProfile;
 
   // # of bins, lower and upper edges for profile. Will be set differently in the derived class for EB and EE
   Int_t NbinsX_etaProfile;

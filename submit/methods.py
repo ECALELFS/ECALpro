@@ -440,8 +440,14 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
+    # if using RooMinuit fo the fit (obsolete according too RooFit guide), then save some pieces from stdout to check status of fit
+    # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
+    # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
+    # we keep only the output containing 'FIT_EPSILON:'
+    #outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
+    #outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
+    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
+    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
     outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
     sourcerooplot = source.replace("calibMap","fitRes")

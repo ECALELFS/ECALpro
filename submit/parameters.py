@@ -73,7 +73,7 @@ ijobmax          = 5 #5                     # 5 number of files per job
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = '2012reg' # Option: 'No', '2012reg', '2016reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+ContainmentCorrection = '2017reg' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
 
 #Remove Xtral Dead
 RemoveDead_Flag = "True"
@@ -353,7 +353,7 @@ if ContainmentCorrection == '2012reg':
    useEEContainmentCorrections = 'False'
    useMVAContainmentCorrections = True
    new_pi0ContainmentCorrections = False
-if ContainmentCorrection == '2016reg':
+if ContainmentCorrection == '2017reg':
    useEBContainmentCorrections = 'False'
    useEEContainmentCorrections = 'False'
    useMVAContainmentCorrections = True 
@@ -370,8 +370,8 @@ if ContainmentCorrection == 'mixed':
    new_pi0ContainmentCorrections = False
 
 
-new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain.root'
-new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain.root'
+new_MVAEBContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain_EB.root'
+new_MVAEBContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain_EB.root'
 new_MVAEEContainmentCorrections_01 = 'new_JOSH_MVA_pi01_Mediumtrain_EE.root'
 new_MVAEEContainmentCorrections_02 = 'new_JOSH_MVA_pi02_Mediumtrain_EE.root'
 
@@ -395,7 +395,7 @@ useOnlyEEClusterMatchedWithES = 'True'
 #####################
 # if you don't want to overwrite the global tag, set overWriteGlobalTag = False, otherwise, it will be customized based on the following tags  
 #####################
-overWriteGlobalTag = True                                     # Allow to overwrite AlphaTag, Laser correction etc
+overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
 laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_prompt_v2';laserDB='frontier://FrontierProd/CMS_CONDITIONS'
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
