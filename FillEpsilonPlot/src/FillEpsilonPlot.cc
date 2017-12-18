@@ -145,8 +145,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
     l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
     triggerResultsToken_               = consumes<edm::TriggerResults>(iConfig.getUntrackedParameter("triggerTag",edm::InputTag("TriggerResults")));
-    //L1GTobjmapToken_                   = consumes<L1GlobalTriggerObjectMapRecord>(iConfig.getUntrackedParameter<edm::InputTag>("hltL1GtObjectMap",edm::InputTag("hltL1GtObjectMap")));
-    // edm::Handle<GlobalAlgBlkBxCollection> & l1results
     L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("hltGtStage2Digis",edm::InputTag("hltGtStage2Digis")));
     GenPartCollectionToken_            = consumes<GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles")));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
@@ -208,8 +206,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     S4S9_cut_high_[EcalEndcap]         = iConfig.getUntrackedParameter<double>("S4S9_EE_high");
     SystOrNot_                         = iConfig.getUntrackedParameter<int>("SystOrNot",0);
     isMC_                              = iConfig.getUntrackedParameter<bool>("isMC",false);
-    MC_Asssoc_                         = iConfig.getUntrackedParameter<bool>("MC_Asssoc",false);
-    MC_Asssoc_DeltaR                   = iConfig.getUntrackedParameter<double>("MC_Asssoc_DeltaR",0.1);
+    MC_Assoc_                          = iConfig.getUntrackedParameter<bool>("MC_Assoc",false);
+    MC_Assoc_DeltaR                    = iConfig.getUntrackedParameter<double>("MC_Assoc_DeltaR",0.1);
     MakeNtuple4optimization_           = iConfig.getUntrackedParameter<bool>("MakeNtuple4optimization",false);
     GeometryFromFile_                  = iConfig.getUntrackedParameter<bool>("GeometryFromFile",false);
     JSONfile_                          = iConfig.getUntrackedParameter<std::string>("JSONfile","");
@@ -306,11 +304,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     if (currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
     else if (currentIteration_ > 0 || (currentIteration_ == 0 && calibMapPath_.find(stringToMatch)==std::string::npos))
     {
-	  char fileName[200];
-	  cout << "FillEpsilonPlot:: loading calibraion map at " << calibMapPath_ << endl;
-	  if( isCRAB_ ) sprintf(fileName,"%s",  edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str() );
-	  else          sprintf(fileName,"%s", calibMapPath_.c_str());
-	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
+      std::string fileName = "";
+      cout << "FillEpsilonPlot:: loading calibration map at " << calibMapPath_ << endl;
+      if( isCRAB_ ) fileName = edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str();
+      else          fileName = calibMapPath_;
+      regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName.c_str());
     }
 
     /// epsilon histograms
@@ -373,10 +371,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       EEpMap_DeadXtal = (TH2F*) DeadMap->Get("rms_EEp");
     }
     // output file
-    char fileName[200];
-    sprintf(fileName,"%s%s", outputDir_.c_str(), outfilename_.c_str());
-    outfile_ = new TFile(fileName,"RECREATE");
-    if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
+    string fileName = "";
+    fileName = outputDir_ + outfilename_;
+    outfile_ = new TFile(fileName.c_str(),"RECREATE");
+    if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
 #ifdef SELECTION_TREE
     CutVariables_EB = new TTree("CutVariables_EB","(EB) Variables used at first cuts");
     CutVariables_EB->Branch("NSeeds_EB", &NSeeds_EB, "NSeeds_EB/F");
@@ -469,7 +467,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	Tree_Optim->Branch( "STr2_iEta_2on2520",  &Op_iEta_2on2520,     "STr2_iEta_2on2520[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_1on20",    &Op_iPhi_1on20,       "STr2_iPhi_1on20[STr2_NPi0_rec]/I");
 	Tree_Optim->Branch( "STr2_iPhi_2on20",    &Op_iPhi_2on20,       "STr2_iPhi_2on20[STr2_NPi0_rec]/I");
-	if( isMC_ && MC_Asssoc_ ) {
+	if( isMC_ && MC_Assoc_ ) {
 	  Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
 	  Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
 	  Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
@@ -713,7 +711,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // end of --> if (!areLabelsSet_ && L1TriggerInfo_)
 
   //MC Photons (they will be associated to the clusters later)
-  if( isMC_ && MC_Asssoc_ ){
+  if( isMC_ && MC_Assoc_ ){
     edm::Handle<std::vector<reco::GenParticle>> GenParProd;
     iEvent.getByToken( GenPartCollectionToken_, GenParProd);//Fatal Root Error: @SUB=TBufferFile::CheckByteCount object of class edm::RefCore read too many bytes: 10 instead of 8
     // const reco::GenParticleCollection *GenPars = 0;
@@ -798,7 +796,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             Gamma1MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
             //            IdGamma1 = iSim->trackId();
             //            std::cout << "Photon1 eta,phi = " << Gamma1MC.eta() << "  " << Gamma1MC.phi() << std::endl;
-         }
+	  }
           if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==(Are_pi0_ ? 111:221) && num==2){
             Gamma2MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
             //            IdGamma2 = iSim->trackId();
@@ -915,9 +913,9 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
-  if(isMC_ && MC_Asssoc_) {
-    ebclusters_used = MCTruthAssociate(ebclusters,MC_Asssoc_DeltaR,true);
-    eeclusters_used = MCTruthAssociate(eseeclusters_tot,MC_Asssoc_DeltaR,false);
+  if(isMC_ && MC_Assoc_) {
+    ebclusters_used = MCTruthAssociate(ebclusters,MC_Assoc_DeltaR,true);
+    eeclusters_used = MCTruthAssociate(eseeclusters_tot,MC_Assoc_DeltaR,false);
   } else {
     ebclusters_used = ebclusters;
     eeclusters_used = eseeclusters_tot;
@@ -1537,7 +1535,7 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociate(std::vector< CaloCl
   ret.clear();
   int n_tmp1 = -1;    int n_tmp2 = -1;
   double deltaR1_tmp = 999;    double deltaR2_tmp = 999;
-  if(isMC_ && MC_Asssoc_) {
+  if(isMC_ && MC_Assoc_) {
     //    std::cout << "Association with MC: initial collection size = " << clusters.size() << std::endl;
     for(unsigned int i=0; i<clusters.size(); i++){
       const CaloCluster g = clusters[i];
@@ -1572,6 +1570,49 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociate(std::vector< CaloCl
   }
   return ret;
 }
+
+std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, double deltaR, bool isEB) {
+
+  std::vector< CaloCluster > ret;
+  ret.clear();
+  int n_tmp1 = -1;    int n_tmp2 = -1;
+  double deltaR1_tmp = 999;    double deltaR2_tmp = 999;
+  if(isMC_ && MC_Assoc_) {
+    //    std::cout << "Association with MC: initial collection size = " << clusters.size() << std::endl;
+    for(unsigned int i=0; i<clusters.size(); i++){
+      const CaloCluster g = clusters[i];
+      double deltaR1 = reco::deltaR(g.eta(),g.phi(), Gamma1MC.Eta(),Gamma1MC.Phi());
+      double deltaR2 = reco::deltaR(g.eta(),g.phi(), Gamma2MC.Eta(),Gamma2MC.Phi());
+      //      std::cout << "DR1,2 = " << deltaR1 << "  " << deltaR2 << std::endl;
+      if(deltaR1<deltaR1_tmp) {
+        deltaR1_tmp = deltaR1; n_tmp1 = i;
+      }
+      if(deltaR2<deltaR2_tmp) {
+        deltaR2_tmp = deltaR2; n_tmp2 = i;
+      }
+    }
+  } else return ret;
+
+  // std::cout << "deltaR1,2_tmp = " << deltaR1_tmp << "  " << deltaR2_tmp << std::endl;
+  // std::cout << "ntmp = " << n_tmp1 << "  " << n_tmp2 << std::endl;
+
+  // one could look to another close cluster, but if the two MC photons are closer than 0.05 to the same cluster, 
+  // that is merged in one cluster most probably, so another one would be fake
+  if(n_tmp1==n_tmp2) return ret;
+  
+  if(deltaR1_tmp < deltaR) {
+    if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
+    else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
+    ret.push_back(clusters[n_tmp1]);
+  }
+  if(deltaR2_tmp < deltaR) {
+    if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
+    else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
+    ret.push_back(clusters[n_tmp2]);
+  }
+  return ret;
+}
+
 
 void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
 {
@@ -1980,10 +2021,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_PtGamma_EB( g1pt * Corr1, g2pt * Corr2 );
 	  Fill_EtaGamma_EB( g1eta, g2eta );
 	  // to be implemented
-	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
+	  if(isMC_ && MC_Assoc_) Fill_NcrystalUsedGamma_EB(Ncristal_EB_used[0], Ncristal_EB_used[1]);
 	  Fill_S4S9Gamma_EB(vs4s9[0], vs4s9[1]);
-	  //Fill_NxtalEnergGamma_EB(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EB_used ?!? 
+	  //Fill_NxtalEnergGamma_EB(Nxtal_EnergGamma);  
 	  //Fill_NxtalEnergGamma2_EB(Nxtal_EnergGamma2);
+	  //
+	  //the difference of Nxtal_EnergGamma wrt Ncristal_EB_used is that Nxtal_EnergGamma is set equal to Ncristal_EB[i]. For real data it is the same because Ncristal_EB_used is set equal to Ncristal_EB, but for MC it can be different due to the MC truth matching, which selects a subset of Ncristal_EB
+	  //
 	  //
 	  Fill_Epsilon_EB( 0.5 * ( pow(pi0P4_mass/PI0MASS,2)  - 1. ) );
 	  Pi0Info_EB->Fill();
@@ -1997,7 +2041,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  Fill_PtGamma_EE( g1pt * Corr1, g2pt * Corr2 );
 	  Fill_EtaGamma_EE( g1eta, g2eta );
 	  // to be implemented
-	  if(isMC_ && MC_Asssoc_) Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
+	  if(isMC_ && MC_Assoc_) Fill_NcrystalUsedGamma_EE(Ncristal_EE_used[0], Ncristal_EE_used[1]);
 	  Fill_S4S9Gamma_EE(vs4s9[0], vs4s9[1]);
 	  //Fill_NxtalEnergGamma_EE(Nxtal_EnergGamma);  //which is the difference wrt Ncristal_EE_used ?!? 
 	  //Fill_NxtalEnergGamma2_EE(Nxtal_EnergGamma2);
@@ -2174,7 +2218,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_Phi_2[nPi0]         = g2phi;
 	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[0] : vSeedTimeEE[0];
 	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[1] : vSeedTimeEE[1];
-	    if( isMC_ && MC_Asssoc_ ) {
+	    if( isMC_ && MC_Assoc_ ) {
 	      Op_Nxtal_1[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
 	      Op_Nxtal_2[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
 	      Op_enG1_true[nPi0]     = Gamma1MC.R();

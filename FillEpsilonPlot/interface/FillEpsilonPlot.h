@@ -104,6 +104,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
+      std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
@@ -180,7 +181,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::EDGetTokenT<ESRecHitCollection> ESRecHitCollectionToken_;
       edm::InputTag l1TriggerTag_;
       edm::EDGetTokenT<edm::TriggerResults> triggerResultsToken_;
-      //edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> L1GTobjmapToken_;
       edm::EDGetTokenT<GlobalAlgBlkBxCollection> L1GTobjmapToken_;
       edm::InputTag l1InputTag_;
       //std::map<string,int> L1_nameAndNumb;
@@ -225,8 +225,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double S4S9_cut_high_[3];
       double SystOrNot_;
       bool isMC_;
-      bool MC_Asssoc_;
-      double MC_Asssoc_DeltaR;
+      bool MC_Assoc_;
+      double MC_Assoc_DeltaR;
       math::XYZPoint Gamma1MC;
       math::XYZPoint Gamma2MC;
       bool isCRAB_;

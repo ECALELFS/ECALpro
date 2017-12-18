@@ -48,18 +48,18 @@ unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 #MC and Selection Optimization
 isDebug = False # for the moment, if True it activates some cout in FillEpsilonPlot.cc
-isMC = False
+isMC = True
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/purified_AlCaP0_2017_upTo21September2017.list' # 'InputList/test.list' #
-dirname          = 'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/testMC.list' # 'InputList/purified_AlCaP0_2017_upTo21September2017.list' # 'InputList/test.list' #
+dirname          = 'testMC' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 7 # 7
+nIterations      = 1 # 7
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 
 SubmitFurtherIterationsFromExisting = False
@@ -69,8 +69,8 @@ SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It
 #startingCalibMap = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
 
 #N files
-ijobmax          = 5 #5                     # 5 number of files per job
-nHadd            = 35 #35                    # 35 number of files per hadd
+ijobmax          = 2 #5                     # 5 number of files per job
+nHadd            = 2 #35                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = '2017reg' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
@@ -97,11 +97,6 @@ L1SeedExpression = "L1_AlwaysTrue OR L1_IsolatedBunch OR L1_SingleEG5 OR L1_Sing
 # NOTE: leave a space at the end! It is needed to search a seed name in the string without ambiguity 
 # for instance, if you look for 'L1_SingleJet16' in the string, it also matches 'L1_SingleJet160', while if you search for 'L1_SingleJet16 ' there is no ambiguity
 # it also relies on a space between each name and the 'OR'
-
-
-
-#Association with GenPart
-MC_Asssoc = False
 
 #Seeds (Comment if you want the standard cuts ones)
 EB_Seed_E    = '0.5'
@@ -418,8 +413,6 @@ linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='front
 # Now decomment the part that correspond to data you want to run on. #
 ######################################################################
 
-##2015C AlCaP0 RAW
-isMC               = False
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
 json_file          = 'Cert_294927-302654_13TeV_PromptReco_Collisions17_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
@@ -431,7 +424,7 @@ triggerTag         = 'InputTag("TriggerResults")'    # Run Fill EB only if the H
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
 useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False'
-globaltag          = '92X_dataRun2_Prompt_v9' if isMC==False else '80X_mcRun2_asymptotic_v5' #old is GR_P_V56
+globaltag          = '92X_dataRun2_Prompt_v9' if isMC==False else '93X_mc2017_realistic_v3' #old is GR_P_V56
 globaltag_New      = True
 FROMDIGI           = True
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
@@ -470,5 +463,10 @@ else:
          ebInputTag = 'InputTag("hltAlCaEtaEBUncalibrator","etaEcalRecHitsEB")'
          eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE")'
 if isMC:
-   MC_Asssoc = True
+   MC_Assoc = True
+   MC_Assoc_DeltaR = '0.3'
    genPartInputTag = 'InputTag("genParticles","")'
+else:
+   #Association with GenPart
+   MC_Assoc = False
+
