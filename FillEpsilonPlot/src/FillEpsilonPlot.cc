@@ -217,6 +217,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     nL1SeedsPi0Stream_                 = iConfig.getUntrackedParameter<int>("nL1SeedsPi0Stream");
 
     isDebug_                           = iConfig.getUntrackedParameter<bool>("isDebug",false);
+    isEoverEtrue_                      = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
 
     // for MC-truth association
     // g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));

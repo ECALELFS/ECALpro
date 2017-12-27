@@ -249,7 +249,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       /////////
       bool isCRAB_;
       bool MakeNtuple4optimization_;
-      bool isDebug_; 
+      bool isDebug_;
+      bool isEoverEtrue_;  // to run E/Etrue flow (with MC only)
       /// all the three options have to be instantiated to allow the
       //choice at runtime
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
