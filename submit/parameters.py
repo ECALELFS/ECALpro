@@ -49,6 +49,7 @@ isOtherT2        = False
 #MC and Selection Optimization
 isDebug = False # for the moment, if True it activates some cout in FillEpsilonPlot.cc
 isMC = True
+isEoverEtrue = False  # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
@@ -467,4 +468,4 @@ if isMC:
 else:
    #Association with GenPart
    MC_Assoc = False
-
+   isEoverEtrue = False
