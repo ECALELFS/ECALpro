@@ -219,8 +219,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     isDebug_                           = iConfig.getUntrackedParameter<bool>("isDebug",false);
 
     // for MC-truth association
-    g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
-    g4_simVtx_Token_ = consumes<edm::SimVertexContainer>(edm::InputTag("g4SimHits"));
+    // g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
+    // g4_simVtx_Token_ = consumes<edm::SimVertexContainer>(edm::InputTag("g4SimHits"));
 
     if(useEE_EtSeed_) cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_Et_<<" (in Et) "<<endl;
     else              cout<<"SEEDS Used: EB "<<EB_Seed_E_<<" and EE "<<EE_Seed_E_<<" (in E) "<<endl;
@@ -491,9 +491,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     if (isMC_ and MC_Assoc_) {
       // since we have 20 gen pi0, use 21,-0.5,20.5 as range if counting integer number
       h_numberUnmergedGenPhotonPairs_EB = new TH1F("h_numberUnmergedGenPhotonPairs_EB",Form("fraction of gen photon pairs in EB with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),20,0,1.01);
-      h_numberMatchedGenPhotonPairs_EB = new TH1F("h_numberMatchedGenPhotonPairs_EB","fraction of gen photon pairs in EB succesfully matched to reco clusters",20,0,1.01);
+      h_numberMatchedGenPhotonPairs_EB = new TH1F("h_numberMatchedGenPhotonPairs_EB","fraction of gen photon pairs in EB matched to reco clusters",20,0,1.01);
       h_numberUnmergedGenPhotonPairs_EE = new TH1F("h_numberUnmergedGenPhotonPairs_EE",Form("fraction of gen photon pairs in EE with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),20,0,1.01);
-      h_numberMatchedGenPhotonPairs_EE = new TH1F("h_numberMatchedGenPhotonPairs_EE","fraction gen photon pairs in EEsuccesfully matched to reco clusters",20,0,1.01);
+      h_numberMatchedGenPhotonPairs_EE = new TH1F("h_numberMatchedGenPhotonPairs_EE","fraction of gen photon pairs in EE matched to reco clusters",20,0,1.01);
       h_numberUnmergedGenPhotonPairs = new TH1F("h_numberUnmergedGenPhotonPairs",Form("gen photon pairs with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),21,-0.5,20.5);
       h_numberMatchedGenPhotonPairs = new TH1F("h_numberMatchedGenPhotonPairs","gen photon pairs succesfully matched to reco clusters",21,-0.5,20.5);
     }
@@ -1612,25 +1612,28 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char *title, int size )
 {
   TH1F **h = new TH1F*[size];
-  char name_c[100];
-  char title_c[200];
-
+  // char name_c[100];
+  // char title_c[200];
+  std::string name_c = "";
+  std::string title_c = "";
   cout << "FillEpsilonPlot::initializeEpsilonHistograms::useMassInsteadOfEpsilon_ = " << useMassInsteadOfEpsilon_ << endl;
 
   for(int jR=0; jR<size; jR++)
   {
-    sprintf(name_c, "%s%d", name, jR);
-    sprintf(title_c, "%s%d", title, jR);
+    // sprintf(name_c, "%s%d", name, jR);
+    // sprintf(title_c, "%s%d", title, jR);
+    name_c = Form("%s%d", name, jR)
+    title_c = Form("%s%d", title, jR)
 
     if(useMassInsteadOfEpsilon_)
     {
-	h[jR] = new TH1F(name_c, title_c, 120, Are_pi0_? 0.:0.3, Are_pi0_? 0.5:0.8);
-	h[jR]->GetXaxis()->SetTitle("Mass(#gamma#gamma)");
+      h[jR] = new TH1F(name_c.c_str(), title_c.c_str(), 120, Are_pi0_? 0.:0.3, Are_pi0_? 0.5:0.8);
+      h[jR]->GetXaxis()->SetTitle("Mass(#gamma#gamma)");
     }
     else
     {
-	h[jR] = new TH1F(name_c, title_c, 120,-0.5,1);
-	h[jR]->GetXaxis()->SetTitle("Epsilon");
+      h[jR] = new TH1F(name_c.c_str(), title_c.c_str(), 120,-0.5,1);
+      h[jR]->GetXaxis()->SetTitle("Epsilon");
     }
   }
   return h;
