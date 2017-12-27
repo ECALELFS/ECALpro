@@ -53,7 +53,7 @@ MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 inputlist_n      = 'InputList/testMC.list' # 'InputList/purified_AlCaP0_2017_upTo21September2017.list' # 'InputList/test.list' #
-dirname          = 'testMC' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'testMC_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -85,9 +85,6 @@ L1TriggerInfo = False                            # If we want to Fill the L1 Tri
 # you can have it True even for calibration, but it is not needed and just slow things down reading bits for each event
 if MakeNtuple4optimization:
    L1TriggerInfo = True
-hltGtDigis = 'InputTag("simGtDigis")'               # Not used anymore in the Fill.cc -> To take the info to Fill the L1 Bit histo
-triggerTag = 'InputTag("TriggerResults")'           # To run the FillEB only if the HLTName for EB is present
-hltL1GtObjectMap = 'InputTag("hltL1GtObjectMap")'   # To fill the L1 Trigger fired
 L1Seed = ""                                         # You can ask that one Bit is FIRED: Ex: "L1_SingleJet16" or more complicated stuff "L1_SingleJet16 OR L1_SingleJet36" (to be implemented in FIllEpsilonPlots.cc
 
 # copy paste here the list of seeds from the stream. It is used only if you decide to store L1 info in the ntuples produced by FillEpsilonPlots.cc
@@ -414,19 +411,20 @@ linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='front
 ######################################################################
 
 isNot_2010         = 'True'                                    # Fit Parameter Range
-HLTResults         = 'True'                                    # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
+HLTResults         = 'True' if isMC==False else 'False'                                  # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
 json_file          = 'Cert_294927-302654_13TeV_PromptReco_Collisions17_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
-hltGtDigis         = "InputTag('simGtDigis')"        # Not used in the Fill.cc   
-triggerTag         = 'InputTag("TriggerResults")'    # Run Fill EB only if the HLTPaths for EB(ee) exist. In this sample also extist InputTag('simGtDigis','','HLT')
+#hltGtDigis         = 'InputTag("simGtDigis")'        # obsolete, not used in the Fill.cc   
+triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else 'InputTag("TriggerResults","","RECO")'   # Run Fill EB only if the HLTPaths for EB(ee) exist, in 93X MC we also have "TriggerResults","","HLT"
 hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
-useHLTFilter       = "True" if isMC==False else "False"                                  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
-correctHits        = 'False'
+L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
+useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
+correctHits        = 'False' # this seems to add obsolete code, keep False
 globaltag          = '92X_dataRun2_Prompt_v9' if isMC==False else '93X_mc2017_realistic_v3' #old is GR_P_V56
 globaltag_New      = True
-FROMDIGI           = True
+FROMDIGI           = True if isMC==False else False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
 MULTIFIT           = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)
 is50ns             = False      # If DigiCustomization and MULTIFIT is True
@@ -464,7 +462,7 @@ else:
          eeInputTag = 'InputTag("hltAlCaEtaEEUncalibrator","etaEcalRecHitsEE")'
 if isMC:
    MC_Assoc = True
-   MC_Assoc_DeltaR = '0.3'
+   MC_Assoc_DeltaR = '0.1'
    genPartInputTag = 'InputTag("genParticles","")'
 else:
    #Association with GenPart

@@ -153,10 +153,13 @@ for iter in range(nIterations):
             ntpfile = inputlist_v.pop(0)
             ntpfile = ntpfile.rstrip()
             if ntpfile != '':
+                prefixSourceFileToUse = ""
+                if prefixSourceFile not in ntpfile:
+                    prefixSourceFileToUse = prefixSourceFile
                 if(line != lastline):
-                    fill_cfg_f.write("        '" + prefixSourceFile + ntpfile + "',\n")
+                    fill_cfg_f.write("        '" + prefixSourceFileToUse + ntpfile + "',\n")
                 else:
-                    fill_cfg_f.write("        '" + prefixSourceFile + ntpfile + "'\n")
+                    fill_cfg_f.write("        '" + prefixSourceFileToUse + ntpfile + "'\n")
 
         # print the last part of the cfg file
         if( isCRAB ):

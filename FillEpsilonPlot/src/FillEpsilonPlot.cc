@@ -113,6 +113,8 @@ using std::max;
 #include "TLorentzVector.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
+#define DR_FOR_UNMERGED_GEN_PHOTONS 0.025 // if two gen photons are closer than this value, they will not be used for the gen-reco matching, because they are too close to be distinguished by the reco clustering algorithm (0.0175 in Dphi or Deta is ~1 ECAL cystal and the seeds must be farther than 1 crystal also on the diagonal)
+
 using namespace TMVA;
 using namespace edm;
 
@@ -135,7 +137,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
-    //ESRecHitCollectionToken_           = consumes<edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> >>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     HLTResultsNameEB_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEB","AlCa_EcalPi0EB");
     HLTResultsNameEE_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEE","AlCa_EcalPi0EE");
@@ -143,9 +144,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     RemoveDead_Map_                    = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
     L1_Bit_Sele_                       = iConfig.getUntrackedParameter<std::string>("L1_Bit_Sele","");
     L1TriggerInfo_                     = iConfig.getUntrackedParameter<bool>("L1TriggerInfo",false);
-    l1TriggerTag_                      = iConfig.getUntrackedParameter<edm::InputTag>("L1TriggerTag");
-    triggerResultsToken_               = consumes<edm::TriggerResults>(iConfig.getUntrackedParameter("triggerTag",edm::InputTag("TriggerResults")));
-    L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("hltGtStage2Digis",edm::InputTag("hltGtStage2Digis")));
+    triggerResultsToken_               = consumes<edm::TriggerResults>(iConfig.getUntrackedParameter("triggerTag",edm::InputTag("TriggerResults","","HLT")));
+    //L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("hltGtStage2Digis",edm::InputTag("hltGtStage2Digis"))); // for MC should use "gtStage2Digis",edm::InputTag("gtStage2Digis","","RECO")    
+    L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("L1GTobjmapTag",edm::InputTag("hltGtStage2Digis"))); 
     GenPartCollectionToken_            = consumes<GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles")));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
@@ -487,6 +488,16 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     //L1_nameAndNumb.clear();
     //for(unsigned int i=0; i<NL1SEED; i++) L1BitCollection_[i]=-1;
 
+    if (isMC_ and MC_Assoc_) {
+      // since we have 20 gen pi0, use 21,-0.5,20.5 as range if counting integer number
+      h_numberUnmergedGenPhotonPairs_EB = new TH1F("h_numberUnmergedGenPhotonPairs_EB",Form("fraction of gen photon pairs in EB with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),20,0,1.01);
+      h_numberMatchedGenPhotonPairs_EB = new TH1F("h_numberMatchedGenPhotonPairs_EB","fraction of gen photon pairs in EB succesfully matched to reco clusters",20,0,1.01);
+      h_numberUnmergedGenPhotonPairs_EE = new TH1F("h_numberUnmergedGenPhotonPairs_EE",Form("fraction of gen photon pairs in EE with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),20,0,1.01);
+      h_numberMatchedGenPhotonPairs_EE = new TH1F("h_numberMatchedGenPhotonPairs_EE","fraction gen photon pairs in EEsuccesfully matched to reco clusters",20,0,1.01);
+      h_numberUnmergedGenPhotonPairs = new TH1F("h_numberUnmergedGenPhotonPairs",Form("gen photon pairs with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),21,-0.5,20.5);
+      h_numberMatchedGenPhotonPairs = new TH1F("h_numberMatchedGenPhotonPairs","gen photon pairs succesfully matched to reco clusters",21,-0.5,20.5);
+    }
+
 #ifdef MVA_REGRESSIO
     EBweight_file_1 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_01_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta01_.c_str() ).fullPath().c_str() );
     EBweight_file_2 = TFile::Open( Are_pi0_? edm::FileInPath( MVAEBContainmentCorrections_02_.c_str() ).fullPath().c_str() : edm::FileInPath( MVAEBContainmentCorrections_eta02_.c_str() ).fullPath().c_str() );
@@ -542,9 +553,21 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete Occupancy_EB;
   delete pi0MassVsIetaEB;
   delete pi0MassVsETEB;
-  delete triggerComposition;
-  delete triggerComposition_EB;
-  delete triggerComposition_EE;
+  if (L1TriggerInfo_) {
+    delete triggerComposition;
+    delete triggerComposition_EB;
+    delete triggerComposition_EE;
+  }
+
+  if (isMC_ and MC_Assoc_) {
+    delete h_numberUnmergedGenPhotonPairs_EB;
+    delete h_numberMatchedGenPhotonPairs_EB;
+    delete h_numberUnmergedGenPhotonPairs_EE;
+    delete h_numberMatchedGenPhotonPairs_EE;
+    delete h_numberUnmergedGenPhotonPairs;
+    delete h_numberMatchedGenPhotonPairs;
+  }
+
 
 #ifdef SELECTION_TREE
   delete CutVariables_EB;
@@ -563,7 +586,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete EBPHI_ConCorr_m;
 #endif
   //JSON
-  delete myjson;
+  if(JSONfile_ != "") delete myjson;
   //#ifdef MVA_REGRESSIO
   //  // if the analyzer did not run it crash because you do not create it. Better never delete it
   //  if(!isMC_){
@@ -603,7 +626,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   EventFlow_EB->Fill(0.); EventFlow_EE->Fill(0.);
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
   EventFlow_EB->Fill(1.); EventFlow_EE->Fill(1.);
-  //Trigger Histo
 
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
@@ -611,20 +633,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myBunchCrossing = iEvent.bunchCrossing();
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
-    // edm::Handle< L1GlobalTriggerObjectMapRecord > gtReadoutRecord;
-    // iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
-    // const L1GlobalTriggerObjectMapRecord *l1trig = gtReadoutRecord.product();
-    // for( int i=0; i<NL1SEED; i++ ){
-    // 	const L1GlobalTriggerObjectMap* trg = l1trig->getObjectMap(i);
-    // 	if(trg){
-    // 	  L1_nameAndNumb[trg->algoName()] = trg->algoBitNumber();
-    // 	  triggerComposition->GetXaxis()->SetBinLabel(trg->algoBitNumber()+1,trg->algoName().c_str());
-    // 	}
-    //  if(!areLabelsSet_){
-    //    areLabelsSet_ = true;
-    // 	  cout << "setting labels of triggerComposition histogram" << endl;
-    //  }
-    // }
     
     edm::Handle< GlobalAlgBlkBxCollection > gtReadoutRecord;
     iEvent.getByToken( L1GTobjmapToken_, gtReadoutRecord);
@@ -711,125 +719,218 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // end of --> if (!areLabelsSet_ && L1TriggerInfo_)
 
   //MC Photons (they will be associated to the clusters later)
-  if( isMC_ && MC_Assoc_ ){
-    edm::Handle<std::vector<reco::GenParticle>> GenParProd;
-    iEvent.getByToken( GenPartCollectionToken_, GenParProd);//Fatal Root Error: @SUB=TBufferFile::CheckByteCount object of class edm::RefCore read too many bytes: 10 instead of 8
-    // const reco::GenParticleCollection *GenPars = 0;
-    // std::cout << "MC truth taken" << std::endl;
-    // //if ( ! GenParProd.isValid() )  edm::LogWarning("GenParSummary") << "GenPars not found";
-    // if ( ! GenParProd.isValid() )  std::cout << "GenPars not found" << std::endl;
-    // GenPars = GenParProd.product();
 
+  if( isMC_ && MC_Assoc_ ) {
 
-    // GUN sample made with PYTHIA6 doesn't decay the pi0, need to look at simtracks by GEANT
-    // get GEANT sim tracks and vertices (includes conversions)
-    Handle<SimTrackContainer> simTracks_h;
-    const SimTrackContainer* simTracks;
-    iEvent.getByToken(g4_simTk_Token_, simTracks_h);
-    simTracks = (simTracks_h.isValid()) ? simTracks_h.product() : 0;
+    // vecGamma1MC.clear();
+    // vecGamma2MC.clear();
 
-    Handle<SimVertexContainer> simVert_h;
-    const SimVertexContainer* simVertices;
-    iEvent.getByToken(g4_simVtx_Token_, simVert_h);
-    simVertices = (simVert_h.isValid()) ? simVert_h.product() : 0;
+    vecGamma1MC_EB.clear();
+    vecGamma2MC_EB.clear();
 
+    vecGamma1MC_EE.clear();
+    vecGamma2MC_EE.clear();
 
-    // Vertices only return trackID of their parent SimTrack
-    // Figure out the mapping from trackID to SimTrack
-    map<unsigned int, const SimTrack*> trackMap;
-    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim) {
-      if (!iSim->noVertex()) {
-        assert(trackMap.find(iSim->trackId())==trackMap.end());
-        trackMap[iSim->trackId()] = &(*iSim);
+    // from 2017 we have pi0 and photons in MC
+    iEvent.getByToken( GenPartCollectionToken_,genParticles);
+
+    // taken from Zhicai's private ntuplizer: https://github.com/RazorCMS/Pi0Tuplizer/blob/master/plugins/Pi0Tuplizer.cc#L1240-L1298
+    for (size_t iG = 0; iG < genParticles->size(); ++iG ) {
+
+      if((*genParticles)[iG].status()!=2) continue;
+
+      unsigned int ndau = (*genParticles)[iG].numberOfDaughters();
+      if( (*genParticles)[iG].pdgId() != (Are_pi0_ ? 111 : 221)  ) continue;
+
+      if((*genParticles)[iG].pdgId() == 111) {
+	// pi0
+	  // ptPi0_genall[N_Pi0_genall] = (*genParticles)[iG].pt(); 
+	  // etaPi0_genall[N_Pi0_genall] = (*genParticles)[iG].p4().Eta(); 
+	  // phiPi0_genall[N_Pi0_genall] = (*genParticles)[iG].p4().Phi(); 
+	  // N_Pi0_genall ++;
       }
-    }
-
-    // Find all SimTracks that come from decays before the ECAL
-    // and find their parent SimTracks
-    map<const SimTrack*, const SimTrack*> promptParent; // daughter->mother
-    map<const SimTrack*, set<const SimTrack*> > promptDecays; // m->ds
-    map<const SimTrack*, const SimVertex*> promptVertex; // daughter->vertex
-    map<const SimTrack*, const SimVertex*> promptALLVertex; // daughter->vertex in Any Occasion
-    map<const SimTrack*, const SimTrack*> promptALLParent; // daughter->mother in Any Occasion
-
-    int num=0;
-    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++) 
-      {
-        if (!iSim->noVertex()) 
-          {
-            // Find the parent vertex and see if it classifies as an early decay
-            // Exclude the primary vertex (noParent)
-            SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
-            if (!vtx.noParent() && vtx.position().Rho() < 129 && fabs(vtx.position().z()) < 304) 
-              {
-                // Find parent SimParticle that produced this vertex
-                // vtx->parentIndex is NOT a vector index :( so use trackMap
-                assert(trackMap.find(vtx.parentIndex())!=trackMap.end());
-                const SimTrack* p = trackMap[vtx.parentIndex()];
-                promptParent[&(*iSim)] = p; // nel Pi0Gun: ->genpartIndex() e' -1
-                promptDecays[p].insert(&(*iSim));
-                promptVertex[&(*iSim)] = &vtx;
-              } // early decay
-            if (!vtx.noParent() ){
-              promptALLVertex[&(*iSim)] = &vtx;
-              const SimTrack* p = trackMap[vtx.parentIndex()];
-              promptALLParent[&(*iSim)] = p; 
-              // cout<<num<<" PDG: "<<iSim->type()<<" id: "<<iSim->trackId()<<" Son of: "<<p->type()<<" id: "<<p->trackId()
-              // <<" x vtx:" <<vtx.position().x()<<" Z Vtx: "<<vtx.position().z()<<"Px "<<iSim->momentum().x()<<" py "<<iSim->momentum().y()<<" pz "<<iSim->momentum().z()<<
-              // "pt "<<sqrt(pow(iSim->momentum().x(),2)+pow(iSim->momentum().y(),2)+pow(iSim->momentum().z(),2))<<endl;
-            }
-          } // has vertex
-      } // for simTracks
-
-    //cout<<"Event:"<<endl;
-    //Store Pi0 & gamma
-    //    unsigned int IdGamma1=0, IdGamma2=0;
-    TVector3 pi0_pos, ga1, ga2;
-    num=0;
-    for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++){
-      if (!iSim->noVertex() ){
-        SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
-        if( !vtx.noParent() ) {
-          
-          if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==(Are_pi0_ ? 111:221) && num==1){
-            pi0_pos.SetXYZ(promptALLVertex[&(*iSim)]->position().x(),promptALLVertex[&(*iSim)]->position().y(),promptALLVertex[&(*iSim)]->position().z());
-            Gamma1MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
-            //            IdGamma1 = iSim->trackId();
-            //            std::cout << "Photon1 eta,phi = " << Gamma1MC.eta() << "  " << Gamma1MC.phi() << std::endl;
-	  }
-          if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==(Are_pi0_ ? 111:221) && num==2){
-            Gamma2MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
-            //            IdGamma2 = iSim->trackId();
-            //            std::cout << "Photon2 eta,phi = " << Gamma2MC.eta() << "  " << Gamma2MC.phi() << std::endl;
-          }
-        }
-      }
-    }
-
-    //Find MC photons
-    /*
-    std::cout << "coll size = " << GenPars->size() << std::endl;
-    bool firstnotfound = true;
-    //    for (auto& GenPar : *GenPars){
-    for (reco::GenParticleCollection::const_iterator GenPar = GenPars->begin(); GenPar != GenPars->end(); ++GenPar) {
-      std::cout << "id = " << GenPar->pdgId() << std::endl;
-      if(GenPar->mother()!=0) std::cout << " mothId = " << GenPar->mother()->pdgId() << std::endl;
       
-      int motherID = Are_pi0_ ? 111:221;
-      if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && firstnotfound ){
-        std::cout << "Found 1st photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
-        std::cout << "dentro id = " << GenPar->pdgId() << std::endl;
-        Gamma1MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
-        firstnotfound = false;
+      // if((*genParticles)[iG].pdgId() == 221) {
+      // 	//eta
+      // 	  // ptEta_genall[N_Eta_genall] = (*genParticles)[iG].pt(); 
+      // 	  // etaEta_genall[N_Eta_genall] = (*genParticles)[iG].p4().Eta(); 
+      // 	  // phiEta_genall[N_Eta_genall] = (*genParticles)[iG].p4().Phi(); 
+      // 	  // N_Eta_genall ++;
+      // }
+
+	
+      if(ndau != 2 ) continue;
+      bool isDiphoton = true;
+
+      for (unsigned int jD=0; jD < ndau; ++jD) {
+	const reco::Candidate *dau = (*genParticles)[iG].daughter(jD);
+	if(dau->pdgId() != 22) isDiphoton=false;
       }
-      if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && GenPar->p4().Eta() != Gamma1MC.Eta() ){
-        std::cout << "Found 2nd photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
-        Gamma2MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
+
+      if(!isDiphoton) continue;
+
+      //fill GEN pi0
+      if ((*genParticles)[iG].pdgId() == 111) {
+
+	TLorentzVector gamma1_temp, gamma2_temp;
+	//  g1_tmp.SetXYZ(*genParticles)[iG].daughter(0)->momentum().x(),(*genParticles)[iG].daughter(0)->momentum().y(),(*genParticles)[iG].daughter(0)->momentum().z());
+	//  g2_tmp.SetXYZ(*genParticles)[iG].daughter(1)->momentum().x(),(*genParticles)[iG].daughter(1)->momentum().y(),(*genParticles)[iG].daughter(1)->momentum().z());
+
+	const reco::Candidate *dau1 = (*genParticles)[iG].daughter(0);
+	const reco::Candidate *dau2 = (*genParticles)[iG].daughter(1);
+
+	if(dau1->pt() > dau2->pt()) 
+	  {
+	    gamma1_temp.SetPtEtaPhiE(dau1->pt(), dau1->p4().Eta(), dau1->p4().Phi(), dau1->p4().E());
+	    gamma2_temp.SetPtEtaPhiE(dau2->pt(), dau2->p4().Eta(), dau2->p4().Phi(), dau2->p4().E());
+	  }
+	else
+	  {
+	    gamma2_temp.SetPtEtaPhiE(dau1->pt(), dau1->p4().Eta(), dau1->p4().Phi(), dau1->p4().E());
+	    gamma1_temp.SetPtEtaPhiE(dau2->pt(), dau2->p4().Eta(), dau2->p4().Phi(), dau2->p4().E());
+	  }
+	
+	// keep only gen photons that do not merge too much. Threshold is chosen in order to have the seed crystals not in the other photon's 3x3 matrix
+	// if commented, keep them until the gen-reco matching to count how many are merged
+	//if (gamma1_temp.DeltaR(gamma2_temp) > DR_FOR_UNMERGED_GEN_PHOTONS) {
+	if (fabs( (*genParticles)[iG].p4().Eta()) <= 1.479 ) {
+	  vecGamma1MC_EB.push_back(gamma1_temp);
+	  vecGamma2MC_EB.push_back(gamma2_temp);
+	} else {
+	  vecGamma1MC_EE.push_back(gamma1_temp);
+	  vecGamma2MC_EE.push_back(gamma2_temp);
+	}
+	// vecGamma1MC.push_back(gamma1_temp);
+	// vecGamma2MC.push_back(gamma2_temp);
+	//}
+
       }
-      std::cout << "running PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
-    }
-    std::cout << "==> final PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
-    */
+      
+    }  // end of loop on genParticles
+
+    //std::cout << "There are " << vecGamma1MC.size() << " diphoton pairs" << std::endl;
+
+    // OLD PART FOR GEN LEVEL, WILL BE REMOVED AT SOME POINT
+
+    // // const reco::GenParticleCollection *GenPars = 0;
+    // // std::cout << "MC truth taken" << std::endl;
+    // // //if ( ! GenParProd.isValid() )  edm::LogWarning("GenParSummary") << "GenPars not found";
+    // // if ( ! GenParProd.isValid() )  std::cout << "GenPars not found" << std::endl;
+    // // GenPars = GenParProd.product();
+
+
+    // // GUN sample made with PYTHIA6 doesn't decay the pi0, need to look at simtracks by GEANT
+    // // get GEANT sim tracks and vertices (includes conversions)
+    // Handle<SimTrackContainer> simTracks_h;
+    // const SimTrackContainer* simTracks;
+    // iEvent.getByToken(g4_simTk_Token_, simTracks_h);
+    // simTracks = (simTracks_h.isValid()) ? simTracks_h.product() : 0;
+
+    // Handle<SimVertexContainer> simVert_h;
+    // const SimVertexContainer* simVertices;
+    // iEvent.getByToken(g4_simVtx_Token_, simVert_h);
+    // simVertices = (simVert_h.isValid()) ? simVert_h.product() : 0;
+
+
+    // // Vertices only return trackID of their parent SimTrack
+    // // Figure out the mapping from trackID to SimTrack
+    // map<unsigned int, const SimTrack*> trackMap;
+    // for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim) {
+    //   if (!iSim->noVertex()) {
+    //     assert(trackMap.find(iSim->trackId())==trackMap.end());
+    //     trackMap[iSim->trackId()] = &(*iSim);
+    //   }
+    // }
+
+    // // Find all SimTracks that come from decays before the ECAL
+    // // and find their parent SimTracks
+    // map<const SimTrack*, const SimTrack*> promptParent; // daughter->mother
+    // map<const SimTrack*, set<const SimTrack*> > promptDecays; // m->ds
+    // map<const SimTrack*, const SimVertex*> promptVertex; // daughter->vertex
+    // map<const SimTrack*, const SimVertex*> promptALLVertex; // daughter->vertex in Any Occasion
+    // map<const SimTrack*, const SimTrack*> promptALLParent; // daughter->mother in Any Occasion
+
+    // int num=0;
+    // for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++) {
+    //   if (!iSim->noVertex()) {
+
+    // 	// Find the parent vertex and see if it classifies as an early decay
+    // 	// Exclude the primary vertex (noParent)
+    // 	SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
+    // 	if ( !vtx.noParent() ) {
+	  
+    // 	  assert(trackMap.find(vtx.parentIndex())!=trackMap.end());
+    // 	  const SimTrack* p = trackMap[vtx.parentIndex()];
+	  
+    // 	  if ( vtx.position().Rho() < 129 && fabs(vtx.position().z()) < 304) {
+    // 	    // Find parent SimParticle that produced this vertex
+    // 	    // vtx->parentIndex is NOT a vector index :( so use trackMap
+    // 	    promptParent[&(*iSim)] = p; // nel Pi0Gun: ->genpartIndex() e' -1
+    // 	    promptDecays[p].insert(&(*iSim));
+    // 	    promptVertex[&(*iSim)] = &vtx;
+    // 	  } // early decay
+	  
+    // 	  promptALLVertex[&(*iSim)] = &vtx;
+    // 	  promptALLParent[&(*iSim)] = p; 
+    // 	  // cout<<num<<" PDG: "<<iSim->type()<<" id: "<<iSim->trackId()<<" Son of: "<<p->type()<<" id: "<<p->trackId()
+    // 	  // <<" x vtx:" <<vtx.position().x()<<" Z Vtx: "<<vtx.position().z()<<"Px "<<iSim->momentum().x()<<" py "<<iSim->momentum().y()<<" pz "<<iSim->momentum().z()<<
+    // 	  // "pt "<<sqrt(pow(iSim->momentum().x(),2)+pow(iSim->momentum().y(),2)+pow(iSim->momentum().z(),2))<<endl;
+    // 	}
+	
+    //   } // has vertex
+      
+    // } // for simTracks
+    
+    // //cout<<"Event:"<<endl;
+    // //Store Pi0 & gamma
+    // //    unsigned int IdGamma1=0, IdGamma2=0;
+    // TVector3 pi0_pos, ga1, ga2;
+    // num=0;
+    // for (SimTrackContainer::const_iterator iSim = simTracks->begin(); iSim != simTracks->end(); ++iSim, num++) {
+    //   if (!iSim->noVertex() ){
+    //     SimVertex const& vtx = (*simVertices)[iSim->vertIndex()];
+    //     if( !vtx.noParent() ) {
+          
+    //       if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==(Are_pi0_ ? 111:221) && num==1){
+    //         pi0_pos.SetXYZ(promptALLVertex[&(*iSim)]->position().x(),promptALLVertex[&(*iSim)]->position().y(),promptALLVertex[&(*iSim)]->position().z());
+    //         Gamma1MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
+    //         //            IdGamma1 = iSim->trackId();
+    //         //            std::cout << "Photon1 eta,phi = " << Gamma1MC.eta() << "  " << Gamma1MC.phi() << std::endl;
+    // 	  }
+    //       if( iSim->type()==22 && promptALLParent[&(*iSim)]->type()==(Are_pi0_ ? 111:221) && num==2){
+    //         Gamma2MC.SetXYZ(iSim->momentum().x(),iSim->momentum().y(),iSim->momentum().z());
+    //         //            IdGamma2 = iSim->trackId();
+    //         //            std::cout << "Photon2 eta,phi = " << Gamma2MC.eta() << "  " << Gamma2MC.phi() << std::endl;
+    //       }
+    //     }
+    //   }
+    // }
+
+    // //Find MC photons
+    // /*
+    // std::cout << "coll size = " << GenPars->size() << std::endl;
+    // bool firstnotfound = true;
+    // //    for (auto& GenPar : *GenPars){
+    // for (reco::GenParticleCollection::const_iterator GenPar = GenPars->begin(); GenPar != GenPars->end(); ++GenPar) {
+    //   std::cout << "id = " << GenPar->pdgId() << std::endl;
+    //   if(GenPar->mother()!=0) std::cout << " mothId = " << GenPar->mother()->pdgId() << std::endl;
+      
+    //   int motherID = Are_pi0_ ? 111:221;
+    //   if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && firstnotfound ){
+    //     std::cout << "Found 1st photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
+    //     std::cout << "dentro id = " << GenPar->pdgId() << std::endl;
+    //     Gamma1MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
+    //     firstnotfound = false;
+    //   }
+    //   if( GenPar->pdgId()==22 && GenPar->mother()->pdgId()==motherID && GenPar->p4().Eta() != Gamma1MC.Eta() ){
+    //     std::cout << "Found 2nd photon, pt = " << GenPar->pt() << "  " << GenPar->p4().Eta() << "  " << GenPar->p4().Phi() << std::endl;
+    //     Gamma2MC.SetPtEtaPhiE( GenPar->pt(), GenPar->p4().Eta(), GenPar->p4().Phi(), GenPar->p4().E() );
+    //   }
+    //   std::cout << "running PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
+    // }
+    // std::cout << "==> final PT1,PT2 = " << Gamma1MC.Pt() << " , " << Gamma2MC.Pt() << std::endl;
+    // */
+
   }
 
 
@@ -844,6 +945,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken ( EBRecHitCollectionToken_, ebHandle);
   iEvent.getByToken ( EERecHitCollectionToken_, eeHandle);
   iEvent.getByToken ( ESRecHitCollectionToken_, esHandle);
+
 
   //Internal Geometry
   edm::ESHandle<CaloGeometry> geoHandle;
@@ -875,12 +977,12 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //    Looking for productInstanceName: pi0EcalRecHitsES
 
   // For MC this is not necessary probably (I didn't check)
-  //if( HLTResults_ && (!MakeNtuple4optimization_) ){
-  if( HLTResults_ ){
+  // if( HLTResults_ && (!MakeNtuple4optimization_) ){
+  if( HLTResults_){
     EB_HLT = GetHLTResults(iEvent, HLTResultsNameEB_); //Adding * at the end of the sentence make always true the "->Contains" method. So do not use it.
     EE_HLT = GetHLTResults(iEvent, HLTResultsNameEE_);
   }
-
+  //std::cout << "EB_HLT,EE_HLT = " << EB_HLT << "," << EE_HLT << endl;
 
   //L1 Trigget bit list (and cut if L1_Bit_Sele_ is not empty)
   // this function is not meant to apply the global L1 seed expression to accept or not the event
@@ -907,18 +1009,38 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
 
   EventFlow_EB->Fill(2.); EventFlow_EE->Fill(2.);
-  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ){ EventFlow_EB->Fill(3.); fillEBClusters(ebclusters, iEvent, channelStatus);}
+  if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
+    EventFlow_EB->Fill(3.); 
+    fillEBClusters(ebclusters, iEvent, channelStatus);
+  }
   ////cout << "I'm after fillEBClusters(ebclusters, iEvent, channelStatus) " << endl;
-  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ){ EventFlow_EE->Fill(3.); fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);}
+  if ( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) { 
+    EventFlow_EE->Fill(3.); 
+    fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);
+  }
+  // std::cout << "ebclusters.size() = " << ebclusters.size() << std::endl;
+  // std::cout << "eseeclusters.size() = " << eseeclusters.size() << std::endl;
   ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
   if(isMC_ && MC_Assoc_) {
-    ebclusters_used = MCTruthAssociate(ebclusters,MC_Assoc_DeltaR,true);
-    eeclusters_used = MCTruthAssociate(eseeclusters_tot,MC_Assoc_DeltaR,false);
+
+    // ebclusters_used = MCTruthAssociate(ebclusters,MC_Assoc_DeltaR,true);
+    // eeclusters_used = MCTruthAssociate(eseeclusters_tot,MC_Assoc_DeltaR,false);
+    int unmergedGenPairs_EB = 0;
+    int unmergedGenPairs_EE = 0;
+    int matchedGenPairs_EB = 0;
+    int matchedGenPairs_EE = 0;
+    ebclusters_used = MCTruthAssociateMultiPi0(ebclusters,unmergedGenPairs_EB,matchedGenPairs_EB,MC_Assoc_DeltaR,true);
+    eeclusters_used = MCTruthAssociateMultiPi0(eseeclusters_tot,unmergedGenPairs_EE,matchedGenPairs_EE,MC_Assoc_DeltaR,false);
+    h_numberUnmergedGenPhotonPairs->Fill(unmergedGenPairs_EB+unmergedGenPairs_EE);
+    h_numberMatchedGenPhotonPairs->Fill(matchedGenPairs_EB+matchedGenPairs_EE);
+
   } else {
+
     ebclusters_used = ebclusters;
     eeclusters_used = eseeclusters_tot;
+
   }
 
   if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, EcalBarrel);
@@ -1156,6 +1278,9 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     ebclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL), enFracs, CaloCluster::undefined, seed_id ) );
     vSeedTime.push_back( SeedTime ); 
   } //loop over seeds to make EB clusters
+
+  //std::cout << "### FillEpsilonPlot::fillEBClusters():   dc = " << dc << std::endl;
+
 
 }
 
@@ -1571,46 +1696,164 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociate(std::vector< CaloCl
   return ret;
 }
 
-std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, double deltaR, bool isEB) {
+std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, 
+								     int& retNumberUnmergedGen,
+								     int& retNumberMatchedGen,
+								     const double deltaR = 0.1, 
+								     const bool isEB = true
+								 ) 
+{
 
+  // std::cout << "### Entering FillEpsilonPlot::MCTruthAssociateMultiPi0" << std::endl;
+
+  vector<TLorentzVector>* vecGamma1MC_ptr = (isEB ? &vecGamma1MC_EB : &vecGamma1MC_EE);
+  vector<TLorentzVector>* vecGamma2MC_ptr = (isEB ? &vecGamma2MC_EB : &vecGamma2MC_EE);
+
+  int numberUnmatchedGenPhotonPairs = 0;
+  int numberGenPhotonsNotMerged = 0;
+
+  // current strategy:
+  // 1) loop on gen photons
+  // 2) for each, find the closest reco CaloCluster in DR
+  // 3) the 2 clusters found in this way will be associated to the gen photons when we have to compute E/Etrue
+
+  // for the moment, if we find the same reco cluster to be closer to both gen photons wrt other clusters, we just skip this event
+
+  std::set<unsigned int> clusterIndexAlreadyUsed;
   std::vector< CaloCluster > ret;
   ret.clear();
-  int n_tmp1 = -1;    int n_tmp2 = -1;
-  double deltaR1_tmp = 999;    double deltaR2_tmp = 999;
-  if(isMC_ && MC_Assoc_) {
-    //    std::cout << "Association with MC: initial collection size = " << clusters.size() << std::endl;
-    for(unsigned int i=0; i<clusters.size(); i++){
-      const CaloCluster g = clusters[i];
-      double deltaR1 = reco::deltaR(g.eta(),g.phi(), Gamma1MC.Eta(),Gamma1MC.Phi());
-      double deltaR2 = reco::deltaR(g.eta(),g.phi(), Gamma2MC.Eta(),Gamma2MC.Phi());
-      //      std::cout << "DR1,2 = " << deltaR1 << "  " << deltaR2 << std::endl;
-      if(deltaR1<deltaR1_tmp) {
-        deltaR1_tmp = deltaR1; n_tmp1 = i;
-      }
-      if(deltaR2<deltaR2_tmp) {
-        deltaR2_tmp = deltaR2; n_tmp2 = i;
-      }
-    }
-  } else return ret;
 
-  // std::cout << "deltaR1,2_tmp = " << deltaR1_tmp << "  " << deltaR2_tmp << std::endl;
-  // std::cout << "ntmp = " << n_tmp1 << "  " << n_tmp2 << std::endl;
+  //    std::cout << "Association with MC: initial collection size = " << clusters.size() << std::endl;
 
-  // one could look to another close cluster, but if the two MC photons are closer than 0.05 to the same cluster, 
-  // that is merged in one cluster most probably, so another one would be fake
-  if(n_tmp1==n_tmp2) return ret;
+  // gen quantities for DR computation: avoid recomputing them for each reco cluster
+  double etaGen1 = 999;
+  double etaGen2 = 999;
+  double phiGen1 = 999;
+  double phiGen2 = 999;
+  double deltaR_gen = 999;
+
+  //std::cout << "clusters.size() = " << clusters.size() << endl;
+
+  // we loop on first gen photon because the index on the vector is the same for both photons from the same pi0
+  // therefore, no need to loop on both gen photons
+  //std::cout << "vecGamma1MC_ptr->size() = " << vecGamma1MC_ptr->size() << std::endl;
+  for (unsigned int ig = 0; ig < vecGamma1MC_ptr->size(); ++ig) {
+
+    unsigned int n_tmp1 = -1;    unsigned int n_tmp2 = -1;
+    double deltaR1_tmp = 999;    double deltaR2_tmp = 999;
+
+    // avoid recomputing them for each reco cluster
+    etaGen1 = vecGamma1MC_ptr->at(ig).Eta();
+    etaGen2 = vecGamma2MC_ptr->at(ig).Eta();
+    phiGen1 = vecGamma1MC_ptr->at(ig).Phi();
+    phiGen2 = vecGamma2MC_ptr->at(ig).Phi();
+    deltaR_gen = GetDeltaR(etaGen1,etaGen2,phiGen1,phiGen2);
+    if (deltaR_gen < DR_FOR_UNMERGED_GEN_PHOTONS) continue;
+    else numberGenPhotonsNotMerged++;
+
+    // std::cout << std::endl;
+    // std::cout << "ig = " << ig << "   gen eta1,2,phi1,2 " << etaGen1 << "," << etaGen2 << "," << phiGen1 << "," << phiGen2;
+    // std::cout << "    DR = " << deltaR_gen << std::endl;
+
+    // loop on reco cluster the first time to match the first gen photon
+    for (unsigned int iclus = 0; iclus < clusters.size(); ++iclus) {
+
+      if (clusterIndexAlreadyUsed.count(iclus) != 0 ) continue;
+      const CaloCluster g = clusters[iclus];
+      double deltaR1 = GetDeltaR(g.eta(), etaGen1, g.phi(), phiGen1);
+      // std::cout << "iclus1 = " << iclus << "     deltaR1 = " << deltaR1 << std::endl;
+      if (deltaR1 < deltaR1_tmp ) {
+	deltaR1_tmp = deltaR1; 
+	n_tmp1 = iclus;
+      }
   
-  if(deltaR1_tmp < deltaR) {
-    if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
-    else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
-    ret.push_back(clusters[n_tmp1]);
-  }
-  if(deltaR2_tmp < deltaR) {
-    if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
-    else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
-    ret.push_back(clusters[n_tmp2]);
+    } // loop on reco cluster the first time
+
+    // now, if we found a reco cluster with DR lower than the chosen threshold, we remove the cluster index from the list of available cluster and
+    // go on to match the second one
+    // then, if the second gen photon cannot be matched to any reco photon, we will add the cluster index back in the list and remove the cluster from ret
+    // in this way we will build only the list of cluster matched unambiguously to the gen level photon 
+
+    if(deltaR1_tmp < deltaR) {
+      clusterIndexAlreadyUsed.insert(n_tmp1);
+      if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
+      else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
+      ret.push_back(clusters[n_tmp1]);
+    } else {
+      numberUnmatchedGenPhotonPairs++;
+      continue;
+    }
+
+    // loop again on reco clusters to match the second gen photon
+    for (unsigned int iclus = 0; iclus < clusters.size(); ++iclus) {
+
+      if (clusterIndexAlreadyUsed.count(iclus) != 0 ) continue;
+      const CaloCluster g = clusters[iclus];
+      double deltaR2 = GetDeltaR(g.eta(), etaGen2, g.phi(), phiGen2);
+      // std::cout << "iclus2 = " << iclus << "     deltaR2 = " << deltaR2 << std::endl;
+      if( deltaR2 < deltaR2_tmp) {
+	deltaR2_tmp = deltaR2; 
+	n_tmp2 = iclus;
+      }
+
+    } // loop on reco cluster the second time 
+
+    // if we arrived here, it means the first gen photon was matched to a reco cluster within a given DR
+    // now, if we cannot matched the second photon, we consider the photon pair to be unmatched, and before continuing the loop we have to 
+    // add back the previous reco cluster among the list of available ones
+
+    if(deltaR2_tmp < deltaR) {
+      clusterIndexAlreadyUsed.insert(n_tmp2);
+      if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
+      else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
+      ret.push_back(clusters[n_tmp2]);
+    } else {
+      clusterIndexAlreadyUsed.erase(n_tmp1); 
+      if(isEB) Ncristal_EB_used.pop_back();
+      else Ncristal_EE_used.pop_back();
+      ret.pop_back();
+      numberUnmatchedGenPhotonPairs++;
+      continue;
+    }
+
+    // now, if we arrived here it means we matched both photons, and according to out algorithm the two cluster indices should be different
+    // anyway, we do the check and skip the gen pair if the same reco cluster is matched to both gen photons (it can happen if the two are really close to each other)
+    // we must also remove the last two elements from the vectors and add the indices back to the set
+    if(n_tmp1 == n_tmp2) {
+      clusterIndexAlreadyUsed.erase(n_tmp1); // can erase the element just once because it was the same and a std::set only stores one element with the same value 
+      if(isEB) {
+	Ncristal_EB_used.pop_back();
+	Ncristal_EB_used.pop_back();
+      } else {
+	Ncristal_EE_used.pop_back();
+	Ncristal_EE_used.pop_back();
+      }
+      ret.pop_back();
+      ret.pop_back();
+      numberUnmatchedGenPhotonPairs++;
+      continue;
+    }
+
+    // std::cout << "deltaR1,2_tmp = " << deltaR1_tmp << "  " << deltaR2_tmp << std::endl;
+    // std::cout << "ntmp = " << n_tmp1 << "  " << n_tmp2 << std::endl;
+
+    //cout << "Warning in FillEpsilonPlot::MCTruthAssociateMultiPi0: found the same CaloCluster closer to both gen photons. Will skip this gen photon pair." << endl;
+
+  } // loop on gen photons
+
+  // std::cout << "### Exiting FillEpsilonPlot::MCTruthAssociateMultiPi0: number of unmatched gen photon pairs is " << numberUnmatchedGenPhotonPairs << std::endl;
+  // std::cout << "### Exiting FillEpsilonPlot::MCTruthAssociateMultiPi0: number of unmerged  gen photon pairs is " << numberGenPhotonsNotMerged << std::endl;
+  retNumberUnmergedGen = numberGenPhotonsNotMerged;
+  retNumberMatchedGen = numberGenPhotonsNotMerged-numberUnmatchedGenPhotonPairs;
+  if (isEB) {
+    h_numberUnmergedGenPhotonPairs_EB->Fill(((double)retNumberUnmergedGen)/vecGamma1MC_ptr->size());
+    h_numberMatchedGenPhotonPairs_EB->Fill(((double)retNumberMatchedGen)/vecGamma1MC_ptr->size());
+  } else {
+    h_numberUnmergedGenPhotonPairs_EE->Fill(((double)retNumberUnmergedGen)/vecGamma1MC_ptr->size());
+    h_numberMatchedGenPhotonPairs_EE->Fill(((double)retNumberMatchedGen)/vecGamma1MC_ptr->size());
   }
   return ret;
+
 }
 
 
@@ -2627,27 +2870,28 @@ bool FillEpsilonPlot::GetHLTResults(const edm::Event& iEvent, std::string s){
   std::string tempnames;
   int hltCount = hltTriggerResultHandle->size();
   TRegexp reg(TString( s.c_str()) );
+  //std::cout << "hlCount = " << hltCount << std::endl;
   for (int i = 0 ; i != hltCount; ++i) {
     TString hltName_tstr(HLTNames.triggerName(i));
-    //std::string hltName_str(HLTNames.triggerName(i));
-    //cout<<"hltName_tstr is: "<<hltName_tstr<<" and reg is: "<<s<<endl;
+    //std::cout << "hltName_tstr is: " << hltName_tstr << " and reg is: " << s << std::endl;
     if ( hltName_tstr.Contains(reg) ){          // If reg contains * ir will say always True. So you ask for ->accept(i) to the first HLTName always.
-	//cout<<"hltName_tstr.Contains(reg) give: "<<hltTriggerResultHandle->accept(i)<<endl;
-	return hltTriggerResultHandle->accept(i); // False or True depending if it fired.
+      //std::cout << "hltName_tstr.Contains(reg) give: " << hltName_tstr << " --> " << hltTriggerResultHandle->accept(i) << std::endl;
+      return hltTriggerResultHandle->accept(i); // False or True depending if it fired.
     }
   }
   return false;
 } // HLT isValid
 
-bool FillEpsilonPlot::getTriggerByName( std::string s ) {
-  std::map< std::string, int >::iterator currentTrigger;
-  currentTrigger = l1TrigNames_.find(s);
-  if(currentTrigger != l1TrigNames_.end())
-    return l1TrigBit_[currentTrigger->second];
-  else 
-    std::cout << "Trigger Name not found" << std::endl;
-  return false;
-}
+// not used anymore
+// bool FillEpsilonPlot::getTriggerByName( std::string s ) {
+//   std::map< std::string, int >::iterator currentTrigger;
+//   currentTrigger = l1TrigNames_.find(s);
+//   if(currentTrigger != l1TrigNames_.end())
+//     return l1TrigBit_[currentTrigger->second];
+//   else 
+//     std::cout << "Trigger Name not found" << std::endl;
+//   return false;
+// }
 
 bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
@@ -2782,6 +3026,15 @@ void FillEpsilonPlot::endJob(){
     triggerComposition_EB->Write();
     triggerComposition_EE->Write();
   }
+  if (isMC_ and MC_Assoc_) {
+    h_numberUnmergedGenPhotonPairs_EB->Write();
+    h_numberMatchedGenPhotonPairs_EB->Write();
+    h_numberUnmergedGenPhotonPairs_EE->Write();
+    h_numberMatchedGenPhotonPairs_EE->Write();
+    h_numberUnmergedGenPhotonPairs->Write();
+    h_numberMatchedGenPhotonPairs->Write();
+  }
+
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
@@ -2790,6 +3043,9 @@ void FillEpsilonPlot::endJob(){
 #ifdef MVA_REGRESSIO_EE
   delete TTree_JoshMva_EE;
 #endif
+
+  std::cout << "### FillEpsilonPlot::endJob()" << std::endl;
+
 }
 
 // ------------ EBPHI LOAD Containment correction  ------------
@@ -2836,6 +3092,7 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
 
 // ------------ method called when starting to processes a run  ------------
 void FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
+
   //    edm::ESHandle<L1GtTriggerMenu> menuRcd;
   //    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
   //    const L1GtTriggerMenu* menu = menuRcd.product();

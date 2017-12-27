@@ -104,7 +104,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
-      std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
+      std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, const double deltaR, const bool isEB);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
@@ -116,7 +116,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void deleteEpsilonPlot(TH1F **h, int size);
       void writeEpsilonPlot(TH1F **h, const char *folder, int size);
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
-      bool getTriggerByName( std::string s );
+      //bool getTriggerByName( std::string s ); not used anymore
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
 
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
@@ -185,6 +185,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::InputTag l1InputTag_;
       //std::map<string,int> L1_nameAndNumb;
       edm::EDGetTokenT<GenParticleCollection> GenPartCollectionToken_;
+      edm::Handle<reco::GenParticleCollection> genParticles;
 
       edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
       edm::EDGetTokenT<edm::SimVertexContainer> g4_simVtx_Token_;      
@@ -229,6 +230,23 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double MC_Assoc_DeltaR;
       math::XYZPoint Gamma1MC;
       math::XYZPoint Gamma2MC;
+      // for MC truth with more pi0
+      // start with TLorentzVector, then I will optimize
+      /* vector<math::XYZPoint> vecGamma1MC; */
+      /* vector<math::XYZPoint> vecGamma2MC; */
+      /* vector<TLorentzVector> vecGamma1MC; */
+      /* vector<TLorentzVector> vecGamma2MC; */
+      vector<TLorentzVector> vecGamma1MC_EB;
+      vector<TLorentzVector> vecGamma2MC_EB;
+      vector<TLorentzVector> vecGamma1MC_EE;
+      vector<TLorentzVector> vecGamma2MC_EE;
+      TH1F* h_numberUnmergedGenPhotonPairs_EB; // fraction of gen photon pairs that are not merged (i.e. the photons are separated by a DR defined in .cc)
+      TH1F* h_numberMatchedGenPhotonPairs_EB;  // fraction of gen photon pairs that are succesfully matched to reco clusters
+      TH1F* h_numberUnmergedGenPhotonPairs_EE; 
+      TH1F* h_numberMatchedGenPhotonPairs_EE;  
+      TH1F* h_numberUnmergedGenPhotonPairs; // absolute number without separating EB and EE 
+      TH1F* h_numberMatchedGenPhotonPairs;  
+      /////////
       bool isCRAB_;
       bool MakeNtuple4optimization_;
       bool isDebug_; 
@@ -384,8 +402,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F *triggerComposition_EE; // require that HLT in EE fired
       bool areLabelsSet_;
 
-      std::map< std::string, int > l1TrigNames_;
-      bool l1TrigBit_[128];
+      /* std::map< std::string, int > l1TrigNames_; */
+      /* bool l1TrigBit_[128]; */
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
