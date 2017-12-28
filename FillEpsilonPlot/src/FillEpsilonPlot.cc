@@ -305,11 +305,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     if (currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
     else if (currentIteration_ > 0 || (currentIteration_ == 0 && calibMapPath_.find(stringToMatch)==std::string::npos))
     {
-      std::string fileName = "";
       cout << "FillEpsilonPlot:: loading calibration map at " << calibMapPath_ << endl;
-      if( isCRAB_ ) fileName = edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str();
-      else          fileName = calibMapPath_;
-      regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName.c_str());
+      regionalCalibration_->getCalibMap()->loadCalibMapFromFile(calibMapPath_.c_str());
     }
 
     /// epsilon histograms
@@ -1636,16 +1633,12 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char *title, int size )
 {
   TH1F **h = new TH1F*[size];
-  // char name_c[100];
-  // char title_c[200];
   std::string name_c = "";
   std::string title_c = "";
   cout << "FillEpsilonPlot::initializeEpsilonHistograms::useMassInsteadOfEpsilon_ = " << useMassInsteadOfEpsilon_ << endl;
 
   for(int jR=0; jR<size; jR++)
   {
-    // sprintf(name_c, "%s%d", name, jR);
-    // sprintf(title_c, "%s%d", title, jR);
     name_c = Form("%s%d", name, jR);
     title_c = Form("%s%d", title, jR);
 
