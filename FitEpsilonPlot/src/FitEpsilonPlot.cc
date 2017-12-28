@@ -76,8 +76,6 @@ static double upper_bound_etamass_EE = 0.62;
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
 {
-    /// to be moved in parameters.py
-    useMassInsteadOfEpsilon_ = 1;
 
     //now do what ever initialization is needed
     currentIteration_ =  iConfig.getUntrackedParameter<int>("CurrentIteration");
@@ -90,8 +88,10 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     EEoEB_ = iConfig.getUntrackedParameter<std::string>("EEorEB");
     isNot_2010_ = iConfig.getUntrackedParameter<bool>("isNot_2010");
     Are_pi0_ = iConfig.getUntrackedParameter<bool>("Are_pi0");
-    StoreForTest_ = iConfig.getUntrackedParameter<bool>("StoreForTest","false");
+    StoreForTest_ = iConfig.getUntrackedParameter<bool>("StoreForTest",true);
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
+    useMassInsteadOfEpsilon_ = iConfig.getUntrackedParameter<bool>("useMassInsteadOfEpsilon",true);
+
 
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
@@ -108,26 +108,20 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     cout << "FIT_EPSILON: crosscheck: selected type: " << regionalCalibration_->printType() << endl;
 
     /// retrieving calibration coefficients of the previous iteration
-    char fileName[200];
     // if currentIteration_ = 0, calibMapPath_ contains "iter_-1" unless the current set of ICs was started from another existing set (see parameters.py)
     // therefore, the case with extension is included below
     std::string stringToMatch = "iter_-1";  // used below: this string should not match to trigger true condition 
     if(currentIteration_ < 0) throw cms::Exception("IterationNumber") << "Invalid negative iteration number\n";
     else if(currentIteration_ > 0 || (currentIteration_ == 0 && calibMapPath_.find(stringToMatch)==std::string::npos))
     {
-	  //sprintf(fileName,"%s/iter_%d/calibMap.root", outputDir_.c_str(), currentIteration_-1);
-	  sprintf(fileName,"%s", calibMapPath_.c_str());
-	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName);
+	  regionalCalibration_->getCalibMap()->loadCalibMapFromFile(calibMapPath_.c_str());
     }
 
     // load epsilon from current iter
     epsilon_EB_h = new TH1F*[regionalCalibration_->getCalibMap()->getNRegionsEB()];
     epsilon_EE_h = new TH1F*[regionalCalibration_->getCalibMap()->getNRegionsEE()];
-    //sprintf(fileName,"%s/iter_%d/EcalNtp.root", outputDir_.c_str(), currentIteration_);
-    //sprintf(fileName,"%s/iter_%d/%s", outputDir_.c_str(), currentIteration_, epsilonPlotFileName_.c_str());
-    sprintf(fileName,"%s", epsilonPlotFileName_.c_str());
     cout << "FIT_EPSILON: FitEpsilonPlot:: loading epsilon plots from file: " << epsilonPlotFileName_ << endl;
-    loadEpsilonPlot(fileName);
+    loadEpsilonPlot(epsilonPlotFileName_);
 
 
 }
@@ -148,36 +142,37 @@ FitEpsilonPlot::~FitEpsilonPlot()
 //
 
 
-void FitEpsilonPlot::loadEpsilonPlot(char *filename)
+void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
 {
-    char line[100];
+  std::string line = "";
 
-    inputEpsilonFile_ = TFile::Open(filename);
-    if(!inputEpsilonFile_) 
-	  throw cms::Exception("loadEpsilonPlot") << "Cannot open file " << string(filename) << "\n"; 
-    if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
-	  {
-		sprintf(line,"Barrel/epsilon_EB_iR_%d",iR);
-		epsilon_EB_h[iR] = (TH1F*)inputEpsilonFile_->Get(line);
+  inputEpsilonFile_ = TFile::Open(filename.c_str());
+  if(!inputEpsilonFile_) 
+    throw cms::Exception("loadEpsilonPlot") << "Cannot open file " << filename << "\n"; 
+  if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
+    for(int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
+      {
+	line = Form("Barrel/epsilon_EB_iR_%d",iR);
+	epsilon_EB_h[iR] = (TH1F*)inputEpsilonFile_->Get(line.c_str());
 
-		if(!epsilon_EB_h[iR])
-		    throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << string(line) << "\n";
-		else if(!(iR%1000))
-		    cout << "FIT_EPSILON: Epsilon distribution for EB region " << iR << " loaded" << endl;
-	  }
-    }
-    else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
-	  for(int jR=inRangeFit_; jR <= finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
-	  {
-		sprintf(line,"Endcap/epsilon_EE_iR_%d",jR);
-		epsilon_EE_h[jR] = (TH1F*)inputEpsilonFile_->Get(line);
-		if(!epsilon_EE_h[jR])
-		    throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << string(line) << "\n";
-		else if(!(jR%1000))
-		    cout << "FIT_EPSILON: Epsilon distribution for EE region " << jR << " loaded" << endl;
-	  }
-    }
+	if(!epsilon_EB_h[iR])
+	  throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
+	else if(!(iR%1000))
+	  cout << "FIT_EPSILON: Epsilon distribution for EB region " << iR << " loaded" << endl;
+      }
+  }
+  else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
+    for(int jR=inRangeFit_; jR <= finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
+      {
+	line = Form("Endcap/epsilon_EE_iR_%d",jR);
+	epsilon_EE_h[jR] = (TH1F*)inputEpsilonFile_->Get(line.c_str());
+	if(!epsilon_EE_h[jR])
+	  throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
+	else if(!(jR%1000))
+	  cout << "FIT_EPSILON: Epsilon distribution for EE region " << jR << " loaded" << endl;
+      }
+  }
+
 }
 
 
@@ -193,234 +188,234 @@ void  FitEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
 
 void FitEpsilonPlot::saveCoefficients() 
 {
-    /// output file
-    char fileName[200];
-    sprintf(fileName,"%s/%s", outputDir_.c_str(), outfilename_.c_str());
-    outfile_ = new TFile(fileName,"RECREATE");
-    cout << "FIT_EPSILON: Saving Calibration Coefficients in " << string(fileName) << " ... " << endl;;
-    if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << string(fileName) << "\n";
-    outfile_->cd();
+  /// output file
+  std::string fileName = outputDir_  + "/" + outfilename_;
+  outfile_ = new TFile(fileName.c_str(),"RECREATE");
+  cout << "FIT_EPSILON: Saving Calibration Coefficients in " << fileName << " ... " << endl;;
+  if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
+  outfile_->cd();
 
-    // 2D calib map in the barrel
-    TH2F* hmap_EB = new TH2F("calibMap_EB","EB calib coefficients: #eta on x, #phi on y",
-		2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,
-		EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
-    hmap_EB->GetXaxis()->SetTitle("i#eta");
-    hmap_EB->GetYaxis()->SetTitle("i#phi");
-    TH2F* hmap_EEp = new TH2F("calibMap_EEp","EE+ calib coefficients",100,0.5,100.5,100,0.5,100.5);
-    hmap_EEp->GetXaxis()->SetTitle("ix");
-    hmap_EEp->GetYaxis()->SetTitle("iy");
-    TH2F* hmap_EEm = new TH2F("calibMap_EEm","EE- calib coefficients",100,0.5,100.5,100,0.5,100.5);
-    hmap_EEm->GetXaxis()->SetTitle("ix");
-    hmap_EEm->GetYaxis()->SetTitle("iy");
-    TH1F* hint = new TH1F("hint","Bin1: inRangeFit_ Bin2: finRangeFit_ Bin3: Barrel(0)/Endcap(1)",3,0.,3.);
-    hint->SetBinContent(1,inRangeFit_);
-    hint->SetBinContent(2,finRangeFit_);
-    if( EEoEB_ == "Barrel" ) hint->SetBinContent(3,0);
-    else                     hint->SetBinContent(3,1);
-    hint->Write();
+  // 2D calib map in the barrel
+  TH2F* hmap_EB = new TH2F("calibMap_EB","EB calib coefficients: #eta on x, #phi on y",
+			   2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,
+			   EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
+  hmap_EB->GetXaxis()->SetTitle("i#eta");
+  hmap_EB->GetYaxis()->SetTitle("i#phi");
+  TH2F* hmap_EEp = new TH2F("calibMap_EEp","EE+ calib coefficients",100,0.5,100.5,100,0.5,100.5);
+  hmap_EEp->GetXaxis()->SetTitle("ix");
+  hmap_EEp->GetYaxis()->SetTitle("iy");
+  TH2F* hmap_EEm = new TH2F("calibMap_EEm","EE- calib coefficients",100,0.5,100.5,100,0.5,100.5);
+  hmap_EEm->GetXaxis()->SetTitle("ix");
+  hmap_EEm->GetYaxis()->SetTitle("iy");
+  TH1F* hint = new TH1F("hint","Bin1: inRangeFit_ Bin2: finRangeFit_ Bin3: Barrel(0)/Endcap(1)",3,0.,3.);
+  hint->SetBinContent(1,inRangeFit_);
+  hint->SetBinContent(2,finRangeFit_);
+  if( EEoEB_ == "Barrel" ) hint->SetBinContent(3,0);
+  else                     hint->SetBinContent(3,1);
+  hint->Write();
 
-    /// filling Barrel Map
-    for(int j=0; j<regionalCalibration_->getCalibMap()->getNRegionsEB(); ++j)  
+  /// filling Barrel Map
+  for(int j=0; j<regionalCalibration_->getCalibMap()->getNRegionsEB(); ++j)  
     {
-	  std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(j);
-	  for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
-		EBDetId ebid(*iid);
-		int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
+      std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(j);
+      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
+	EBDetId ebid(*iid);
+	int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
 
-		float coeffValue = regionalCalibration_->getCalibMap()->coeff(*iid) > 0. ? regionalCalibration_->getCalibMap()->coeff(*iid) : 1.;
-		hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
-	  } // loop over DetId in regions
+	float coeffValue = regionalCalibration_->getCalibMap()->coeff(*iid) > 0. ? regionalCalibration_->getCalibMap()->coeff(*iid) : 1.;
+	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+      } // loop over DetId in regions
     }
-    hmap_EB->SetMinimum(0.9);
-    hmap_EB->SetStats(false);
-    hmap_EB->Write();
+  hmap_EB->SetMinimum(0.9);
+  hmap_EB->SetStats(false);
+  hmap_EB->Write();
 
-    for(int jR=0; jR < regionalCalibration_->getCalibMap()->getNRegionsEE(); jR++)
+  for(int jR=0; jR < regionalCalibration_->getCalibMap()->getNRegionsEE(); jR++)
     {
-	  std::vector<DetId> ids =  regionalCalibration_->allDetIdsInEERegion(jR);
-	  for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
-	  { 
-		EEDetId eeid(*iid);
-		float coeffValue =  regionalCalibration_->getCalibMap()->coeff(*iid) > 0. ?  regionalCalibration_->getCalibMap()->coeff(*iid) : 1.;
+      std::vector<DetId> ids =  regionalCalibration_->allDetIdsInEERegion(jR);
+      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
+	{ 
+	  EEDetId eeid(*iid);
+	  float coeffValue =  regionalCalibration_->getCalibMap()->coeff(*iid) > 0. ?  regionalCalibration_->getCalibMap()->coeff(*iid) : 1.;
 
-		if(eeid.positiveZ())
-		    hmap_EEp->Fill(eeid.ix(), eeid.iy(), coeffValue); 
-		else 
-		    hmap_EEm->Fill(eeid.ix(), eeid.iy(), coeffValue);
-	  }
-    }
-
-    hmap_EEp->SetMinimum(0.9);
-    hmap_EEp->SetStats(false);
-    hmap_EEp->Write();
-
-    hmap_EEm->SetMinimum(0.9);
-    hmap_EEm->SetStats(false);
-    hmap_EEm->Write();
-
-    /*------------- TTREE --------------*/
-
-    uint32_t   rawId;
-    int        hashedIndex;
-    int        ieta;
-    int        iphi;
-    int        iSM;
-    int        iMod;
-    int        iTT;
-    int        iTTeta;
-    int        iTTphi;
-    int        iter = currentIteration_;
-    float      regCoeff;
-    float      Signal;//#
-    float      Backgr; 
-    float      Chisqu; 
-    float      Ndof; 
-    float      fit_mean;
-    float      fit_mean_err;
-    float      fit_sigma;
-    float      fit_Snorm;
-    float      fit_b0;
-    float      fit_b1;    
-    float      fit_b2;    
-    float      fit_b3;    
-    float      fit_Bnorm; 
-    /// endcap variables
-    int ix;
-    int iy;
-    int zside;
-    int sc; 
-    int isc;
-    int ic;
-    int iquadrant;
-
-    TTree* treeEB = new TTree("calibEB","Tree of EB Inter-calibration constants");
-    TTree* treeEE = new TTree("calibEE","Tree of EE Inter-calibration constants");
-
-
-    /// barrel
-    treeEB->Branch("rawId",&rawId,"rawId/i");
-    treeEB->Branch("hashedIndex",&hashedIndex,"hashedIndex/I");
-    treeEB->Branch("ieta",&ieta,"ieta/I");
-    treeEB->Branch("iphi",&iphi,"iphi/I");
-    treeEB->Branch("iSM",&iSM,"iSM/I");
-    treeEB->Branch("iMod",&iMod,"iMod/I");
-    treeEB->Branch("iTT",&iTT,"iTT/I");
-    treeEB->Branch("iTTeta",&iTTeta,"iTTeta/I");
-    treeEB->Branch("iTTphi",&iTTphi,"iTTphi/I");
-    treeEB->Branch("iter",&iter,"iter/I");
-    treeEB->Branch("coeff",&regCoeff,"coeff/F");
-    treeEB->Branch("Signal",&Signal,"Signal/F");//#
-    treeEB->Branch("Backgr",&Backgr,"Backgr/F");
-    treeEB->Branch("Chisqu",&Chisqu,"Chisqu/F");
-    treeEB->Branch("Ndof",&Ndof,"Ndof/F");
-    treeEB->Branch("fit_mean",&fit_mean,"fit_mean/F");
-    treeEB->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
-    treeEB->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
-    treeEB->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
-    treeEB->Branch("fit_b0",&fit_b0,"fit_b0/F");
-    treeEB->Branch("fit_b1",&fit_b1,"fit_b1/F");
-    treeEB->Branch("fit_b2",&fit_b2,"fit_b2/F");
-    treeEB->Branch("fit_b3",&fit_b3,"fit_b3/F");
-    treeEB->Branch("fit_Bnorm",&fit_Bnorm,"fit_Bnorm/F");
-
-    /// endcap
-    treeEE->Branch("ix",&ix,"ix/I");
-    treeEE->Branch("iy",&iy,"iy/I");
-    treeEE->Branch("zside",&zside,"zside/I");
-    treeEE->Branch("sc",&sc,"sc/I");
-    treeEE->Branch("isc",&isc,"isc/I");
-    treeEE->Branch("ic",&ic,"ic/I");
-    treeEE->Branch("iquadrant",&iquadrant,"iquadrant/I");
-    treeEE->Branch("hashedIndex",&hashedIndex,"hashedIndex/I");
-    treeEE->Branch("iter",&iter,"iter/I");
-    treeEE->Branch("coeff",&regCoeff,"coeff/F");
-    treeEE->Branch("Signal",&Signal,"Signal/F");//#
-    treeEE->Branch("Backgr",&Backgr,"Backgr/F");
-    treeEE->Branch("Chisqu",&Chisqu,"Chisqu/F");
-    treeEE->Branch("Ndof",&Ndof,"Ndof/F");
-    treeEE->Branch("fit_mean",&fit_mean,"fit_mean/F");
-    treeEE->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
-    treeEE->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
-    treeEE->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
-    treeEE->Branch("fit_b0",&fit_b0,"fit_b0/F");
-    treeEE->Branch("fit_b1",&fit_b1,"fit_b1/F");
-    treeEE->Branch("fit_b2",&fit_b2,"fit_b2/F");
-    treeEE->Branch("fit_b3",&fit_b3,"fit_b3/F");
-    treeEE->Branch("fit_Bnorm",&fit_Bnorm,"fit_Bnorm/F");
-
-
-    for(int iR=0; iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); ++iR)  {
-	  std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(iR);
-	  for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
-		EBDetId ebid(*iid);
-		hashedIndex = ebid.hashedIndex();
-		ieta = ebid.ieta();
-		iphi = ebid.iphi();
-		iSM = ebid.ism();
-		iMod = ebid.im();
-		iTT  = ebid.tower().hashedIndex();
-		iTTeta = ebid.tower_ieta();
-		iTTphi = ebid.tower_iphi();
-		Signal = EBmap_Signal[ebid.hashedIndex()];//#
-		Backgr = EBmap_Backgr[ebid.hashedIndex()];
-		Chisqu = EBmap_Chisqu[ebid.hashedIndex()];
-		Ndof = EBmap_ndof[ebid.hashedIndex()];
-		fit_mean     = EBmap_mean[ebid.hashedIndex()];
-		fit_mean_err = EBmap_mean_err[ebid.hashedIndex()];
-		fit_sigma  = EBmap_sigma[ebid.hashedIndex()];
-		fit_Snorm  = EBmap_Snorm[ebid.hashedIndex()];
-		fit_b0     = EBmap_b0[ebid.hashedIndex()];
-		fit_b1     = EBmap_b1[ebid.hashedIndex()];
-		fit_b2     = EBmap_b2[ebid.hashedIndex()];
-		fit_b3     = EBmap_b3[ebid.hashedIndex()];
-		fit_Bnorm  = EBmap_Bnorm[ebid.hashedIndex()];
-
-		regCoeff = regionalCalibration_->getCalibMap()->coeff(*iid);
-
-		treeEB->Fill();
-	  } // loop over DetId in regions
-    } // loop over regions
-
-    for(int jR=0; jR < regionalCalibration_->getCalibMap()->getNRegionsEE() ; jR++)
-    {
-	  std::vector<DetId> ids = regionalCalibration_->allDetIdsInEERegion(jR);
-	  for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
-	  { 
-		EEDetId eeid(*iid);
-		ix = eeid.ix();
-		iy = eeid.iy();
-		zside = eeid.zside();
-		sc = eeid.sc();
-		isc = eeid.isc();
-		ic = eeid.ic();
-		iquadrant = eeid.iquadrant();
-		hashedIndex = eeid.hashedIndex();
-		regCoeff = regionalCalibration_->getCalibMap()->coeff(*iid);
-		Signal = EEmap_Signal[eeid.hashedIndex()];//#
-		Backgr = EEmap_Backgr[eeid.hashedIndex()];
-		Chisqu = EEmap_Chisqu[eeid.hashedIndex()];            
-		Ndof = EEmap_ndof[eeid.hashedIndex()];            
-		fit_mean     = EEmap_mean[eeid.hashedIndex()];
-		fit_mean_err = EEmap_mean_err[eeid.hashedIndex()];
-		fit_sigma  = EEmap_sigma[eeid.hashedIndex()];
-		fit_Snorm  = EEmap_Snorm[eeid.hashedIndex()];
-		fit_b0     = EEmap_b0[eeid.hashedIndex()];
-		fit_b1     = EEmap_b1[eeid.hashedIndex()];
-		fit_b2     = EEmap_b2[eeid.hashedIndex()];
-		fit_b3     = EEmap_b3[eeid.hashedIndex()];
-		fit_Bnorm  = EEmap_Bnorm[eeid.hashedIndex()];
-
-		treeEE->Fill();
-	  }
+	  if(eeid.positiveZ())
+	    hmap_EEp->Fill(eeid.ix(), eeid.iy(), coeffValue); 
+	  else 
+	    hmap_EEm->Fill(eeid.ix(), eeid.iy(), coeffValue);
+	}
     }
 
-    treeEB->Write();
-    treeEE->Write();
+  hmap_EEp->SetMinimum(0.9);
+  hmap_EEp->SetStats(false);
+  hmap_EEp->Write();
 
-    outfile_->Write();
-    outfile_->Close();
-    cout << "FIT_EPSILON:  done" << endl;
+  hmap_EEm->SetMinimum(0.9);
+  hmap_EEm->SetStats(false);
+  hmap_EEm->Write();
+
+  /*------------- TTREE --------------*/
+
+  uint32_t   rawId;
+  int        hashedIndex;
+  int        ieta;
+  int        iphi;
+  int        iSM;
+  int        iMod;
+  int        iTT;
+  int        iTTeta;
+  int        iTTphi;
+  int        iter = currentIteration_;
+  float      regCoeff;
+  float      Signal;//#
+  float      Backgr; 
+  float      Chisqu; 
+  float      Ndof; 
+  float      fit_mean;
+  float      fit_mean_err;
+  float      fit_sigma;
+  float      fit_Snorm;
+  float      fit_b0;
+  float      fit_b1;    
+  float      fit_b2;    
+  float      fit_b3;    
+  float      fit_Bnorm; 
+  /// endcap variables
+  int ix;
+  int iy;
+  int zside;
+  int sc; 
+  int isc;
+  int ic;
+  int iquadrant;
+
+  TTree* treeEB = new TTree("calibEB","Tree of EB Inter-calibration constants");
+  TTree* treeEE = new TTree("calibEE","Tree of EE Inter-calibration constants");
+
+
+  /// barrel
+  treeEB->Branch("rawId",&rawId,"rawId/i");
+  treeEB->Branch("hashedIndex",&hashedIndex,"hashedIndex/I");
+  treeEB->Branch("ieta",&ieta,"ieta/I");
+  treeEB->Branch("iphi",&iphi,"iphi/I");
+  treeEB->Branch("iSM",&iSM,"iSM/I");
+  treeEB->Branch("iMod",&iMod,"iMod/I");
+  treeEB->Branch("iTT",&iTT,"iTT/I");
+  treeEB->Branch("iTTeta",&iTTeta,"iTTeta/I");
+  treeEB->Branch("iTTphi",&iTTphi,"iTTphi/I");
+  treeEB->Branch("iter",&iter,"iter/I");
+  treeEB->Branch("coeff",&regCoeff,"coeff/F");
+  treeEB->Branch("Signal",&Signal,"Signal/F");//#
+  treeEB->Branch("Backgr",&Backgr,"Backgr/F");
+  treeEB->Branch("Chisqu",&Chisqu,"Chisqu/F");
+  treeEB->Branch("Ndof",&Ndof,"Ndof/F");
+  treeEB->Branch("fit_mean",&fit_mean,"fit_mean/F");
+  treeEB->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
+  treeEB->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
+  treeEB->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
+  treeEB->Branch("fit_b0",&fit_b0,"fit_b0/F");
+  treeEB->Branch("fit_b1",&fit_b1,"fit_b1/F");
+  treeEB->Branch("fit_b2",&fit_b2,"fit_b2/F");
+  treeEB->Branch("fit_b3",&fit_b3,"fit_b3/F");
+  treeEB->Branch("fit_Bnorm",&fit_Bnorm,"fit_Bnorm/F");
+
+  /// endcap
+  treeEE->Branch("ix",&ix,"ix/I");
+  treeEE->Branch("iy",&iy,"iy/I");
+  treeEE->Branch("zside",&zside,"zside/I");
+  treeEE->Branch("sc",&sc,"sc/I");
+  treeEE->Branch("isc",&isc,"isc/I");
+  treeEE->Branch("ic",&ic,"ic/I");
+  treeEE->Branch("iquadrant",&iquadrant,"iquadrant/I");
+  treeEE->Branch("hashedIndex",&hashedIndex,"hashedIndex/I");
+  treeEE->Branch("iter",&iter,"iter/I");
+  treeEE->Branch("coeff",&regCoeff,"coeff/F");
+  treeEE->Branch("Signal",&Signal,"Signal/F");//#
+  treeEE->Branch("Backgr",&Backgr,"Backgr/F");
+  treeEE->Branch("Chisqu",&Chisqu,"Chisqu/F");
+  treeEE->Branch("Ndof",&Ndof,"Ndof/F");
+  treeEE->Branch("fit_mean",&fit_mean,"fit_mean/F");
+  treeEE->Branch("fit_mean_err",&fit_mean_err,"fit_mean_err/F");
+  treeEE->Branch("fit_sigma",&fit_sigma,"fit_sigma/F");
+  treeEE->Branch("fit_Snorm",&fit_Snorm,"fit_Snorm/F");
+  treeEE->Branch("fit_b0",&fit_b0,"fit_b0/F");
+  treeEE->Branch("fit_b1",&fit_b1,"fit_b1/F");
+  treeEE->Branch("fit_b2",&fit_b2,"fit_b2/F");
+  treeEE->Branch("fit_b3",&fit_b3,"fit_b3/F");
+  treeEE->Branch("fit_Bnorm",&fit_Bnorm,"fit_Bnorm/F");
+
+
+  for(int iR=0; iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); ++iR)  {
+    std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(iR);
+    for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
+      EBDetId ebid(*iid);
+      hashedIndex = ebid.hashedIndex();
+      ieta = ebid.ieta();
+      iphi = ebid.iphi();
+      iSM = ebid.ism();
+      iMod = ebid.im();
+      iTT  = ebid.tower().hashedIndex();
+      iTTeta = ebid.tower_ieta();
+      iTTphi = ebid.tower_iphi();
+      Signal = EBmap_Signal[ebid.hashedIndex()];//#
+      Backgr = EBmap_Backgr[ebid.hashedIndex()];
+      Chisqu = EBmap_Chisqu[ebid.hashedIndex()];
+      Ndof = EBmap_ndof[ebid.hashedIndex()];
+      fit_mean     = EBmap_mean[ebid.hashedIndex()];
+      fit_mean_err = EBmap_mean_err[ebid.hashedIndex()];
+      fit_sigma  = EBmap_sigma[ebid.hashedIndex()];
+      fit_Snorm  = EBmap_Snorm[ebid.hashedIndex()];
+      fit_b0     = EBmap_b0[ebid.hashedIndex()];
+      fit_b1     = EBmap_b1[ebid.hashedIndex()];
+      fit_b2     = EBmap_b2[ebid.hashedIndex()];
+      fit_b3     = EBmap_b3[ebid.hashedIndex()];
+      fit_Bnorm  = EBmap_Bnorm[ebid.hashedIndex()];
+
+      regCoeff = regionalCalibration_->getCalibMap()->coeff(*iid);
+
+      treeEB->Fill();
+    } // loop over DetId in regions
+  } // loop over regions
+
+  for(int jR=0; jR < regionalCalibration_->getCalibMap()->getNRegionsEE() ; jR++)
+    {
+      std::vector<DetId> ids = regionalCalibration_->allDetIdsInEERegion(jR);
+      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
+	{ 
+	  EEDetId eeid(*iid);
+	  ix = eeid.ix();
+	  iy = eeid.iy();
+	  zside = eeid.zside();
+	  sc = eeid.sc();
+	  isc = eeid.isc();
+	  ic = eeid.ic();
+	  iquadrant = eeid.iquadrant();
+	  hashedIndex = eeid.hashedIndex();
+	  regCoeff = regionalCalibration_->getCalibMap()->coeff(*iid);
+	  Signal = EEmap_Signal[eeid.hashedIndex()];//#
+	  Backgr = EEmap_Backgr[eeid.hashedIndex()];
+	  Chisqu = EEmap_Chisqu[eeid.hashedIndex()];            
+	  Ndof = EEmap_ndof[eeid.hashedIndex()];            
+	  fit_mean     = EEmap_mean[eeid.hashedIndex()];
+	  fit_mean_err = EEmap_mean_err[eeid.hashedIndex()];
+	  fit_sigma  = EEmap_sigma[eeid.hashedIndex()];
+	  fit_Snorm  = EEmap_Snorm[eeid.hashedIndex()];
+	  fit_b0     = EEmap_b0[eeid.hashedIndex()];
+	  fit_b1     = EEmap_b1[eeid.hashedIndex()];
+	  fit_b2     = EEmap_b2[eeid.hashedIndex()];
+	  fit_b3     = EEmap_b3[eeid.hashedIndex()];
+	  fit_Bnorm  = EEmap_Bnorm[eeid.hashedIndex()];
+
+	  treeEE->Fill();
+	}
+    }
+
+  treeEB->Write();
+  treeEE->Write();
+
+  outfile_->Write();
+  outfile_->Close();
+  cout << "FIT_EPSILON:  done" << endl;
+
 }
 
 // ------------ method called for each event  ------------
@@ -881,31 +876,31 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     }
 
     TLatex lat;
-    char line[300];
+    std::string line = "";
     lat.SetNDC();
     lat.SetTextSize(0.040);
     lat.SetTextColor(1);
 
     float xmin(0.58), yhi(0.80), ypass(0.05);
     if(mode==EtaEB) yhi=0.30;
-    sprintf(line,"Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
-    lat.DrawLatex(xmin,yhi, line);
+    line = Form("Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
+    lat.DrawLatex(xmin,yhi, line.c_str());
 
-    sprintf(line,"m_{#gamma#gamma}: %.2f #pm %.2f", mean.getVal()*1000., mean.getError()*1000. );
-    lat.DrawLatex(xmin,yhi-ypass, line);
+    line = Form("m_{#gamma#gamma}: %.2f #pm %.2f", mean.getVal()*1000., mean.getError()*1000. );
+    lat.DrawLatex(xmin,yhi-ypass, line.c_str());
 
-    sprintf(line,"#sigma: %.2f #pm %.2f (%.2f%s)", sigma.getVal()*1000., sigma.getError()*1000., sigma.getVal()*100./mean.getVal(), "%" );
-    lat.DrawLatex(xmin,yhi-2.*ypass, line);
+    line = Form("#sigma: %.2f #pm %.2f (%.2f%s)", sigma.getVal()*1000., sigma.getError()*1000., sigma.getVal()*100./mean.getVal(), "%" );
+    lat.DrawLatex(xmin,yhi-2.*ypass, line.c_str());
 
     //sprintf(line,"S/B(3#sigma): %.2f #pm %.2f", pi0res.SoB, pi0res.SoBerr );
-    sprintf(line,"S/B(3#sigma): %.2f", pi0res.SoB );
-    lat.DrawLatex(xmin,yhi-3.*ypass, line);
+    line = Form("S/B(3#sigma): %.2f", pi0res.SoB );
+    lat.DrawLatex(xmin,yhi-3.*ypass, line.c_str());
 
-    sprintf(line,"#Chi^{2}: %.2f (%d dof)", pi0res.chi2, pi0res.dof );
-    lat.DrawLatex(xmin,yhi-4.*ypass, line);
+    line = Form("#Chi^{2}: %.2f (%d dof)", pi0res.chi2, pi0res.dof );
+    lat.DrawLatex(xmin,yhi-4.*ypass, line.c_str());
 
-    sprintf(line,"B param. %d", cbpars.getSize() );
-    lat.DrawLatex(xmin,yhi-5.*ypass, line);
+    line = Form("B param. %d", cbpars.getSize() );
+    lat.DrawLatex(xmin,yhi-5.*ypass, line.c_str());
 
     canvas->RedrawAxis("sameaxis");
 

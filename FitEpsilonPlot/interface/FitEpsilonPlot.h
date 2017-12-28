@@ -49,7 +49,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
-      void loadEpsilonPlot(char *filename);
+      void loadEpsilonPlot(const std::string& filename);
       void saveCoefficients();
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);

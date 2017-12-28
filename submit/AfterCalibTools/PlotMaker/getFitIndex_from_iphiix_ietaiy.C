@@ -37,8 +37,10 @@
 
 using namespace std;
 
-// this macro creates a root file with TH2D histograms, that can be used to get iphi(iX) and ieta(iy) in EB(EE) given the fit index used by ECALpro
+// this macro opens a root file with TH2D histograms, that can be used to get iphi(iX) and ieta(iy) in EB(EE) given the fit index used by ECALpro
 // it can also be used to get a given fit index given the coordinates
+// example -->  root -l -b -q 'getFitIndex_from_iphiix_ietaiy.C+(10,10,0)'
+// Returns the fit index associated to iphi=10, ieta=10 in EB
 
 void getFitIndex_from_iphiix_ietaiy(const Int_t& ietaix = 10, const Int_t& iphiiy = 50, const Int_t iz = 0) {
 

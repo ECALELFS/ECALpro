@@ -54,6 +54,13 @@
 using namespace std;
 using namespace RooFit;
 
+// example: 
+//
+//root -l -b -q 'findFitFileFromFitIndex.C+(5000,"/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/","AlcaP0_Run2016G_sel17optim_reg12",0,true)'
+//
+// returns number of fit file that contains fit with index 5000. This can be used with drawFitsSingleFile.sh
+// It looks inside /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlcaP0_Run2016G_sel17optim_reg12/iter_0/ and search for fits in EB
+
 void findFitFileFromFitIndex(const Int_t& fitIndex = 5000,
 			     const string& eosPath = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
 			     const string& dirName = "AlcaP0_Run2016G_sel17optim_reg12", 
@@ -89,5 +96,7 @@ void findFitFileFromFitIndex(const Int_t& fitIndex = 5000,
     }
 
   }
+
+  cout << "Sorry, I didn't find the fit with index " << fitIndex << " anywhere." << endl;
 
 }
