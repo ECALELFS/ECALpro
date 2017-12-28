@@ -269,10 +269,6 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
       outputfile.write("process.analyzerFillEpsilon.SMCalibEE    = cms.untracked.bool(True)\n")
     if(EtaRingCalibEB or SMCalibEB or EtaRingCalibEE or SMCalibEE):
       outputfile.write("process.analyzerFillEpsilon.CalibMapEtaRing = cms.untracked.string('" + CalibMapEtaRing + "')\n")
-    if(MC_Assoc):
-        outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Assoc            = cms.untracked.bool(True)\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR     = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")
     if(Are_pi0):
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
     else:
@@ -354,6 +350,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
+       if(MC_Assoc):
+           outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
+           outputfile.write("process.analyzerFillEpsilon.MC_Assoc             = cms.untracked.bool(True)\n")
+           outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR      = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")        
        if isEoverEtrue:
            outputfile.write("process.analyzerFillEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
     if MakeNtuple4optimization:
