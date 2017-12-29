@@ -420,7 +420,7 @@ doIC               = 'False'                                   # Member of Recal
 doLaserCorr        = "False"
 #hltGtDigis         = 'InputTag("simGtDigis")'        # obsolete, not used in the Fill.cc   
 triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else 'InputTag("TriggerResults","","RECO")'   # Run Fill EB only if the HLTPaths for EB(ee) exist, in 93X MC we also have "TriggerResults","","HLT"
-hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
+#hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")' not used anywhere
 L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
 useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False' # this seems to add obsolete code, keep False

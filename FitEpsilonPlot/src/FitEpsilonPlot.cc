@@ -482,8 +482,8 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 		else if(useMassInsteadOfEpsilon_)
 		{
-		    int iMin = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.08:0.4 ); 
-		    int iMax = epsilon_EB_h[j]->GetXaxis()->FindBin(Are_pi0_? 0.18:0.65 );
+		    int iMin = epsilon_EB_h[j]->GetXaxis()->FindFixBin(Are_pi0_? 0.08:0.4 ); 
+		    int iMax = epsilon_EB_h[j]->GetXaxis()->FindFixBin(Are_pi0_? 0.18:0.65 );
 		    double integral = epsilon_EB_h[j]->Integral(iMin, iMax);  
 		    if(integral>60.)
 		    {
@@ -560,13 +560,13 @@ FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 		}
 		else if(useMassInsteadOfEpsilon_)
 		{
-		    int iMin = epsilon_EE_h[jR]->GetXaxis()->FindBin(Are_pi0_? 0.08:0.4 ); 
-		    int iMax = epsilon_EE_h[jR]->GetXaxis()->FindBin(Are_pi0_? 0.18:0.65 );
+		    int iMin = epsilon_EE_h[jR]->GetXaxis()->FindFixBin(Are_pi0_? 0.08:0.4 ); 
+		    int iMax = epsilon_EE_h[jR]->GetXaxis()->FindFixBin(Are_pi0_? 0.18:0.65 );
 		    double integral = epsilon_EE_h[jR]->Integral(iMin, iMax);  
 
 		    if(integral>70.)
 		    {
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.075:0.4, Are_pi0_? 0.24:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
@@ -765,32 +765,18 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     RooMinimizer mfit(nll);
     mfit.setVerbose(kFALSE);
     mfit.setPrintLevel(-1);
-    cout << "######### Minimize" << endl;
+    //cout << "FIT_EPSILON: Minimize" << endl;
     mfit.minimize("Minuit2","minimize");
-    cout << "######### Minimize hesse " << endl;
+    //cout << "FIT_EPSILON: Minimize hesse " << endl;
     mfit.minimize("Minuit2","hesse");
-    cout<<"######### Estimate minos errors for all parameters"<<endl;
+    //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
     mfit.minos(RooArgSet(Nsig,Nbkg));
     RooFitResult* res = mfit.save() ;
-
-
-    // alternative fit (results are pretty much the same)
-    // RooMinimizer mfit(nll);
-    // mfit.setVerbose(kFALSE);
-    // mfit.setPrintLevel(-1);
-    // cout << "######### Minimize" << endl;
-    // mfit.minimize("Minuit2","minimize");
-    // cout << "######### Minimize hesse " << endl;
-    // mfit.minimize("Minuit2","hesse");
-    // cout<<"######### Estimate minos errors for all parameters"<<endl;
-    // mfit.minos(RooArgSet(Nsig,Nbkg));
-    // RooFitResult* res = mfit.save() ;
-
 
     RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
-    int ndof = h->FindBin(xhi) - h->FindBin(xlo) - res->floatParsFinal().getSize();
+    int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) - res->floatParsFinal().getSize();
 
 
     //compute S/B and chi2

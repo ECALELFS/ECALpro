@@ -103,9 +103,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // ---------- user defined ------------------------
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
-      std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
+      //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, vector<float>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
+      void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<float>& clusters_matchedGenPhotonEnergy, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
