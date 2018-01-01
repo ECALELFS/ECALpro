@@ -1,5 +1,7 @@
 #include <memory>
 
+#include "TFitResult.h"
+
 #include "RooRealVar.h"
 #include "RooFitResult.h"
 
@@ -30,6 +32,8 @@ struct Pi0FitResult {
   float probchi2; // after subtracting fit parameters 
 };
 
+Double_t my2sideCrystalBall(double* x, double* par);
+
 class FitEpsilonPlot : public edm::EDAnalyzer {
    public:
       enum FitMode{ Eta=0, Pt, GausPol3, GausEndpoint, Pi0EB, Pi0EE, EtaEB };
@@ -50,11 +54,14 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       void loadEpsilonPlot(const std::string& filename);
+      void loadEoverEtruePlot(const std::string& filename, const int whichPhoton);
       void saveCoefficients();
+      void saveCoefficientsEoverEtrue(const bool isSecondGenPhoton);
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
 
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
+      TFitResultPtr FitEoverEtruePeak(TH1F* h1, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
 
       // ----------member data ---------------------------
 
@@ -62,7 +69,8 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib;
       EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib;
 
-      EcalRegionalCalibrationBase *regionalCalibration_;
+      EcalRegionalCalibrationBase *regionalCalibration_;    // use it for pi0 mass or first photon with E/overEtrue
+      EcalRegionalCalibrationBase *regionalCalibration_g2_; // use it for second gen photon with E/Etrue
 
       int currentIteration_;
       std::string outputDir_;
@@ -85,11 +93,18 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
 
+      // for E/Etrue with MC 
+      TH1F **EoverEtrue_g1_EB_h;
+      TH1F **EoverEtrue_g1_EE_h;
+      TH1F **EoverEtrue_g2_EB_h;
+      TH1F **EoverEtrue_g2_EE_h;
+
       TFile *inputEpsilonFile_;
       TFile *outfile_;
       TFile *outfileTEST_;
 
       bool useMassInsteadOfEpsilon_;
+      bool isEoverEtrue_;
 
       std::map<int,float> EBmap_Signal;//#
       std::map<int,float> EBmap_Backgr;

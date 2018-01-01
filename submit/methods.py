@@ -427,6 +427,10 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(False)\n")
+    if isEoverEtrue:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py

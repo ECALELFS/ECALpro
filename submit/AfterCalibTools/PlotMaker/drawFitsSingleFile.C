@@ -215,6 +215,8 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     }
       
     if (xframe) {
+      c->SetTickx(1);
+      c->SetTicky(1);
       xframe->SetTitle(rooplotTitle.c_str());
       xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
       xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");

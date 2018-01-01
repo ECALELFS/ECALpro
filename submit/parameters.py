@@ -49,8 +49,8 @@ isOtherT2        = False
 #MC and Selection Optimization
 isDebug = False # for the moment, if True it activates some cout in FillEpsilonPlot.cc
 isMC = True
-useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one
-isEoverEtrue = False  # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
+useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one (can stay True even if isEoverEtrue is True)
+isEoverEtrue = True  # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
@@ -75,7 +75,7 @@ ijobmax          = 2 #5                     # 5 number of files per job
 nHadd            = 2 #35                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = '2017reg' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+ContainmentCorrection = 'No' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
 
 #Remove Xtral Dead
 RemoveDead_Flag = "True"

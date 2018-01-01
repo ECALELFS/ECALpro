@@ -317,10 +317,14 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
       if (isEoverEtrue_) {
 
-	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	  epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","reco/gen photon energy", regionalCalibration_->getCalibMap()->getNRegionsEB() );
-	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	  epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","reco/gen photon energy", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
+	  EoverEtrue_g1_EB_h = initializeEpsilonHistograms("EoverEtrue_g1_EB_iR_","reco/gen #gamma1 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  EoverEtrue_g2_EB_h = initializeEpsilonHistograms("EoverEtrue_g2_EB_iR_","reco/gen #gamma2 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	}
+	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
+	  EoverEtrue_g1_EE_h = initializeEpsilonHistograms("EoverEtrue_g1_EE_iR_","reco/gen #gamma1 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	  EoverEtrue_g2_EE_h = initializeEpsilonHistograms("EoverEtrue_g2_EE_iR_","reco/gen #gamma2 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	}
 
       } else {
 
@@ -365,10 +369,22 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"nxtal");
     }
 
-    allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-    allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-    allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-    allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    if (isEoverEtrue_) {
+      allEoverEtrue_g1_EB = new TH1F("allEoverEtrue_g1_EB", "allEoverEtrue_g1_EB", 150, 0.0, 1.5);
+      allEoverEtrue_g1_EBnw = new TH1F("allEoverEtrue_g1_EBnw", "allEoverEtrue_g1_EBnw", 150, 0.0, 1.5);
+      allEoverEtrue_g1_EE = new TH1F("allEoverEtrue_g1_EE", "allEoverEtrue_g1_EE", 150, 0.0, 1.5);
+      allEoverEtrue_g1_EEnw = new TH1F("allEoverEtrue_g1_EEnw", "allEoverEtrue_g1_EEnw", 150, 0.0, 1.5);
+      allEoverEtrue_g2_EB = new TH1F("allEoverEtrue_g2_EB", "allEoverEtrue_g2_EB", 150, 0.0, 1.5);
+      allEoverEtrue_g2_EBnw = new TH1F("allEoverEtrue_g2_EBnw", "allEoverEtrue_g2_EBnw", 150, 0.0, 1.5);
+      allEoverEtrue_g2_EE = new TH1F("allEoverEtrue_g2_EE", "allEoverEtrue_g2_EE", 150, 0.0, 1.5);
+      allEoverEtrue_g2_EEnw = new TH1F("allEoverEtrue_g2_EEnw", "allEoverEtrue_g2_EEnw", 150, 0.0, 1.5);
+    } else { 
+      allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+      allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+      allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+      allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    }
+
     entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
     entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
     entries_EB    = new TH2F("entries_EB","entries_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
@@ -559,12 +575,39 @@ FillEpsilonPlot::~FillEpsilonPlot()
   outfile_->Write();
   outfile_->Close();
 
-  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
-  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
-  delete allEpsilon_EB;
-  delete allEpsilon_EBnw;
-  delete allEpsilon_EE;
-  delete allEpsilon_EEnw;
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
+    if (isEoverEtrue_) {
+      deleteEpsilonPlot(EoverEtrue_g1_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+    } else {
+      deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+    }
+  }
+
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
+    if (isEoverEtrue_) {
+      deleteEpsilonPlot(EoverEtrue_g1_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      deleteEpsilonPlot(EoverEtrue_g2_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+    } else {
+      deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+    }
+  }
+
+  if (isEoverEtrue_) {
+    delete allEoverEtrue_g1_EB;
+    delete allEoverEtrue_g1_EBnw;
+    delete allEoverEtrue_g1_EE;
+    delete allEoverEtrue_g1_EEnw;
+    delete allEoverEtrue_g2_EB;
+    delete allEoverEtrue_g2_EBnw;
+    delete allEoverEtrue_g2_EE;
+    delete allEoverEtrue_g2_EEnw;
+  } else {
+    delete allEpsilon_EB;
+    delete allEpsilon_EBnw;
+    delete allEpsilon_EE;
+    delete allEpsilon_EEnw;
+  }
   delete entries_EEp;
   delete entries_EEm;
   delete entries_EB;
@@ -1655,7 +1698,8 @@ TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char
   // char title_c[200];
   std::string name_c = "";
   std::string title_c = "";
-  cout << "FillEpsilonPlot::initializeEpsilonHistograms::useMassInsteadOfEpsilon_ = " << useMassInsteadOfEpsilon_ << endl;
+  if (isEoverEtrue_) std::cout << "FillEpsilonPlot::initializeEpsilonHistograms::isEoverEtrue_ = "            << isEoverEtrue_            << std::endl;
+  else               std::cout << "FillEpsilonPlot::initializeEpsilonHistograms::useMassInsteadOfEpsilon_ = " << useMassInsteadOfEpsilon_ << std::endl;
 
   for(int jR=0; jR<size; jR++)
   {
@@ -1702,7 +1746,7 @@ void  FillEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
 
 void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
 {
-  outfile_->mkdir(folder);
+  if (not outfile_->GetKey(folder)) outfile_->mkdir(folder);
   outfile_->cd(folder);
   for(int jR=0; jR<size; jR++)
     h[jR]->Write();
@@ -2835,147 +2879,155 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     //cout << "pi0P4_nocor_mass, pi0P4_mass " << pi0P4_nocor_mass << "  " << pi0P4_mass << endl;
 
 
+    // I'll have to decide if I want to apply the reco pi0  selection to fill the E/Etrue
+    // However, in case we are matching the clusters to gen photons, it is implicit that the clusters belong to a pi0 (even though they might fail the reco selection)
+    //
     ///////////////////
     // BEGIN SELECTION
     ///////////////////
 
+    bool applySelectionForEoverEtrue = false;
 
-    //In case ES give same posizion for different clusters
-    if( pi0P4_nocor_mass<0.03 && pi0P4_mass < 0.03 ) continue;
+    if (applySelectionForEoverEtrue) {
+
+      //In case ES give same posizion for different clusters
+      if( pi0P4_nocor_mass<0.03 && pi0P4_mass < 0.03 ) continue;
 	
 
-    if (isDebug_) cout << "[DEBUG] Apply kinematic selection cuts" << endl;
+      if (isDebug_) cout << "[DEBUG] Apply kinematic selection cuts" << endl;
 
-    if( g1eta == g2eta && g1phi == g2phi ) continue; // this should already be impossible ...
+      if( g1eta == g2eta && g1phi == g2phi ) continue; // this should already be impossible ...
 
-    // pi0/eta pT cut
-    if (subDetId == EcalBarrel) {
+      // pi0/eta pT cut
+      if (subDetId == EcalBarrel) {
 
-      if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
-      else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-      if (isDebug_) EventFlow_EB_debug->Fill(1.);
+	if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
+	else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	if (isDebug_) EventFlow_EB_debug->Fill(1.);
 
-    } else {
-	  
-      if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
-      else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-      if (isDebug_) EventFlow_EE_debug->Fill(1.);
-
-    }
-
-    float nextClu = 999., Drtmp = 999.;
-    for(size_t ind=0; ind<clusters.size(); ++ind){
-      const CaloCluster* Gtmp = &(clusters[ind]);
-      double deltaR1 = GetDeltaR(Gtmp->eta(),g1eta,Gtmp->phi(),g1phi);
-      double deltaR2 = GetDeltaR(Gtmp->eta(),g2eta,Gtmp->phi(),g2phi);
-      if( ind!=i && ind!=j && (deltaR1<Drtmp || deltaR2<Drtmp ) ){
-	nextClu = min(deltaR1,deltaR2);
-	Drtmp = nextClu;
-      }
-    }
-
-    // pi0/eta isolation cut (distance to other clusters)
-    if (subDetId == EcalBarrel) {
-
-      if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
-      else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-      if (isDebug_) EventFlow_EB_debug->Fill(2.);
-
-    } else {
-	  
-      if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
-      else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-      if (isDebug_) EventFlow_EE_debug->Fill(2.);
-
-    }
-
-    // Implementation of HLT Filter Isolation - Eta Band Isolation 
-    // implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
-    // see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
-
-    if (isDebug_) cout << "[DEBUG] Running HLT Isolation" << endl;
-
-    float hlt_iso = 0;
-    for(size_t ind=0; ind < clusters.size(); ++ind){
-      if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
-      const CaloCluster* Gtmp = &(clusters[ind]);
-      TLorentzVector GtmpP4;  
-      GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
-      if (GtmpP4.Pt() < 0.5) continue;  // FIXME: based on the stream, it should represent "ptMinForIsolation*"
-      // delta R from the pi0 candidates
-      double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
-      if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
-      // cluster must be inside of an eta strip 
-      double deta = fabs(Gtmp->eta() - pi0P4_eta); 
-      if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;
-      hlt_iso += GtmpP4.Pt();
-    }
-    // the cut is taken relative to the pi0 pt
-    hlt_iso /= pi0P4_nocor_pt;
-    //category break down of cuts
-    // pi0/eta isolation cut
-    if (subDetId == EcalBarrel) {
-
-      if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
-      else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-      if (isDebug_) EventFlow_EB_debug->Fill(3.);
-
-    } else {
-	  
-      if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
-      else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-      if (isDebug_) EventFlow_EE_debug->Fill(3.);
-
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////
-
-    if (isDebug_) cout << "[DEBUG] N Cristal Cuts" << endl;
-
-
-    int Nxtal_EnergGamma = 0;
-    int Nxtal_EnergGamma2 = 0;
-    if(subDetId==EcalEndcap){
-      if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE_used[i]; Nxtal_EnergGamma2 = Ncristal_EE_used[j]; }
-      else                           {  Nxtal_EnergGamma = Ncristal_EE_used[j]; Nxtal_EnergGamma2 = Ncristal_EE_used[i]; }
-    }
-    else{
-      if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EB_used[i]; Nxtal_EnergGamma2 = Ncristal_EB_used[j]; }
-      else                           {  Nxtal_EnergGamma = Ncristal_EB_used[j]; Nxtal_EnergGamma2 = Ncristal_EB_used[i]; }
-    }
-
-    if (subDetId == EcalBarrel) {
-
-      if( fabs(pi0P4_eta)<1. ) { 
-	if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
-	if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
-      } else if( fabs(pi0P4_eta)<1.479 )  { 
-	if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
-	if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
-      } 
-
-      pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
-      pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
-      if (isDebug_) EventFlow_EB_debug->Fill(4.);
-      EventFlow_EB->Fill(5.);
-
-    } else {
-
-      if( fabs(pi0P4_eta)<1.8 ) { 
-	if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
-	if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
       } else {
-	if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
-	if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
-      }
-      if (isDebug_) EventFlow_EE_debug->Fill(4.);
-      EventFlow_EE->Fill(5.);
+	  
+	if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
+	else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
+	if (isDebug_) EventFlow_EE_debug->Fill(1.);
 
-    }
+      }
+
+      float nextClu = 999., Drtmp = 999.;
+      for(size_t ind=0; ind<clusters.size(); ++ind){
+	const CaloCluster* Gtmp = &(clusters[ind]);
+	double deltaR1 = GetDeltaR(Gtmp->eta(),g1eta,Gtmp->phi(),g1phi);
+	double deltaR2 = GetDeltaR(Gtmp->eta(),g2eta,Gtmp->phi(),g2phi);
+	if( ind!=i && ind!=j && (deltaR1<Drtmp || deltaR2<Drtmp ) ){
+	  nextClu = min(deltaR1,deltaR2);
+	  Drtmp = nextClu;
+	}
+      }
+
+      // pi0/eta isolation cut (distance to other clusters)
+      if (subDetId == EcalBarrel) {
+
+	if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	if (isDebug_) EventFlow_EB_debug->Fill(2.);
+
+      } else {
+	  
+	if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
+	else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
+	if (isDebug_) EventFlow_EE_debug->Fill(2.);
+
+      }
+
+      // Implementation of HLT Filter Isolation - Eta Band Isolation 
+      // implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
+      // see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
+
+      if (isDebug_) cout << "[DEBUG] Running HLT Isolation" << endl;
+
+      float hlt_iso = 0;
+      for(size_t ind=0; ind < clusters.size(); ++ind){
+	if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
+	const CaloCluster* Gtmp = &(clusters[ind]);
+	TLorentzVector GtmpP4;  
+	GtmpP4.SetPtEtaPhiE(Gtmp->energy()/cosh(Gtmp->eta()), Gtmp->eta(), Gtmp->phi(), Gtmp->energy());
+	if (GtmpP4.Pt() < 0.5) continue;  // FIXME: based on the stream, it should represent "ptMinForIsolation*"
+	// delta R from the pi0 candidates
+	double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
+	if (deltaR0  > ((Are_pi0_) ? 0.2:0.3)) continue;
+	// cluster must be inside of an eta strip 
+	double deta = fabs(Gtmp->eta() - pi0P4_eta); 
+	if (deta > ((Are_pi0_) ? 0.05:0.1)) continue;
+	hlt_iso += GtmpP4.Pt();
+      }
+      // the cut is taken relative to the pi0 pt
+      hlt_iso /= pi0P4_nocor_pt;
+      //category break down of cuts
+      // pi0/eta isolation cut
+      if (subDetId == EcalBarrel) {
+
+	if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	if (isDebug_) EventFlow_EB_debug->Fill(3.);
+
+      } else {
+	  
+	if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
+	else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
+	if (isDebug_) EventFlow_EE_debug->Fill(3.);
+
+      }
+      //////////////////////////////////////////////////////////////////////////////////////////////////
+
+      if (isDebug_) cout << "[DEBUG] N Cristal Cuts" << endl;
+
+
+      int Nxtal_EnergGamma = 0;
+      int Nxtal_EnergGamma2 = 0;
+      if(subDetId==EcalEndcap){
+	if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE_used[i]; Nxtal_EnergGamma2 = Ncristal_EE_used[j]; }
+	else                           {  Nxtal_EnergGamma = Ncristal_EE_used[j]; Nxtal_EnergGamma2 = Ncristal_EE_used[i]; }
+      }
+      else{
+	if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EB_used[i]; Nxtal_EnergGamma2 = Ncristal_EB_used[j]; }
+	else                           {  Nxtal_EnergGamma = Ncristal_EB_used[j]; Nxtal_EnergGamma2 = Ncristal_EB_used[i]; }
+      }
+
+      if (subDetId == EcalBarrel) {
+
+	if( fabs(pi0P4_eta)<1. ) { 
+	  if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
+	  if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
+	} else if( fabs(pi0P4_eta)<1.479 )  { 
+	  if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
+	  if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
+	} 
+
+	pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
+	pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	if (isDebug_) EventFlow_EB_debug->Fill(4.);
+	EventFlow_EB->Fill(5.);
+
+      } else {
+
+	if( fabs(pi0P4_eta)<1.8 ) { 
+	  if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
+	  if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
+	} else {
+	  if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
+	  if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
+	}
+	if (isDebug_) EventFlow_EE_debug->Fill(4.);
+	EventFlow_EE->Fill(5.);
+
+      }
+
+    } // end of if (applySelectionForEoverEtrue)
 
     ///////////////////
     // END SELECTION
     ///////////////////
-
+    ////////////////////////////////////////////
 
     if (!MakeNtuple4optimization_) {
 
@@ -2985,12 +3037,20 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
       RegionWeightVector w2 = regionalCalibration_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
 
-      // append w2 to w1
-      w1.insert( w1.end(), w2.begin(), w2.end() );
+      // do not append w2 to w1, keep them separate to disentangle the 2 photons
+      // w1.insert( w1.end(), w2.begin(), w2.end() );
+
+      double EoverEtrue_g1 = Corr1 * g1->energy()/clusters_matchedGenPhotonEnergy[i];
+      double EoverEtrue_g2 = Corr2 * g2->energy()/clusters_matchedGenPhotonEnergy[j];
 
       // compute quantities needed for <eps>_j in each region j
-      if (subDetId==EcalBarrel) allEpsilon_EBnw->Fill( pi0P4_mass );
-      else                      allEpsilon_EEnw->Fill( pi0P4_mass );
+      if (subDetId==EcalBarrel) {
+	allEoverEtrue_g1_EBnw->Fill( EoverEtrue_g1 );
+	allEoverEtrue_g2_EBnw->Fill( EoverEtrue_g2 );
+      } else {
+	allEoverEtrue_g1_EEnw->Fill( EoverEtrue_g1 );
+	allEoverEtrue_g2_EEnw->Fill( EoverEtrue_g2 );
+      }
 
       for (RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 
@@ -2999,22 +3059,28 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	if (subDetId==EcalBarrel) {
 
-	  if ( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7) ) {
+	  // if using the reco selection, select only a window in pi0 mass, otherwise just skip the selection
+	  if ( not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7)) ) {
 
-	    if ( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( pi0P4_mass, w );
-	    allEpsilon_EB->Fill( pi0P4_mass, w );
-	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; int iPhi = List_IR_EtaPhi.find(iR)->second[1]; int iSM = List_IR_EtaPhi.find(iR)->second[2];
+	    EoverEtrue_g1_EB_h[iR]->Fill( EoverEtrue_g1, w );
+	    allEoverEtrue_g1_EB->Fill( EoverEtrue_g1, w );
+	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+	    int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
+	    //int iSM = List_IR_EtaPhi.find(iR)->second[2];
 	    entries_EB->Fill( iEta, iPhi, w );
 	  
 	  }
 
 	} else {
 
-	  if ( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ) {
+	  if (  not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) ) {
 
-	    if ( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( pi0P4_mass, w );
-	    allEpsilon_EE->Fill( pi0P4_mass, w );
-	    int iX = List_IR_XYZ.find(iR)->second[0]; int iY = List_IR_XYZ.find(iR)->second[1]; int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
+	    EoverEtrue_g1_EE_h[iR]->Fill( EoverEtrue_g1, w );
+	    allEoverEtrue_g1_EE->Fill( EoverEtrue_g1, w );
+	    int iX = List_IR_XYZ.find(iR)->second[0]; 
+	    int iY = List_IR_XYZ.find(iR)->second[1]; 
+	    int iZ = List_IR_XYZ.find(iR)->second[2]; 
+	    //int Quad = List_IR_XYZ.find(iR)->second[3];
 	    if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
 	    else entries_EEp->Fill( iX, iY, w );
 	 
@@ -3023,6 +3089,45 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	}   // if subDetId == Endcap (closes else)
 
       }   // for (RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {  
+
+
+      for (RegionWeightVector::const_iterator it = w2.begin(); it != w2.end(); ++it) {
+
+	const uint32_t& iR = (*it).iRegion;
+	const float& w = (*it).value;
+
+	if (subDetId==EcalBarrel) {
+
+	  // if using the reco selection, select only a window in pi0 mass, otherwise just skip the selection
+	  if ( not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7)) ) {
+
+	    EoverEtrue_g2_EB_h[iR]->Fill( EoverEtrue_g2, w );
+	    allEoverEtrue_g2_EB->Fill( EoverEtrue_g2, w );
+	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+	    int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
+	    //int iSM = List_IR_EtaPhi.find(iR)->second[2];
+	    entries_EB->Fill( iEta, iPhi, w );
+	  
+	  }
+
+	} else {
+
+	  if (  not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) ) {
+
+	    EoverEtrue_g2_EE_h[iR]->Fill( EoverEtrue_g2, w );
+	    allEoverEtrue_g2_EE->Fill( EoverEtrue_g2, w );
+	    int iX = List_IR_XYZ.find(iR)->second[0]; 
+	    int iY = List_IR_XYZ.find(iR)->second[1]; 
+	    int iZ = List_IR_XYZ.find(iR)->second[2]; 
+	    //int Quad = List_IR_XYZ.find(iR)->second[3];
+	    if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
+	    else entries_EEp->Fill( iX, iY, w );
+	 
+	  }  // closes condition on mass boundary
+
+	}   // if subDetId == Endcap (closes else)
+
+      }   // for (RegionWeightVector::const_iterator it = w2.begin(); it != w2.end(); ++it) {  
 
     } // end filling histograms with mass
 
@@ -3360,10 +3465,22 @@ void FillEpsilonPlot::endJob(){
   }
   EventFlow_EB->Write();  if (isDebug_) EventFlow_EB_debug->Write();
   EventFlow_EE->Write();  if (isDebug_) EventFlow_EE_debug->Write();
-  allEpsilon_EB->Write();
-  allEpsilon_EBnw->Write();
-  allEpsilon_EE->Write();
-  allEpsilon_EEnw->Write();
+
+  if (isEoverEtrue_) {
+    allEoverEtrue_g1_EB->Write();
+    allEoverEtrue_g1_EBnw->Write();
+    allEoverEtrue_g1_EE->Write();
+    allEoverEtrue_g1_EEnw->Write();
+    allEoverEtrue_g2_EB->Write();
+    allEoverEtrue_g2_EBnw->Write();
+    allEoverEtrue_g2_EE->Write();
+    allEoverEtrue_g2_EEnw->Write();
+  } else {
+    allEpsilon_EB->Write();
+    allEpsilon_EBnw->Write();
+    allEpsilon_EE->Write();
+    allEpsilon_EEnw->Write();
+  }
   entries_EEp->Write();
   entries_EEm->Write();
   entries_EB->Write();
@@ -3386,8 +3503,24 @@ void FillEpsilonPlot::endJob(){
     h_numberMatchedGenPhotonPairs->Write();
   }
 
-  if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
-  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+  if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
+    if (isEoverEtrue_) {
+      writeEpsilonPlot(EoverEtrue_g1_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+    } else {
+      writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+    }
+  }
+
+  if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
+    if (isEoverEtrue_) {
+      writeEpsilonPlot(EoverEtrue_g1_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+    } else {
+      writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+    }
+  }
+
 #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
   delete TTree_JoshMva;
 #endif

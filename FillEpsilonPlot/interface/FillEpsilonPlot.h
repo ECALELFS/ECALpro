@@ -226,9 +226,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double S4S9_cut_low_[3];
       double S4S9_cut_high_[3];
       double SystOrNot_;
+
+      // MC stuff
       bool isMC_;
       bool MC_Assoc_;
       double MC_Assoc_DeltaR;
+      bool isEoverEtrue_;  // to run E/Etrue flow (with MC only)
       math::XYZPoint Gamma1MC;
       math::XYZPoint Gamma2MC;
       // for MC truth with more pi0
@@ -247,11 +250,24 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F* h_numberMatchedGenPhotonPairs_EE;  
       TH1F* h_numberUnmergedGenPhotonPairs; // absolute number without separating EB and EE 
       TH1F* h_numberMatchedGenPhotonPairs;  
+      // for E/Etrue with MC
+      TH1F **EoverEtrue_g1_EB_h;  
+      TH1F **EoverEtrue_g1_EE_h;  
+      TH1F **EoverEtrue_g2_EB_h;  
+      TH1F **EoverEtrue_g2_EE_h;  
+      TH1F *allEoverEtrue_g1_EE; 
+      TH1F *allEoverEtrue_g1_EEnw; 
+      TH1F *allEoverEtrue_g1_EB;
+      TH1F *allEoverEtrue_g1_EBnw;
+      TH1F *allEoverEtrue_g2_EE; 
+      TH1F *allEoverEtrue_g2_EEnw; 
+      TH1F *allEoverEtrue_g2_EB;
+      TH1F *allEoverEtrue_g2_EBnw;
+
       /////////
       bool isCRAB_;
       bool MakeNtuple4optimization_;
       bool isDebug_;
-      bool isEoverEtrue_;  // to run E/Etrue flow (with MC only)
       /// all the three options have to be instantiated to allow the
       //choice at runtime
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
