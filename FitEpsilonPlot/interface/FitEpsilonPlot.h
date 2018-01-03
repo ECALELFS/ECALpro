@@ -61,15 +61,20 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       void deleteEpsilonPlot(TH1F **h, int size);
 
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
-      TFitResultPtr FitEoverEtruePeak(TH1F* h1, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
+      TFitResultPtr FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
 
       // ----------member data ---------------------------
 
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
       EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib;
       EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib;
-
       EcalRegionalCalibrationBase *regionalCalibration_;    // use it for pi0 mass or first photon with E/overEtrue
+
+      // for second photon with E/Etrue (MC only)
+      // I create them with "regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::Xtal>()" directly in the source
+      /* EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib_g2; */
       EcalRegionalCalibrationBase *regionalCalibration_g2_; // use it for second gen photon with E/Etrue
 
       int currentIteration_;
@@ -94,17 +99,21 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
 
       // for E/Etrue with MC 
+      bool isEoverEtrue_;
       TH1F **EoverEtrue_g1_EB_h;
       TH1F **EoverEtrue_g1_EE_h;
       TH1F **EoverEtrue_g2_EB_h;
       TH1F **EoverEtrue_g2_EE_h;
+      std::map<int,TFitResultPtr> EBmap_fitresptr_g1;
+      std::map<int,TFitResultPtr> EBmap_fitresptr_g2;
+      std::map<int,TFitResultPtr> EEmap_fitresptr_g1;
+      std::map<int,TFitResultPtr> EEmap_fitresptr_g2;
 
       TFile *inputEpsilonFile_;
       TFile *outfile_;
       TFile *outfileTEST_;
 
       bool useMassInsteadOfEpsilon_;
-      bool isEoverEtrue_;
 
       std::map<int,float> EBmap_Signal;//#
       std::map<int,float> EBmap_Backgr;

@@ -267,10 +267,20 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// setting calibration type
     calibTypeString_ = iConfig.getUntrackedParameter<std::string>("CalibType");
-    if(     calibTypeString_.compare("xtal")    == 0 ) { calibTypeNumber_ = xtal;    regionalCalibration_ = &xtalCalib; } 
-    else if(calibTypeString_.compare("tt")      == 0 ) { calibTypeNumber_ = tt;      regionalCalibration_ = &TTCalib;   }
-    else if(calibTypeString_.compare("etaring") == 0 ) { calibTypeNumber_ = etaring; regionalCalibration_ = &etaCalib;  }
-    else throw cms::Exception("CalibType") << "Calib type not recognized\n";
+    if(     calibTypeString_.compare("xtal")    == 0 ) {
+      calibTypeNumber_ = xtal;
+      regionalCalibration_ = &xtalCalib;
+      if (isEoverEtrue_) regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::Xtal>();  //regionalCalibration_g2_ = &xtalCalib_g2;
+    } else if(calibTypeString_.compare("tt")      == 0 ) {
+      calibTypeNumber_ = tt;
+      regionalCalibration_ = &TTCalib;
+      if (isEoverEtrue_) regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::TrigTower>(); // regionalCalibration_g2_ = &TTCalib_g2;
+    } else if(calibTypeString_.compare("etaring") == 0 ) {
+      calibTypeNumber_ = etaring;
+      regionalCalibration_ = &etaCalib;
+      if (isEoverEtrue_) regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::EtaRing>(); // regionalCalibration_g2_ = &etaCalib_g2;
+    } else throw cms::Exception("CalibType") << "Calib type not recognized\n";
+
     cout << "crosscheck: selected type: " << regionalCalibration_->printType() << endl;
 
     /// external hardcoded geometry
@@ -309,7 +319,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       cout << "FillEpsilonPlot:: loading calibration map at " << calibMapPath_ << endl;
       if( isCRAB_ ) fileName = edm::FileInPath( calibMapPath_.c_str() ).fullPath().c_str();
       else          fileName = calibMapPath_;
-      regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName.c_str());
+      regionalCalibration_->getCalibMap()->loadCalibMapFromFile(fileName.c_str(),false);
+      if (isEoverEtrue_) regionalCalibration_g2_->getCalibMap()->loadCalibMapFromFile(fileName.c_str(),true);
     }
 
     /// epsilon histograms
@@ -319,11 +330,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
 	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
 	  EoverEtrue_g1_EB_h = initializeEpsilonHistograms("EoverEtrue_g1_EB_iR_","reco/gen #gamma1 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
-	  EoverEtrue_g2_EB_h = initializeEpsilonHistograms("EoverEtrue_g2_EB_iR_","reco/gen #gamma2 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  EoverEtrue_g2_EB_h = initializeEpsilonHistograms("EoverEtrue_g2_EB_iR_","reco/gen #gamma2 energy EB - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
 	}
 	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
 	  EoverEtrue_g1_EE_h = initializeEpsilonHistograms("EoverEtrue_g1_EE_iR_","reco/gen #gamma1 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
-	  EoverEtrue_g2_EE_h = initializeEpsilonHistograms("EoverEtrue_g2_EE_iR_","reco/gen #gamma2 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	  EoverEtrue_g2_EE_h = initializeEpsilonHistograms("EoverEtrue_g2_EE_iR_","reco/gen #gamma2 energy - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
 	}
 
       } else {
@@ -578,7 +589,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
       deleteEpsilonPlot(EoverEtrue_g1_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
-      deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
     } else {
       deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
     }
@@ -587,7 +598,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
       deleteEpsilonPlot(EoverEtrue_g1_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
-      deleteEpsilonPlot(EoverEtrue_g2_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      deleteEpsilonPlot(EoverEtrue_g2_EE_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
     } else {
       deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
     }
@@ -1105,7 +1116,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   } else {
 
-    // Things names *_used are meaningful for MC because they are obtained filtering on MC truth to match the reco photons to the gen ones.
+    // Things named *_used are meaningful for MC because they are obtained filtering on MC truth to match the reco photons to the gen ones.
     // For data or in case we decide to disable MC_Assoc_ when using MC (but currently it is basically the same flag as isMC_) we just assign 
     // the collection to the "*_used" so that we can always use the latter without loss of generality
 
@@ -1258,7 +1269,12 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	convxtalid(iphi,ieta);
 
 	// use calibration coeff for energy and position
-	float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
+	// FIXME: if isEoverEtrue_ is true, then we are not using the pi0 IC, but the photon dependent correction based on E/Etrue
+	// this means we should know which photon we are looking at
+	float en = RecHitsInWindow[j]->energy();
+	if (not isEoverEtrue_) {
+	  en *= regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
+	} 
 	int dx = diff_neta_s(seed_ieta,ieta);
 	int dy = diff_nphi_s(seed_iphi,iphi);
 	EnergyCristals[j] = en;
@@ -1506,7 +1522,12 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	int iy = det.iy();
 
 	// use calibration coeff for energy and position
-	float en = RecHitsInWindow[j]->energy() * regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
+	// FIXME: if isEoverEtrue_ is true, then we are not using the pi0 IC, but the photon dependent correction based on E/Etrue
+	// this means we should know which photon we are looking at
+	float en = RecHitsInWindow[j]->energy();
+	if (not isEoverEtrue_) {
+	  en *= regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
+	} 
 	int dx = seed_ix-ix;
 	int dy = seed_iy-iy;
 	EnergyCristals[j] = en;
@@ -3035,7 +3056,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
       // compute region weights
       RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
-      RegionWeightVector w2 = regionalCalibration_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
+      RegionWeightVector w2 = regionalCalibration_g2_->getWeights( &(*g2), subDetId ); // region weights W_j^k for clu2
 
       // do not append w2 to w1, keep them separate to disentangle the 2 photons
       // w1.insert( w1.end(), w2.begin(), w2.end() );
@@ -3506,7 +3527,7 @@ void FillEpsilonPlot::endJob(){
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
       writeEpsilonPlot(EoverEtrue_g1_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
-      writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
     } else {
       writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
     }
@@ -3515,7 +3536,7 @@ void FillEpsilonPlot::endJob(){
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
       writeEpsilonPlot(EoverEtrue_g1_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
-      writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
     } else {
       writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
     }

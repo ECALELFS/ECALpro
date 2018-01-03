@@ -273,8 +273,14 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
       EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib;
       EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib;
+      EcalRegionalCalibrationBase *regionalCalibration_;  // use it for pi0 mass or first photon with E/overEtrue
 
-      EcalRegionalCalibrationBase *regionalCalibration_;
+      // for second photon with E/Etrue (MC only)
+      // I create them with "regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::Xtal>()" directly in the source 
+      /* EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib_g2; */
+      EcalRegionalCalibrationBase *regionalCalibration_g2_; // use it for second gen photon with E/Etrue
 
       int currentIteration_;
       string outputDir_;
