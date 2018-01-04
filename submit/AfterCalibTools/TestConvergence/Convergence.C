@@ -177,10 +177,11 @@ void Convergence::run(const string& detectorToSkip = "no") {
     
 
     ////////////////////////////////////
-    // open file with EE maps to get etaRing given iX and iY                                                                                                       
-    // the file was created using convert_eerings_dat_to_TH2.C                                                                                                       
+    // open file with EE maps to get etaRing given iX and iY                                                           
+    // the file was created using convert_eerings_dat_to_TH2.C                                                         
     // path of file is ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/PlotMaker/2DmapMaker/
     // we are in ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/TestConvergence/
+    // I also saved a copy here: /afs/cern.ch/user/m/mciprian/public/ECALproTools/EE_xyzToEtaRing/eerings_modified.root
     string rootfileName = "";
     TFile *rootFile = NULL;
     TH2F *hEEplus = NULL;  // will point to the histogram for EE+ 
@@ -199,8 +200,8 @@ void Convergence::run(const string& detectorToSkip = "no") {
 	cout << "Error: histogram not found in file ' " << rootfileName << "'. End of programme." << endl;
 	exit(EXIT_FAILURE);
       } else {
-	hEEplus->SetDirectory(0); // to decouple it from the open file directory                                                                          
-	hEEminus->SetDirectory(0); // to decouple it from the open file directory                                                                          
+	hEEplus->SetDirectory(0); // to decouple it from the open file directory                                       
+	hEEminus->SetDirectory(0); // to decouple it from the open file directory                                      
       }
     }
       
