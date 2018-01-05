@@ -241,7 +241,7 @@ void Convergence::run(const string& detectorToSkip = "no") {
       etaRingEdges.push_back(37);
       
       hrange = 0.10; 
-      nbins = 50;
+      nbins = 100;
     }
 
     Int_t n_hbinned;
