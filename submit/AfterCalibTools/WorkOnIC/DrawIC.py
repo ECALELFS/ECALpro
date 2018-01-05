@@ -138,11 +138,12 @@ class ICplotter:
 
                     average = 0.0
                     for iphi in range (1,h.GetNbinsX()+1):
-                        if h.GetBinContent(iphi,ieta) != 1.:
+                        if h.GetBinContent(iphi,ieta) != 1. and h.GetBinContent(iphi,ieta) > 0.00001:
                             # if the calibration costant is exactly 1., it means the fit failed or there was some other problem such that the IC was set to 1.0
                             # in this case, do not modify it dividing by the average (note that, since its IC is 1, it can still be used to compute the average)
                             hnorm1.SetBinContent(iphi,ieta,h.GetBinContent(iphi,ieta)/ICsum_etaring)
-                        average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
+                        #average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
+                        average += hnorm1.GetBinContent(iphi,ieta)/xtalsInEtaRing  # can sum even if bin is 0 or 1 for the average
                     print "EB etaring %s: Nxtal %s   average %.4f" % (str(ieta-86),str(xtalsInEtaRing),average)
 
                 plots2D.append(hnorm1)
@@ -165,11 +166,12 @@ class ICplotter:
                     for ix in range (1,101):
                         for iy in range (1,101):
                             if h_ietaring.GetBinContent(ix,iy) == ietaring:
-                                if h.GetBinContent(ix,iy) != 1.:
+                                if h.GetBinContent(ix,iy) != 1. and h.GetBinContent(ix,iy) > 0.00001:
                                     # if the calibration costant is exactly 1., it means the fit failed or there was some other problem such that the IC was set to 1.0
                                     # in this case, do not modify it dividing by the average (note that, since its IC is 1, it can still be used to compute the average)
                                     hnorm1.SetBinContent(ix,iy,h.GetBinContent(ix,iy)/ICsum_etaring)
-                                average += h.GetBinContent(ix,iy)/(xtalsInEtaRing * ICsum_etaring)                       
+                                #average += h.GetBinContent(ix,iy)/(xtalsInEtaRing * ICsum_etaring)                       
+                                average += hnorm1.GetBinContent(ix,iy)/xtalsInEtaRing  # can sum even if bin is 0 or 1 for the average
                     print "EE etaring %s: Nxtal %s   average %.4f" % (str(ietaring),str(xtalsInEtaRing),average)
 
                 plots2D.append(hnorm1)
