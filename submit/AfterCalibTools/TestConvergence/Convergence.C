@@ -232,13 +232,13 @@ void Convergence::run(const string& detectorToSkip = "no") {
     } 
     else if (isEB==1){
       
-      // divide EE in bins of ietaRing, from 0 up to 37 (max(ietaRing index) = 36, so etaRing=37 is not considered in the range). 
-      //First range will be [1,9) and so on (upper value excluded) 
-      etaRingEdges.push_back(1);
+      // divide EE in bins of ietaRing, from 0 up to 39 (max(ietaRing index) = 38, so etaRing=39 is not considered in the range). 
+      //First range will be [0,9) and so on (upper value excluded) 
+      etaRingEdges.push_back(0);
       etaRingEdges.push_back(10);
-      etaRingEdges.push_back(19);
-      etaRingEdges.push_back(28);
-      etaRingEdges.push_back(37);
+      etaRingEdges.push_back(20);
+      etaRingEdges.push_back(30);
+      etaRingEdges.push_back(39);
       
       hrange = 0.10; 
       nbins = 100;
