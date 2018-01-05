@@ -150,8 +150,8 @@ void Convergence::run(const string& detectorToSkip = "no") {
 
   cout << endl;
   cout << "====> Test of the convergence of the calibrations. <====" << endl
-            << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
-            << nIter << " iterations" << endl;
+       << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
+       << nIter+1 << " iterations (" << nIter << " steps)" << endl;
 
   if (detectorToSkip != "no") {
     cout << endl;
