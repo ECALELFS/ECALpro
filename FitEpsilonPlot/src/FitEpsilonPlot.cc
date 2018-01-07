@@ -78,6 +78,9 @@ static double upper_bound_pi0mass_EE = 0.16;
 static double upper_bound_etamass_EB = 0.62;
 static double upper_bound_etamass_EE = 0.62;
 
+static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
+static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
+
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
 {
@@ -952,7 +955,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		      if(integral>60.) {
 
-			Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
+			Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
 			RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			mean = mean_fitresult->getVal();
 
@@ -1083,7 +1086,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		      if(integral>70.)
 			{
-			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? 0.08:0.4, Are_pi0_? 0.21:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
+			  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 			  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 			  mean = mean_fitresult->getVal();
 			  float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
