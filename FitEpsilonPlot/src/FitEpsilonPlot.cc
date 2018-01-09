@@ -591,15 +591,15 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
   outfile_->cd();
 
   // 2D calib map in the barrel
-  TH2F* hmap_EB = new TH2F((isSecondGenPhoton ? "calibMap_EB" : "calibMap_EB_g2"),"EB calib coefficients: #eta on x, #phi on y",
+  TH2F* hmap_EB = new TH2F((isSecondGenPhoton ? "calibMap_EB_g2" : "calibMap_EB"),"EB calib coefficients: #eta on x, #phi on y",
 			   2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,
 			   EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
   hmap_EB->GetXaxis()->SetTitle("i#eta");
   hmap_EB->GetYaxis()->SetTitle("i#phi");
-  TH2F* hmap_EEp = new TH2F((isSecondGenPhoton ? "calibMap_EEp" : "calibMap_EEp_g2"),"EE+ calib coefficients",100,0.5,100.5,100,0.5,100.5);
+  TH2F* hmap_EEp = new TH2F((isSecondGenPhoton ? "calibMap_EEp_g2" : "calibMap_EEp"),"EE+ calib coefficients",100,0.5,100.5,100,0.5,100.5);
   hmap_EEp->GetXaxis()->SetTitle("ix");
   hmap_EEp->GetYaxis()->SetTitle("iy");
-  TH2F* hmap_EEm = new TH2F((isSecondGenPhoton ? "calibMap_EEm" : "calibMap_EEm_g2"),"EE- calib coefficients",100,0.5,100.5,100,0.5,100.5);
+  TH2F* hmap_EEm = new TH2F((isSecondGenPhoton ? "calibMap_EEm_g2" : "calibMap_EEm"),"EE- calib coefficients",100,0.5,100.5,100,0.5,100.5);
   hmap_EEm->GetXaxis()->SetTitle("ix");
   hmap_EEm->GetYaxis()->SetTitle("iy");
   TH1F* hint = new TH1F("hint","Bin1: inRangeFit_ Bin2: finRangeFit_ Bin3: Barrel(0)/Endcap(1)",3,0.,3.);
@@ -625,6 +625,10 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
   	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
       } // loop over DetId in regions
     }
+
+  hmap_EB->SetMinimum(0.9);
+  hmap_EB->SetStats(false);
+  hmap_EB->Write();
 
   for(int jR=0; jR < regCalibToUse->getCalibMap()->getNRegionsEE(); jR++)
     {
@@ -683,8 +687,8 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
   int ic;
   int iquadrant;
 
-  TTree* treeEB = new TTree((isSecondGenPhoton ? "calibEB" : "calibEB_g2"),"Tree of EB Inter-calibration constants");
-  TTree* treeEE = new TTree((isSecondGenPhoton ? "calibEE" : "calibEE_g2"),"Tree of EE Inter-calibration constants");
+  TTree* treeEB = new TTree((isSecondGenPhoton ? "calibEB_g2" : "calibEB"),"Tree of EB Inter-calibration constants");
+  TTree* treeEE = new TTree((isSecondGenPhoton ? "calibEE_g2" : "calibEE"),"Tree of EE Inter-calibration constants");
 
   /// barrel
   treeEB->Branch("rawId",&rawId,"rawId/i");
