@@ -1271,10 +1271,15 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	// use calibration coeff for energy and position
 	// FIXME: if isEoverEtrue_ is true, then we are not using the pi0 IC, but the photon dependent correction based on E/Etrue
 	// this means we should know which photon we are looking at
+	// at this moment, we are not able to assess which photon will be the first one (we would know it if we could rely on the fact that the clusters 
+	// will always be the same so that the first and second clusters are always the same (therefore we could rely on their DetId).
 	float en = RecHitsInWindow[j]->energy();
 	if (not isEoverEtrue_) {
 	  en *= regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
-	} 
+	}//  else {
+	//   // check if this detId belonged to a "first" or "second" photon according to previous iteration
+	//   // I would need something like another calibration map with this information
+	// }
 	int dx = diff_neta_s(seed_ieta,ieta);
 	int dy = diff_nphi_s(seed_iphi,iphi);
 	EnergyCristals[j] = en;
@@ -1827,6 +1832,9 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
 								 ) 
 {
 
+  // FIXME: order the reco photons matched to a gen pi0 based on the seed energy (at the moment it is not guaranteed)
+
+
   // std::cout << "### Entering FillEpsilonPlot::MCTruthAssociateMultiPi0" << std::endl;
 
   vector<TLorentzVector>* vecGamma1MC_ptr = (isEB ? &vecGamma1MC_EB : &vecGamma1MC_EE);
@@ -1892,16 +1900,14 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
   
     } // loop on reco cluster the first time
 
-    // now, if we found a reco cluster with DR lower than the chosen threshold, we remove the cluster index from the list of available cluster and
+    // now, if we find a reco cluster with DR lower than the chosen threshold, we remove the cluster index from the list of available cluster and
     // go on to match the second one
     // then, if the second gen photon cannot be matched to any reco photon, we will add the cluster index back in the list and remove the cluster from ret
     // in this way we will build only the list of cluster matched unambiguously to the gen level photon 
-
+    // we also have to order the reco pair based on seed energy to make the flow consistent with pi0 calibration
+    
     if(deltaR1_tmp < deltaR) {
       clusterIndexAlreadyUsed.insert(n_tmp1);
-      if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
-      else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
-      ret.push_back(clusters[n_tmp1]);
     } else {
       numberUnmatchedGenPhotonPairs++;
       continue;
@@ -1922,19 +1928,64 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
     } // loop on reco cluster the second time 
 
     // if we arrived here, it means the first gen photon was matched to a reco cluster within a given DR
-    // now, if we cannot matched the second photon, we consider the photon pair to be unmatched, and before continuing the loop we have to 
-    // add back the previous reco cluster among the list of available ones
+    // now, if we cannot matched the second photon, we consider the photon pair to be unmatched and we add back the n_tmp1 cluster index
+    // otherwise we evaluate the ordering based on seed energy and fill the containers 
 
     if(deltaR2_tmp < deltaR) {
+
+      bool g1_seed_energy_is_bigger = true;
       clusterIndexAlreadyUsed.insert(n_tmp2);
-      if(isEB) Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
-      else Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
-      ret.push_back(clusters[n_tmp2]);
+
+      if(isEB) {
+
+	// find the rec hit of the seed and then get the energy
+	EBRecHitCollection::const_iterator rechit_seed_g1 = ebHandle->find( clusters[n_tmp1].seed() );
+	EBRecHitCollection::const_iterator rechit_seed_g2 = ebHandle->find( clusters[n_tmp2].seed() );
+	if (rechit_seed_g1->energy() > rechit_seed_g2->energy()) {
+	  g1_seed_energy_is_bigger = true;
+	  Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
+	  Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
+	  ret.push_back(clusters[n_tmp1]);
+	  ret.push_back(clusters[n_tmp2]);
+	} else {
+	  g1_seed_energy_is_bigger = false;
+	  Ncristal_EB_used.push_back(Ncristal_EB[n_tmp2]);
+	  Ncristal_EB_used.push_back(Ncristal_EB[n_tmp1]);
+	  ret.push_back(clusters[n_tmp2]);
+	  ret.push_back(clusters[n_tmp1]);
+	}
+
+      } else {
+
+	// find the rec hit of the seed and then get the energy
+	EERecHitCollection::const_iterator rechit_seed_g1 = eeHandle->find( clusters[n_tmp1].seed() );
+	EERecHitCollection::const_iterator rechit_seed_g2 = eeHandle->find( clusters[n_tmp2].seed() );
+	if (rechit_seed_g1->energy() > rechit_seed_g2->energy()) {
+	  g1_seed_energy_is_bigger = true;
+	  Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
+	  Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
+	  ret.push_back(clusters[n_tmp1]);
+	  ret.push_back(clusters[n_tmp2]);
+	} else {
+	  g1_seed_energy_is_bigger = false;
+	  Ncristal_EE_used.push_back(Ncristal_EE[n_tmp2]);
+	  Ncristal_EE_used.push_back(Ncristal_EE[n_tmp1]);
+	  ret.push_back(clusters[n_tmp2]);
+	  ret.push_back(clusters[n_tmp1]);
+	}
+
+      }
+
+      if (g1_seed_energy_is_bigger) {
+	retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
+	retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
+      } else {
+	retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
+	retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
+      }
+
     } else {
       clusterIndexAlreadyUsed.erase(n_tmp1); 
-      if(isEB) Ncristal_EB_used.pop_back();
-      else Ncristal_EE_used.pop_back();
-      ret.pop_back();
       numberUnmatchedGenPhotonPairs++;
       continue;
     }
@@ -1961,10 +2012,6 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
     // std::cout << "ntmp = " << n_tmp1 << "  " << n_tmp2 << std::endl;
 
     //cout << "Warning in FillEpsilonPlot::MCTruthAssociateMultiPi0: found the same CaloCluster closer to both gen photons. Will skip this gen photon pair." << endl;
-
-    // once we arrive here, it means we associated 2 reco clusters to the gen photon pair. Now we store the gen photons' energy
-    retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
-    retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
 
   } // loop on gen photons
 
