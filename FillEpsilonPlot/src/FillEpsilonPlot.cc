@@ -1736,7 +1736,7 @@ TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char
 
     if (isEoverEtrue_) {
 
-      h[jR] = new TH1F(name_c.c_str(), title_c.c_str(), 150, 0.0, 1.5); 
+      h[jR] = new TH1F(name_c.c_str(), title_c.c_str(), 75, 0.0, 1.5); 
       h[jR]->GetXaxis()->SetTitle("photon E/E_{true}");
 
     } else {
