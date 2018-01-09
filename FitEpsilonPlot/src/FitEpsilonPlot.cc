@@ -81,6 +81,8 @@ static double upper_bound_etamass_EE = 0.62;
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
 
+static float EoverEtrue_integralMin = 20; // require that integral in a given range is > 20 for E/Etrue distribution (used for MC only)
+
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
 {
@@ -875,7 +877,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  int iMax = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(1.1);
 		  double integral = EoverEtrue_g1_EB_h[j]->Integral(iMin, iMax);  
 
-		  if(integral>100.) {
+		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g1_EB_h[j], false, j, Pi0EB, false);
 		    mean = fitresptr->Parameter(2);
@@ -893,7 +895,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  iMax = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(1.1);
 		  integral = EoverEtrue_g2_EB_h[j]->Integral(iMin, iMax);  
 
-		  if(integral>100.) {
+		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g2_EB_h[j], true, j, Pi0EB, false);
 		    mean_g2 = fitresptr->Parameter(2);
@@ -1011,7 +1013,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  int iMax = EoverEtrue_g1_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
 		  double integral = EoverEtrue_g1_EE_h[jR]->Integral(iMin, iMax);  
 
-		  if(integral>100.) {
+		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g1_EE_h[jR], false, jR, Pi0EE, false);
 		    mean = fitresptr->Parameter(2);
@@ -1028,7 +1030,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  iMax = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
 		  integral = EoverEtrue_g2_EE_h[jR]->Integral(iMin, iMax);  
 
-		  if(integral>100.) {
+		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g2_EE_h[jR], true, jR, Pi0EE, false);
 		    mean_g2 = fitresptr->Parameter(2);
