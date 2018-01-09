@@ -34,9 +34,11 @@ env_script_n = workdir + "/resubmit.sh"
 env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
+env_script_f.write("ulimit -c 0\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-print "python calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs)
-env_script_f.write("python calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs) + "\n")
+print "python " + pwd + "/calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs)
+env_script_f.write("python " + pwd + "/calibJobHandler.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs) + "\n")
+env_script_f.write("rm -rf " + pwd + "/core.*\n")
 env_script_f.close()
 
 # configuring calibration handler
