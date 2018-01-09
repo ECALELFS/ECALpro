@@ -44,7 +44,7 @@ env_script_f.close()
 # configuring calibration handler
 print "[resubmit] Iteration to resume = " + str(iteration_to_resume)
 print "[resubmit] Submitting calibration handler"
-submit_s = "bsub -q " + queueForDaemon + " -o " + workdir + "/resume-calibration.log source " + env_script_n
+submit_s = "bsub -q " + queueForDaemon + " -oo " + workdir + "/resume-calibration.log source " + env_script_n
 print "[resubmit]  '-- " + submit_s
 
 # submitting calibration handler
