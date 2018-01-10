@@ -370,15 +370,15 @@ If this is not the case, modify FillEpsilonPlot.cc
     if (14647%nFit != 0) :
         nEE = int(nEE) +1
     # For final hadd
-    ListFinaHaddEB = list()
-    ListFinaHaddEE = list()
+    ListFinalHaddEB = list()
+    ListFinalHaddEE = list()
     # preparing submission of fit tasks (EB)
     print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
     for inteb in range(nEB):
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
         fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+        ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         print 'About to EB fit:'
         print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         print submit_s
@@ -393,7 +393,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
         fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
         submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinaHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+        ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         print 'About to EE fit:'
         print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
         print submit_s
@@ -429,16 +429,22 @@ If this is not the case, modify FillEpsilonPlot.cc
     gSystem.Load("libFWCoreFWLite.so")
     #AutoLibraryLoader.enable()
     FWLiteEnabler.enable()
-    f = TFile(eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName, 'recreate')
+    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
+    f = TFile(finalCalibMapFileName, 'recreate')
+    if not f:
+        print "WARNING in calibjobHandler.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ..."
+        quit()
+    else:
+        f.cd()
     #Run only on EB or EE if needed
-    ListFinaHadd = list()
+    ListFinalHadd = list()
     if Barrel_or_Endcap=='ONLY_BARREL':
-       ListFinaHadd = ListFinaHaddEB
+       ListFinalHadd = ListFinalHaddEB
     if Barrel_or_Endcap=='ONLY_ENDCAP':
-       ListFinaHadd = ListFinaHaddEE
+       ListFinalHadd = ListFinalHaddEE
     if (Barrel_or_Endcap=='ALL_PLEASE'):
-       ListFinaHadd = ListFinaHaddEB
-       ListFinaHadd = ListFinaHadd + ListFinaHaddEE
+       ListFinalHadd = ListFinalHaddEB
+       ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
     # # Create a struct
     # if(Barrel_or_Endcap=='ONLY_BARREL' or Barrel_or_Endcap=='ALL_PLEASE'):
@@ -623,7 +629,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     # # print eosFileList.communicate()
     # # print "############################"
 
-    # for thisfile_s in ListFinaHadd:
+    # for thisfile_s in ListFinalHadd:
     #     thisfile_s = thisfile_s.rstrip()
     #     print "file --> " + str(thisfile_s)
     #     thisfile_f = TFile.Open(thisfile_s)
@@ -921,6 +927,11 @@ If this is not the case, modify FillEpsilonPlot.cc
             t = EEStruct()
             t1 = EE1Struct()
 
+        if f.IsOpen():
+            f.cd()
+        else:
+            print "ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat
+
         if isEoverEtrue and n_repeat == 1:
             calibMap_EB = TH2F("calibMap_EB_g2", "EB calib coefficients: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
             calibMap_EEm = TH2F("calibMap_EEm_g2", "EE- calib coefficients", 100,0.5,100.5,100,0.5,100.5)
@@ -995,7 +1006,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         # print eosFileList.communicate()
         # print "############################"
 
-        for thisfile_s in ListFinaHadd:
+        for thisfile_s in ListFinalHadd:
             thisfile_s = thisfile_s.rstrip()
             print "file --> " + str(thisfile_s)
             thisfile_f = TFile.Open(thisfile_s)
@@ -1159,14 +1170,17 @@ If this is not the case, modify FillEpsilonPlot.cc
 
             thisfile_f.Close()
 
+        # write objects to file before going to next objects
+        f.cd()
+        f.Write()
 
 
 ##########################################
 ##########################################
 
 
-    f.cd()
-    f.Write()
+    # f.cd()
+    # f.Write()
     f.Close()
 
     print "Done with iteration " + str(iters)
