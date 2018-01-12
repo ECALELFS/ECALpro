@@ -81,7 +81,7 @@ static double upper_bound_etamass_EE = 0.62;
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
 
-static float EoverEtrue_integralMin = 20; // require that integral in a given range is > 20 for E/Etrue distribution (used for MC only)
+static float EoverEtrue_integralMin = 10; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
@@ -141,6 +141,8 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
       regionalCalibration_->getCalibMap()->loadCalibMapFromFile(calibMapPath_.c_str(),false);
 	  if (isEoverEtrue_) regionalCalibration_g2_->getCalibMap()->loadCalibMapFromFile(calibMapPath_.c_str(),true);
     }
+
+    TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
 
     // load epsilon from current iter
     if (isEoverEtrue_) {

@@ -284,6 +284,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     cout << "crosscheck: selected type: " << regionalCalibration_->printType() << endl;
 
+    TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
+
     /// external hardcoded geometry
 
     externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
@@ -1754,6 +1756,9 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 
 TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char *title, int size )
 {
+
+  TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
+
   TH1F **h = new TH1F*[size];
   // char name_c[100];
   // char title_c[200];
