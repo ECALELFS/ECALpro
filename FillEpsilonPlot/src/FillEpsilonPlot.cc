@@ -138,6 +138,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     HLTResultsNameEB_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEB","AlCa_EcalPi0EB");
     HLTResultsNameEE_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEE","AlCa_EcalPi0EE");
+    RemoveSeedsCloseToDeadXtal_        = iConfig.getUntrackedParameter<bool>("RemoveSeedsCloseToDeadXtal",false);
     RemoveDead_Flag_                   = iConfig.getUntrackedParameter<bool>("RemoveDead_Flag",false);
     RemoveDead_Map_                    = iConfig.getUntrackedParameter<std::string>("RemoveDead_Map");
     L1_Bit_Sele_                       = iConfig.getUntrackedParameter<std::string>("L1_Bit_Sele","");
@@ -1209,7 +1210,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	if( ixtal == ebHandle->end() ) continue; // xtal not found
 
 	RecHitsInWindow.push_back( &(*ixtal) );
-	clus_used.push_back(std::make_pair(*det,1.));
+	clus_used.push_back(std::make_pair(*det,1.));  // it seems it is not used anywhere
 
 	simple_energy +=  ixtal->energy();
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
@@ -1258,10 +1259,17 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	EBDetId det(RecHitsInWindow[j]->id());
 
 	if( RemoveDead_Flag_){
-	  if(!checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) All_rechit_good = false; 
+	  if(!checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  )  {
+	    All_rechit_good = false; 
+	    break;  // exit this loop as soon as one crystal is dead, because at the end of this loop there is a continue if All_rechit_good = false
+	    // at the moment I see the rechits are added in the list of used ones, which is probably wrong if I reject this cluster
+	  }
 	}
 	if( RemoveDead_Map_!="" ){
-	  if( isInDeadMap( true, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+	  if( isInDeadMap( true, *RecHitsInWindow[j] ) ) {
+	    All_rechit_good = false;
+	    break;  // exit this loop as soon as one crystal is dead
+	  }
 	}
 
 	int ieta = det.ieta();
@@ -1293,7 +1301,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	  if(dx >= 0 && dy >=0){ s4s9_tmp[3] += en; }
 	  enFracs.push_back( std::make_pair( RecHitsInWindow[j]->id(), en ) );
 	  // Note: I'm using fractions to save rechit energy
-	  isUsed.insert(RecHitsInWindow[j]->id());
+	  // isUsed.insert(RecHitsInWindow[j]->id());  // these crystals should be readded if the matrix is discarded, I add this line later
 
 	}
 
@@ -1325,6 +1333,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     } // loop over 3x3 rechits
 
     if(!All_rechit_good) continue;
+
     float e2x2 = *max_element( s4s9_tmp,s4s9_tmp+4);
     float s4s9 = e2x2/e3x3;
     math::XYZPoint clusPos( xclu/total_weight, 
@@ -1352,8 +1361,15 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     //    if(s4s9<S4S9_cut_[EcalBarrel]-S4S9_cut_[EcalBarrel]*(28.3/100) || e3x3/cosh(clusPos.eta())<gPtCut_[EcalBarrel]-gPtCut_[EcalBarrel]*(28.3/100)) FailPreselEB=true;
     //  }
     //}
-    if( fabs( clusPos.eta() )<1. ){ if(s4s9<S4S9_cut_low_[EcalBarrel]) continue;}
-    else                          { if(s4s9<S4S9_cut_high_[EcalBarrel]) continue;}
+
+    // adding cut on number of crystals
+    if( fabs( clusPos.eta() )<1. ) {
+      if (s4s9<S4S9_cut_low_[EcalBarrel]) continue;
+      if ( RecHitsInWindow.size() < min(nXtal_1_cut_low_[EcalBarrel],nXtal_2_cut_low_[EcalBarrel]) ) continue;
+    } else { 
+      if (s4s9<S4S9_cut_high_[EcalBarrel]) continue;
+      if ( RecHitsInWindow.size() <  min(nXtal_1_cut_high_[EcalBarrel],nXtal_2_cut_high_[EcalBarrel]) ) continue;
+    }
 
 
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
@@ -1369,6 +1385,13 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
     if( fabs( clusPos.eta() )<1. ){ if( ptClus<gPtCut_low_[EcalBarrel]) continue; }
     else                          { if( ptClus<gPtCut_high_[EcalBarrel]) continue; }
+
+
+    // reloop on recHits to add them in the set of used recHits
+    for(unsigned int j=0; j<RecHitsInWindow.size();j++)
+    {
+      isUsed.insert(RecHitsInWindow[j]->id());
+    }
 
     // make calo clusters
     vs4s9.push_back( s4s9 ); 
@@ -1473,7 +1496,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	if( ixtal == eeHandle->end() ) continue; // xtal not found
 
 	RecHitsInWindow.push_back( &(*ixtal) );
-	clus_used.push_back(std::make_pair(*det,1.));
+	clus_used.push_back(std::make_pair(*det,1.)); // it seems it is not used anywhereisUsed
 	simple_energy +=  ixtal->energy();
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
     }  // loop over xtals in the region
@@ -1517,10 +1540,17 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	EEDetId det(RecHitsInWindow[j]->id());
 
 	if( RemoveDead_Flag_ ){
-	  if( !checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) All_rechit_good = false;
+	  if( !checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) {
+	    All_rechit_good = false;
+	    break;  // exit this loop as soon as one crystal is dead, because at the end of this loop there is a continue if All_rechit_good = false
+	    // at the moment I see the rechits are added in the list of used ones, which is probably wrong if I reject this cluster
+	  }
 	}
 	if( RemoveDead_Map_!="" ){
-	  if( isInDeadMap( false, *RecHitsInWindow[j] ) ) All_rechit_good = false;
+	  if( isInDeadMap( false, *RecHitsInWindow[j] ) ) {
+	    All_rechit_good = false;
+	    break;  // exit this loop as soon as one crystal is dead
+	  }
 	}
 
 	int ix = det.ix();
@@ -1596,8 +1626,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     //    if(s4s9<S4S9_cut_[EcalEndcap]-S4S9_cut_[EcalEndcap]*(42.5/100) || e3x3/cosh(clusPos.eta())<gPtCut_[EcalEndcap]-gPtCut_[EcalEndcap]*(42.5/100)) FailPreselEE=true;
     //  }
     //}
-    if( fabs( clusPos.eta() )<1.8 ){ if(s4s9<S4S9_cut_low_[EcalEndcap]) continue; }
-    else                           { if(s4s9<S4S9_cut_high_[EcalEndcap]) continue; }
+    if ( fabs( clusPos.eta() )<1.8 ) { 
+      if (s4s9<S4S9_cut_low_[EcalEndcap]) continue; 
+      if ( RecHitsInWindow.size() < min(nXtal_1_cut_low_[EcalEndcap],nXtal_2_cut_low_[EcalEndcap])) continue;
+    } else { 
+      if (s4s9<S4S9_cut_high_[EcalEndcap]) continue;
+      if ( RecHitsInWindow.size() < min(nXtal_1_cut_high_[EcalEndcap],nXtal_2_cut_high_[EcalEndcap])) continue;
+    }
 
     float ptClus = e3x3/cosh(clusPos.eta());
 

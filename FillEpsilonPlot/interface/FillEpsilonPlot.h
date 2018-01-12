@@ -169,6 +169,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string HLTResultsNameEE_;
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
+      bool RemoveSeedsCloseToDeadXtal_;
       TString L1_Bit_Sele_;
       //float L1BitCollection_[NL1SEED];
 
