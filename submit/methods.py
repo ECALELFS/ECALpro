@@ -257,6 +257,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('" + HLTResultsNameEB + "')\n")
     if(HLTResultsNameEE!=""):
         outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('" + HLTResultsNameEE + "')\n")
+    if RemoveSeedsCloseToDeadXtal:
+        outputfile.write("process.analyzerFillEpsilon.RemoveSeedsCloseToDeadXtal             = cms.untracked.bool(True)\n")        
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(" + RemoveDead_Flag + ")\n")
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('" + RemoveDead_Map + "')\n")
     if(EtaRingCalibEB):
@@ -432,6 +434,8 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     else:
         outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
+    if useFit_RooMinuit:
+        outputfile.write("process.fitEpsilon.useFit_RooMinuit = cms.untracked.bool( True )\n")        
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -456,10 +460,12 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
     # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
     # we keep only the output containing 'FIT_EPSILON:'
-    #outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-    #outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
-    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
-    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
+    if useFit_RooMinuit:
+        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
+        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
+    else:
+        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
+        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
     sourcerooplot = source.replace("calibMap","fitRes")
     destrooplot = destination.replace("calibMap","fitRes")
     outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )

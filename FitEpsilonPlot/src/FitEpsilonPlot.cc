@@ -102,6 +102,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     useMassInsteadOfEpsilon_ = iConfig.getUntrackedParameter<bool>("useMassInsteadOfEpsilon",true);
     isEoverEtrue_ = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
+    useFit_RooMinuit_ = iConfig.getUntrackedParameter<bool>("useFit_RooMinuit",false);
 
 
     fitFileName_ = outfilename_;
@@ -890,8 +891,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		    mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
+
+		    std::cout << "### g1 ### FIT_EPSILON: iR = " << j << ", integral(0.6,1.1) = " << integral << " , skipping the fit " << std::endl;
 		    mean = 0.;
 		    EBmap_fitresptr_g1[j] = TFitResultPtr(-1);
+
 		  }
 
 		  // second photon 
@@ -908,8 +912,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		    mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
+
+		    std::cout << "### g2 ### FIT_EPSILON: iR = " << j << ", integral(0.6,1.1) = " << integral << " , skipping the fit " << std::endl;
 		    mean_g2 = 0.;
 		    EBmap_fitresptr_g2[j] = TFitResultPtr(-1);
+
 		  }
 		  
 		} else {
@@ -1026,8 +1033,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		    mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
+
+		    std::cout << "### g1 ### FIT_EPSILON: iR = " << jR << ", integral(0.6,1.1) = " << integral << " , skipping the fit " << std::endl;
 		    mean = 0.;
 		    EEmap_fitresptr_g1[jR] = TFitResultPtr(-1);
+
 		  }
 
 		  iMin = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(0.6); 
@@ -1043,8 +1053,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		    mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
+
+		    std::cout << "### g2 ### FIT_EPSILON: iR = " << jR << ", integral(0.6,1.1) = " << integral << " , skipping the fit " << std::endl;
 		    mean_g2 = 0.;
 		    EEmap_fitresptr_g2[jR] = TFitResultPtr(-1);
+
 		  }
 		  
 		} else {
@@ -1288,42 +1301,50 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
     //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
 
-    // // original fit
-    // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
-    // // better to use RooMinimizer, but please read caveat below
+    RooFitResult* res = nullptr;
     RooMinuit m(nll);
-    m.setVerbose(kFALSE);
-    //m.setVerbose(kTRUE);
-    m.migrad();
-    m.hesse();
-    RooFitResult* res = m.save() ;
+    RooMinimizer mfit(nll);
 
-    // alternative fit (results are pretty much the same)
-    // IMPORTANT, READ CAREFULLY: sometimes this method fails.
-    // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
-    // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
-    // the job crashes, and this seems to be a feature of cmssw, not of RooFit
-    // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
-    // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
-    // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
-    // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
-    // The previous method using RooMinuit seems to be more robust, so I suggest we should use that one even though it is said to be obsolete
-    // RooMinimizer mfit(nll);
-    // mfit.setVerbose(kFALSE);
-    // mfit.setPrintLevel(-1);
-    // mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
-    // //cout << "FIT_EPSILON: Minimize" << endl;
-    // mfit.minimize("Minuit2","minimize");
-    // //cout << "FIT_EPSILON: Minimize hesse " << endl;
-    // mfit.minimize("Minuit2","hesse");
-    // //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
-    // mfit.minos(RooArgSet(Nsig,Nbkg),mean);
-    // RooFitResult* res = mfit.save() ;
+    if (useFit_RooMinuit_) {
+
+      // // original fit
+      // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
+      // // better to use RooMinimizer, but please read caveat below
+      m.setVerbose(kFALSE);
+      //m.setVerbose(kTRUE);
+      m.migrad();
+      m.hesse();
+      res = m.save() ;
+
+    } else {
+
+      // alternative fit (results are pretty much the same)
+      // IMPORTANT, READ CAREFULLY: sometimes this method fails.
+      // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
+      // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
+      // the job crashes, and this seems to be a feature of cmssw, not of RooFit
+      // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
+      // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
+      // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
+      // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
+      // The previous method using RooMinuit seems to be more robust, so I suggest we should use that one even though it is said to be obsolete
+      mfit.setVerbose(kFALSE);
+      mfit.setPrintLevel(-1);
+      mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
+      //cout << "FIT_EPSILON: Minimize" << endl;
+      mfit.minimize("Minuit2","minimize");
+      //cout << "FIT_EPSILON: Minimize hesse " << endl;
+      mfit.minimize("Minuit2","hesse");
+      //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
+      mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+      res = mfit.save() ;
+
+    }
 
     RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
-    int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) - res->floatParsFinal().getSize();
+    int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) +1 - res->floatParsFinal().getSize(); 
 
     //compute S/B and chi2
     x.setRange("sobRange",mean.getVal()-3.*sigma.getVal(), mean.getVal()+3.*sigma.getVal());
