@@ -81,7 +81,7 @@ static double upper_bound_etamass_EE = 0.62;
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
 
-static float EoverEtrue_integralMin = 10; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
+static float EoverEtrue_integralMin = 20; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
@@ -775,9 +775,9 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
       if (EBmap_fitresptrToUse[ebid.hashedIndex()] >= 0 && EBmap_fitresptrToUse[ebid.hashedIndex()].Get() != nullptr) {
 	Chisqu       = EBmap_fitresptrToUse[ebid.hashedIndex()]->Chi2();
 	Ndof         = EBmap_fitresptrToUse[ebid.hashedIndex()]->Ndf();
-	fit_mean     = EBmap_fitresptrToUse[ebid.hashedIndex()]->Parameter(2);  // check the fitting function, for the double CB the mean is the second one
-	fit_mean_err = EBmap_fitresptrToUse[ebid.hashedIndex()]->ParError(2);
-	fit_sigma    = EBmap_fitresptrToUse[ebid.hashedIndex()]->Parameter(3);
+	fit_mean     = EBmap_fitresptrToUse[ebid.hashedIndex()]->Parameter(1);  // for the double CB the mean is parameter [1] (as for the gaussian)
+	fit_mean_err = EBmap_fitresptrToUse[ebid.hashedIndex()]->ParError(1);
+	fit_sigma    = EBmap_fitresptrToUse[ebid.hashedIndex()]->Parameter(2);
       } else {
 	Chisqu       = -999;
 	Ndof         = -999;
@@ -825,9 +825,9 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
       if (EEmap_fitresptrToUse[eeid.hashedIndex()] >= 0 && EEmap_fitresptrToUse[eeid.hashedIndex()].Get() != nullptr) {
 	Chisqu       = EEmap_fitresptrToUse[eeid.hashedIndex()]->Chi2();
 	Ndof         = EEmap_fitresptrToUse[eeid.hashedIndex()]->Ndf();
-	fit_mean     = EEmap_fitresptrToUse[eeid.hashedIndex()]->Parameter(2);  // check the fitting function, for the double CB the mean is the second one
-	fit_mean_err = EEmap_fitresptrToUse[eeid.hashedIndex()]->ParError(2);
-	fit_sigma    = EEmap_fitresptrToUse[eeid.hashedIndex()]->Parameter(3);
+	fit_mean     = EEmap_fitresptrToUse[eeid.hashedIndex()]->Parameter(1);  // for the double CB the mean is parameter [1]
+	fit_mean_err = EEmap_fitresptrToUse[eeid.hashedIndex()]->ParError(1);
+	fit_sigma    = EEmap_fitresptrToUse[eeid.hashedIndex()]->Parameter(2);
       } else {
 	Chisqu       = -999;
 	Ndof         = -999;
@@ -887,10 +887,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g1_EB_h[j], false, j, Pi0EB, false);
-		    mean = fitresptr->Parameter(2);
+		    mean = fitresptr->Parameter(1);
 		    float r2 = mean;
 		    r2 = r2*r2;
-		    mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
+		    if (mean > 1.5) mean = 0; 
+		    else mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
 
@@ -908,10 +909,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g2_EB_h[j], true, j, Pi0EB, false);
-		    mean_g2 = fitresptr->Parameter(2);
+		    mean_g2 = fitresptr->Parameter(1);
 		    float r2 = mean_g2;
 		    r2 = r2*r2;
-		    mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
+		    if (mean_g2 > 1.5) mean_g2 = 0; 
+		    else mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
 
@@ -1029,10 +1031,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g1_EE_h[jR], false, jR, Pi0EE, false);
-		    mean = fitresptr->Parameter(2);
+		    mean = fitresptr->Parameter(1);
 		    float r2 = mean;
 		    r2 = r2*r2;
-		    mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
+		    if (mean > 1.5) mean = 0; 
+		    else mean = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
 
@@ -1049,10 +1052,11 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  if(integral > EoverEtrue_integralMin) {
 
 		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g2_EE_h[jR], true, jR, Pi0EE, false);
-		    mean_g2 = fitresptr->Parameter(2);
+		    mean_g2 = fitresptr->Parameter(1);
 		    float r2 = mean_g2;
 		    r2 = r2*r2;
-		    mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
+		    if (mean_g2 > 1.5) mean_g2 = 0; 
+		    else mean_g2 = 0.5 * ( r2 - 1. );  // keep as for mass: we have IC = 1/(1+mean) = 2 /(r^2 +1), if r2 < 1 then IC > 1
 		    
 		  } else {
 
@@ -1315,7 +1319,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
       m.setVerbose(kFALSE);
       //m.setVerbose(kTRUE);
       m.migrad();
-      m.hesse();
+      m.hesse();  // sometimes it fails, caution
       res = m.save() ;
 
     } else {
@@ -1503,11 +1507,11 @@ Double_t my2sideCrystalBall(double* x, double* par) {
   //a priori we allow for different shape of right and left tail, thus two values of alpha and n 
 
   Double_t xcur = x[0];
-  Double_t alphaL = par[0];
-  Double_t nL = par[1];
-  Double_t mu = par[2];
-  Double_t sigma = par[3];
-  Double_t N = par[4];
+  Double_t N = par[0];
+  Double_t mu = par[1];
+  Double_t sigma = par[2];
+  Double_t alphaL = par[3];
+  Double_t nL = par[4];
   Double_t alphaR = par[5];
   Double_t nR = par[6];
   Double_t t = (xcur-mu)/sigma;
@@ -1537,6 +1541,13 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
 {
 
 
+  bool fitDoubleCrystalBall = false;
+  float integralInRange = h1->Integral(h1->GetXaxis()->FindFixBin(0.6), h1->GetXaxis()->FindFixBin(1.1));
+  if ( integralInRange > std::min(100.0, 5.0 * EoverEtrue_integralMin)) fitDoubleCrystalBall = true;
+  else {
+    std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> integral[0.6,1.1]=" << integralInRange << ": fit with gaussian only" << std::endl;
+  }
+  fitDoubleCrystalBall = false;
   //-----------------------------------------------------------------------------------
   // For the moment we use the TH1::Fit function here [0] instead of RooFit for simplicity
   // [0] https://root.cern.ch/doc/master/classTH1.html#a7e7d34c91d5ebab4fc9bba3ca47dabdd
@@ -1574,64 +1585,94 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   Double_t histMean = h1->GetBinCenter(h1->GetMaximumBin());   //cout << "histMean = " << histMean << endl;
   // tails are huge, the Std deviation is not a good estimator of the gaussian core's width, use a constant term (but in general it will depend on the crystal)
   Double_t histStdDev = h1->GetStdDev();  //cout << "histStdDev = " << histStdDev << endl;
-  histStdDev = 0.1; //  cout << "histStdDev = " << histStdDev << endl;   
+  histStdDev = (isSecondGenPhoton ? 0.2 : 0.1); //  cout << "histStdDev = " << histStdDev << endl;   
 
   int fitStatus = -1;
   // do a preliminary gaussian fit, but do not draw the function (option 0)
-  //TF1 *gaussian = new TF1("gaussian","gaus",histMean-1.4*histStdDev, histMean+1.4*histStdDev);
-  TFitResultPtr frp1 = h1->Fit("gaus","E M WL S Q B R 0","", histMean - 1.0 * histStdDev, histMean + 1.0 * histStdDev);
+  TF1 *gaussian = new TF1("gaussian","gaus",histMean-2.0*histStdDev, histMean+2.0*histStdDev);
+  gaussian->SetParLimits(0, 0.9 * histNorm, 1.1 * histNorm);
+  gaussian->SetParLimits(1, histMean - histStdDev, histMean + histStdDev);
+  gaussian->SetParLimits(2, 0.1 * histStdDev, 2.0 * histStdDev);
+  gaussian->SetParameter(0, histNorm);
+  gaussian->SetParameter(1, histMean);
+  gaussian->SetParameter(2, histStdDev);
+  gaussian->SetLineColor(kRed);
+  gaussian->SetLineWidth(2);
+  string gausFitOption = "E WL S Q B R";  // ad E and M for better error and minimum estimate
+  string crystalBallFitOption = "E WL S Q B R";
+  if (fitDoubleCrystalBall) gausFitOption += " 0"; // will not draw this gaussian
+  // TFitResultPtr frp1 = h1->Fit("gaus",gausFitOption.c_str(),"", histMean - 1.0 * histStdDev, histMean + 1.0 * histStdDev);
+  TFitResultPtr frp1 = h1->Fit(gaussian,gausFitOption.c_str(),"", histMean - 1.0 * histStdDev, histMean + 1.0 * histStdDev);
   // cout << "checkpoint after fitting with gaussian" << endl; //return 0;
-  // TF1 *fitFunction = h1->GetFunction("gaussian");
-  // if (fitFunction) {
-  //   fitFunction->SetLineColor(kRed);
-  //   fitFunction->SetLineWidth(2);
-  //   fitFunction->Draw("SAME");
+  // TF1 *mygaussian = nullptr;
+  // if (not fitDoubleCrystalBall) {
+  //   mygaussian = h1->GetFunction("gaus");
+  //   if (mygaussian) {
+  //     mygaussian->SetLineColor(kRed);
+  //     mygaussian->SetLineWidth(2);
+  //   //mygaussian->Draw("SAME");
+  //   }
   // }
   fitStatus = frp1;
   // if gaussian fit was successful, update the gaussian mean and width values that will be used for the crystal ball below
-  if (fitStatus == 0) {
-    histMean = frp1->Parameter(1);  // par [2] is the gaussian sigma in ROOT
-    histStdDev = frp1->Parameter(2);  // par [2] is the gaussian sigma in ROOT
+  if (fitStatus != 0) {
+    std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> error occurred in FitEoverEtruePeak when fitting with gaussian. Fit status is " << fitStatus << std::endl;
   } else {
-    std::cout << "FIT_EPSILON: error occurred in FitEoverEtruePeak when fitting with gaussian. Fit status is " << fitStatus << std::endl;
+    std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> Fit status is " << fitStatus << " for gaussian fit " << std::endl;
   }
+  histMean = frp1->Parameter(1);  // par [2] is the gaussian sigma in ROOT
+  histStdDev = frp1->Parameter(2);  // par [2] is the gaussian sigma in ROOT
+
   // cout << "checkpoint after gaussian fit status evaluation" << endl; //return 0;
 
   // define the fitting function
   TF1*doubleCB = new TF1("doubleCB",&my2sideCrystalBall,histMean-3*histStdDev, histMean+3*histStdDev,7);
   doubleCB->SetParNames("alphaL","nL","Mean(CB)","Sigma(CB)","Const","alphaR","nR");
-  doubleCB->SetParLimits(doubleCB->GetParNumber("nL"),0.1,15);
+  doubleCB->SetParLimits(doubleCB->GetParNumber("nL"),0.1,5);
   doubleCB->SetParLimits(doubleCB->GetParNumber("Mean(CB)"), histMean - histStdDev, histMean + histStdDev);
   doubleCB->SetParLimits(doubleCB->GetParNumber("Sigma(CB)"),0.1 * histStdDev, 1.1 * histStdDev);
-  doubleCB->SetParLimits(doubleCB->GetParNumber("nR"),0.1,15);
-  doubleCB->SetParLimits(doubleCB->GetParNumber("alphaL"),-5.0,-0.1);
-  doubleCB->SetParLimits(doubleCB->GetParNumber("alphaR"),0.1,5.0);
+  doubleCB->SetParLimits(doubleCB->GetParNumber("nR"),0.1,5);
+  doubleCB->SetParLimits(doubleCB->GetParNumber("alphaL"),-3.0,-0.1);
+  doubleCB->SetParLimits(doubleCB->GetParNumber("alphaR"),0.1,3.0);
   doubleCB->SetParLimits(doubleCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
   doubleCB->SetParameters(-1.4,5,histMean,histStdDev,histNorm,1.4,5);
   doubleCB->SetLineColor(kGreen+2);
   doubleCB->SetLineWidth(2);
 
-  TFitResultPtr frp2 = h1->Fit(doubleCB,"E M WL S Q B R","HE SAMES", histMean - 2.0 * histStdDev, histMean + 2.0 * histStdDev);
-  // cout << "checkpoint after crystal ball" << endl; //return 0;
-  fitStatus = frp2;
-  if (fitStatus != 0) {
-    std::cout << "FIT_EPSILON: error occurred in FitEoverEtruePeak when fitting with crystal ball. Fit status is " << fitStatus << std::endl;
-  }
-  if (frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) < 0.0 ) {
-    cout << "WARNING: CB sigma is negative!" << endl;
+  TFitResultPtr frp2;
+  TF1 *gaussCore = nullptr;
+ 
+  if (fitDoubleCrystalBall) {
+
+    frp2 = h1->Fit(doubleCB,crystalBallFitOption.c_str(),"HE SAMES", histMean - 2.0 * histStdDev, histMean + 2.0 * histStdDev);
+    // cout << "checkpoint after crystal ball" << endl; //return 0;
+    cout << "check point " << endl;
+
+    fitStatus = frp2;
+    if (fitStatus != 0) {
+      std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " -->  error occurred in FitEoverEtruePeak when fitting with crystal ball. Fit status is " << fitStatus << std::endl;
+    } else {
+      std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> Fit status is " << fitStatus << " for crystal ball fit " << std::endl;
+    }
+    if (frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) < 0.0 ) {
+      cout << "WARNING: CB sigma is negative!" << endl;
+    }
+
+    // get gaussian core of the CB and plot it on top to show how the CB differs from a simple gaussian
+    gaussCore = new TF1(*(h1->GetFunction("doubleCB")));
+    if (gaussCore) {
+      Double_t gaussMean = frp2->Parameter(doubleCB->GetParNumber("Mean(CB)"));
+      Double_t gaussSigma = frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)"));
+      Double_t alphaL = frp2->Parameter(doubleCB->GetParNumber("alphaL"));
+      Double_t alphaR = frp2->Parameter(doubleCB->GetParNumber("alphaR"));
+      gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), gaussMean + fabs(gaussSigma) * fabs(alphaR),"SAME"); // alphaL < 0, alphaR > 0
+      gaussCore->SetLineColor(kRed);
+      gaussCore->SetLineWidth(2);
+    }
+
   }
 
-  // get gaussian core of the CB and plot it on top to show how the CB differs from a simple gaussian
-  TF1 *gaussCore = new TF1(*(h1->GetFunction("doubleCB")));
-  if (gaussCore) {
-    Double_t gaussMean = frp2->Parameter(doubleCB->GetParNumber("Mean(CB)"));
-    Double_t gaussSigma = frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)"));
-    Double_t alphaL = frp2->Parameter(doubleCB->GetParNumber("alphaL"));
-    Double_t alphaR = frp2->Parameter(doubleCB->GetParNumber("alphaR"));
-    gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), gaussMean + fabs(gaussSigma) * fabs(alphaR),"SAME"); // alphaL < 0, alphaR > 0
-    gaussCore->SetLineColor(kRed);
-    gaussCore->SetLineWidth(2);
-  }
+  TFitResultPtr retfrp = (fitDoubleCrystalBall ? frp2 : frp1);;
 
   canvas->Update();
   TPaveStats *statBox = (TPaveStats*)(h1->FindObject("stats"));
@@ -1657,8 +1698,13 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   leg.SetBorderSize(0);
   leg.AddEntry(h1,"data","PLE");
   //leg.AddEntry(gaussian,"gauss","l");
-  if (gaussCore) leg.AddEntry(gaussCore,"gaussian core","l");
-  leg.AddEntry(doubleCB,"double Crystal Ball","l");
+  if (fitDoubleCrystalBall) {
+    if (gaussCore) leg.AddEntry(gaussCore,"gaussian core","l");
+    leg.AddEntry(doubleCB,"double Crystal Ball","l");
+  } else {
+    //leg.AddEntry(mygaussian,"gaussian","l");
+    leg.AddEntry(gaussian,"gaussian","l");
+  }
   leg.Draw("same");
   canvas->RedrawAxis("sameaxis");
   
@@ -1678,17 +1724,27 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   // gStyle->SetOptFit(1102);
   h1->SetStats(0);
 
-
-  cout << "FIT_EPSILON: "
-       << "photon " << (isSecondGenPhoton ? 2 : 1) << "  "
-       << " mean(CB): " << frp2->Parameter(doubleCB->GetParNumber("Mean(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Mean(CB)"))
-       << " sigma(CB): " << frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Sigma(CB)"))
-       << " chi2: " << frp2->Chi2()
-       << " DOF: " << frp2->Ndf()
-       << " N(fit.param.): " << frp2->NFreeParameters()
-       << " prob(chi2): " << frp2->Prob()
-       << endl;
-
+  if (fitDoubleCrystalBall) {
+    cout << "FIT_EPSILON: "
+	 << "photon " << (isSecondGenPhoton ? 2 : 1) << "  "
+	 << " mean(CB): " << frp2->Parameter(doubleCB->GetParNumber("Mean(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Mean(CB)"))
+	 << " sigma(CB): " << frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Sigma(CB)"))
+	 << " chi2: " << frp2->Chi2()
+	 << " DOF: " << frp2->Ndf()
+	 << " N(fit.param.): " << frp2->NFreeParameters()
+	 << " prob(chi2): " << frp2->Prob()
+	 << endl;
+  } else {
+    cout << "FIT_EPSILON: "
+	 << "photon " << (isSecondGenPhoton ? 2 : 1) << "  "
+	 << " mean(gauss): " << frp1->Parameter(1) << " +/- " << frp1->ParError(1)
+	 << " sigma(gauss): " << frp1->Parameter(2) << " +/- " << frp1->ParError(2)
+	 << " chi2: " << frp1->Chi2()
+	 << " DOF: " << frp1->Ndf()
+	 << " N(fit.param.): " << frp1->NFreeParameters()
+	 << " prob(chi2): " << frp1->Prob()
+	 << endl;
+  }
 
   // some parameters do not make sense for the E/Etrue study, but for simplicity we keep the same structure as the mass fit
   // basically we just need the peak position ("Mean(CB)" parameter)
@@ -1696,8 +1752,8 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
 
   if(mode==Pi0EB) {
 
-    if (isSecondGenPhoton) EBmap_fitresptr_g2[HistoIndex]=frp2;
-    else                   EBmap_fitresptr_g1[HistoIndex]=frp2;
+    if (isSecondGenPhoton) EBmap_fitresptr_g2[HistoIndex]=retfrp;
+    else                   EBmap_fitresptr_g1[HistoIndex]=retfrp;
   //   // EBmap_Signal[HistoIndex]=-1;
   //   // EBmap_Backgr[HistoIndex]=-1;
   //   EBmap_Chisqu[HistoIndex]=frp2->Chi2();
@@ -1716,8 +1772,8 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
 
   if(mode==Pi0EE) {
 
-    if (isSecondGenPhoton) EEmap_fitresptr_g2[HistoIndex]=frp2;
-    else                   EEmap_fitresptr_g1[HistoIndex]=frp2;
+    if (isSecondGenPhoton) EEmap_fitresptr_g2[HistoIndex]=retfrp;
+    else                   EEmap_fitresptr_g1[HistoIndex]=retfrp;
   //   // EEmap_Signal[HistoIndex]=-1;
   //   // EEmap_Backgr[HistoIndex]=-1;
   //   EEmap_Chisqu[HistoIndex]=frp2->Chi2();
@@ -1742,7 +1798,7 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   }
 
   delete canvas;
-  return frp2;
+  return retfrp;
 
 }
 
