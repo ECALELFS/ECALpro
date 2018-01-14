@@ -3,9 +3,9 @@
 import subprocess, time, sys, os
 from methods import *
 
-if len(sys.argv) != 7:
-    print str(sys.argv) + "is a wrong number of srguments (" + str(len(sys.argv)) +" given, while it sould be 7)."
-    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) nJobs+1(goes from j=0 to n<YOUR_Number)"
+if len(sys.argv) != 8:
+    print str(sys.argv) + "is a wrong number of arguments (" + str(len(sys.argv)) +" given, while it should be 8)."
+    print "./resubmitCalibration.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) JustMergeFIT(True,False) nJobs+1(goes from j=0 to n<YOUR_Number)"
     print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
     sys.exit(1)
 
@@ -14,7 +14,8 @@ SystParam           = int(sys.argv[2])
 onlyHadd            = str(sys.argv[3])
 onlyFinalHadd       = str(sys.argv[4]) #To be implemented
 OnlyFIT             = str(sys.argv[5])
-nJobs               = str(sys.argv[6])
+OnlyMergeFIT        = str(sys.argv[6])
+nJobs               = str(sys.argv[7])
 pwd                 = os.getcwd()
 
 workdir = pwd+'/'+dirname
@@ -28,6 +29,8 @@ if onlyFinalHadd=="True" :
     Mode = Mode + "_ONLYFINALHADD"
 if OnlyFIT=="True" :
     Mode = Mode + "_ONLYFIT"
+if OnlyMergeFIT=="True" :
+    Mode = Mode + "_ONLYMERGEFIT"
 
 ### setting environment
 env_script_n = workdir + "/resubmit.sh"
