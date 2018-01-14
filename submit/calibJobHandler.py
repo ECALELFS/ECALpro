@@ -35,13 +35,15 @@ elif ( mode.find('BATCH_RESU') != -1 ):
      RunCRAB = False; RunBatch = False; RunResub = True;
 else:
      RunCRAB = False; RunBatch = True; RunResub = False;
-ONLYHADD = False; ONLYFINHADD = False; ONLYFIT = False
+ONLYHADD = False; ONLYFINHADD = False; ONLYFIT = False; ONLYMERGEFIT = False
 if ( mode.find('ONLYHADD') != -1 ):
      ONLYHADD = True;
 if ( mode.find('ONLYFINALHADD') != -1 ):
      ONLYFINHADD = True;
 if ( mode.find('ONLYFIT') != -1 ):
      ONLYFIT = True;
+if ( mode.find('ONLYMERGEFIT') != -1 ):
+     ONLYMERGEFIT = True;
 
 Add_path = ''
 Add_pathOLDIter = ''
@@ -76,7 +78,7 @@ for iters in range(nIterations):
         iters = int(sys.argv[2])
     if ( RunResub ):
         iters = iters + int(sys.argv[2])
-    if ( not RunCRAB and not ONLYHADD and not ONLYFIT and not ONLYFINHADD ):
+    if ( not RunCRAB and not ONLYHADD and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         print "Submitting " + str(njobs) + " jobs"
         for ijob in range(njobs):
@@ -185,7 +187,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         quit()
 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
-    if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD ):
+    if ( mode != 'CRAB_RESU_FinalHadd' and mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
         print 'Now adding files...'
         Nlist = 0
         if not( RunCRAB ):
@@ -322,7 +324,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             print 'Done with hadd recovery'
 
 
-    if ( mode != 'CRAB_RESU_FitOnly' and not ONLYFIT ):
+    if ( mode != 'CRAB_RESU_FitOnly' and not ONLYFIT and not ONLYMERGEFIT):
         print 'Now The Final One...'
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
         FHadd_log_n = logPath + "/Final_HaddCfg_iter_" + str(iters) + ".log"
@@ -351,77 +353,79 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         print 'Done with final hadd'
 
 
-    if MakeNtuple4optimization:
-        # it actually stopped already before hadding files
-        print """MakeNtuple4optimization is set to True in parameters.py
-From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
-each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
-Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
-If this is not the case, modify FillEpsilonPlot.cc
-"""
-        print "Done with iteration " + str(iters)
-        quit()
+    if (not ONLYMERGEFIT ):
 
-    # N of Fit to send
-    nEB = 61199/nFit
-    if (61199%nFit != 0) :
-        nEB = int(nEB) +1
-    nEE = 14647/nFit
-    if (14647%nFit != 0) :
-        nEE = int(nEE) +1
-    # For final hadd
-    ListFinalHaddEB = list()
-    ListFinalHaddEE = list()
-    # preparing submission of fit tasks (EB)
-    print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
-    for inteb in range(nEB):
-        fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
-        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
-        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
-        print 'About to EB fit:'
-        print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
-        print submit_s
-        # actually submitting fit tasks (EB)
-        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = submitJobs.communicate()
-        print output
+        if MakeNtuple4optimization:
+            # it actually stopped already before hadding files
+            print """MakeNtuple4optimization is set to True in parameters.py
+    From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
+    each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
+    Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
+    If this is not the case, modify FillEpsilonPlot.cc
+    """
+            print "Done with iteration " + str(iters)
+            quit()
 
-    # preparing submission of fit tasks (EE)
-    print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
-    for inte in range(nEE):        
-        fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
-        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-        ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
-        print 'About to EE fit:'
-        print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
-        print submit_s
-        # actually submitting fit tasks (EE)
-        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = submitJobs.communicate()
-        print output
+        # N of Fit to send
+        nEB = 61199/nFit
+        if (61199%nFit != 0) :
+            nEB = int(nEB) +1
+        nEE = 14647/nFit
+        if (14647%nFit != 0) :
+            nEE = int(nEE) +1
+        # For final hadd
+        ListFinalHaddEB = list()
+        ListFinalHaddEE = list()
+        # preparing submission of fit tasks (EB)
+        print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
+        for inteb in range(nEB):
+            fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
+            fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
+            submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
+            ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+            print 'About to EB fit:'
+            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+            print submit_s
+            # actually submitting fit tasks (EB)
+            submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+            output = submitJobs.communicate()
+            print output
 
-    # checking number of running/pending jobs
-    checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
-    datalines = (checkJobs.communicate()[0]).splitlines()
-    print 'Waiting for fit jobs to be finished...'
+        # preparing submission of fit tasks (EE)
+        print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
+        for inte in range(nEE):        
+            fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
+            fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
+            submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
+            ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+            print 'About to EE fit:'
+            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+            print submit_s
+            # actually submitting fit tasks (EE)
+            submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+            output = submitJobs.communicate()
+            print output
 
-    #Daemon cheking running jobs
-    while len(datalines)>=num :
-        for entry in datalines:
-            entry = entry.rstrip()
-            entry = entry.split()[0]
-            #print entry
-            if(entry.find('JOBID')!=-1): continue
-            i = int(entry)
-
-        time.sleep(5)
-
+        # checking number of running/pending jobs
         checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
         datalines = (checkJobs.communicate()[0]).splitlines()
+        print 'Waiting for fit jobs to be finished...'
 
-    print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
+        #Daemon cheking running jobs
+        while len(datalines)>=num :
+            for entry in datalines:
+                entry = entry.rstrip()
+                entry = entry.split()[0]
+                #print entry
+                if(entry.find('JOBID')!=-1): continue
+                i = int(entry)
+
+            time.sleep(5)
+
+            checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
+            datalines = (checkJobs.communicate()[0]).splitlines()
+
+        print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
 
     # Merge Final CalibMap
     from ROOT import *
@@ -1184,8 +1188,8 @@ If this is not the case, modify FillEpsilonPlot.cc
     f.Close()
 
     print "Done with iteration " + str(iters)
-    if( ONLYHADD or ONLYFINHADD or ONLYFIT):
+    if( ONLYHADD or ONLYFINHADD or ONLYFIT or ONLYMERGEFIT):
        mode = "BATCH_RESU"
-       ONLYHADD = False; ONLYFINHADD = False; ONLYFIT=False;
+       ONLYHADD = False; ONLYFINHADD = False; ONLYFIT=False; ONLYMERGEFIT=False
 
 print "---THE END---"
