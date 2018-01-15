@@ -434,6 +434,10 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     else:
         outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
+    if foldInSuperModule:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(False)\n")
     if useFit_RooMinuit:
         outputfile.write("process.fitEpsilon.useFit_RooMinuit = cms.untracked.bool( True )\n")        
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")

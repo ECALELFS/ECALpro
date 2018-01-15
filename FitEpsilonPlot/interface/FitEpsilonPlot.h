@@ -32,7 +32,8 @@ struct Pi0FitResult {
   float probchi2; // after subtracting fit parameters 
 };
 
-Double_t my2sideCrystalBall(double* x, double* par);
+Float_t my2sideCrystalBall(double* x, double* par);
+Float_t myLeftTailCrystalBall(double* x, double* par);
 
 class FitEpsilonPlot : public edm::EDAnalyzer {
    public:
@@ -60,6 +61,8 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
 
+      int getArrayIndexOfFoldedSMfromIetaIphi(int& ieta, int& iphi);
+      int getArrayIndexOfFoldedSMfromDenseIndex(int& index);  
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
       TFitResultPtr FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
 
@@ -93,6 +96,8 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       bool StoreForTest_; 
       int inRangeFit_; 
       int finRangeFit_; 
+      bool useMassInsteadOfEpsilon_;
+      bool foldInSuperModule_;
 
       calibGranularity calibTypeNumber_;
 
@@ -114,7 +119,8 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       TFile *outfile_;
       TFile *outfileTEST_;
 
-      bool useMassInsteadOfEpsilon_;
+      std::vector<TH1F*> EoverEtrue_g1_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
+      std::vector<TH1F*> EoverEtrue_g2_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
 
       std::map<int,float> EBmap_Signal;//#
       std::map<int,float> EBmap_Backgr;

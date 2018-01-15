@@ -81,7 +81,7 @@ static double upper_bound_etamass_EE = 0.62;
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
 
-static float EoverEtrue_integralMin = 20; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
+static float EoverEtrue_integralMin = 25; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
 FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
@@ -103,7 +103,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     useMassInsteadOfEpsilon_ = iConfig.getUntrackedParameter<bool>("useMassInsteadOfEpsilon",true);
     isEoverEtrue_ = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
     useFit_RooMinuit_ = iConfig.getUntrackedParameter<bool>("useFit_RooMinuit",false);
-
+    foldInSuperModule_ = iConfig.getUntrackedParameter<bool>("foldInSuperModule",false);
 
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
@@ -159,6 +159,53 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
       loadEoverEtruePlot(epsilonPlotFileName_,1);
       loadEoverEtruePlot(epsilonPlotFileName_,2);
 
+      if (foldInSuperModule_) {
+
+	EoverEtrue_g1_EB_SM_hvec.clear();
+	EoverEtrue_g2_EB_SM_hvec.clear();
+
+	// 20(phi)*85(ieta) crystals in 1 SM
+	// we use a 1D vector ad treat it as a 2D array: the index convention is 
+	// index = (fabs(ieta) - 1) + 85 * ((iphi - 1)%20)    ieta = 1, 2, ..., 85     iphi = 1, 2 , ..., 360 
+	// ieta,iphi = 1,1 --> index = 0
+
+	// ieta 1 --> 85
+	//
+	//  * * * * * * * * * * * * * *  iphi 1
+	//  * * * * * * * . . . . . . .
+	//  . . . . . . . . . . . . . . 
+        //
+	//  * * * * * * * . . . . . . .  iphi 20
+
+	for (int iv = 0; iv < EBDetId::kCrystalsPerSM; ++iv) {  // 1700 crystals
+	  
+	  // create empty histogram copying structure of first EoverEtrue_g1_EB_h 
+	  // these new histograms should be already empty when created, so we will fill them just by adding other histograms when doing the folding
+	  EoverEtrue_g1_EB_SM_hvec.push_back( new TH1F(Form("EoverEtrue_g1_EB_SM_hvec_%d",iv),
+						       "g1 E/E_{true} folded in SM",
+						       EoverEtrue_g1_EB_h[0]->GetNbinsX(),
+						       EoverEtrue_g1_EB_h[0]->GetBinLowEdge(1),
+						       EoverEtrue_g1_EB_h[0]->GetBinEdgeLow(1+EoverEtrue_g1_EB_h[0]->GetNbinsX())
+						       ) );
+	  EoverEtrue_g2_EB_SM_hvec.push_back( new TH1F(Form("EoverEtrue_g2_EB_SM_hvec_%d",iv),
+						       "g2 E/E_{true} folded in SM",
+						       EoverEtrue_g2_EB_h[0]->GetNbinsX(),
+						       EoverEtrue_g2_EB_h[0]->GetBinLowEdge(1),
+						       EoverEtrue_g2_EB_h[0]->GetBinEdgeLow(1+EoverEtrue_g2_EB_h[0]->GetNbinsX())
+						       ) );
+
+	}
+
+	for (int iR = 0; iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++) {
+
+	  int crystalIndexinSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
+	  EoverEtrue_g1_EB_SM_hvec[crystalIndexinSM]->Add(EoverEtrue_g1_EB_h[iR]);
+	  EoverEtrue_g2_EB_SM_hvec[crystalIndexinSM]->Add(EoverEtrue_g2_EB_h[iR]);
+
+	}
+
+      }
+
     } else {
 
       if ((Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" )) {
@@ -185,6 +232,14 @@ FitEpsilonPlot::~FitEpsilonPlot()
       deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
       // delete EoverEtrue_g1_EB_h;
       // delete EoverEtrue_g2_EB_h;
+      if (foldInSuperModule_) {
+	for (unsigned int i = 0; i < EoverEtrue_g1_EB_SM_hvec.size(); ++i) {
+	  delete EoverEtrue_g1_EB_SM_hvec[i];
+	  delete EoverEtrue_g2_EB_SM_hvec[i];
+	}
+	EoverEtrue_g1_EB_SM_hvec.clear();
+	EoverEtrue_g2_EB_SM_hvec.clear();
+      }
     } else {
       deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
       // delete epsilon_EB_h;
@@ -216,6 +271,27 @@ FitEpsilonPlot::~FitEpsilonPlot()
 // member functions
 //
 
+int FitEpsilonPlot::getArrayIndexOfFoldedSMfromIetaIphi(int& ieta, int& iphi) {
+
+  // note that the index in SM returned by this function in not the same as the index returned by EBDetId::ic()
+  // the difference is mainly in the folding of EB+ on EB-
+  // In our case, we overlay crystals such that ieta,iphi=20,40 goes on ieta,iphi=-20,40, 
+  // i.e. the iphi coordinate is preserved when we consider two facing SM in EB+ and EB-
+  // The usual CMSSW numbering scheme for crystals in SM is such that, looking at the center of the barrel, the crystal number 1 is always on the left
+  // which means that the folding would overlay ieta,iphi=20,40 on ieta,iphi=-20,21
+  
+  // first 85 crystals correspond to iphi = 1 (in a SM)
+  return (fabs(ieta) - 1) + EBDetId::kCrystalsInEta * ((iphi - 1) % EBDetId::kCrystalsInPhi);
+  
+}
+
+
+int FitEpsilonPlot::getArrayIndexOfFoldedSMfromDenseIndex(int& index) {
+
+  EBDetId thisEBcrystal(EBDetId::detIdFromDenseIndex( index ));
+  return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi);
+
+}
 
 void FitEpsilonPlot::loadEoverEtruePlot(const std::string& filename, const int whichPhoton = 1) {
 
@@ -878,15 +954,19 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		float mean_g2 = 0.; // used only for E/Etrue with MC	      
 
 		if (isEoverEtrue_) {
-
+		  
+		  int crystalIndexInSM = getArrayIndexOfFoldedSMfromDenseIndex(j);
+		  TH1F* histoToFit_g1 = (foldInSuperModule_ ? EoverEtrue_g1_EB_SM_hvec[crystalIndexInSM] : EoverEtrue_g1_EB_h[j]);
+		  
 		  // first photon 
-		  int iMin = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
-		  int iMax = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(1.1);
-		  double integral = EoverEtrue_g1_EB_h[j]->Integral(iMin, iMax);  
+		  // int iMin = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
+		  // int iMax = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(1.1);
+		  // double integral = EoverEtrue_g1_EB_h[j]->Integral(iMin, iMax);  
+		  double integral = histoToFit_g1->Integral();  
 
 		  if(integral > EoverEtrue_integralMin) {
 
-		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g1_EB_h[j], false, j, Pi0EB, false);
+		    TFitResultPtr fitresptr = FitEoverEtruePeak(histoToFit_g1, false, j, Pi0EB, false);
 		    mean = fitresptr->Parameter(1);
 		    float r2 = mean;
 		    r2 = r2*r2;
@@ -901,14 +981,17 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		  }
 
+		  TH1F* histoToFit_g2 = (foldInSuperModule_ ? EoverEtrue_g2_EB_SM_hvec[crystalIndexInSM] : EoverEtrue_g2_EB_h[j]);
+
 		  // second photon 
-		  iMin = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
-		  iMax = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(1.1);
-		  integral = EoverEtrue_g2_EB_h[j]->Integral(iMin, iMax);  
+		  // iMin = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
+		  // iMax = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(1.1);
+		  // integral = EoverEtrue_g2_EB_h[j]->Integral(iMin, iMax);  
+		  integral = histoToFit_g2->Integral();  
 
 		  if(integral > EoverEtrue_integralMin) {
 
-		    TFitResultPtr fitresptr = FitEoverEtruePeak( EoverEtrue_g2_EB_h[j], true, j, Pi0EB, false);
+		    TFitResultPtr fitresptr = FitEoverEtruePeak(histoToFit_g2, true, j, Pi0EB, false);
 		    mean_g2 = fitresptr->Parameter(1);
 		    float r2 = mean_g2;
 		    r2 = r2*r2;
@@ -1024,9 +1107,10 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		if (isEoverEtrue_) {
 		  
-		  int iMin = EoverEtrue_g1_EE_h[jR]->GetXaxis()->FindFixBin(0.6); 
-		  int iMax = EoverEtrue_g1_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
-		  double integral = EoverEtrue_g1_EE_h[jR]->Integral(iMin, iMax);  
+		  // int iMin = EoverEtrue_g1_EE_h[jR]->GetXaxis()->FindFixBin(0.6); 
+		  // int iMax = EoverEtrue_g1_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
+		  // double integral = EoverEtrue_g1_EE_h[jR]->Integral(iMin, iMax);  
+		  double integral = EoverEtrue_g1_EE_h[jR]->Integral();  
 
 		  if(integral > EoverEtrue_integralMin) {
 
@@ -1045,9 +1129,10 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		  }
 
-		  iMin = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(0.6); 
-		  iMax = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
-		  integral = EoverEtrue_g2_EE_h[jR]->Integral(iMin, iMax);  
+		  // iMin = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(0.6); 
+		  // iMax = EoverEtrue_g2_EE_h[jR]->GetXaxis()->FindFixBin(1.1);
+		  // integral = EoverEtrue_g2_EE_h[jR]->Integral(iMin, iMax);  
+		  integral = EoverEtrue_g2_EE_h[jR]->Integral();  
 
 		  if(integral > EoverEtrue_integralMin) {
 
@@ -1501,34 +1586,34 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
 //=====================================================================
 
-Double_t my2sideCrystalBall(double* x, double* par) {
+Float_t my2sideCrystalBall(double* x, double* par) {
 
   // implementation of a 2-sided crystal ball
   //a priori we allow for different shape of right and left tail, thus two values of alpha and n 
 
-  Double_t xcur = x[0];
-  Double_t N = par[0];
-  Double_t mu = par[1];
-  Double_t sigma = par[2];
-  Double_t alphaL = par[3];
-  Double_t nL = par[4];
-  Double_t alphaR = par[5];
-  Double_t nR = par[6];
-  Double_t t = (xcur-mu)/sigma;
-  Double_t absAlphaL = fabs((Double_t)alphaL);
-  Double_t invAbsAlphaL = 1./absAlphaL;
-  Double_t absAlphaR = fabs((Double_t)alphaR);
-  Double_t invAbsAlphaR = 1./absAlphaR;
+  Float_t xcur = x[0];
+  Float_t N = par[0];
+  Float_t mu = par[1];
+  Float_t sigma = par[2];
+  Float_t alphaL = par[3];
+  Float_t nL = par[4];
+  Float_t alphaR = par[5];
+  Float_t nR = par[6];
+  Float_t t = (xcur-mu)/sigma;
+  Float_t absAlphaL = fabs((Float_t)alphaL);
+  Float_t invAbsAlphaL = 1./absAlphaL;
+  Float_t absAlphaR = fabs((Float_t)alphaR);
+  Float_t invAbsAlphaR = 1./absAlphaR;
 
   if ( t<-absAlphaL ) {
-    Double_t AL = TMath::Power(nL*invAbsAlphaL,nL)*exp(-0.5*absAlphaL*absAlphaL);
-    Double_t BL = nL*invAbsAlphaL - absAlphaL;
+    Float_t AL = TMath::Power(nL*invAbsAlphaL,nL)*exp(-0.5*absAlphaL*absAlphaL);
+    Float_t BL = nL*invAbsAlphaL - absAlphaL;
     return N*AL*TMath::Power(BL-t,-nL);
   } else if ( t <= absAlphaR )  {
     return N*exp(-0.5*t*t);
   } else {
-    Double_t AR = TMath::Power(nR*invAbsAlphaR,nR)*exp(-0.5*absAlphaR*absAlphaR);
-    Double_t BR = nR*invAbsAlphaR - absAlphaR;
+    Float_t AR = TMath::Power(nR*invAbsAlphaR,nR)*exp(-0.5*absAlphaR*absAlphaR);
+    Float_t BR = nR*invAbsAlphaR - absAlphaR;
     return N*AR*TMath::Power(BR+t,-nR);
   }
 
@@ -1536,24 +1621,24 @@ Double_t my2sideCrystalBall(double* x, double* par) {
 
 //=====================================================================
 
-Double_t myLeftTailCrystalBall(double* x, double* par) {
+Float_t myLeftTailCrystalBall(double* x, double* par) {
 
   // implementation of a left-tail crystal ball
   //a priori we allow for different shape of right and left tail, thus two values of alpha and n 
 
-  Double_t xcur = x[0];
-  Double_t N = par[0];
-  Double_t mu = par[1];
-  Double_t sigma = par[2];
-  Double_t alphaL = par[3];
-  Double_t nL = par[4];
-  Double_t t = (xcur-mu)/sigma;
-  Double_t absAlphaL = fabs((Double_t)alphaL);
-  Double_t invAbsAlphaL = 1./absAlphaL;
+  Float_t xcur = x[0];
+  Float_t N = par[0];
+  Float_t mu = par[1];
+  Float_t sigma = par[2];
+  Float_t alphaL = par[3];
+  Float_t nL = par[4];
+  Float_t t = (xcur-mu)/sigma;
+  Float_t absAlphaL = fabs((Float_t)alphaL);
+  Float_t invAbsAlphaL = 1./absAlphaL;
 
   if ( t<-absAlphaL ) {
-    Double_t AL = TMath::Power(nL*invAbsAlphaL,nL)*exp(-0.5*absAlphaL*absAlphaL);
-    Double_t BL = nL*invAbsAlphaL - absAlphaL;
+    Float_t AL = TMath::Power(nL*invAbsAlphaL,nL)*exp(-0.5*absAlphaL*absAlphaL);
+    Float_t BL = nL*invAbsAlphaL - absAlphaL;
     return N*AL*TMath::Power(BL-t,-nL);
   } else {
     return N*exp(-0.5*t*t);
@@ -1571,8 +1656,9 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
 
   bool fitDoubleCrystalBall = false; // FIXME: set manually, to be set in parameters.py
   bool fitLeftCrystalBall = false;
-  float integralInRange = h1->Integral(h1->GetXaxis()->FindFixBin(0.6), h1->GetXaxis()->FindFixBin(1.1));
-  if ( integralInRange > std::min(100.0, 5.0 * EoverEtrue_integralMin)) {
+  //float integralInRange = h1->Integral(h1->GetXaxis()->FindFixBin(0.6), h1->GetXaxis()->FindFixBin(1.1));
+  float integralInRange = h1->Integral();
+  if ( integralInRange > std::min(100.0, 4.0 * EoverEtrue_integralMin)) {
     fitLeftCrystalBall = true;
   } else {
     std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> integral[0.6,1.1]=" << integralInRange << ": fit with gaussian only" << std::endl;
