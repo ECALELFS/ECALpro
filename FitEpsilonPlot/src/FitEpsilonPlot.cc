@@ -1534,6 +1534,34 @@ Double_t my2sideCrystalBall(double* x, double* par) {
 
 }
 
+//=====================================================================
+
+Double_t myLeftTailCrystalBall(double* x, double* par) {
+
+  // implementation of a left-tail crystal ball
+  //a priori we allow for different shape of right and left tail, thus two values of alpha and n 
+
+  Double_t xcur = x[0];
+  Double_t N = par[0];
+  Double_t mu = par[1];
+  Double_t sigma = par[2];
+  Double_t alphaL = par[3];
+  Double_t nL = par[4];
+  Double_t t = (xcur-mu)/sigma;
+  Double_t absAlphaL = fabs((Double_t)alphaL);
+  Double_t invAbsAlphaL = 1./absAlphaL;
+
+  if ( t<-absAlphaL ) {
+    Double_t AL = TMath::Power(nL*invAbsAlphaL,nL)*exp(-0.5*absAlphaL*absAlphaL);
+    Double_t BL = nL*invAbsAlphaL - absAlphaL;
+    return N*AL*TMath::Power(BL-t,-nL);
+  } else {
+    return N*exp(-0.5*t*t);
+  }
+
+}
+
+
 
 //======================================================
 
@@ -1541,13 +1569,17 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
 {
 
 
-  bool fitDoubleCrystalBall = false;
+  bool fitDoubleCrystalBall = false; // FIXME: set manually, to be set in parameters.py
+  bool fitLeftCrystalBall = false;
   float integralInRange = h1->Integral(h1->GetXaxis()->FindFixBin(0.6), h1->GetXaxis()->FindFixBin(1.1));
-  if ( integralInRange > std::min(100.0, 5.0 * EoverEtrue_integralMin)) fitDoubleCrystalBall = true;
-  else {
+  if ( integralInRange > std::min(100.0, 5.0 * EoverEtrue_integralMin)) {
+    fitLeftCrystalBall = true;
+  } else {
     std::cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ? 2 : 1) << " --> integral[0.6,1.1]=" << integralInRange << ": fit with gaussian only" << std::endl;
   }
-  fitDoubleCrystalBall = false;
+  bool fitCrystalBall = false;
+  if (fitDoubleCrystalBall || fitLeftCrystalBall) fitCrystalBall = true;
+
   //-----------------------------------------------------------------------------------
   // For the moment we use the TH1::Fit function here [0] instead of RooFit for simplicity
   // [0] https://root.cern.ch/doc/master/classTH1.html#a7e7d34c91d5ebab4fc9bba3ca47dabdd
@@ -1600,7 +1632,7 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   gaussian->SetLineWidth(2);
   string gausFitOption = "E WL S Q B R";  // ad E and M for better error and minimum estimate
   string crystalBallFitOption = "E WL S Q B R";
-  if (fitDoubleCrystalBall) gausFitOption += " 0"; // will not draw this gaussian
+  if (fitCrystalBall) gausFitOption += " 0"; // will not draw this gaussian
   // TFitResultPtr frp1 = h1->Fit("gaus",gausFitOption.c_str(),"", histMean - 1.0 * histStdDev, histMean + 1.0 * histStdDev);
   TFitResultPtr frp1 = h1->Fit(gaussian,gausFitOption.c_str(),"", histMean - 1.0 * histStdDev, histMean + 1.0 * histStdDev);
   // cout << "checkpoint after fitting with gaussian" << endl; //return 0;
@@ -1635,16 +1667,30 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   doubleCB->SetParLimits(doubleCB->GetParNumber("alphaL"),-3.0,-0.1);
   doubleCB->SetParLimits(doubleCB->GetParNumber("alphaR"),0.1,3.0);
   doubleCB->SetParLimits(doubleCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
-  doubleCB->SetParameters(-1.4,5,histMean,histStdDev,histNorm,1.4,5);
+  doubleCB->SetParameters(histNorm,histMean,histStdDev,-1.4,5,1.4,5);
   doubleCB->SetLineColor(kGreen+2);
   doubleCB->SetLineWidth(2);
 
+  TF1*leftCB = new TF1("leftCB",&myLeftTailCrystalBall,histMean-3*histStdDev, histMean+3*histStdDev,5);
+  leftCB->SetParNames("alphaL","nL","Mean(CB)","Sigma(CB)","Const","alphaR","nR");
+  leftCB->SetParLimits(leftCB->GetParNumber("nL"),0.1,5);
+  leftCB->SetParLimits(leftCB->GetParNumber("Mean(CB)"), histMean - histStdDev, histMean + histStdDev);
+  leftCB->SetParLimits(leftCB->GetParNumber("Sigma(CB)"),0.1 * histStdDev, 1.1 * histStdDev);
+  leftCB->SetParLimits(leftCB->GetParNumber("alphaL"),-3.0,-0.1);
+  leftCB->SetParLimits(leftCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
+  leftCB->SetParameters(histNorm,histMean,histStdDev,-1.4,5);
+  leftCB->SetLineColor(kGreen+2);
+  leftCB->SetLineWidth(2);
+
   TFitResultPtr frp2;
   TF1 *gaussCore = nullptr;
- 
-  if (fitDoubleCrystalBall) {
+  TF1 *fittedCrystalBall = nullptr;
 
-    frp2 = h1->Fit(doubleCB,crystalBallFitOption.c_str(),"HE SAMES", histMean - 2.0 * histStdDev, histMean + 2.0 * histStdDev);
+  if (fitCrystalBall) {
+
+    fittedCrystalBall = (fitDoubleCrystalBall ? doubleCB : leftCB);
+    if (fitDoubleCrystalBall) frp2 = h1->Fit(fittedCrystalBall,crystalBallFitOption.c_str(),"HE SAMES", histMean - 2.0 * histStdDev, histMean + 2.0 * histStdDev);
+    else                      frp2 = h1->Fit(fittedCrystalBall,crystalBallFitOption.c_str(),"HE SAMES", histMean - 2.0 * histStdDev, histMean + 1.5 * histStdDev);
     // cout << "checkpoint after crystal ball" << endl; //return 0;
     cout << "check point " << endl;
 
@@ -1659,20 +1705,25 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
     }
 
     // get gaussian core of the CB and plot it on top to show how the CB differs from a simple gaussian
-    gaussCore = new TF1(*(h1->GetFunction("doubleCB")));
+    gaussCore = new TF1(*(h1->GetFunction(fittedCrystalBall->GetName())));
     if (gaussCore) {
-      Double_t gaussMean = frp2->Parameter(doubleCB->GetParNumber("Mean(CB)"));
-      Double_t gaussSigma = frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)"));
-      Double_t alphaL = frp2->Parameter(doubleCB->GetParNumber("alphaL"));
-      Double_t alphaR = frp2->Parameter(doubleCB->GetParNumber("alphaR"));
-      gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), gaussMean + fabs(gaussSigma) * fabs(alphaR),"SAME"); // alphaL < 0, alphaR > 0
+      Double_t gaussMean =  frp2->Parameter(fittedCrystalBall->GetParNumber("Mean(CB)"));
+      Double_t gaussSigma = frp2->Parameter(fittedCrystalBall->GetParNumber("Sigma(CB)"));
+      Double_t alphaL =     frp2->Parameter(fittedCrystalBall->GetParNumber("alphaL"));
+      Double_t alphaR =     0;
+      if (fitDoubleCrystalBall) {
+	frp2->Parameter(fittedCrystalBall->GetParNumber("alphaR"));
+	gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), gaussMean + fabs(gaussSigma) * fabs(alphaR),"SAME"); // alphaL < 0, alphaR > 0
+      } else {
+	gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), histMean + 1.5 * histStdDev,"SAME"); // alphaL < 0, alphaR > 0
+      }
       gaussCore->SetLineColor(kRed);
       gaussCore->SetLineWidth(2);
     }
 
   }
 
-  TFitResultPtr retfrp = (fitDoubleCrystalBall ? frp2 : frp1);;
+  TFitResultPtr retfrp = (fitCrystalBall ? frp2 : frp1);;
 
   canvas->Update();
   TPaveStats *statBox = (TPaveStats*)(h1->FindObject("stats"));
@@ -1698,9 +1749,10 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   leg.SetBorderSize(0);
   leg.AddEntry(h1,"data","PLE");
   //leg.AddEntry(gaussian,"gauss","l");
-  if (fitDoubleCrystalBall) {
+  if (fitCrystalBall) {
     if (gaussCore) leg.AddEntry(gaussCore,"gaussian core","l");
-    leg.AddEntry(doubleCB,"double Crystal Ball","l");
+    if (fitDoubleCrystalBall) leg.AddEntry(doubleCB,"double Crystal Ball","l");
+    else                      leg.AddEntry(leftCB,"left Crystal Ball","l");
   } else {
     //leg.AddEntry(mygaussian,"gaussian","l");
     leg.AddEntry(gaussian,"gaussian","l");
@@ -1724,7 +1776,7 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   // gStyle->SetOptFit(1102);
   h1->SetStats(0);
 
-  if (fitDoubleCrystalBall) {
+  if (fitCrystalBall) {
     cout << "FIT_EPSILON: "
 	 << "photon " << (isSecondGenPhoton ? 2 : 1) << "  "
 	 << " mean(CB): " << frp2->Parameter(doubleCB->GetParNumber("Mean(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Mean(CB)"))
