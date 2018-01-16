@@ -42,9 +42,29 @@ using namespace std;
 // example -->  root -l -b -q 'getFitIndex_from_iphiix_ietaiy.C+(10,12,0)'
 // Returns the fit index associated to iphi=10, ieta=12 in EB
 
-void getFitIndex_from_iphiix_ietaiy(const Int_t& iphiiy = 50, const Int_t& ietaix = 10, const Int_t iz = 0) {
+void getFitIndex_from_iphiix_ietaiy(const Int_t& iphiix = 50, const Int_t& ietaiy = 10, const Int_t iz = 0) {
 
   // iz = 0 for EB (default), -1,+1 for EE-,EE+
+
+  if (iz == 0) {
+    if (iphiix < 1 || iphiix > 360) {
+      cout << "Error: iphi coordinate not valid: must be in [1,360]" << endl;
+      exit(EXIT_FAILURE);
+    }
+    if (ietaiy < -85 || ietaiy > 85 || ietaiy == 0) {
+      cout << "Error: ieta coordinate not valid: must be in [-85,85] excluding 0" << endl;
+      exit(EXIT_FAILURE);
+    }
+  } else {
+    if (iphiix < 1 || iphiix > 100) {
+      cout << "Error: ix coordinate not valid: must be in [1,100]" << endl;
+      exit(EXIT_FAILURE);
+    }
+    if (ietaiy < 1 || ietaiy > 100) {
+      cout << "Error: iy coordinate not valid: must be in [1,100]" << endl;
+      exit(EXIT_FAILURE);
+    }
+  }
 
   string filename= "convert_fitIndex_iphiix_ietaiy.root";
 
@@ -61,9 +81,9 @@ void getFitIndex_from_iphiix_ietaiy(const Int_t& iphiiy = 50, const Int_t& ietai
   TH2D* fitIndex_vs_ixiy_EEm    = (TH2D*) f->Get("fitIndex_vs_ixiy_EEm");
 
   Int_t index = -1;
-  if (iz == 0)     index = fitIndex_vs_ietaiphi_EB->GetBinContent(fitIndex_vs_ietaiphi_EB->FindFixBin(ietaix,iphiiy));
-  else if (iz > 0) index = fitIndex_vs_ixiy_EEp->GetBinContent(fitIndex_vs_ixiy_EEp->FindFixBin(ietaix,iphiiy));
-  else if (iz < 0) index = fitIndex_vs_ixiy_EEm->GetBinContent(fitIndex_vs_ixiy_EEm->FindFixBin(ietaix,iphiiy));
+  if (iz == 0)     index = fitIndex_vs_ietaiphi_EB->GetBinContent(fitIndex_vs_ietaiphi_EB->FindFixBin(ietaiy,iphiix));
+  else if (iz > 0) index = fitIndex_vs_ixiy_EEp->GetBinContent(fitIndex_vs_ixiy_EEp->FindFixBin(ietaiy,iphiix));
+  else if (iz < 0) index = fitIndex_vs_ixiy_EEm->GetBinContent(fitIndex_vs_ixiy_EEm->FindFixBin(ietaiy,iphiix));
 
   cout << "Fit index is " << index << endl;
 
