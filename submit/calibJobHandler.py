@@ -235,8 +235,8 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                       for line in lines:
                           if line!=str(filetoCheck):
                                f1.write(line)
-                          else:                              
-                              print "Not printing " + str(line) + " in updated file " + str(updated_list)
+                          # else:                              
+                          #     print "Not printing " + str(line) + " in updated file " + str(updated_list)
                       f1.close()
                    else:
                        filesize = os.path.getsize(filetoCheck.strip())
@@ -935,6 +935,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             f.cd()
         else:
             print "ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat
+            quit()
 
         if isEoverEtrue and n_repeat == 1:
             calibMap_EB = TH2F("calibMap_EB_g2", "EB calib coefficients: #eta on x, #phi on y", 171,-85.5,85.5 , 360,0.5,360.5)
