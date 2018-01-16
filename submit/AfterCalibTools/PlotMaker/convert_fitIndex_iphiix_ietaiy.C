@@ -65,6 +65,7 @@ int Xtal_Iz[14648]={0};
 
 // this macro creates a root file with TH2D histograms, that can be used to get iphi(iX) and ieta(iy) in EB(EE) given the fit index used by ECALpro
 // it can also be used to get a given fit index given the coordinates
+// note that the fit index is basically the hashedIndex of a DetId
 
 void convert_fitIndex_iphiix_ietaiy() {
 
@@ -85,8 +86,7 @@ void convert_fitIndex_iphiix_ietaiy() {
 
   for(int i = 0; i < 61200; i++) {
 
-    int det_ID = EBDetId::detIdFromDenseIndex(i);
-    EBDetId ebseed(det_ID);
+    EBDetId ebseed(EBDetId::detIdFromDenseIndex(i));
     int ieta = ebseed.ieta();
     int iphi = ebseed.iphi();		
     fitIndex_vs_ietaiphi_EB->Fill(ieta,iphi,(Double_t)i);
@@ -103,8 +103,7 @@ void convert_fitIndex_iphiix_ietaiy() {
 
   for(int i = 0; i < 14648; i++) {
 
-    int det_ID = EEDetId::detIdFromDenseIndex(i);    
-    EEDetId eeseed(det_ID);
+    EEDetId eeseed(EEDetId::detIdFromDenseIndex(i));
     int ix = eeseed.ix();
     int iy = eeseed.iy();		       
     int iz = eeseed.zside();		
