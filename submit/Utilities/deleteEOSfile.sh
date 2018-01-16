@@ -9,16 +9,16 @@ if [[ ${host} != *"lxplus"* ]]; then
 fi
 
 iter_ini=0
-iter_fin=5  # it is included in sequence below                                                                           
+iter_fin=4  # it is included in sequence below                                                                           
 
 eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
-dirName="AlcaP0_Run2016G_sel17optim_reg12_v2"
+dirName="AlcaP0_Run2016G_sel17optim_reg12"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)
 
-pattern="epsilonPlots_"
-#pattern="EcalNtp"  # use it with grep to select which file to remove
+#pattern="epsilonPlots_"
+pattern="EcalNtp"  # use it with grep to select which file to remove
 # use following string to test if eos directory exists: we use a regular expression to test whether this string is in the output of "eos ls ..." 
 noDirFound="No such file or directory" 
 
