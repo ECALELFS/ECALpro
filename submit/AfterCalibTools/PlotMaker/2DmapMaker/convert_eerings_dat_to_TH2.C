@@ -77,8 +77,8 @@ void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat
 
     while (inputFile >> a >> b >> c >> d) {
 
-      if (c > 0) hEEp->SetBinContent((Float_t)a,(Float_t)b,(Float_t)d);  
-      else       hEEm->SetBinContent((Float_t)a,(Float_t)b,(Float_t)d);
+      if (c > 0) hEEp->SetBinContent(a,b,(Double_t)d);  
+      else       hEEm->SetBinContent(a,b,(Double_t)d);
 
     }
 
