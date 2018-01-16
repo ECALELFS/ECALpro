@@ -103,9 +103,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // ---------- user defined ------------------------
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
-      std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
+      //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, vector<float>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
       void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
+      void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<float>& clusters_matchedGenPhotonEnergy, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
@@ -168,6 +169,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string HLTResultsNameEE_;
       bool RemoveDead_Flag_;
       TString RemoveDead_Map_;
+      bool RemoveSeedsCloseToDeadXtal_;
       TString L1_Bit_Sele_;
       //float L1BitCollection_[NL1SEED];
 
@@ -225,9 +227,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double S4S9_cut_low_[3];
       double S4S9_cut_high_[3];
       double SystOrNot_;
+
+      // MC stuff
       bool isMC_;
       bool MC_Assoc_;
       double MC_Assoc_DeltaR;
+      bool isEoverEtrue_;  // to run E/Etrue flow (with MC only)
       math::XYZPoint Gamma1MC;
       math::XYZPoint Gamma2MC;
       // for MC truth with more pi0
@@ -246,18 +251,37 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F* h_numberMatchedGenPhotonPairs_EE;  
       TH1F* h_numberUnmergedGenPhotonPairs; // absolute number without separating EB and EE 
       TH1F* h_numberMatchedGenPhotonPairs;  
+      // for E/Etrue with MC
+      TH1F **EoverEtrue_g1_EB_h;  
+      TH1F **EoverEtrue_g1_EE_h;  
+      TH1F **EoverEtrue_g2_EB_h;  
+      TH1F **EoverEtrue_g2_EE_h;  
+      TH1F *allEoverEtrue_g1_EE; 
+      TH1F *allEoverEtrue_g1_EEnw; 
+      TH1F *allEoverEtrue_g1_EB;
+      TH1F *allEoverEtrue_g1_EBnw;
+      TH1F *allEoverEtrue_g2_EE; 
+      TH1F *allEoverEtrue_g2_EEnw; 
+      TH1F *allEoverEtrue_g2_EB;
+      TH1F *allEoverEtrue_g2_EBnw;
+
       /////////
       bool isCRAB_;
       bool MakeNtuple4optimization_;
       bool isDebug_;
-      bool isEoverEtrue_;  // to run E/Etrue flow (with MC only)
       /// all the three options have to be instantiated to allow the
       //choice at runtime
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
       EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib;
       EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib;
+      EcalRegionalCalibrationBase *regionalCalibration_;  // use it for pi0 mass or first photon with E/overEtrue
 
-      EcalRegionalCalibrationBase *regionalCalibration_;
+      // for second photon with E/Etrue (MC only)
+      // I create them with "regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::Xtal>()" directly in the source 
+      /* EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib_g2; */
+      EcalRegionalCalibrationBase *regionalCalibration_g2_; // use it for second gen photon with E/Etrue
 
       int currentIteration_;
       string outputDir_;

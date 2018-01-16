@@ -39,9 +39,9 @@
 using namespace std;
 
 // use as:
-// root -b -q 'convert_eerings_dat_to_TH2.C+("<filename>.dat","<filename>.root")'
+// root -b -q 'convert_ix_iy_eta.C+("<filename>.dat","<filename>.root")'
 
-void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat", const string rootfileName = "eerings_modified.root") {
+void convert_ix_iy_eta_to_TH2(const string datfileName = "../../../common/geometry_ietaix_iphiiy_0iz_eta.dat", const string rootfileName = "../../../common/geometry_encap_ix_iy_iz_eta.root") {
   
   ifstream inputFile(datfileName.c_str());
 
@@ -59,10 +59,10 @@ void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat
     exit(EXIT_FAILURE);
   }
 
-  TH2F *hEEp = new TH2F("hEEp","cystals map in EE+",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
-  TH2F *hEEm = new TH2F("hEEm","cystals map in EE-",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+  TH2F *hEEp = new TH2F("hEEp_eta","cystals #eta map in EE+",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+  TH2F *hEEm = new TH2F("hEEm_eta","cystals #eta map in EE-",NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
 
-  // fill histograms with some value that will not be used for ietarings
+  // fill histograms with some value that will not be used for eta
   for (Int_t ix = 1; ix <= 100; ix++) {
     for (Int_t iy = 1; iy <= 100; iy++) {
       hEEp->SetBinContent(ix, iy, -1);
@@ -70,15 +70,16 @@ void convert_eerings_dat_to_TH2(const string datfileName = "eerings_modified.dat
     }
   }
   
-  // file.dat format is --> a b c d, that is --> iX, iY, Z side, etaRing                 
-  Int_t a,b, c, d;
-  
+  // file.dat format is --> a b c d, that is --> iX, iY, Z side, eta                 
+  Int_t a,b, c;
+  Double_t d;  
+
   if (inputFile.is_open()) {
 
     while (inputFile >> a >> b >> c >> d) {
 
-      if (c > 0) hEEp->SetBinContent(a,b,(Double_t)d);  
-      else       hEEm->SetBinContent(a,b,(Double_t)d);
+      if (c > 0)      hEEp->SetBinContent(a,b,d);  
+      else if (c < 0) hEEm->SetBinContent(a,b,d);
 
     }
 

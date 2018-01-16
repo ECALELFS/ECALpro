@@ -111,7 +111,7 @@ void calibAnaEcal::setHistograms() {
 
 void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
 
-  gStyle->SetPalette(107, 0);  // 1:raibow palette  ; 107: kVisibleSpectrum
+  gStyle->SetPalette(55, 0);  // 55:raibow palette  ; 57: kBird (from blue to yellow) ; 107: kVisibleSpectrum
   gStyle->SetNumberContours(50); // default is 20
 
   string canvasName(hist2d->GetName());
@@ -188,7 +188,7 @@ void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
 
 void calibAnaEcal::drawChisquare(TH2D* hist2d = NULL, const Bool_t drawProfileX = true) {
   
-  gStyle->SetPalette(57, 0);  // 1:raibow palette  ; 57: kBird (blue to yellow, default one) ; 107: kVisibleSpectrum
+  gStyle->SetPalette(57, 0);  // 55:raibow palette  ; 57: kBird (blue to yellow, default one) ; 107: kVisibleSpectrum
   gStyle->SetNumberContours(50); // default is 20
   gStyle->SetOptStat(1000111110);
 

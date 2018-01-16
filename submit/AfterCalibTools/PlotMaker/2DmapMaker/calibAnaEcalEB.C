@@ -90,7 +90,7 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(10e9); // when this value is very large (bigger than the default) use the default to plot axis                  
   th2dMaxZaxisVector.push_back(0.0125);//0.02                                                  
   if (Pi0orEta == "Pi0") {
-    if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMaxZaxisVector.push_back(0.140);
+    if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMaxZaxisVector.push_back(0.150);
     else                            th2dMaxZaxisVector.push_back(0.140);
     th2dMaxZaxisVector.push_back(0.015);
   } else {

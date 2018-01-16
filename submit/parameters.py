@@ -48,20 +48,20 @@ unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 #MC and Selection Optimization
 isDebug = False # for the moment, if True it activates some cout in FillEpsilonPlot.cc
-isMC = True
-useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one
-isEoverEtrue = False  # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
+isMC = False
+useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one (can stay True even if isEoverEtrue is True)
+isEoverEtrue = False if isMC==False else True # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/testMC.list' # 'InputList/purified_AlCaP0_2017_upTo21September2017.list' # 'InputList/test.list' #
-dirname          = 'testMC_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/purified_AlCaP0_Run2017_C.list' if isMC==False else 'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
+dirname          = 'AlCaP0_Run2017_C_2012reg' if isMC==False else 'pi0Gun_MC_EoverEtrue' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 1 # 7
+nIterations      = 7 if isMC==False else 1 # 7
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 
 SubmitFurtherIterationsFromExisting = False
@@ -71,13 +71,16 @@ SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It
 #startingCalibMap = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/emanuele/cmsdas2017/smearedCalibMap_b50_s00.root"
 
 #N files
-ijobmax          = 2 #5                     # 5 number of files per job
-nHadd            = 2 #35                    # 35 number of files per hadd
+ijobmax          = 6 if isMC==False else 1 #5                     # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
+nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
+useFit_RooMinuit = True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. Tthis happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = '2017reg' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+ContainmentCorrection = '2012reg' if isMC==False else 'No' #'2012reg' # Option: 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+foldInSuperModule = False if isMC==False else True
 
 #Remove Xtral Dead
+RemoveSeedsCloseToDeadXtal = False # if True, require that the seed is at least 1 crystal far from dead zones (the 3x3 matrix does not contain dead crystals). However, it should be already done because the algorithm reject clusters with crystals woth channelstatus > 0 (as in the case of dead channels). Leave it False for now
 RemoveDead_Flag = "True"
 RemoveDead_Map  = ""
 #RemoveDead_Map  = "/afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_6_2_5/src/CalibCode/submit/AfterCalibTools/DeadXtals/plots/h_DeadXtal.root"
@@ -110,16 +113,16 @@ if(Are_pi0):
    gPtCutEB_low = '0.65'
    Pi0IsoCutEB_low = '0.2'
    Pi0HLTIsoCutEB_low = "999"
-   nXtal_1_EB_low = '6'
-   nXtal_2_EB_low = '6'
+   nXtal_1_EB_low = '7'
+   nXtal_2_EB_low = '7'
    S4S9_EB_low = '0.88' #0.83
    #outer barrel 
    Pi0PtCutEB_high = '1.75'
    gPtCutEB_high = '0.65'
    Pi0IsoCutEB_high = '0.2'
    Pi0HLTIsoCutEB_high = '999'
-   nXtal_1_EB_high = '6'
-   nXtal_2_EB_high = '6'
+   nXtal_1_EB_high = '7'
+   nXtal_2_EB_high = '7'
    S4S9_EB_high = '0.9' #0.83
    #low eta EE
    Pi0PtCutEE_low = '3.75'
@@ -389,13 +392,14 @@ useOnlyEEClusterMatchedWithES = 'True'
 #####################
 # if you don't want to overwrite the global tag, set overWriteGlobalTag = False, otherwise, it will be customized based on the following tags  
 #####################
-overWriteGlobalTag = False                                     # Allow to overwrite AlphaTag, Laser correction etc
-laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_prompt_v2';laserDB='frontier://FrontierProd/CMS_CONDITIONS'
+overWriteGlobalTag = True if isMC==False else False                                     # Allow to overwrite AlphaTag, Laser correction etc
+laserTagRecord='';laserTag='';laserDB=''
+#laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_prompt_v2';laserDB='frontier://FrontierProd/CMS_CONDITIONS'                         
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
-#pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
-pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_October2017_rereco_v1';pulseShapeDB='frontier://FrontierProd/CMS_CONDITIONS'
-pedestalTagRecord='EcalPedestalsRcd';pedestalTag='EcalPedestals_Legacy2017_time_v1';pedestalDB='frontier://FrontierProd/CMS_CONDITIONS'
+pulseShapeTagRecord='';pulseShapeTag='';pulseShapeDB=''
+#pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_October2017_rereco_v1';pulseShapeDB='frontier://FrontierProd/CMS_CONDITIONS'  
+pedestalTagRecord='EcalPedestalsRcd';pedestalTag='EcalPedestals_Legacy2017_time_v2';pedestalDB='frontier://FrontierProd/CMS_CONDITIONS'
 #laserAlphaTagRecord='EcalLaserAlphasRcd';laserAlphaTag='EcalLaserAlphas_EB_1.52Russian_1.5Chinese';laserAlphaDB='frontier://FrontierProd/CMS_CONDITIONS'
 #ESIntercalibTagRecord='ESIntercalibConstantsRcd';ESIntercalibTag='ESIntercalibConstants_Run1_Run2_V07_offline';ESIntercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
 #ESEEIntercalibTagRecord='ESEEIntercalibConstantsRcd';ESEEIntercalibTag='ESEEIntercalibConstants_Legacy2016_v3';ESEEIntercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
@@ -414,18 +418,18 @@ linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='front
 
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True' if isMC==False else 'False'                                  # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = 'Cert_294927-302654_13TeV_PromptReco_Collisions17_JSON.txt' if isMC==False else ''            #/afs/cern.ch/cms/CAF/CMSALCA/ALCA_ECALCALIB/json_ecalonly/
+json_file          = 'Cert_294927-306462_13TeV_PromptReco_Collisions17_JSON.txt' if isMC==False else '' 
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
 doLaserCorr        = "False"
 #hltGtDigis         = 'InputTag("simGtDigis")'        # obsolete, not used in the Fill.cc   
 triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else 'InputTag("TriggerResults","","RECO")'   # Run Fill EB only if the HLTPaths for EB(ee) exist, in 93X MC we also have "TriggerResults","","HLT"
-hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")'
+#hltL1GtObjectMap   = 'InputTag("hltL1GtObjectMap")' not used anywhere
 L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
 useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False' # this seems to add obsolete code, keep False
-globaltag          = '92X_dataRun2_Prompt_v9' if isMC==False else '93X_mc2017_realistic_v3' #old is GR_P_V56
-globaltag_New      = True
+globaltag          = '94X_dataRun2_ReReco_EOY17_v2' if isMC==False else '93X_mc2017_realistic_v3' #old is GR_P_V56
+globaltag_New      = True  # keep True, it makes the code use the newer database version (v2) for the GT
 FROMDIGI           = True if isMC==False else False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
 MULTIFIT           = True;   # Choose WEIGHTS or MULTIFIT (MULTIFIT is standard)

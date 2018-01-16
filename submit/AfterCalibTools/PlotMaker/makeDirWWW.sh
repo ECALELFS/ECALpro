@@ -4,9 +4,9 @@ currentPath="$PWD"
 
 wwwPath="/afs/cern.ch/user/m/mciprian/www/"  # your afs path to directory associated to your website
 basePath="${wwwPath}pi0calib/ICplot/"        # here you will create the dirname folder (you can choose the name you want, add more folders or simply use one)
-baseDir="AlcaP0_Run2016G_sel17optim_reg12_v2"       # dirname (could use any name, but better to stick with dirname in parameters.py
+baseDir="AlCaP0_Run2017_C_2012reg"       # dirname (could use any name, but better to stick with dirname in parameters.py
 iter_ini=0  # first iteration to use (in general it would be 0)                                               
-iter_fin=4  # last iteration to use: it is included in sequence below (if you did n iterations, this should be n-1)                  
+iter_fin=6  # last iteration to use: it is included in sequence below (if you did n iterations, this should be n-1)                  
 
 for i in `seq $iter_ini $iter_fin`
 do

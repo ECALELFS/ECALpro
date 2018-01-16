@@ -107,7 +107,7 @@ class ICplotter:
         for k,v in self.data.iteritems():
             if k.subdet() != partition: continue
             if(v.staterr < 999): 
-                # for EB, the file as ieta in x, but in the histogram ieta is in the y axis
+                # for EB, the file has ieta in x, but in the histogram ieta is in the y axis
                 if k.subdet() == "EcalBarrel":
                     h.Fill(k.y,k.x,max(zmin,min(zmax,v.val)))
                 else:
@@ -122,8 +122,8 @@ class ICplotter:
     
         if norm_etaring:
             if partition=='EcalBarrel':
-                hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
-                for ieta in range (1,172): # range excludes last value, so we have 171 values, but ieta = 0 doesn't exist, so we have 170 eta rings in EB
+                #hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+                for ieta in range (1,172): # range excludes last value, so we have 171 values, but ieta = 0 (bin 86 for TH1) doesn't exist, so we have 170 eta rings in EB
                     if ieta == 86: 
                         continue
                     ICsum_etaring = 0.0
@@ -134,17 +134,21 @@ class ICplotter:
                             ICsum_etaring += h.GetBinContent(iphi,ieta)
                             xtalsInEtaRing += 1.0
                         #print "iphi, ieta, ICsum_etaring = %s %s %s" % (str(iphi), str(ieta), str(ICsum_etaring))
-                    ICsum_etaring = ICsum_etaring / xtalsInEtaRing
+                    ICsum_etaring = ICsum_etaring / xtalsInEtaRing  # now it is the average in the eta-ring
 
                     average = 0.0
                     for iphi in range (1,h.GetNbinsX()+1):
-                        hnorm1.Fill(iphi,ieta-86,h.GetBinContent(iphi,ieta)/ICsum_etaring)
-                        average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
-                    #print "etaring %s: average %s" % (str(ieta-86),str(average))
+                        if h.GetBinContent(iphi,ieta) != 1. and h.GetBinContent(iphi,ieta) > 0.00001:
+                            # if the calibration costant is exactly 1., it means the fit failed or there was some other problem such that the IC was set to 1.0
+                            # in this case, do not modify it dividing by the average (note that, since its IC is 1, it can still be used to compute the average)
+                            hnorm1.SetBinContent(iphi,ieta,h.GetBinContent(iphi,ieta)/ICsum_etaring)
+                        #average += h.GetBinContent(iphi,ieta)/(xtalsInEtaRing * ICsum_etaring)
+                        average += hnorm1.GetBinContent(iphi,ieta)/xtalsInEtaRing  # can sum even if bin is 0 or 1 for the average
+                    print "EB etaring %s: Nxtal %s   average %.4f" % (str(ieta-86),str(xtalsInEtaRing),average)
 
                 plots2D.append(hnorm1)
             else:
-                hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+                #hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
                 f_ietaring = rt.TFile("/afs/cern.ch/user/m/mciprian/public/ECALproTools/EE_xyzToEtaRing/eerings_modified.root")
                 h_ietaring = f_ietaring.Get("hEEm") if "Minus" in partition else f_ietaring.Get("hEEp")              
                 for ietaring in range (0,39):
@@ -153,17 +157,22 @@ class ICplotter:
                     for ix in range (1,101):
                         for iy in range (1,101):
                             if h_ietaring.GetBinContent(ix,iy) == ietaring:
-                                ICsum_etaring += h.GetBinContent(ix,iy)
-                                xtalsInEtaRing += 1.0
+                                if h.GetBinContent(ix,iy) > 0.00001:
+                                    ICsum_etaring += h.GetBinContent(ix,iy)
+                                    xtalsInEtaRing += 1.0
                     ICsum_etaring = ICsum_etaring / xtalsInEtaRing
                                 
                     average = 0.0
                     for ix in range (1,101):
                         for iy in range (1,101):
                             if h_ietaring.GetBinContent(ix,iy) == ietaring:
-                                hnorm1.Fill(ix,iy,h.GetBinContent(ix,iy)/ICsum_etaring)
-                                average += h.GetBinContent(ix,iy)/(xtalsInEtaRing * ICsum_etaring)                       
-                    #print "etaring %s: average %s" % (str(ietaring),str(average))
+                                if h.GetBinContent(ix,iy) != 1. and h.GetBinContent(ix,iy) > 0.00001:
+                                    # if the calibration costant is exactly 1., it means the fit failed or there was some other problem such that the IC was set to 1.0
+                                    # in this case, do not modify it dividing by the average (note that, since its IC is 1, it can still be used to compute the average)
+                                    hnorm1.SetBinContent(ix,iy,h.GetBinContent(ix,iy)/ICsum_etaring)
+                                #average += h.GetBinContent(ix,iy)/(xtalsInEtaRing * ICsum_etaring)                       
+                                average += hnorm1.GetBinContent(ix,iy)/xtalsInEtaRing  # can sum even if bin is 0 or 1 for the average
+                    print "EE etaring %s: Nxtal %s   average %.4f" % (str(ietaring),str(xtalsInEtaRing),average)
 
                 plots2D.append(hnorm1)
         else:

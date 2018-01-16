@@ -1,5 +1,7 @@
 #include <memory>
 
+#include "TFitResult.h"
+
 #include "RooRealVar.h"
 #include "RooFitResult.h"
 
@@ -30,6 +32,9 @@ struct Pi0FitResult {
   float probchi2; // after subtracting fit parameters 
 };
 
+Float_t my2sideCrystalBall(double* x, double* par);
+Float_t myLeftTailCrystalBall(double* x, double* par);
+
 class FitEpsilonPlot : public edm::EDAnalyzer {
    public:
       enum FitMode{ Eta=0, Pt, GausPol3, GausEndpoint, Pi0EB, Pi0EE, EtaEB };
@@ -50,19 +55,31 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       void loadEpsilonPlot(const std::string& filename);
+      void loadEoverEtruePlot(const std::string& filename, const int whichPhoton);
       void saveCoefficients();
+      void saveCoefficientsEoverEtrue(const bool isSecondGenPhoton);
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
+      void addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::string& filename, const int whichPhoton);
 
+      int getArrayIndexOfFoldedSMfromIetaIphi(const int, const int);
+      int getArrayIndexOfFoldedSMfromDenseIndex(const int);  
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
+      TFitResultPtr FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
 
       // ----------member data ---------------------------
 
       EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib;
       EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib;
       EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib;
+      EcalRegionalCalibrationBase *regionalCalibration_;    // use it for pi0 mass or first photon with E/overEtrue
 
-      EcalRegionalCalibrationBase *regionalCalibration_;
+      // for second photon with E/Etrue (MC only)
+      // I create them with "regionalCalibration_g2_ = new EcalRegionalCalibration<EcalCalibType::Xtal>()" directly in the source
+      /* EcalRegionalCalibration<EcalCalibType::Xtal> xtalCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::EtaRing> etaCalib_g2; */
+      /* EcalRegionalCalibration<EcalCalibType::TrigTower> TTCalib_g2; */
+      EcalRegionalCalibrationBase *regionalCalibration_g2_; // use it for second gen photon with E/Etrue
 
       int currentIteration_;
       std::string outputDir_;
@@ -72,6 +89,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::string calibMapPath_; 
       std::string Barrel_orEndcap_; 
       std::string fitFileName_;
+      bool useFit_RooMinuit_;
 
       std::string EEoEB_; 
       bool isNot_2010_; 
@@ -79,17 +97,31 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       bool StoreForTest_; 
       int inRangeFit_; 
       int finRangeFit_; 
+      bool useMassInsteadOfEpsilon_;
+      bool foldInSuperModule_;
 
       calibGranularity calibTypeNumber_;
 
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
 
+      // for E/Etrue with MC 
+      bool isEoverEtrue_;
+      TH1F **EoverEtrue_g1_EB_h;
+      TH1F **EoverEtrue_g1_EE_h;
+      TH1F **EoverEtrue_g2_EB_h;
+      TH1F **EoverEtrue_g2_EE_h;
+      std::map<int,TFitResultPtr> EBmap_fitresptr_g1;
+      std::map<int,TFitResultPtr> EBmap_fitresptr_g2;
+      std::map<int,TFitResultPtr> EEmap_fitresptr_g1;
+      std::map<int,TFitResultPtr> EEmap_fitresptr_g2;
+
       TFile *inputEpsilonFile_;
       TFile *outfile_;
       TFile *outfileTEST_;
 
-      bool useMassInsteadOfEpsilon_;
+      std::vector<TH1F*> EoverEtrue_g1_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
+      std::vector<TH1F*> EoverEtrue_g2_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
 
       std::map<int,float> EBmap_Signal;//#
       std::map<int,float> EBmap_Backgr;

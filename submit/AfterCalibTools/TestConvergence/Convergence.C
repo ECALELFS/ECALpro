@@ -150,8 +150,8 @@ void Convergence::run(const string& detectorToSkip = "no") {
 
   cout << endl;
   cout << "====> Test of the convergence of the calibrations. <====" << endl
-            << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
-            << nIter << " iterations" << endl;
+       << "Will run on " << Paths_.size() << " chunks of calibrations, for a total of "
+       << nIter+1 << " iterations (" << nIter << " steps)" << endl;
 
   if (detectorToSkip != "no") {
     cout << endl;
@@ -177,10 +177,11 @@ void Convergence::run(const string& detectorToSkip = "no") {
     
 
     ////////////////////////////////////
-    // open file with EE maps to get etaRing given iX and iY                                                                                                       
-    // the file was created using convert_eerings_dat_to_TH2.C                                                                                                       
+    // open file with EE maps to get etaRing given iX and iY                                                           
+    // the file was created using convert_eerings_dat_to_TH2.C                                                         
     // path of file is ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/PlotMaker/2DmapMaker/
     // we are in ${CMSSW_BASE}/src/CalibCode/submit/AfterCalibTools/TestConvergence/
+    // I also saved a copy here: /afs/cern.ch/user/m/mciprian/public/ECALproTools/EE_xyzToEtaRing/eerings_modified.root
     string rootfileName = "";
     TFile *rootFile = NULL;
     TH2F *hEEplus = NULL;  // will point to the histogram for EE+ 
@@ -199,8 +200,8 @@ void Convergence::run(const string& detectorToSkip = "no") {
 	cout << "Error: histogram not found in file ' " << rootfileName << "'. End of programme." << endl;
 	exit(EXIT_FAILURE);
       } else {
-	hEEplus->SetDirectory(0); // to decouple it from the open file directory                                                                          
-	hEEminus->SetDirectory(0); // to decouple it from the open file directory                                                                          
+	hEEplus->SetDirectory(0); // to decouple it from the open file directory                                       
+	hEEminus->SetDirectory(0); // to decouple it from the open file directory                                      
       }
     }
       
@@ -231,16 +232,16 @@ void Convergence::run(const string& detectorToSkip = "no") {
     } 
     else if (isEB==1){
       
-      // divide EE in bins of ietaRing, from 0 up to 37 (max(ietaRing index) = 36, so etaRing=37 is not considered in the range). 
-      //First range will be [1,9) and so on (upper value excluded) 
-      etaRingEdges.push_back(1);
+      // divide EE in bins of ietaRing, from 0 up to 39 (max(ietaRing index) = 38, so etaRing=39 is not considered in the range). 
+      //First range will be [0,9) and so on (upper value excluded) 
+      etaRingEdges.push_back(0);
       etaRingEdges.push_back(10);
-      etaRingEdges.push_back(19);
-      etaRingEdges.push_back(28);
-      etaRingEdges.push_back(37);
+      etaRingEdges.push_back(20);
+      etaRingEdges.push_back(30);
+      etaRingEdges.push_back(39);
       
       hrange = 0.10; 
-      nbins = 50;
+      nbins = 100;
     }
 
     Int_t n_hbinned;

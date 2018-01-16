@@ -257,6 +257,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('" + HLTResultsNameEB + "')\n")
     if(HLTResultsNameEE!=""):
         outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('" + HLTResultsNameEE + "')\n")
+    if RemoveSeedsCloseToDeadXtal:
+        outputfile.write("process.analyzerFillEpsilon.RemoveSeedsCloseToDeadXtal             = cms.untracked.bool(True)\n")        
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(" + RemoveDead_Flag + ")\n")
     outputfile.write("process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('" + RemoveDead_Map + "')\n")
     if(EtaRingCalibEB):
@@ -269,10 +271,6 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
       outputfile.write("process.analyzerFillEpsilon.SMCalibEE    = cms.untracked.bool(True)\n")
     if(EtaRingCalibEB or SMCalibEB or EtaRingCalibEE or SMCalibEE):
       outputfile.write("process.analyzerFillEpsilon.CalibMapEtaRing = cms.untracked.string('" + CalibMapEtaRing + "')\n")
-    if(MC_Assoc):
-        outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Assoc            = cms.untracked.bool(True)\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR     = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")
     if(Are_pi0):
         outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
     else:
@@ -354,6 +352,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
+       if(MC_Assoc):
+           outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
+           outputfile.write("process.analyzerFillEpsilon.MC_Assoc             = cms.untracked.bool(True)\n")
+           outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR      = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")        
        if isEoverEtrue:
            outputfile.write("process.analyzerFillEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
     if MakeNtuple4optimization:
@@ -427,7 +429,17 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(False)\n")
+    if isEoverEtrue:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
+    if foldInSuperModule:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(False)\n")
+    if useFit_RooMinuit:
+        outputfile.write("process.fitEpsilon.useFit_RooMinuit = cms.untracked.bool( True )\n")        
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -452,14 +464,18 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
     # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
     # we keep only the output containing 'FIT_EPSILON:'
-    #outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-    #outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
-    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
-    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
-    outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
-    outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+    if useFit_RooMinuit:
+        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
+        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
+    else:
+        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
+        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
     sourcerooplot = source.replace("calibMap","fitRes")
     destrooplot = destination.replace("calibMap","fitRes")
+    outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
+    outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+    outputfile.write("echo 'ls " + sourcerooplot + " >> " + logpath + " 2>&1' \n" )
+    outputfile.write("ls " + sourcerooplot + " >> " + logpath + " 2>&1 \n" )
     outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
     outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
     outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")

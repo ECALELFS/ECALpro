@@ -37,7 +37,7 @@
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
 #include "RooDataHist.h"
-#include "RooAbsPdf.h"
+s#include "RooAbsPdf.h"
 #include "RooAddPdf.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
@@ -81,9 +81,8 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
 
     for(int i = 0; i < 61200; i++)
       {
-	int det_ID = EBDetId::detIdFromDenseIndex(i);
 
-	EBDetId ebseed(det_ID);
+	EBDetId ebseed(EBDetId::detIdFromDenseIndex);
         int ieta = ebseed.ieta();
         int iphi = ebseed.iphi();		
 	Xtal_Ieta[i] = ieta;
@@ -96,10 +95,9 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     // EE
     for(int i = 0; i < 14648; i++)
       {
-	int det_ID = EEDetId::detIdFromDenseIndex(i);
 
 	// TO BE TESTED
-	EEDetId eeseed(det_ID);
+	EEDetId eeseed(EEDetId::detIdFromDenseIndex);
         int ix = eeseed.ix();
         int iy = eeseed.iy();		       
 	int iz = eeseed.zside();		
@@ -215,6 +213,8 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     }
       
     if (xframe) {
+      c->SetTickx(1);
+      c->SetTicky(1);
       xframe->SetTitle(rooplotTitle.c_str());
       xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
       xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");
