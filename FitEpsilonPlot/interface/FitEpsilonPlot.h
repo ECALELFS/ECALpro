@@ -60,9 +60,10 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       void saveCoefficientsEoverEtrue(const bool isSecondGenPhoton);
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
+      void addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::string& filename, const int whichPhoton);
 
-      int getArrayIndexOfFoldedSMfromIetaIphi(int& ieta, int& iphi);
-      int getArrayIndexOfFoldedSMfromDenseIndex(int& index);  
+      int getArrayIndexOfFoldedSMfromIetaIphi(const int, const int);
+      int getArrayIndexOfFoldedSMfromDenseIndex(const int);  
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
       TFitResultPtr FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
 

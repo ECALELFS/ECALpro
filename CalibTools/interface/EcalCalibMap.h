@@ -92,19 +92,19 @@ void EcalCalibMap<Type>::loadCalibMapFromFile(const char* cfile, const bool useG
   // in this case, useGenPhoton2forEoverEtrue = true implies loading the map for the second gen photon (the first one is stored in the map with the same 
   // name it would have if we were working with pi0 mass
 
-    std::cout << "[EcalCalibMap] :: loadCalibMapFromFile(" << std::string(cfile) << ") called" << std::endl; 
+  std::cout << "FIT_EPSILON: [EcalCalibMap] :: photon " << (useGenPhoton2forEoverEtrue ? 2 : 1) << ", loadCalibMapFromFile(" << std::string(cfile) << ") called" << std::endl; 
     TFile* f = TFile::Open(cfile);
     /// keep trying in case of network I/O problems
     for(int iTrial=0; iTrial<10 && !f; iTrial++)
     {
-        std::cout << "[EcalCalibMap] :: Warning: could not open calibMap.root (trial #" << iTrial << ")" << std::endl;
+        std::cout << "FIT_EPSILON : [EcalCalibMap] :: Warning: could not open calibMap.root (trial #" << iTrial << ")" << std::endl;
         std::cout << "[EcalCalibMap] ::   '-- Could be a network issue. Trying again in 30s..." << std::endl;
         sleep(30);
 
         f = TFile::Open(cfile);
     }
     if(!f) throw cms::Exception("LoadCalibMap") << "[EcalCalibMap] :: cannot open calibMap.root after 10 trials in 300s\n";
-    else std::cout << "[EcalCalibMap] :: " << std::string(cfile) << " successfully opened" << std::endl;
+    else std::cout << "FIT_EPSILON: [EcalCalibMap] :: " << std::string(cfile) << " successfully opened" << std::endl;
 
     // TH2F* hmap = (TH2F*) f->Get("calibMap");
     TH2F* hmap = nullptr;
@@ -126,7 +126,7 @@ void EcalCalibMap<Type>::loadCalibMapFromFile(const char* cfile, const bool useG
       if(!hmap_EEm) throw cms::Exception("LoadCalibMap") << "cannot find TH2F::calibMap_EEm in the file provided\n";
     }
 
-    std::cout << "loading constants from TH2F::calibMap in <" << cfile << "> ..." << std::endl;
+    std::cout << "FIT_EPSILON: loading constants from TH2F::calibMap in <" << cfile << "> ..." << std::endl;
 
     for(int ix=1; ix<= hmap->GetXaxis()->GetNbins(); ++ix) {
        if(ix==86) continue;
@@ -137,7 +137,7 @@ void EcalCalibMap<Type>::loadCalibMapFromFile(const char* cfile, const bool useG
        }
     }
 
-    std::cout << "loading constants from TH2F::calibMapEE in <" << cfile << "> ..." << std::endl;
+    std::cout << "FIT_EPSILON: loading constants from TH2F::calibMapEE in <" << cfile << "> ..." << std::endl;
 
     for(int jR=0; jR<EEDetId::kSizeForDenseIndexing; jR++)
     {

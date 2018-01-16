@@ -2989,6 +2989,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
     // I'll have to decide if I want to apply the reco pi0  selection to fill the E/Etrue
     // However, in case we are matching the clusters to gen photons, it is implicit that the clusters belong to a pi0 (even though they might fail the reco selection)
+    // The reco selection is already applied at the singlecluster level in fillEBcluster()
     //
     ///////////////////
     // BEGIN SELECTION
