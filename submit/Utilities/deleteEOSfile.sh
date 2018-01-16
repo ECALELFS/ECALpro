@@ -1,10 +1,18 @@
 #! /bin/bash
 
-iter_ini=0
-iter_fin=7  # it is included in sequence below                                                                           
+# now EOS is mounted, but you must be on lxplus
 
-eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
-dirName="AlcaP0_2016_json3p99fb_weight_extV2_4more"
+host=`echo "$HOSTNAME"`
+if [[ ${host} != *"lxplus"* ]]; then
+    echo "Error! You must be on lxplus to use this script. Do ssh -XY lxplus and work from a release."
+    return 0
+fi
+
+iter_ini=0
+iter_fin=5  # it is included in sequence below                                                                           
+
+eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
+dirName="AlcaP0_Run2016G_sel17optim_reg12_v2"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)
@@ -14,28 +22,33 @@ pattern="epsilonPlots_"
 # use following string to test if eos directory exists: we use a regular expression to test whether this string is in the output of "eos ls ..." 
 noDirFound="No such file or directory" 
 
+echo ""
+
 for i in `seq $iter_ini $iter_fin`
 do
-    eos_ls_output=`eos ls ${eosPath}${dirName}/iter_${i}`
+
+    thisFolder="${eosPath}${dirName}/iter_${i}"
     echo "Testing existence of ${eosPath}${dirName}/iter_${i}"
 
-    if [[ ${eos_ls_output} =~ ${noDirFound} ]]; then
-	echo "Directory ${eosPath}${dirName}/iter_${i} not found!"
+    if [ ! -d "${thisFolder}" ]; then
+	echo "WARNING: no folder named ${thisFolder}"
     else
 
 	echo "Ok, directory exists :)"
-	filesToRemove=`eos ls ${eosPath}${dirName}/iter_${i} | grep ${pattern}`
+	filesToRemove=`ls ${thisFolder} | grep ${pattern}`
 	if [ "${filesToRemove}" == "" ]; then
-	    echo "No files in ${eosPath}${dirName}/iter_${i} matching '${pattern}'"
+	    echo "No files in ${thisFolder} matching '${pattern}'"
 	else 
-	    echo "Removing files matching '${pattern}' in ${eosPath}${dirName}/iter_${i}"
+	    echo "Removing files matching '${pattern}' in ${thisFolder}"
 	    for thisfile in $filesToRemove
 	    do
-		eos rm ${eosPath}${dirName}/iter_${i}/${thisfile}
+		rm ${thisFolder}/${thisfile}
 	    done	
 	fi
 	
     fi
+
+    echo ""
 
 done
 
