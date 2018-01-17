@@ -74,8 +74,10 @@ class EcalCalibMap : public EcalCalibMapBase {
     // void setCaloGeometry(ECALGeometry *geom);
 
   private:
-    static float mapEB[Type::nRegions];
-    static float mapEE[Type::nRegionsEE];
+    /* static float mapEB[Type::nRegions]; */
+    /* static float mapEE[Type::nRegionsEE]; */
+    float mapEB[Type::nRegions];
+    float mapEE[Type::nRegionsEE];
     static float bad_coeff;
     static const uint32_t nRegionsEB = Type::nRegions;
     static const uint32_t nRegionsEE = Type::nRegionsEE;
@@ -161,8 +163,8 @@ void EcalCalibMap<Type>::loadCalibMapFromFile(const char* cfile, const bool useG
 //  }
 
 
-  template<typename Type> float EcalCalibMap<Type>::mapEB[Type::nRegions];
-  template<typename Type> float EcalCalibMap<Type>::mapEE[Type::nRegionsEE];
-  template<typename Type> float EcalCalibMap<Type>::bad_coeff;
+/* template<typename Type> float EcalCalibMap<Type>::mapEB[Type::nRegions]; */
+/* template<typename Type> float EcalCalibMap<Type>::mapEE[Type::nRegionsEE]; */
+template<typename Type> float EcalCalibMap<Type>::bad_coeff;
 
 #endif
