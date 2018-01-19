@@ -286,7 +286,14 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     else:
         outputfile.write("process.analyzerFillEpsilon.new_pi0ContainmentCorrections                 = cms.untracked.bool(False)\n")
 
+    if useContainmentCorrectionsFromEoverEtrue:
+        outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
+        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(" + fileEoverEtrueContainmentCorrections + ")\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
+        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")\n")
     
+
     outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
 
     outputfile.write("### choosing proper input tag (recalibration module changes the collection names)\n")
@@ -424,6 +431,13 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( True )\n")
     else:
         outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( False )\n")
+
+    if useContainmentCorrectionsFromEoverEtrue:
+        outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(" + fileEoverEtrueContainmentCorrections + ")\n")
+    else:
+        outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")\n")
 
     if useMassInsteadOfEpsilon:
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")
