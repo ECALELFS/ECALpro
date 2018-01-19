@@ -34,8 +34,21 @@
 #define NPI0MAX 30000
 #define NL1SEED GlobalAlgBlk::maxPhysicsTriggers  // was 128
 //#define SELECTION_TREE
+
+//=====================================
+// NOTES ON CONTAINMENT CORRECTIONS, PLEASE READ!
+//=====================================
+// 19/01/2018
+//
+// we developed containment corrections for both photons based on E/Etrue in MC
+// to have them working, you must set ContainmentCorrection == 'EoverEtrue' in parameters.py
+// this will enable useContainmentCorrectionsFromEoverEtrue = True and set the name of the file where the correction maps are stored (they are TH2F)
+// In principle these corrections are available for both EB and EE, but the MC statistics was limited, so we folded all the EB supermodules in one, while
+// for EE at the moment it is better not to use any corrections (which is what we have always been doing so far)
+// Its is better to undefine MVA_REGRESSIO below. It could stay defined because that correction is not applied, yet it is computed and this waste CPU time
+
 //#define NEW_CONTCORR    // to use Yong's parametric CC, act on both EE and EB
-#define MVA_REGRESSIO     // to use regression in EB
+//#define MVA_REGRESSIO     // to use regression in EB
 //#define MVA_REGRESSIO_Tree  // when using regression (defined MVA_REGRESSIO), decide to store some variables in a tree. This is for EB
 //#define MVA_REGRESSIO_EE    // should be as MVA_REGRESSIO but actually it also act as MVA_REGRESSIO_Tree for EE (define it to use regression in EE)
 //#define MVA_REGRESSIO_EE_Tree  // not used anywere apparently
@@ -128,6 +141,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F * EEpMap_DeadXtal;
       TH1F * EBPHI_ConCorr_p;
       TH1F * EBPHI_ConCorr_m;
+
+      // for containment corrections based on E/Etrue in MC
+      TH2F* hCC_EoverEtrue_g1 = nullptr;
+      TH2F* hCC_EoverEtrue_g2 = nullptr;
+
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
       EcalEnerCorr containmentCorrections_;
 #endif
@@ -145,6 +163,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string externalGeometry_;
       std::string calibMapPath_; 
       std::string jsonFile_; 
+      std::string fileEoverEtrueContainmentCorrections_;
       std::string ebContainmentCorrections_;
       std::string MVAEBContainmentCorrections_01_;
       std::string MVAEBContainmentCorrections_02_;
@@ -161,6 +180,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string ebPHIContainmentCorrections_;
       std::string eeContainmentCorrections_;
       std::string Barrel_orEndcap_;
+      bool useContainmentCorrectionsFromEoverEtrue_;
       bool useEBContainmentCorrections_;
       bool useEEContainmentCorrections_;
       bool useOnlyEEClusterMatchedWithES_;

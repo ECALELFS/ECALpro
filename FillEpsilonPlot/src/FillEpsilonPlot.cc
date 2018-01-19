@@ -129,6 +129,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
+    useContainmentCorrectionsFromEoverEtrue_ = iConfig.getUntrackedParameter<bool>("useContainmentCorrectionsFromEoverEtrue",true);
     useMVAContainmentCorrections_      = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
     new_pi0ContainmentCorrections_     = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
 
@@ -148,6 +149,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     L1GTobjmapToken_                   = consumes<GlobalAlgBlkBxCollection>(iConfig.getUntrackedParameter<edm::InputTag>("L1GTobjmapTag",edm::InputTag("hltGtStage2Digis"))); 
     GenPartCollectionToken_            = consumes<GenParticleCollection>(iConfig.getUntrackedParameter<edm::InputTag>("GenPartCollectionTag",edm::InputTag("genParticles")));
     outfilename_                       = iConfig.getUntrackedParameter<std::string>("OutputFile");
+    fileEoverEtrueContainmentCorrections_ = iConfig.getUntrackedParameter<std::string>("fileEoverEtrueContainmentCorrections");
     ebContainmentCorrections_          = iConfig.getUntrackedParameter<std::string>("EBContainmentCorrections");
     MVAEBContainmentCorrections_01_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_01");
     MVAEBContainmentCorrections_02_    = iConfig.getUntrackedParameter<std::string>("MVAEBContainmentCorrections_02");
@@ -293,7 +295,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
     GeometryService::setGeometryName(externalGeometry_);
     GeometryService::setGeometryPtr(geom_);
+
+
     // containment corrections
+    if (useContainmentCorrectionsFromEoverEtrue_) loadEoverEtrueContainmentCorrections(fileEoverEtrueContainmentCorrections_);
+
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
     if(useEEContainmentCorrections_)
 	  containmentCorrections_.loadContainmentPointCorrectionsEE( edm::FileInPath( eeContainmentCorrections_.c_str() ).fullPath().c_str() );
@@ -2066,6 +2072,97 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
 }
 
 
+CaloCluster getClusterAfterContainmentCorrections(const CaloCluster* gam, const bool isSecondPhoton = false) {
+
+  // we need to correct recHits and recompute energy and position
+
+
+  // corrected energy is obtained by correcting energy in each RecHit of photon
+ float totalCorrectedClusterEnergy = 0.0;
+
+  // FIXME: to be completed, put everything in a function, use a function to open the file with the corrections and get the histogram
+  // TH2 with correction given ieta and iphi
+  // TH2F* hCC_EoverEtrue_g1 = TH2F("hCC_EoverEtrue_g1","");
+  // TH2F* hCC_EoverEtrue_g2 = TH2F("hCC_EoverEtrue_g2","");
+
+  TH2F* hContainmentCorrection = (isSecondPhoton ? hCC_EoverEtrue_g2 : hCC_EoverEtrue_g1);
+
+  std::vector< std::pair<DetId, float> > hitsAndFrac = gam->hitsAndFractions();
+  std::vector< std::pair<DetId, float> > correctedHitsAndFrac; // as hitsAndFrac but with corrections
+
+  for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
+
+    EBDetId ebId(it->first);
+    EBRecHitCollection::const_iterator ixtal = ebHandle->find( ebId );
+    if (ixtal->energy < 0) continue; // should not happen
+    float correctedEnergy_it =  ixtal->energy() * hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.eta(),ebId.phi()));
+    totalCorrectedClusterEnergy += correctedEnergy_it;
+    correctedHitsAndFrac.push_back( std::make_pair(ixtal->id(), correctedEnergy_it) );  // divide by total corrected energy afterwards
+
+  }
+
+  // loop on corrected recHits vector and compute the fractions by dividing by the total corrected energy
+  for (std::vector< std::pair<DetId, float> >::const_iterator it  = correctedHitsAndFrac.begin(); it != correctedHitsAndFrac.end(); ++it) {
+    it->second /= totalCorrectedClusterEnergy;
+  }
+
+  // variables for position caculation
+  float xclu(0.), yclu(0.), zclu(0.); // temp var to compute weighted average
+  float total_weight(0.);// to compute position
+  EBDetID seed_id(gam->seed());
+
+  // Calculate shower depth
+  float T0 = PCparams_.param_T0_barl_;
+  float maxDepth = PCparams_.param_X0_ * ( T0 + log( totalCorrectedClusterEnergy ) ); 
+  float maxToFront;
+  if( GeometryFromFile_ ) maxToFront = geom_->getPosition(seed_id).mag(); // to front face
+  else {
+    const CaloCellGeometry* cell=geometry->getGeometry( seed_id );
+    GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+    maxToFront = posit.mag();
+  }
+
+  // loop over xtals (only those with positive energy) and compute energy and position
+  for(unsigned int j = 0; j < correctedHitsAndFrac.size(); ++j) {
+
+      EBDetId det(correctedHitsAndFrac[j]->first);
+
+      // compute position
+      float weight = std::max( float(0.), PCparams_.param_W0_ + log(correctedHitsAndFrac[j]->second) );
+      float pos_geo;
+      if( GeometryFromFile_ ) pos_geo = geom_->getPosition(det).mag(); // to front face
+      else                  {
+	const CaloCellGeometry* cell=geometry->getGeometry(det);
+	GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
+	pos_geo = posit.mag();
+      }
+      float depth = maxDepth + maxToFront - pos_geo;
+      GlobalPoint posThis;
+      if( GeometryFromFile_ ) posThis = geom_->getPosition(det,depth);
+      else{
+	const CaloCellGeometry* cell=geometry->getGeometry(det);
+	posThis = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( depth );
+      }
+
+      xclu += weight*posThis.x(); 
+      yclu += weight*posThis.y(); 
+      zclu += weight*posThis.z(); 
+      total_weight += weight;
+
+  } // loop over 3x3 rechits
+
+  math::XYZPoint clusPos( xclu/total_weight, 
+			  yclu/total_weight,
+			  zclu/total_weight ); 
+
+  CaloCluster correctedCaloCluster( totalCorrectedClusterEnergy, clusPos, CaloID(CaloID::DET_ECAL_BARREL), correctedHitsAndFrac, CaloCluster::undefined, seed_id );
+  return correctedCaloCluster;
+
+}
+
+//========================================================
+
+
 void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
 {
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
@@ -2445,8 +2542,22 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	//corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
 	// this means g1 is not necessarily the leading photon
 	TLorentzVector pi0P4;
-	if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
-	else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
+	if (useContainmentCorrectionsFromEoverEtrue) {
+
+	  CaloCluster g1_contCorr(getClusterAfterContainmentCorrections(g1,false));
+	  CaloCluster g2_contCorr(getClusterAfterContainmentCorrections(g2,true));
+	  TLorentzVector g1_contCorr_tlv; g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.pt(),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
+	  // TLorentzVector g2_contCorr_tlv; g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.pt(),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
+	  // pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;
+	  pi0P4.SetPtEtaPhiE(g2_contCorr.pt(),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
+	  pi0P4 += g1_contCorr_tlv;
+
+	} else {
+
+	  if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
+	  else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
+	}
+
 	// eta, pt, phi of corrected photons are used many times. Since their computation is tipically time consuming, store them in doubles for later usage
 	double pi0P4_pt = pi0P4.Pt();
 	double pi0P4_eta = pi0P4.Eta();
@@ -3675,6 +3786,31 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
     return 1.;
   }
 }
+
+// ------------ EB E/Etrue Containment correction  ------------
+void FillEpsilonPlot::loadEoverEtrueContainmentCorrections(std::string& fileName = "")
+{
+
+  cout << "FillEpsilonPlot:: loading E/Etrue containment corrections from " << fileName << endl;
+
+  TFile* f = TFile::Open(fileName.c_str());
+
+  if (!f) throw cms::Exception("loadEoverEtrueCC") << "Could not open file with containment corrections\n";
+  else {
+
+    hCC_EoverEtrue_g1 = (TH2F*) f->Get("calibMap_EB");
+    hCC_EoverEtrue_g2 = (TH2F*) f->Get("calibMap_EB_g2");
+    if (!hCC_EoverEtrue_g1) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 1\n";
+    if (!hCC_EoverEtrue_g2) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 2\n";
+  }
+  // detach histogram from file so that we can safely close the file
+  hCC_EoverEtrue_g1->SetDirectory(0);
+  hCC_EoverEtrue_g2->SetDirectory(0);
+  f->Close();
+
+}
+
+
 
 // ------------ method called when starting to processes a run  ------------
 void FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
