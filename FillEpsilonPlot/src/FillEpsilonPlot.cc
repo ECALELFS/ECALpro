@@ -2072,44 +2072,50 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
 }
 
 
-CaloCluster getClusterAfterContainmentCorrections(const CaloCluster* gam, const bool isSecondPhoton = false) {
+CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<CaloCluster>::const_iterator gam, const bool isSecondPhoton = false) {
 
+  // this method is used to correct photon recHits energy based on containment corrections derived with E/Etrue in MC
   // we need to correct recHits and recompute energy and position
 
-
   // corrected energy is obtained by correcting energy in each RecHit of photon
- float totalCorrectedClusterEnergy = 0.0;
+  float totalCorrectedClusterEnergy = 0.0;
 
   // FIXME: to be completed, put everything in a function, use a function to open the file with the corrections and get the histogram
   // TH2 with correction given ieta and iphi
   // TH2F* hCC_EoverEtrue_g1 = TH2F("hCC_EoverEtrue_g1","");
   // TH2F* hCC_EoverEtrue_g2 = TH2F("hCC_EoverEtrue_g2","");
 
+  if (!hCC_EoverEtrue_g1 || !hCC_EoverEtrue_g2)
+    throw cms::Exception("FillEpsilonPlot::getClusterAfterContainmentCorrections") << "Pointers to histograms with CC are null\n";
   TH2F* hContainmentCorrection = (isSecondPhoton ? hCC_EoverEtrue_g2 : hCC_EoverEtrue_g1);
 
   std::vector< std::pair<DetId, float> > hitsAndFrac = gam->hitsAndFractions();
   std::vector< std::pair<DetId, float> > correctedHitsAndFrac; // as hitsAndFrac but with corrections
+  std::vector< float > correctedEnergy_it; correctedEnergy_it.clear();
+  std::vector< DetId > rechitDetId_it;     rechitDetId_it.clear();
 
   for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
 
     EBDetId ebId(it->first);
     EBRecHitCollection::const_iterator ixtal = ebHandle->find( ebId );
-    if (ixtal->energy < 0) continue; // should not happen
-    float correctedEnergy_it =  ixtal->energy() * hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.eta(),ebId.phi()));
-    totalCorrectedClusterEnergy += correctedEnergy_it;
-    correctedHitsAndFrac.push_back( std::make_pair(ixtal->id(), correctedEnergy_it) );  // divide by total corrected energy afterwards
+    if (ixtal->energy() < 0) continue; // should not happen
+    rechitDetId_it.push_back(ixtal->id());
+    correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) );
+    totalCorrectedClusterEnergy += correctedEnergy_it.back();
 
   }
 
-  // loop on corrected recHits vector and compute the fractions by dividing by the total corrected energy
-  for (std::vector< std::pair<DetId, float> >::const_iterator it  = correctedHitsAndFrac.begin(); it != correctedHitsAndFrac.end(); ++it) {
-    it->second /= totalCorrectedClusterEnergy;
+  // loop and fill corrected hits and fraction vector
+  for (unsigned int iv = 0; iv < rechitDetId_it.size(); ++iv) {
+    correctedHitsAndFrac.push_back( std::make_pair(rechitDetId_it[iv], correctedEnergy_it[iv]/totalCorrectedClusterEnergy) );  
   }
+  correctedEnergy_it.clear();
+  rechitDetId_it.clear();
 
   // variables for position caculation
   float xclu(0.), yclu(0.), zclu(0.); // temp var to compute weighted average
   float total_weight(0.);// to compute position
-  EBDetID seed_id(gam->seed());
+  EBDetId seed_id(gam->seed());
 
   // Calculate shower depth
   float T0 = PCparams_.param_T0_barl_;
@@ -2125,10 +2131,10 @@ CaloCluster getClusterAfterContainmentCorrections(const CaloCluster* gam, const 
   // loop over xtals (only those with positive energy) and compute energy and position
   for(unsigned int j = 0; j < correctedHitsAndFrac.size(); ++j) {
 
-      EBDetId det(correctedHitsAndFrac[j]->first);
+      EBDetId det(correctedHitsAndFrac[j].first);
 
       // compute position
-      float weight = std::max( float(0.), PCparams_.param_W0_ + log(correctedHitsAndFrac[j]->second) );
+      float weight = std::max( float(0.), PCparams_.param_W0_ + log(correctedHitsAndFrac[j].second) );
       float pos_geo;
       if( GeometryFromFile_ ) pos_geo = geom_->getPosition(det).mag(); // to front face
       else                  {
@@ -2542,14 +2548,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	//corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
 	// this means g1 is not necessarily the leading photon
 	TLorentzVector pi0P4;
-	if (useContainmentCorrectionsFromEoverEtrue) {
+	if (useContainmentCorrectionsFromEoverEtrue_) {
 
 	  CaloCluster g1_contCorr(getClusterAfterContainmentCorrections(g1,false));
 	  CaloCluster g2_contCorr(getClusterAfterContainmentCorrections(g2,true));
-	  TLorentzVector g1_contCorr_tlv; g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.pt(),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
-	  // TLorentzVector g2_contCorr_tlv; g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.pt(),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
+	  TLorentzVector g1_contCorr_tlv; g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.energy()/cosh(g1_contCorr.eta()),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
+	  // TLorentzVector g2_contCorr_tlv; g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
 	  // pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;
-	  pi0P4.SetPtEtaPhiE(g2_contCorr.pt(),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
+	  pi0P4.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
 	  pi0P4 += g1_contCorr_tlv;
 
 	} else {
@@ -3788,7 +3794,7 @@ float FillEpsilonPlot::EBPHI_Cont_Corr(float PT, int giPhi, int ieta)
 }
 
 // ------------ EB E/Etrue Containment correction  ------------
-void FillEpsilonPlot::loadEoverEtrueContainmentCorrections(std::string& fileName = "")
+void FillEpsilonPlot::loadEoverEtrueContainmentCorrections(const std::string& fileName = "")
 {
 
   cout << "FillEpsilonPlot:: loading E/Etrue containment corrections from " << fileName << endl;

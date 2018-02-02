@@ -4,7 +4,7 @@ eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
 dirName="AlCaP0_Run2017_C_2012reg"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="5"                                                          # number n of iterations (iter_0 to iter_{n-1})
+iter_number="4"                                                          # number n of iterations (iter_0 to iter_{n-1})
 tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
@@ -14,7 +14,8 @@ nJump=1
 # leave extension as "noExtension" in you don't need to add additional steps that start from the one above
 # format is newDirName_ext1,newIterNumber_ext1,newTagName_ext1:newDirName_ext2,newIterNumber_ext2,newTagName_ext2 and so on (different extensions separated by : )
 extension="noExtension"
-#extension="AlcaP0_Run2016G_sel17optim_reg12_ext1_fromIter4,5,AlcaP0_Run2016G_sel17optim_reg12_ext1_fromIter4_"
+extensionDirName="AlCaP0_Run2017_C_2012reg_ext1_fromIter3"
+extension="${extensionDirName=},7,${extensionDirName}_"
 detectorToSkip="no"   # detectorToSkip = "no" to skip nothing, "EB" to skip EB, "EE" to skip EE
 
 for option in "$@";

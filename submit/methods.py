@@ -288,7 +288,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     if useContainmentCorrectionsFromEoverEtrue:
         outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
-        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(" + fileEoverEtrueContainmentCorrections + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string('" + fileEoverEtrueContainmentCorrections + "')\n")
     else:
         outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
         outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")\n")

@@ -251,8 +251,8 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                            for line in lines: 
                                if line!=str(filetoCheck):
                                     f1.write(line)
-                               else:                              
-                                   print "Not printing " + str(line) + " in updated file " + str(updated_list)
+                               # else:                              
+                               #     print "Not printing " + str(line) + " in updated file " + str(updated_list)
                            f1.close()
                #moving the .list to the correct one
                if( NumToRem!=0 ):

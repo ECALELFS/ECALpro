@@ -105,7 +105,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   mapEB->GetYaxis()->SetTitle("i #phi");
   mapEB->GetYaxis()->SetTitleSize(0.06);
   mapEB->GetYaxis()->SetTitleOffset(0.8);
-  mapEB->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.1 : 1.15);
+  mapEB->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.12 : 1.12);
   mapEB->SetStats(0);
   gPad->Update();
   cEB->SaveAs(Form("%s/calibMap_EB_g%d_EoverEtrue_allSM.pdf",outDir.c_str(),nPhoton));
@@ -124,7 +124,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   mapEB_SM->GetYaxis()->SetTitle("i #phi");
   mapEB_SM->GetYaxis()->SetTitleSize(0.06);
   mapEB_SM->GetYaxis()->SetTitleOffset(0.8);
-  mapEB_SM->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.1 : 1.15);
+  mapEB_SM->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.12 : 1.12);
   mapEB_SM->SetStats(0);
   gPad->Update();
   cEB->SaveAs(Form("%s/calibMap_EB_g%d_EoverEtrue_SingleSM.pdf",outDir.c_str(),nPhoton));

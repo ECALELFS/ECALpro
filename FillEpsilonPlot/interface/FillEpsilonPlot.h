@@ -145,6 +145,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // for containment corrections based on E/Etrue in MC
       TH2F* hCC_EoverEtrue_g1 = nullptr;
       TH2F* hCC_EoverEtrue_g2 = nullptr;
+      void loadEoverEtrueContainmentCorrections(const string& fileName);
+      CaloCluster getClusterAfterContainmentCorrections(std::vector<CaloCluster>::const_iterator, const bool isSecondPhoton);
 
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
       EcalEnerCorr containmentCorrections_;

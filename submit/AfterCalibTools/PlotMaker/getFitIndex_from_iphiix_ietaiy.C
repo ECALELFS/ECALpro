@@ -42,7 +42,7 @@ using namespace std;
 // example -->  root -l -b -q 'getFitIndex_from_iphiix_ietaiy.C+(10,12,0)'
 // Returns the fit index associated to iphi=10, ieta=12 in EB
 
-void getFitIndex_from_iphiix_ietaiy(const Int_t& iphiix = 50, const Int_t& ietaiy = 10, const Int_t iz = 0) {
+int getFitIndex_from_iphiix_ietaiy(const Int_t& iphiix = 50, const Int_t& ietaiy = 10, const Int_t iz = 0, const Int_t nFitPerFile = 2000) {
 
   // iz = 0 for EB (default), -1,+1 for EE-,EE+
 
@@ -81,14 +81,21 @@ void getFitIndex_from_iphiix_ietaiy(const Int_t& iphiix = 50, const Int_t& ietai
   TH2D* fitIndex_vs_ixiy_EEm    = (TH2D*) f->Get("fitIndex_vs_ixiy_EEm");
 
   Int_t index = -1;
-  if (iz == 0)     index = fitIndex_vs_ietaiphi_EB->GetBinContent(fitIndex_vs_ietaiphi_EB->FindFixBin(ietaiy,iphiix));
-  else if (iz > 0) index = fitIndex_vs_ixiy_EEp->GetBinContent(fitIndex_vs_ixiy_EEp->FindFixBin(ietaiy,iphiix));
-  else if (iz < 0) index = fitIndex_vs_ixiy_EEm->GetBinContent(fitIndex_vs_ixiy_EEm->FindFixBin(ietaiy,iphiix));
-
-  cout << "Fit index is " << index << endl;
+  if (iz == 0) {
+    index = fitIndex_vs_ietaiphi_EB->GetBinContent(fitIndex_vs_ietaiphi_EB->FindFixBin(ietaiy,iphiix));
+    cout << "EB: iphi - ieta - fitIndex - fileIndex --> " << iphiix << " - " << ietaiy << " - " << index << " - " << index/nFitPerFile << endl;
+  }
+  else if (iz > 0) {
+    index = fitIndex_vs_ixiy_EEp->GetBinContent(fitIndex_vs_ixiy_EEp->FindFixBin(ietaiy,iphiix));
+    cout << "EE+: ix - iy - fitIndex --> " << iphiix << " - " << ietaiy << " - " << index << endl;
+  } else if (iz < 0) {
+    index = fitIndex_vs_ixiy_EEm->GetBinContent(fitIndex_vs_ixiy_EEm->FindFixBin(ietaiy,iphiix));
+    cout << "EE-: ix - iy - fitIndex --> " << iphiix << " - " << ietaiy << " - " << index << endl;
+  }
 
   f->Close();
   delete f;
 
+  return index;
 
 }

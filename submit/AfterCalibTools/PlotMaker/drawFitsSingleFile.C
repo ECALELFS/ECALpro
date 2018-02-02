@@ -67,7 +67,8 @@ int Xtal_Iz[14648]={0};
 // Actually it looks like some objects are written twice in the file. In the following, a check is made to avoid drawing the same object twice
 
 void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& BarrelOrEndcap = "Barrel", const string& outputDIR = "./", const Int_t nFitsToPlot = 10, 
-			const Int_t fitIndexToPlot = -1) {
+			const Int_t fitIndexToPlot = -1,
+			const Bool_t draw_RooPlot0_Canvas1 = 0) {
 
   // if fitIndexToPlot >= 0 we just look for plot with that index and plot that one
   // otherwise just plot nFitsToPlot plots from fitResFileOnEos file

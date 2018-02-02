@@ -4,6 +4,11 @@
 
 #include "RooRealVar.h"
 #include "RooFitResult.h"
+#include "RooAbsPdf.h"
+#include "RooRealProxy.h"
+#include "RooCategoryProxy.h"
+#include "RooAbsReal.h"
+#include "RooAbsCategory.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -35,6 +40,41 @@ struct Pi0FitResult {
 Float_t my2sideCrystalBall(double* x, double* par);
 Float_t myLeftTailCrystalBall(double* x, double* par);
 
+
+// Double CB with RooFit
+// copied from https://github.com/gdujany/chibAnalysis/blob/master/My_double_CB/My_double_CB.h 
+//
+class My_double_CB : public RooAbsPdf {
+ public:
+  My_double_CB() {} ; 
+  My_double_CB(const char *name, const char *title,
+	       RooAbsReal& _x,
+	       RooAbsReal& _mu,
+	       RooAbsReal& _sig,
+	       RooAbsReal& _a1,
+	       RooAbsReal& _n1,
+	       RooAbsReal& _a2,
+	       RooAbsReal& _n2);
+  My_double_CB(const My_double_CB& other, const char* name=0) ;
+  virtual TObject* clone(const char* newname) const { return new My_double_CB(*this,newname); }
+  inline virtual ~My_double_CB() { }
+
+ protected:
+
+  RooRealProxy x ;
+  RooRealProxy mu ;
+  RooRealProxy sig ;
+  RooRealProxy a1 ;
+  RooRealProxy n1 ;
+  RooRealProxy a2 ;
+  RooRealProxy n2 ;
+  
+  Double_t evaluate() const ;
+
+};
+
+/////////////////////////////
+
 class FitEpsilonPlot : public edm::EDAnalyzer {
    public:
       enum FitMode{ Eta=0, Pt, GausPol3, GausEndpoint, Pi0EB, Pi0EE, EtaEB };
@@ -56,16 +96,19 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
 
       void loadEpsilonPlot(const std::string& filename);
       void loadEoverEtruePlot(const std::string& filename, const int whichPhoton);
+      void loadEoverEtruePlotFoldedInSM(const int whichPhoton);
       void saveCoefficients();
       void saveCoefficientsEoverEtrue(const bool isSecondGenPhoton);
+      void saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhoton);
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
       void addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::string& filename, const int whichPhoton);
 
       int getArrayIndexOfFoldedSMfromIetaIphi(const int, const int);
-      int getArrayIndexOfFoldedSMfromDenseIndex(const int);  
+      int getArrayIndexOfFoldedSMfromDenseIndex(const int, const bool);  
       Pi0FitResult FitMassPeakRooFit(TH1F* h,double xlo, double xhi, uint32_t HistoIndex, int ngaus=1, FitMode mode=Pi0EB, int niter=0, bool isNot_2010_=true);
       TFitResultPtr FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox);
+      Pi0FitResult FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode);
 
       // ----------member data ---------------------------
 
@@ -99,6 +142,8 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       int finRangeFit_; 
       bool useMassInsteadOfEpsilon_;
       bool foldInSuperModule_;
+      bool fitEoverEtrueWithRooFit_;
+      bool readFoldedHistogramFromFile_;
 
       calibGranularity calibTypeNumber_;
 
@@ -151,8 +196,34 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::map<int,float> EEmap_b3;
       std::map<int,float> EEmap_Bnorm;
 
+      // photon 2 E/Etrue
+      std::map<int,float> EBmap_Signal_g2;//#
+      std::map<int,float> EBmap_Backgr_g2;
+      std::map<int,float> EBmap_Chisqu_g2;
+      std::map<int,float> EBmap_ndof_g2;
+      std::map<int,float> EBmap_mean_g2;
+      std::map<int,float> EBmap_mean_err_g2;
+      std::map<int,float> EBmap_sigma_g2;
+      std::map<int,float> EBmap_Snorm_g2;
+      std::map<int,float> EBmap_b0_g2;
+      std::map<int,float> EBmap_b1_g2;
+      std::map<int,float> EBmap_b2_g2;
+      std::map<int,float> EBmap_b3_g2;
+      std::map<int,float> EBmap_Bnorm_g2;
 
-
+      std::map<int,float> EEmap_Signal_g2;
+      std::map<int,float> EEmap_Backgr_g2;
+      std::map<int,float> EEmap_Chisqu_g2;
+      std::map<int,float> EEmap_ndof_g2;
+      std::map<int,float> EEmap_mean_g2;
+      std::map<int,float> EEmap_mean_err_g2;
+      std::map<int,float> EEmap_sigma_g2;
+      std::map<int,float> EEmap_Snorm_g2;
+      std::map<int,float> EEmap_b0_g2;
+      std::map<int,float> EEmap_b1_g2;
+      std::map<int,float> EEmap_b2_g2;
+      std::map<int,float> EEmap_b3_g2;
+      std::map<int,float> EEmap_Bnorm_g2;
 
 
 };

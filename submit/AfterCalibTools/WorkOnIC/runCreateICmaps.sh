@@ -23,7 +23,8 @@
 #source createICmaps.sh AlcaP0_Run2016G_sel17optim_reg12_v2 4 2017 1
 #source createICmaps.sh AlCaP0_DAS2017_Run2017C_run300226_300401_2017Regression 0 2017 1 zhicaiz
 
-source createICmaps.sh AlCaP0_Run2017_DE_run304366_v2 0 2017 1 mciprian
+#source createICmaps.sh AlCaP0_Run2017_DE_run304366_v2 0 2017 1 mciprian
 #source createICmaps.sh AlCaP0_Run2017_DE_run304366_v2 6 2017 0 mciprian
 #source createICmaps.sh AlCaP0_Run2017_DE_run304366_v2_ext1 6 2017 0 mciprian
 #source createICmaps.sh testDataCalib_newClustering 0 2017 1 mciprian
+source createICmaps.sh AlCaP0_Run2017_C_2012reg_ext1_fromIter3 6 2017 1 mciprian
