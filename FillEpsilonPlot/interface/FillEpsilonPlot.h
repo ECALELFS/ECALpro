@@ -8,6 +8,7 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
+#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
@@ -125,6 +126,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
       float DeltaPhi(float phi1, float phi2);
       double min( double a, double b);
+      int getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2);
 
       TH1F** initializeEpsilonHistograms(const char *name, const char *title, int size );
       void deleteEpsilonPlot(TH1F **h, int size);
@@ -209,6 +211,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::InputTag l1InputTag_;
       //std::map<string,int> L1_nameAndNumb;
       edm::EDGetTokenT<GenParticleCollection> GenPartCollectionToken_;
+      edm::EDGetTokenT< std::vector<PileupSummaryInfo> > pileupSummaryToken_;
       edm::Handle<reco::GenParticleCollection> genParticles;
 
       edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
@@ -286,6 +289,17 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F *allEoverEtrue_g2_EEnw; 
       TH1F *allEoverEtrue_g2_EB;
       TH1F *allEoverEtrue_g2_EBnw;
+
+      // Some kinematic variables (use option in parameters.py to choose whether to fill and save them)
+      bool fillKinematicVariables_;
+      int whichRegionEcalStreamPi0; // will be used to say in which region we are based on eta of pi0
+      std::vector<TH1F*> pi0pt_afterCuts;  // 4 regions (2 in EB and 2 in EE, there would be 3 in EE but last two are merged)
+      std::vector<TH1F*> g1pt_afterCuts;
+      std::vector<TH1F*> g2pt_afterCuts;
+      std::vector<TH1F*> g1Nxtal_afterCuts;
+      std::vector<TH1F*> g2Nxtal_afterCuts;
+      std::vector<TH1F*> pi0PhotonsNoverlappingXtals_afterCuts;
+      std::vector<TH2F*> pi0MassVsPU;
 
       /////////
       bool isCRAB_;
@@ -425,8 +439,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_mPi0_nocor[NPI0MAX];
       Float_t Op_enG1_true[NPI0MAX];
       Float_t Op_enG2_true[NPI0MAX];
-      Int_t Op_Nxtal_1[NPI0MAX];
-      Int_t Op_Nxtal_2[NPI0MAX];
+      /* Int_t Op_Nxtal_1[NPI0MAX]; */
+      /* Int_t Op_Nxtal_2[NPI0MAX]; */
       Int_t Op_iEtaiX_1[NPI0MAX];
       Int_t Op_iEtaiX_2[NPI0MAX];
       Int_t Op_iPhiiY_1[NPI0MAX];
@@ -526,5 +540,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       int myLumiBlock;
       int myRun;
       int myBunchCrossing;
+
+      // PU info for MC
+      Int_t nBX;
+      std::vector<Int_t> BX_;
+      Float_t nPUtrue_;
+      std::vector<Int_t> nPUobs_;
 
 };

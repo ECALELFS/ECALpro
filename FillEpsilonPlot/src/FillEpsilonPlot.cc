@@ -220,6 +220,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     isDebug_                           = iConfig.getUntrackedParameter<bool>("isDebug",false);
     isEoverEtrue_                      = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
+    //pileupSummaryToken_                = consumes<std::vector<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("pileupSummaryTag",edm::InputTag("addPileupInfo")));
+    pileupSummaryToken_                = consumes<std::vector<PileupSummaryInfo> >(iConfig.getUntrackedParameter<edm::InputTag>("pileupSummaryTag"));
+    fillKinematicVariables_            = iConfig.getUntrackedParameter<bool>("fillKinematicVariables",false);
 
     // for MC-truth association
     // g4_simTk_Token_  = consumes<edm::SimTrackContainer>(edm::InputTag("g4SimHits"));
@@ -402,6 +405,32 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
     }
 
+    if (fillKinematicVariables_) {
+
+      // 4 regions: 2 in EB, 2 in EE
+      std::vector< std::string> regionStreamPi0; // will contain a name for the region (e.g.: region1EB, region2EE, ecc...)
+      regionStreamPi0.clear();
+      regionStreamPi0.push_back("region1EB");
+      regionStreamPi0.push_back("region2EB");
+      regionStreamPi0.push_back("region1EE");
+      regionStreamPi0.push_back("region2EE");
+
+      for (int iregEcal = 0; iregEcal < 4; ++iregEcal) {
+
+	pi0pt_afterCuts.push_back( new TH1F(Form("pi0pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} p_{T} after cuts",60,0.0,15.0) );
+	g1pt_afterCuts.push_back( new TH1F(Form("g1pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma p_{T} after cuts",60,0.0,10.0) );
+	g2pt_afterCuts.push_back( new TH1F(Form("g2pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"trailing (seed) #gamma p_{T} after cuts",60,0.0,10.0) );
+	g1Nxtal_afterCuts.push_back( new TH1F(Form("g1Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
+	g2Nxtal_afterCuts.push_back( new TH1F(Form("g2Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"trailing (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
+	pi0PhotonsNoverlappingXtals_afterCuts.push_back( new TH1F(Form("pi0PhotonsNoverlappingXtals_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",10,-0.5,9.5) );
+	if (isMC_) pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} mass vs PU",50,0.05,0.25,50,0.5,50.5) );
+
+      }
+
+      regionStreamPi0.clear();
+
+    }
+
     entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
     entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
     entries_EB    = new TH2F("entries_EB","entries_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
@@ -526,8 +555,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	  Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
 	  Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
 	  Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
-	  Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
-	  Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
+	  // Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
+	  // Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
 	}
     }
 
@@ -625,6 +654,25 @@ FillEpsilonPlot::~FillEpsilonPlot()
     delete allEpsilon_EE;
     delete allEpsilon_EEnw;
   }
+
+  if (fillKinematicVariables_) {
+    for (uint32_t i = 0; i < pi0pt_afterCuts.size(); ++i) {
+      delete pi0pt_afterCuts[i];
+      delete g1pt_afterCuts[i];
+      delete g2pt_afterCuts[i];
+      delete g1Nxtal_afterCuts[i];
+      delete g2Nxtal_afterCuts[i];
+      delete pi0PhotonsNoverlappingXtals_afterCuts[i];
+      if (isMC_) delete pi0MassVsPU[i];
+    }
+    pi0pt_afterCuts.clear();
+    g1pt_afterCuts.clear();
+    g2pt_afterCuts.clear();
+    g1Nxtal_afterCuts.clear();
+    g2Nxtal_afterCuts.clear();
+    pi0PhotonsNoverlappingXtals_afterCuts.clear();
+  }
+
   delete entries_EEp;
   delete entries_EEm;
   delete entries_EB;
@@ -711,6 +759,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myLumiBlock = iEvent.id().luminosityBlock();
   myRun = iEvent.id().run();
   myBunchCrossing = iEvent.bunchCrossing();
+
+  // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     
@@ -801,6 +851,30 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //MC Photons (they will be associated to the clusters later)
 
   if( isMC_ && MC_Assoc_ ) {
+
+    // get the PU collection
+    edm::Handle<std::vector<PileupSummaryInfo> > PupInfo;
+    iEvent.getByToken(pileupSummaryToken_, PupInfo);
+
+    nPUtrue_ = PupInfo->begin()->getTrueNumInteractions(); // it is the same for each PVI and it is a float
+
+    // nBX=0;
+    // BX_.clear();
+    // nPUobs_.clear();
+    // std::vector<PileupSummaryInfo>::const_iterator PVI;
+
+    // for(PVI = PupInfo->begin(); PVI != PupInfo->end(); ++PVI) {
+
+    //   BX_.push_back(PVI->getBunchCrossing());
+    //   nPUobs_.push_back(PVI->getPU_NumInteractions());
+    
+    //   std::cout << "   BX[" << nBX << "]: " << BX_.back()
+    //   		<< "   nPUtrue: " << PVI->getTrueNumInteractions()
+    //   		<< "   nPUobs[" << nBX << "]: " << nPUobs_.back()
+    //   		<< std::endl;
+    //   nBX++;
+
+    // }
 
     // vecGamma1MC.clear();
     // vecGamma2MC.clear();
@@ -1862,6 +1936,31 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
 //   return ret;
 // }
 
+int FillEpsilonPlot::getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2) {
+
+  // To count how many crystals overlap between the two 3x3 photon clusters we simply
+  // open a geometric 3x3 matrix around the 2 seeds and see how many DetId are in common.
+
+  int nOverlapXtals = 0;
+  EBDetId  id_g1(g1->seed());
+  EBDetId  id_g2(g2->seed());
+  std::vector<DetId> clus3x3_g1 = ebtopology_->getWindow(id_g1,3,3);       
+  std::vector<DetId> clus3x3_g2 = ebtopology_->getWindow(id_g2,3,3);       
+  std::set<DetId> DetIdUsed;
+
+  for (std::vector<DetId>::const_iterator det = clus3x3_g1.begin(); det != clus3x3_g1.end(); ++det) {
+    DetIdUsed.insert(*det);
+  }
+
+  for (std::vector<DetId>::const_iterator det = clus3x3_g2.begin(); det != clus3x3_g2.end(); ++det) {
+    if (DetIdUsed.count(*det) != 0) nOverlapXtals++;
+  }
+
+  return nOverlapXtals;
+
+}
+
+
 std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, 
 								     int& retNumberUnmergedGen,
 								     int& retNumberMatchedGen,
@@ -1870,9 +1969,6 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
 								     const bool isEB = true
 								 ) 
 {
-
-  // FIXME: order the reco photons matched to a gen pi0 based on the seed energy (at the moment it is not guaranteed)
-
 
   // std::cout << "### Entering FillEpsilonPlot::MCTruthAssociateMultiPi0" << std::endl;
 
@@ -2552,8 +2648,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  CaloCluster g1_contCorr(getClusterAfterContainmentCorrections(g1,false));
 	  CaloCluster g2_contCorr(getClusterAfterContainmentCorrections(g2,true));
-	  TLorentzVector g1_contCorr_tlv; g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.energy()/cosh(g1_contCorr.eta()),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
-	  // TLorentzVector g2_contCorr_tlv; g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
+	  TLorentzVector g1_contCorr_tlv; 
+	  g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.energy()/cosh(g1_contCorr.eta()),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
+	  // TLorentzVector g2_contCorr_tlv; 
+	  // g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
 	  // pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;
 	  pi0P4.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
 	  pi0P4 += g1_contCorr_tlv;
@@ -2629,7 +2727,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta pT cut
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
+	  if (fabs(pi0P4_eta)<1.0)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
 	  else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
 	  if (isDebug_) EventFlow_EB_debug->Fill(1.);
 
@@ -2655,7 +2753,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta isolation cut (distance to other clusters)
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	  if (fabs(pi0P4_eta)<1.0)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	  else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 	  if (isDebug_) EventFlow_EB_debug->Fill(2.);
 
@@ -2694,7 +2792,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	// pi0/eta isolation cut
 	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	  if (fabs(pi0P4_eta)<1.0)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
 	  else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
 	  if (isDebug_) EventFlow_EB_debug->Fill(3.);
 
@@ -2712,18 +2810,27 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	int Nxtal_EnergGamma = 0;
 	int Nxtal_EnergGamma2 = 0;
+	int Nxtal_g1 = 0;
+	int Nxtal_g2 = 0;
+	// for the selection we use the more energetic photon, but in general we want to know how many crystals thw two clusters have.
+	// Now, the clusters are ordered based on the energy of their seed, so that the second photon (with less energetic seed) should tipically have less crystals
+	// index i refers to leading seed photon, j to the oher one
 	if(subDetId==EcalEndcap){
+	  Nxtal_g1 = Ncristal_EE_used[i];
+	  Nxtal_g2 = Ncristal_EE_used[j];
 	  if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE_used[i]; Nxtal_EnergGamma2 = Ncristal_EE_used[j]; }
 	  else                           {  Nxtal_EnergGamma = Ncristal_EE_used[j]; Nxtal_EnergGamma2 = Ncristal_EE_used[i]; }
 	}
 	else{
+	  Nxtal_g1 = Ncristal_EB_used[i];
+	  Nxtal_g2 = Ncristal_EB_used[j];
 	  if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EB_used[i]; Nxtal_EnergGamma2 = Ncristal_EB_used[j]; }
 	  else                           {  Nxtal_EnergGamma = Ncristal_EB_used[j]; Nxtal_EnergGamma2 = Ncristal_EB_used[i]; }
 	}
 
 	if (subDetId == EcalBarrel) {
 
-	  if( fabs(pi0P4_eta)<1. ) { 
+	  if( fabs(pi0P4_eta)<1.0 ) { 
 	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
 	  } else if( fabs(pi0P4_eta)<1.479 )  { 
@@ -2752,6 +2859,24 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	if (isDebug_) cout << "[DEBUG] Fill Optimization Variables..." << endl;
 
+	if (fillKinematicVariables_) {
+
+	  if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
+	  else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
+	  else if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
+	  else whichRegionEcalStreamPi0 = 3;
+
+	  pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
+	  g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
+	  g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
+	  g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g1);
+	  g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g2);
+	  pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2));
+	  if (isMC_) pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUtrue_);
+
+	}
+
+
 	//Fill Optimization
 	if( MakeNtuple4optimization_ && pi0P4_mass > ((Are_pi0_)?0.03:0.2) && pi0P4_mass < ((Are_pi0_)?0.25:1.) ) {
 
@@ -2761,8 +2886,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_Pi0recIsEB[nPi0]    = (subDetId==EcalBarrel)? 1:0;
 	    Op_IsoPi0_rec[nPi0]    = nextClu;  
 	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
-	    Op_n1CrisPi0_rec[nPi0] = Nxtal_EnergGamma; 
-	    Op_n2CrisPi0_rec[nPi0] = Nxtal_EnergGamma2;
+	    Op_n1CrisPi0_rec[nPi0] = Nxtal_g1; 
+	    Op_n2CrisPi0_rec[nPi0] = Nxtal_g2;
 	    Op_mPi0_rec[nPi0]      = pi0P4_mass;
 	    Op_enG1_rec[nPi0]      = Corr1 * g1->energy();
 	    Op_enG2_rec[nPi0]      = Corr2 * g2->energy();
@@ -2773,25 +2898,26 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
 	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor_pt;
 	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor_mass;
-	    Op_Es_e1_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[0];
-	    Op_Es_e1_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[1];
-	    Op_Es_e2_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[0];
-	    Op_Es_e2_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[1];
-	    Op_S4S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[0] : vs4s9EE[0];
-	    Op_S4S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[1] : vs4s9EE[1];
-	    Op_S2S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[0] : vs2s9EE[0];
-	    Op_S2S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[1] : vs2s9EE[1];
-	    Op_S1S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[0] : vs1s9EE[0];
-	    Op_S1S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[1] : vs1s9EE[1];
+	    Op_Es_e1_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[i];
+	    Op_Es_e1_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[j];
+	    Op_Es_e2_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[i];
+	    Op_Es_e2_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[j];
+	    Op_S4S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[i] : vs4s9EE[i];
+	    Op_S4S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[j] : vs4s9EE[j];
+	    Op_S2S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[i] : vs2s9EE[i];
+	    Op_S2S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[j] : vs2s9EE[j];
+	    Op_S1S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[i] : vs1s9EE[i];
+	    Op_S1S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[j] : vs1s9EE[j];
 	    Op_Eta_1[nPi0]         = g1eta;
             Op_Eta_2[nPi0]         = g2eta;
 	    Op_Phi_1[nPi0]         = g1phi;
 	    Op_Phi_2[nPi0]         = g2phi;
-	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[0] : vSeedTimeEE[0];
-	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[1] : vSeedTimeEE[1];
+	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[i] : vSeedTimeEE[i];
+	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[j] : vSeedTimeEE[j];
 	    if( isMC_ && MC_Assoc_ ) {
-	      Op_Nxtal_1[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[0] : Ncristal_EE_used[0];
-	      Op_Nxtal_2[nPi0]       = (subDetId==EcalBarrel) ? Ncristal_EB_used[1] : Ncristal_EE_used[1];
+	      //FIXME: be consistent with new MC, I still have to fix this part
+	      // Op_Nxtal_1[nPi0]       = Nxtal_g1;
+	      // Op_Nxtal_2[nPi0]       = Nxtal_g2;
 	      Op_enG1_true[nPi0]     = Gamma1MC.R();
 	      Op_enG2_true[nPi0]     = Gamma2MC.R();
 	      Op_DeltaR_1[nPi0]      = GetDeltaR(g1eta, Gamma1MC.Eta(), g1phi, Gamma1MC.Phi());
@@ -3097,6 +3223,19 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     //cout << "pi0P4_nocor_mass, pi0P4_mass " << pi0P4_nocor_mass << "  " << pi0P4_mass << endl;
 
 
+    // g1 and g2 are already ordered, the same for the vectors Ncristal_EE_used ad Ncristal_EB_used (index i corresponds to g1, j to g2)
+    int Nxtal_EnergGamma = 0;
+    int Nxtal_EnergGamma2 = 0;
+    if(subDetId==EcalEndcap){
+      Nxtal_EnergGamma = Ncristal_EE_used[i]; 
+      Nxtal_EnergGamma2 = Ncristal_EE_used[j];
+    }
+    else{
+      Nxtal_EnergGamma = Ncristal_EB_used[i]; 
+      Nxtal_EnergGamma2 = Ncristal_EB_used[j]; 
+    }
+
+
     // I'll have to decide if I want to apply the reco pi0  selection to fill the E/Etrue
     // However, in case we are matching the clusters to gen photons, it is implicit that the clusters belong to a pi0 (even though they might fail the reco selection)
     // The reco selection is already applied at the singlecluster level in fillEBcluster()
@@ -3120,7 +3259,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       // pi0/eta pT cut
       if (subDetId == EcalBarrel) {
 
-	if (fabs(pi0P4_eta)<.1)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
+	if (fabs(pi0P4_eta)<1.0)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
 	if (isDebug_) EventFlow_EB_debug->Fill(1.);
 
@@ -3146,7 +3285,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       // pi0/eta isolation cut (distance to other clusters)
       if (subDetId == EcalBarrel) {
 
-	if (fabs(pi0P4_eta)<1.)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
+	if (fabs(pi0P4_eta)<1.0)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
 	if (isDebug_) EventFlow_EB_debug->Fill(2.);
 
@@ -3185,7 +3324,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       // pi0/eta isolation cut
       if (subDetId == EcalBarrel) {
 
-	if (fabs(pi0P4_eta)<1.)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
+	if (fabs(pi0P4_eta)<1.0)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
 	if (isDebug_) EventFlow_EB_debug->Fill(3.);
 
@@ -3200,21 +3339,9 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
       if (isDebug_) cout << "[DEBUG] N Cristal Cuts" << endl;
 
-
-      int Nxtal_EnergGamma = 0;
-      int Nxtal_EnergGamma2 = 0;
-      if(subDetId==EcalEndcap){
-	if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE_used[i]; Nxtal_EnergGamma2 = Ncristal_EE_used[j]; }
-	else                           {  Nxtal_EnergGamma = Ncristal_EE_used[j]; Nxtal_EnergGamma2 = Ncristal_EE_used[i]; }
-      }
-      else{
-	if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EB_used[i]; Nxtal_EnergGamma2 = Ncristal_EB_used[j]; }
-	else                           {  Nxtal_EnergGamma = Ncristal_EB_used[j]; Nxtal_EnergGamma2 = Ncristal_EB_used[i]; }
-      }
-
       if (subDetId == EcalBarrel) {
 
-	if( fabs(pi0P4_eta)<1. ) { 
+	if( fabs(pi0P4_eta)<1.0 ) { 
 	  if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
 	  if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
 	} else if( fabs(pi0P4_eta)<1.479 )  { 
@@ -3247,6 +3374,23 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     // END SELECTION
     ///////////////////
     ////////////////////////////////////////////
+
+    if (fillKinematicVariables_) {
+
+      if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
+      else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
+      else if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
+      else whichRegionEcalStreamPi0 = 3;
+
+      pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
+      g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
+      g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
+      g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma);
+      g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma2);
+      pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2));
+      if (isMC_) pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUtrue_);
+
+    }
 
     if (!MakeNtuple4optimization_) {
 
@@ -3721,6 +3865,21 @@ void FillEpsilonPlot::endJob(){
     h_numberUnmergedGenPhotonPairs->Write();
     h_numberMatchedGenPhotonPairs->Write();
   }
+
+  if (fillKinematicVariables_) {
+
+    for (uint32_t i = 0; i < pi0pt_afterCuts.size(); ++i) {
+      pi0pt_afterCuts[i]->Write();
+      g1pt_afterCuts[i]->Write();
+      g2pt_afterCuts[i]->Write();
+      g1Nxtal_afterCuts[i]->Write();
+      g2Nxtal_afterCuts[i]->Write();
+      pi0PhotonsNoverlappingXtals_afterCuts[i]->Write();
+      if (isMC_) pi0MassVsPU[i]->Write();
+    }
+
+  }
+
 
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {

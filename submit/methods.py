@@ -288,10 +288,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     if useContainmentCorrectionsFromEoverEtrue:
         outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
-        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string('" + fileEoverEtrueContainmentCorrections + "')\n")
+        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"" + fileEoverEtrueContainmentCorrections + "\")\n")
     else:
         outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
-        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")\n")
+        outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"\")\n")
     
 
     outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
@@ -359,12 +359,17 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
     if isMC:
        outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
+       outputfile.write("process.analyzerFillEpsilon.pileupSummaryTag = cms.untracked." + pileupInputTag + "\n")
        if(MC_Assoc):
            outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
            outputfile.write("process.analyzerFillEpsilon.MC_Assoc             = cms.untracked.bool(True)\n")
            outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR      = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")        
        if isEoverEtrue:
            outputfile.write("process.analyzerFillEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
+    if fillKinematicVariables:
+        outputfile.write("process.analyzerFillEpsilon.fillKinematicVariables = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.analyzerFillEpsilon.fillKinematicVariables = cms.untracked.bool(False)\n")
     if MakeNtuple4optimization:
        outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
     if( L1TriggerInfo ):
@@ -434,10 +439,10 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
 
     if useContainmentCorrectionsFromEoverEtrue:
         outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
-        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(" + fileEoverEtrueContainmentCorrections + ")\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"" + fileEoverEtrueContainmentCorrections + "\")\n")
     else:
         outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
-        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"\")\n")
 
     if useMassInsteadOfEpsilon:
         outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")

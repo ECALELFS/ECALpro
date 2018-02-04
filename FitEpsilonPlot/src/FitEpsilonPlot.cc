@@ -110,7 +110,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
     //foldInSuperModule_ = true;
     fitEoverEtrueWithRooFit_ = true;
-    readFoldedHistogramFromFile_ = true;
+    readFoldedHistogramFromFile_ = false;
 
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
@@ -184,27 +184,9 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
         //
 	//  * * * * * * * . . . . . . .  iphi 20
 
-	cout << "EBDetId::kCrystalsPerSM = " << EBDetId::kCrystalsPerSM << endl;
+	//cout << "EBDetId::kCrystalsPerSM = " << EBDetId::kCrystalsPerSM << endl;
 	for (int iv = 0; iv < EBDetId::kCrystalsPerSM; ++iv) {  // 1700 crystals
 	  
-	  // create empty histogram copying structure of first EoverEtrue_g1_EB_h 
-	  // these new histograms should be already empty when created, so we will fill them just by adding other histograms when doing the folding
-	  
-	  // if (readFoldedHistogramFromFile_) {
-	  //   EoverEtrue_g1_EB_SM_hvec.push_back( new TH1F(Form("EoverEtrue_g1_EB_SM_hvec_%d",iv),
-	  // 						 "g1 E/E_{true} folded in SM",
-	  // 						 EoverEtrue_g1_EB_h[inRangeFit_]->GetNbinsX(),
-	  // 						 EoverEtrue_g1_EB_h[inRangeFit_]->GetBinLowEdge(1),
-	  // 						 EoverEtrue_g1_EB_h[inRangeFit_]->GetBinLowEdge(1+EoverEtrue_g1_EB_h[inRangeFit_]->GetNbinsX())
-	  // 						 ) );
-	  //   EoverEtrue_g2_EB_SM_hvec.push_back( new TH1F(Form("EoverEtrue_g2_EB_SM_hvec_%d",iv),
-	  // 						 "g2 E/E_{true} folded in SM",
-	  // 						 EoverEtrue_g2_EB_h[inRangeFit_]->GetNbinsX(),
-	  // 						 EoverEtrue_g2_EB_h[inRangeFit_]->GetBinLowEdge(1),
-	  // 						 EoverEtrue_g2_EB_h[inRangeFit_]->GetBinLowEdge(1+EoverEtrue_g2_EB_h[inRangeFit_]->GetNbinsX())
-	  // 						 ) );
-	  // } else {
-
 	    EoverEtrue_g1_EB_SM_hvec.push_back( new TH1F(Form("EoverEtrue_g1_EB_SM_hvec_%d",iv),
 							 "g1 E/E_{true} folded in SM",
 							 EoverEtrue_g1_EB_h[inRangeFit_]->GetNbinsX(),
@@ -217,8 +199,6 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 							 EoverEtrue_g2_EB_h[inRangeFit_]->GetBinLowEdge(1),
 							 EoverEtrue_g2_EB_h[inRangeFit_]->GetBinLowEdge(1+EoverEtrue_g2_EB_h[inRangeFit_]->GetNbinsX())
 							 ) );
-
-	  // }
 
 	}
 
@@ -321,9 +301,9 @@ int FitEpsilonPlot::getArrayIndexOfFoldedSMfromDenseIndex(const int index = 1, c
   // the idea is that with ic() the crystal number is increased going from left to right
 
   EBDetId thisEBcrystal(EBDetId::detIdFromDenseIndex( index ));
-  if (useEBDetId_ic_scheme) return thisEBcrystal.ic()-1;
-  else                      return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
-
+  // if (useEBDetId_ic_scheme) return thisEBcrystal.ic()-1;
+  // else                      return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
+  return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
 }
 
 
@@ -364,15 +344,15 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
       htmp = (TH1F*)inputEpsilonFile_->Get(line.c_str());      
       if(!htmp)	throw cms::Exception("addHistogramsToFoldSM") << "FIT_EPSILON: cannot load histogram " << line << "\n";
       
-      int crystalIndexinSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
-      if (crystalIndexinSM >= EBDetId::kCrystalsPerSM) {
-	std::cout << "FIT_EPSILON: error in SM folding, index = " << crystalIndexinSM << std::endl;
-	throw cms::Exception("FitEpsilonPlot") << "crystalIndexinSM >= " << EBDetId::kCrystalsPerSM << "\n";
+      int crystalIndexInSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
+      if (crystalIndexInSM >= EBDetId::kCrystalsPerSM) {
+	std::cout << "FIT_EPSILON: error in SM folding, index = " << crystalIndexInSM << std::endl;
+	throw cms::Exception("FitEpsilonPlot") << "crystalIndexInSM >= " << EBDetId::kCrystalsPerSM << "\n";
       }
       if (htmp->GetEntries() > 0) {
-	bool AddWasSuccesful = hvec[crystalIndexinSM]->Add(htmp);
+	bool AddWasSuccesful = hvec[crystalIndexInSM]->Add(htmp);
 	if (not AddWasSuccesful) throw cms::Exception("addHistogramsToFoldSM") << "FIT_EPSILON: failed to add histogram " << line << "\n";
-	//if (crystalIndexinSM == 0) std::cout << "EoverEtrue_g1_EB_SM_hvec[0]->Integral = " << hvec[crystalIndexinSM] << std::endl;
+	//if (crystalIndexInSM == 0) std::cout << "EoverEtrue_g1_EB_SM_hvec[0]->Integral = " << hvec[crystalIndexInSM] << std::endl;
       }
 
     }

@@ -55,7 +55,7 @@ MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 inputlist_n      = 'InputList/purified_AlCaP0_Run2017_C.list' if isMC==False else 'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_Run2017_C_ContCorrEoverEtrue' if isMC==False else 'pi0Gun_MC_EoverEtrue_24Jan2018' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'AlCaP0_Run2017_C_ContCorrEoverEtrue' if isMC==False else 'pi0Gun_MC_EoverEtrue_foldSM_v2' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -78,6 +78,7 @@ useFit_RooMinuit = True # if True the fit is done with RooMinuit, otherwise with
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = 'EoverEtrue' if isMC==False else 'No' # Option: 'EoverEtrue' , 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
 foldInSuperModule = False if isMC==False else True
+fillKinematicVariables = True # fill some histograms with kinematic variables in FillEpsilonPlot.cc
 
 #Remove Xtral Dead
 RemoveSeedsCloseToDeadXtal = False # if True, require that the seed is at least 1 crystal far from dead zones (the 3x3 matrix does not contain dead crystals). However, it should be already done because the algorithm reject clusters with crystals woth channelstatus > 0 (as in the case of dead channels). Leave it False for now
@@ -479,6 +480,7 @@ if isMC:
    MC_Assoc = True
    MC_Assoc_DeltaR = '0.1'
    genPartInputTag = 'InputTag("genParticles","")'
+   pileupInputTag  = 'InputTag("addPileupInfo","","HLT")'
 else:
    #Association with GenPart
    MC_Assoc = False
