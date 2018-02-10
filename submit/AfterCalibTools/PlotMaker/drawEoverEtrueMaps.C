@@ -49,6 +49,8 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 			    )   
 {
 
+  TH1::SetDefaultSumw2();
+
   gStyle->SetPalette(55, 0);  // 55:raibow palette ; 57: kBird (blue to yellow) ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
   gStyle->SetNumberContours(50); // default is 20 
 
@@ -133,7 +135,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 
   
   TCanvas *cEB_ietaProfile = new TCanvas("cEB_ietaProfile","");
-  EB_ieta_profile->Draw("HIST");
+  EB_ieta_profile->Draw("HE");
   EB_ieta_profile->GetXaxis()->SetTitle("i #eta");
   EB_ieta_profile->GetXaxis()->SetTitleSize(0.06);
   EB_ieta_profile->GetXaxis()->SetTitleOffset(0.7);
@@ -156,7 +158,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   delete cEB_ietaProfile;
 
   TCanvas *cEB_iphiProfile = new TCanvas("cEB_iphiProfile","");
-  EB_iphi_profile->Draw("HIST");
+  EB_iphi_profile->Draw("HE");
   EB_iphi_profile->GetXaxis()->SetTitle("i #phi");
   EB_iphi_profile->GetXaxis()->SetTitleSize(0.06);
   EB_iphi_profile->GetXaxis()->SetTitleOffset(0.7);
