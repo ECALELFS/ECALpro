@@ -161,13 +161,13 @@ void calibAnaEcalEE::Init(TTree* tree) {
   calibAnaEcal::Init(tree);
 
   // EE                                                                                                                                                            
-  fChain->SetBranchAddress("ix", &ix, &b_ix);                                                                                                                      
-  fChain->SetBranchAddress("iy", &iy, &b_iy);                                                                                                                      
-  fChain->SetBranchAddress("zside", &zside, &b_zside);                                                                                                             
-  fChain->SetBranchAddress("sc", &sc, &b_sc);                                                                                                                      
-  fChain->SetBranchAddress("isc", &isc, &b_isc);                                                                                                                   
-  fChain->SetBranchAddress("ic", &ic, &b_ic);                                                                                                                      
-  fChain->SetBranchAddress("iquadrant", &iquadrant, &b_iquadrant);  
+  fChain->SetBranchAddress("ix_", &ix, &b_ix);                                                                                                                      
+  fChain->SetBranchAddress("iy_", &iy, &b_iy);                                                                                                                      
+  fChain->SetBranchAddress("zside_", &zside, &b_zside);                                                                                                             
+  fChain->SetBranchAddress("sc_", &sc, &b_sc);                                                                                                                      
+  fChain->SetBranchAddress("isc_", &isc, &b_isc);                                                                                                                   
+  fChain->SetBranchAddress("ic_", &ic, &b_ic);                                                                                                                      
+  fChain->SetBranchAddress("iquadrant_", &iquadrant, &b_iquadrant);  
   Notify();    
 
 }

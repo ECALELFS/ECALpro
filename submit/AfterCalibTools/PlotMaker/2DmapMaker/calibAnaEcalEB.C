@@ -123,14 +123,14 @@ void calibAnaEcalEB::Init(TTree* tree) {
 
   calibAnaEcal::Init(tree);
 
-  fChain->SetBranchAddress("rawId", &rawId, &b_rawId);                                                                                                             
-  fChain->SetBranchAddress("ieta", &ieta, &b_ieta);                                                                                                                
-  fChain->SetBranchAddress("iphi", &iphi, &b_iphi);                                                                                                                
-  fChain->SetBranchAddress("iSM", &iSM, &b_iSM);                                                                                                                   
-  fChain->SetBranchAddress("iMod", &iMod, &b_iMod);                                                                                                                
-  fChain->SetBranchAddress("iTT", &iTT, &b_iTT);                                                                                                                   
-  fChain->SetBranchAddress("iTTeta", &iTTeta, &b_iTTeta);                                                                                                          
-  fChain->SetBranchAddress("iTTphi", &iTTphi, &b_iTTphi);                                                                                                          
+  fChain->SetBranchAddress("rawId_", &rawId, &b_rawId);                                                                                                             
+  fChain->SetBranchAddress("ieta_", &ieta, &b_ieta);                                                                                                                
+  fChain->SetBranchAddress("iphi_", &iphi, &b_iphi);                                                                                                                
+  fChain->SetBranchAddress("iSM_", &iSM, &b_iSM);                                                                                                                   
+  fChain->SetBranchAddress("iMod_", &iMod, &b_iMod);                                                                                                                
+  fChain->SetBranchAddress("iTT_", &iTT, &b_iTT);                                                                                                                   
+  fChain->SetBranchAddress("iTTeta_", &iTTeta, &b_iTTeta);                                                                                                          
+  fChain->SetBranchAddress("iTTphi_", &iTTphi, &b_iTTphi);                                                                                                          
   Notify();    
 
 }

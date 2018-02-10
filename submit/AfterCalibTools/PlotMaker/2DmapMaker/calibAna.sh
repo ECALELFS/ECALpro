@@ -8,14 +8,14 @@
 ##############################################
 
 
-iter_ini=6                                                     # first iteration to use
-iter_fin=6                                                      # last iteration to use: it is included in sequence below
+iter_ini=0                                                     # first iteration to use
+iter_fin=0                                                      # last iteration to use: it is included in sequence below
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
 path="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"  # path to directory on eos
 #dirName="AlcaP0_Run2016G_sel16_reg12"                            # dirname (see CalibCode/submit/parameters.py)
-dirName="AlCaP0_Run2017_C_2012reg_ext1_fromIter3"
+dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrue"
 #tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
 tagName="${dirName}_"
 
@@ -70,7 +70,7 @@ if [ "$doNotCompile" = false ]; then
     echo "Compiling ..."
 
 # to compile using root libraries I created an alias
-#alias rootlib='$ROOTSYS/bin/root-config --cflags --libs'
+# alias rootlib='$ROOTSYS/bin/root-config --cflags --libs'
 # to be used like --> g++ -o file.exe file.C `rootlib`
 # otherwise just use "$ROOTSYS/bin/root-config --cflags --libs" as below
     
