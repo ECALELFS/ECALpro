@@ -144,6 +144,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       bool foldInSuperModule_;
       bool fitEoverEtrueWithRooFit_;
       bool readFoldedHistogramFromFile_;
+      Int_t foldEB_all0_onlyPlus1_onlyMinus2_;
 
       calibGranularity calibTypeNumber_;
 

@@ -109,8 +109,11 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     foldInSuperModule_ = iConfig.getUntrackedParameter<bool>("foldInSuperModule",false);
 
     //foldInSuperModule_ = true;
-    fitEoverEtrueWithRooFit_ = true;
-    readFoldedHistogramFromFile_ = false;
+    fitEoverEtrueWithRooFit_ = true;   // use bare TH1::Fit or RooFit (better, can stay true)
+    readFoldedHistogramFromFile_ = false;  // read directly folded histograms (the folding is done in this analyzer, so the very first time this option is false)
+    foldEB_all0_onlyPlus1_onlyMinus2_ = 0; // 0 to put all 36 SM in one, 1 for using EB+ only, 2 for using EB- only (but then they are used on all barrel because I only have a single SM map)
+
+    // I should add a code that do the folding before going to the fitting part
 
     fitFileName_ = outfilename_;
     std::string strToReplace = "calibMap";
@@ -301,9 +304,9 @@ int FitEpsilonPlot::getArrayIndexOfFoldedSMfromDenseIndex(const int index = 1, c
   // the idea is that with ic() the crystal number is increased going from left to right
 
   EBDetId thisEBcrystal(EBDetId::detIdFromDenseIndex( index ));
-  // if (useEBDetId_ic_scheme) return thisEBcrystal.ic()-1;
-  // else                      return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
-  return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
+  if (useEBDetId_ic_scheme) return thisEBcrystal.ic()-1;
+  else                      return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
+  //return getArrayIndexOfFoldedSMfromIetaIphi(thisEBcrystal.ietaAbs(),thisEBcrystal.iphi());
 }
 
 
@@ -323,10 +326,21 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
     inputEpsilonFile_ = TFile::Open(filename.c_str(),"READ");
   }
 
+  ////////////////////
+  // CAVEAT !!
+  // If opening the following file, before writing objects we should do TFile::cd() (with the other files where histograms are saved)
+  // This is because Root changes the current directory and messes up the filesystem
+  //////////////////
+
+  // // create file containing folded histograms (could be used later without folding again)
+  // string foldFileName = filename;
+  // std::string strToReplace = "epsilonPlots";
+  // foldFileName.replace(filename.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
+
   // string foldFileOpeningMode = (whichPhoton == 1) ? "RECREATE" : "UPDATE";
-  // TFile* f = TFile::Open("histograms_foldedInSM.root",foldFileOpeningMode.c_str());
+  // TFile* f = TFile::Open(foldFileName.c_str(),foldFileOpeningMode.c_str());
   // if (!f || !f->IsOpen()) {
-  //   throw cms::Exception("FitEpsilonPlot") << "error opening file to save folded histogram\n";
+  //   throw cms::Exception("FitEpsilonPlot") << "error opening file '" << foldFileName << "' to save folded histogram\n";
   // }
 
   TH1F* htmp = nullptr;
@@ -337,6 +351,10 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
     int nRegionsEB = ((whichPhoton == 1) ? regionalCalibration_->getCalibMap()->getNRegionsEB() : regionalCalibration_g2_->getCalibMap()->getNRegionsEB()); 
     
     for (int iR = 0; iR < nRegionsEB; ++iR) {
+
+      EBDetId thisEBcrystal(EBDetId::detIdFromDenseIndex( iR));
+      if (foldEB_all0_onlyPlus1_onlyMinus2_ == 1 && thisEBcrystal.ieta() < 0) continue; // if we want to use only EB+
+      if (foldEB_all0_onlyPlus1_onlyMinus2_ == 2 && thisEBcrystal.ieta() > 0) continue; // if we want to use only EB-
 
       line = Form("%s_EB_iR_%d",histoNamePattern.c_str(), iR);
       //if (isTest) line = histoNamePattern;
@@ -456,13 +474,15 @@ void FitEpsilonPlot::loadEoverEtruePlot(const std::string& filename, const int w
 void FitEpsilonPlot::loadEoverEtruePlotFoldedInSM(const int whichPhoton = 1) {
 
   // FIXME: hardcoded, will have to produce this file in calibJobHandler.py using the same naming convention of other files.
-  std::string filename = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/histograms_foldedInSM.root";
+  string foldFileName = epsilonPlotFileName_;
+  std::string strToReplace = "epsilonPlots";
+  foldFileName.replace(epsilonPlotFileName_.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
   std::string line = "";
   std::string histoNamePattern = Form("EoverEtrue_g%d_EB_SM_hvec",whichPhoton );
 
-  TFile* fileFoldHistogram  = TFile::Open(filename.c_str(),"READ");
+  TFile* fileFoldHistogram  = TFile::Open(foldFileName.c_str(),"READ");
   if(!fileFoldHistogram) 
-    throw cms::Exception("loadEoverEtruePlotFoldedInSM") << "Cannot open file " << filename << "\n"; 
+    throw cms::Exception("loadEoverEtruePlotFoldedInSM") << "Cannot open file " << foldFileName << "\n"; 
 
   if ( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     
@@ -2490,14 +2510,6 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //  bool useCB2toFit = isSecondGenPhoton ? true : false;
   bool useCB2toFit = true;   // use double Crystal Ball (overrides useCBtoFit)
 
-  uint32_t index_EBDetId = 0;
-  if(mode==Pi0EB) {
-    index_EBDetId = HistoIndex;
-  }
-
-  EBDetId thisebid(EBDetId::detIdFromDenseIndex(index_EBDetId) ); 
-  int ieta = foldInSuperModule_ ? thisebid.ietaSM() : thisebid.ieta();
-
   // std::cout << "FitEpsilonPlot::FitEoverEtruePeak called " << std::endl;
   int nPhoton = isSecondGenPhoton ? 2 : 1;
 
@@ -2606,9 +2618,9 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   // else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::SumW2Error(kTRUE),RooFit::Save(),RooFit::Range(xlo, xhi));
   // else            res = gaus.fitTo(dh,RooFit::SumW2Error(kTRUE),RooFit::Save(),RooFit::Range(xlo, xhi));
   if (noFitBkg) {
-    if (useCB2toFit)     res = cb2_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi));
-    else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi));
-    else                 res = gaus.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi));
+    if (useCB2toFit)     res = cb2_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
+    else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
+    else                 res = gaus.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
   } else {
     
     if (useFit_RooMinuit_) {
@@ -2723,6 +2735,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   float xmin(0.15), yhi(0.8), ypass(0.05);
   if(mode==EtaEB) yhi=0.30;
   if(mode==Pi0EB) {
+    EBDetId thisebid(EBDetId::detIdFromDenseIndex(HistoIndex) ); 
     int ieta = foldInSuperModule_ ? thisebid.ietaSM() : thisebid.ieta();
     int iphi = foldInSuperModule_ ? thisebid.iphiSM() : thisebid.iphi();
     if (foldInSuperModule_) line = Form("#gamma%d: i#eta = %d, i#phi = %d, ic() = %d", nPhoton, ieta, iphi, thisebid.ic());

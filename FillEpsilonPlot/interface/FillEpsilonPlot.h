@@ -49,7 +49,7 @@
 // Its is better to undefine MVA_REGRESSIO below. It could stay defined because that correction is not applied, yet it is computed and this waste CPU time
 
 //#define NEW_CONTCORR    // to use Yong's parametric CC, act on both EE and EB
-//#define MVA_REGRESSIO     // to use regression in EB
+#define MVA_REGRESSIO     // to use regression in EB
 //#define MVA_REGRESSIO_Tree  // when using regression (defined MVA_REGRESSIO), decide to store some variables in a tree. This is for EB
 //#define MVA_REGRESSIO_EE    // should be as MVA_REGRESSIO but actually it also act as MVA_REGRESSIO_Tree for EE (define it to use regression in EE)
 //#define MVA_REGRESSIO_EE_Tree  // not used anywere apparently
@@ -126,7 +126,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
       float DeltaPhi(float phi1, float phi2);
       double min( double a, double b);
-      int getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2);
+      int getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, const bool isEB);
 
       TH1F** initializeEpsilonHistograms(const char *name, const char *title, int size );
       void deleteEpsilonPlot(TH1F **h, int size);
@@ -148,7 +148,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F* hCC_EoverEtrue_g1 = nullptr;
       TH2F* hCC_EoverEtrue_g2 = nullptr;
       void loadEoverEtrueContainmentCorrections(const string& fileName);
-      CaloCluster getClusterAfterContainmentCorrections(std::vector<CaloCluster>::const_iterator, const bool isSecondPhoton);
+      CaloCluster getClusterAfterContainmentCorrections(std::vector<CaloCluster>::const_iterator, const bool isSecondPhoton, const bool isEB);
 
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
       EcalEnerCorr containmentCorrections_;
@@ -299,7 +299,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<TH1F*> g1Nxtal_afterCuts;
       std::vector<TH1F*> g2Nxtal_afterCuts;
       std::vector<TH1F*> pi0PhotonsNoverlappingXtals_afterCuts;
-      std::vector<TH2F*> pi0MassVsPU;
+      std::vector<TH2F*> pi0MassVsPU;  // BX 0
+      //std::vector<TH2F*> pi0MassVsPU_BXm1;
+      //std::vector<TH2F*> pi0MassVsPU_BXm2;
+      //std::vector<TH2F*> pi0MassVsPU_BXp1;
 
       /////////
       bool isCRAB_;
@@ -542,9 +545,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       int myBunchCrossing;
 
       // PU info for MC
-      Int_t nBX;
-      std::vector<Int_t> BX_;
       Float_t nPUtrue_;
-      std::vector<Int_t> nPUobs_;
+      std::map<Int_t,Int_t> nPUobs_;
+      Int_t nPUobs_BX0_;
 
 };
