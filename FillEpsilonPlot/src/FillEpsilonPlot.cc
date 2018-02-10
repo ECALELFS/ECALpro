@@ -2227,9 +2227,9 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
     if (ixtal->energy() < 0) continue; // should not happen
     rechitDetId_it.push_back(ixtal->id());
     correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) );
-    std::cout << ind 
-	      << ":  ieta,iphi = " << ebId.ieta() << "," << ebId.iphi() 
-	      << "   corr = " << hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) << std::endl;
+    // std::cout << ind 
+    // 	      << ":  ieta,iphi = " << ebId.ieta() << "," << ebId.iphi() 
+    // 	      << "   corr = " << hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) << std::endl;
     totalCorrectedClusterEnergy += correctedEnergy_it.back();
     // in the rest of the code the fraction was defined as the energy of the RecHit, not the ratio with the total one
     correctedHitsAndFrac.push_back( std::make_pair(rechitDetId_it.back(), correctedEnergy_it.back()));  
@@ -2290,8 +2290,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
 			  zclu/total_weight ); 
 
   CaloCluster correctedCaloCluster( totalCorrectedClusterEnergy, clusPos, CaloID(CaloID::DET_ECAL_BARREL), correctedHitsAndFrac, CaloCluster::undefined, seed_id );
-  cout << *gam << endl;
-  cout << correctedCaloCluster << endl;
+  // cout << *gam << endl;
+  // cout << correctedCaloCluster << endl;
 
   return correctedCaloCluster;
 
@@ -2707,7 +2707,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	double pi0P4_eta = pi0P4.Eta();
 	double pi0P4_phi = pi0P4.Phi();
 	double pi0P4_mass = pi0P4.M();
-	std::cout << "pio mass: w/o corr, w/ corr --> " << pi0P4_nocor_mass << "," << pi0P4_mass << endl;  
+	//std::cout << "pio mass: w/o corr, w/ corr --> " << pi0P4_nocor_mass << "," << pi0P4_mass << endl;  
 
 	// note that photon eta and phi are not modified by correction (only pT) since Corr * vector modifies the cartesian coordinates of the vector (pT and pZ)
 	// double g1P4_eta = g1eta; 
