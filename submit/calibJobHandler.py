@@ -353,36 +353,35 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         print 'Done with final hadd'
 
 
-    if (not ONLYMERGEFIT ):
+    if MakeNtuple4optimization:
+        # it actually stopped already before hadding files
+        print """MakeNtuple4optimization is set to True in parameters.py
+From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
+each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
+Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
+If this is not the case, modify FillEpsilonPlot.cc
+"""
+        print "Done with iteration " + str(iters)
+        quit()
 
-        if MakeNtuple4optimization:
-            # it actually stopped already before hadding files
-            print """MakeNtuple4optimization is set to True in parameters.py
-    From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
-    each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
-    Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
-    If this is not the case, modify FillEpsilonPlot.cc
-    """
-            print "Done with iteration " + str(iters)
-            quit()
-
-        # N of Fit to send
-        nEB = 61199/nFit
-        if (61199%nFit != 0) :
-            nEB = int(nEB) +1
-        nEE = 14647/nFit
-        if (14647%nFit != 0) :
-            nEE = int(nEE) +1
-        # For final hadd
-        ListFinalHaddEB = list()
-        ListFinalHaddEE = list()
-        # preparing submission of fit tasks (EB)
-        print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
-        for inteb in range(nEB):
-            fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
-            fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
-            submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-            ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+    # N of Fit to send
+    nEB = 61199/nFit
+    if (61199%nFit != 0) :
+        nEB = int(nEB) +1
+    nEE = 14647/nFit
+    if (14647%nFit != 0) :
+        nEE = int(nEE) +1
+    # For final hadd
+    ListFinalHaddEB = list()
+    ListFinalHaddEE = list()
+    # preparing submission of fit tasks (EB)
+    print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
+    for inteb in range(nEB):
+        fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EB_" + str(inteb) + "_iter_" + str(iters) + ".py"
+        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
+        ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+        if (not ONLYMERGEFIT ):
             print 'About to EB fit:'
             print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
             print submit_s
@@ -391,13 +390,14 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             output = submitJobs.communicate()
             print output
 
-        # preparing submission of fit tasks (EE)
-        print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
-        for inte in range(nEE):        
-            fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-            fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
-            submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-            ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+    # preparing submission of fit tasks (EE)
+    print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
+    for inte in range(nEE):        
+        fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
+        fit_cfg_n = outputdir + "/cfgFile/Fit/fitEpsilonPlot_EE_" + str(inte) + "_iter_" + str(iters) + ".py"
+        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
+        ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+        if (not ONLYMERGEFIT ):
             print 'About to EE fit:'
             print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
             print submit_s
@@ -405,6 +405,8 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
             output = submitJobs.communicate()
             print output
+
+    if (not ONLYMERGEFIT ):
 
         # checking number of running/pending jobs
         checkJobs = subprocess.Popen(['bjobs -q ' + queue], stdout=subprocess.PIPE, shell=True);
