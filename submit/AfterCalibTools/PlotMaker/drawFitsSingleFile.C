@@ -37,7 +37,7 @@
 #include "RooChebychev.h"
 #include "RooPolynomial.h"
 #include "RooDataHist.h"
-s#include "RooAbsPdf.h"
+#include "RooAbsPdf.h"
 #include "RooAddPdf.h"
 #include "RooArgSet.h"
 #include "RooArgList.h"
@@ -83,7 +83,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     for(int i = 0; i < 61200; i++)
       {
 
-	EBDetId ebseed(EBDetId::detIdFromDenseIndex);
+	EBDetId ebseed(EBDetId::detIdFromDenseIndex(i));
         int ieta = ebseed.ieta();
         int iphi = ebseed.iphi();		
 	Xtal_Ieta[i] = ieta;
@@ -98,7 +98,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       {
 
 	// TO BE TESTED
-	EEDetId eeseed(EEDetId::detIdFromDenseIndex);
+	EEDetId eeseed(EEDetId::detIdFromDenseIndex(i));
         int ix = eeseed.ix();
         int iy = eeseed.iy();		       
 	int iz = eeseed.zside();		
