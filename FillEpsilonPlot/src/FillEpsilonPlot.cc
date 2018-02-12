@@ -2226,7 +2226,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
     EBRecHitCollection::const_iterator ixtal = ebHandle->find( ebId );
     if (ixtal->energy() < 0) continue; // should not happen
     rechitDetId_it.push_back(ixtal->id());
-    correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) );
+    //correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) );
+    correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.ieta(),ebId.iphi())) );
     // std::cout << ind 
     // 	      << ":  ieta,iphi = " << ebId.ieta() << "," << ebId.iphi() 
     // 	      << "   corr = " << hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) << std::endl;
