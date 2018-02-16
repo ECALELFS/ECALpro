@@ -229,6 +229,46 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
       cout << "FIT_EPSILON: FitEpsilonPlot:: loading epsilon plots from file: " << epsilonPlotFileName_ << endl;
       loadEpsilonPlot(epsilonPlotFileName_);
 
+      if (foldInSuperModule_ && EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE")) {
+
+	epsilon_EB_SM_hvec.clear();
+
+	// 20(phi)*85(ieta) crystals in 1 SM
+	// we use a 1D vector ad treat it as a 2D array: the index convention is 
+	// index = (fabs(ieta) - 1) + 85 * ((iphi - 1)%20)    ieta = 1, 2, ..., 85     iphi = 1, 2 , ..., 360 
+	// ieta,iphi = 1,1 --> index = 0
+
+	// ieta 1 --> 85
+	//
+	//  * * * * * * * * * * * * * *  iphi 1
+	//  * * * * * * * . . . . . . .
+	//  . . . . . . . . . . . . . . 
+        //
+	//  * * * * * * * . . . . . . .  iphi 20
+
+	//cout << "EBDetId::kCrystalsPerSM = " << EBDetId::kCrystalsPerSM << endl;
+	for (int iv = 0; iv < EBDetId::kCrystalsPerSM; ++iv) {  // 1700 crystals
+	  
+	  epsilon_EB_SM_hvec.push_back( new TH1F(Form("epsilon_EB_SM_hvec_%d",iv),
+						 "#pi^{0} mass folded in SM",
+						 epsilon_EB_h[inRangeFit_]->GetNbinsX(),
+						 epsilon_EB_h[inRangeFit_]->GetBinLowEdge(1),
+						 epsilon_EB_h[inRangeFit_]->GetBinLowEdge(1+epsilon_EB_h[inRangeFit_]->GetNbinsX())
+						 ) );
+
+	}
+
+	if (readFoldedHistogramFromFile_) {
+	  cout << "FIT_EPSILON: reading folded histogram from file" << endl;
+	  loadEpsilonPlotFoldedInSM();
+	} else {
+	  cout << "FIT_EPSILON: folding histograms ..." << endl;
+	  addHistogramsToFoldSM(epsilon_EB_SM_hvec,epsilonPlotFileName_,1);
+	  cout << "FIT_EPSILON: folding histograms completed..." << endl;
+	}
+
+      }
+
     }
 
 }
@@ -254,6 +294,12 @@ FitEpsilonPlot::~FitEpsilonPlot()
       }
     } else {
       deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      if (foldInSuperModule_) {
+	for (unsigned int i = 0; i < epsilon_EB_SM_hvec.size(); ++i) {
+	  delete epsilon_EB_SM_hvec[i];
+	}
+	epsilon_EB_SM_hvec.clear();
+      }
       // delete epsilon_EB_h;
     }
 
@@ -315,7 +361,7 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
   if (hvec.size() == 0) throw cms::Exception("addHistogramsToFoldSM") << "Vector passed to function has size 0\n"; 
 
   std::string line = "";
-  std::string histoNamePattern = Form("%s/EoverEtrue_g%d",EEoEB_.c_str(),whichPhoton);
+  std::string histoNamePattern = isEoverEtrue_ ? Form("%s/EoverEtrue_g%d",EEoEB_.c_str(),whichPhoton) : Form("%s/epsilon",EEoEB_.c_str());
 
   // open the file if it has not been created so far, otherwise check that it is still open (this would happen on second photon)
   if (inputEpsilonFile_ == nullptr) {
@@ -473,7 +519,6 @@ void FitEpsilonPlot::loadEoverEtruePlot(const std::string& filename, const int w
 
 void FitEpsilonPlot::loadEoverEtruePlotFoldedInSM(const int whichPhoton = 1) {
 
-  // FIXME: hardcoded, will have to produce this file in calibJobHandler.py using the same naming convention of other files.
   string foldFileName = epsilonPlotFileName_;
   std::string strToReplace = "epsilonPlots";
   foldFileName.replace(epsilonPlotFileName_.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
@@ -490,7 +535,6 @@ void FitEpsilonPlot::loadEoverEtruePlotFoldedInSM(const int whichPhoton = 1) {
 
       int indexSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
       line = Form("%s_%d",histoNamePattern.c_str(), indexSM);
-      //if (isTest) line = histoNamePattern;
 
       if (whichPhoton == 1) {
 	EoverEtrue_g1_EB_SM_hvec[indexSM] = (TH1F*)fileFoldHistogram->Get(line.c_str());      
@@ -522,6 +566,43 @@ void FitEpsilonPlot::loadEoverEtruePlotFoldedInSM(const int whichPhoton = 1) {
 
 //============================================================
 
+void FitEpsilonPlot::loadEpsilonPlotFoldedInSM() {
+
+  string foldFileName = epsilonPlotFileName_;
+  std::string strToReplace = "epsilonPlots";
+  foldFileName.replace(epsilonPlotFileName_.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
+  std::string line = "";
+  std::string histoNamePattern = "epsilon_EB_SM_hvec";
+
+  TFile* fileFoldHistogram  = TFile::Open(foldFileName.c_str(),"READ");
+  if(!fileFoldHistogram) 
+    throw cms::Exception("loadEpsilonPlotFoldedInSM") << "Cannot open file " << foldFileName << "\n"; 
+
+  if ( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
+    
+    for (int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++) {
+
+      int indexSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
+      line = Form("%s_%d",histoNamePattern.c_str(), indexSM);
+
+      epsilon_EB_SM_hvec[indexSM] = (TH1F*)fileFoldHistogram->Get(line.c_str());      
+      if(!epsilon_EB_SM_hvec[indexSM])
+	throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
+      else {
+	epsilon_EB_SM_hvec[indexSM]->SetDirectory(0);
+	if(!(iR%1000))
+	  cout << "FIT_EPSILON: epsilon distribution for EB region " << iR << " loaded" << endl;
+      }
+
+    }
+
+  }
+  
+  fileFoldHistogram->Close();
+
+}
+
+//============================================================
 
 void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
 {
@@ -1472,13 +1553,17 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	      }
 	    else if(useMassInsteadOfEpsilon_)
 	      {
-		int iMin = epsilon_EB_h[j]->GetXaxis()->FindFixBin(Are_pi0_? 0.08:0.4 ); 
-		int iMax = epsilon_EB_h[j]->GetXaxis()->FindFixBin(Are_pi0_? 0.18:0.65 );
-		double integral = epsilon_EB_h[j]->Integral(iMin, iMax);  
+
+		int crystalIndexInSM = getArrayIndexOfFoldedSMfromDenseIndex(j);
+		TH1F* histoToFit = (foldInSuperModule_ ? epsilon_EB_SM_hvec[crystalIndexInSM] : epsilon_EB_h[j]);
+
+		int iMin = histoToFit->GetXaxis()->FindFixBin(Are_pi0_? 0.08:0.4 ); 
+		int iMax = histoToFit->GetXaxis()->FindFixBin(Are_pi0_? 0.18:0.65 );
+		double integral = histoToFit->Integral(iMin, iMax);  
 
 		if(integral>60.) {
 
-		  Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EB_h[j], Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
+		  Pi0FitResult fitres = FitMassPeakRooFit( histoToFit, Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
 		  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 		  mean = mean_fitresult->getVal();
 
@@ -2538,14 +2623,16 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
 
   // fit range, allow for differences between two photons
-  float_t xlo = isSecondGenPhoton ? 0.82 : 0.82;
-  float_t xhi = isSecondGenPhoton ? 1.15 : 1.15;
+  // float_t xlo = isSecondGenPhoton ? 0.82 : 0.82;
+  float_t xlo = std::max(0.82, isSecondGenPhoton ? (xmaxbin - 1.6 * rmsh1narrow) : (xmaxbin - 1.7 * rmsh1narrow));
+  //float_t xhi = isSecondGenPhoton ? 1.15 : 1.15;
+  float_t xhi = std::min(1.15, isSecondGenPhoton ? (xmaxbin + 2.0 * rmsh1narrow) : (xmaxbin + 2.2 * rmsh1narrow));
 
   RooRealVar x("x",Form("#gamma %d E/E_{true}",nPhoton), 0.0, 1.5, "");
   RooDataHist dh("dh",Form("#gamma %d E/E_{true}",nPhoton),RooArgList(x),h1);
 
-  RooRealVar mean("mean","peak position", xmaxbin, 0.84, 0.99, "");
-  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, 0.001,0.15,"");
+  RooRealVar mean("mean","peak position", xmaxbin, xmaxbin-0.1, xmaxbin+0.1, "");
+  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, 0.001,std::max(0.15,1.2*rmsh1narrow),"");
 
   //  RooRealVar Nsig("Nsig","signal yield",h1->Integral()*0.7,0.,h1->Integral()*1.1); // signal represents the peak in E/Etrue (even though it is actually only signal)
   //Nsig.setVal( h->GetSum()*0.1);

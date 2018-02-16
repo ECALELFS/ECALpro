@@ -97,6 +97,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       void loadEpsilonPlot(const std::string& filename);
       void loadEoverEtruePlot(const std::string& filename, const int whichPhoton);
       void loadEoverEtruePlotFoldedInSM(const int whichPhoton);
+      void loadEpsilonPlotFoldedInSM();
       void saveCoefficients();
       void saveCoefficientsEoverEtrue(const bool isSecondGenPhoton);
       void saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhoton);
@@ -166,6 +167,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       TFile *outfile_;
       TFile *outfileTEST_;
 
+      std::vector<TH1F*> epsilon_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
       std::vector<TH1F*> EoverEtrue_g1_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
       std::vector<TH1F*> EoverEtrue_g2_EB_SM_hvec;  // 20(phi)*85(ieta) crystals in 1 SM
 
