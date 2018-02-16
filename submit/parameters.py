@@ -48,14 +48,16 @@ unitsPerJob = 10   #DBS File per Job
 isOtherT2        = False
 #MC and Selection Optimization
 isDebug = False # for the moment, if True it activates some cout in FillEpsilonPlot.cc
-isMC = True
+isMC = False
+isMCV1 = True  # use V1 MC, otherwise V2 (some options are changed automatically below)
 useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one (can stay True even if isEoverEtrue is True)
 isEoverEtrue = False if isMC==False else True # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
+# if isEoverEtrue is set to False for MC, it runs the usual pi0 intercalibration using the mass
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/purified_AlCaP0_Run2017_C.list' if isMC==False else 'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_Run2017_C_ContCorrEoverEtrue' if isMC==False else 'pi0Gun_MC_EoverEtrue_foldSM_v2' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/purified_AlCaP0_Run2017_DE_run304366.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIFall17DRPremix-94X_mc2017_realistic_v10.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
+dirname          = 'AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueNorm1inEachModule' if isMC==False else 'pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -74,11 +76,11 @@ SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It
 ijobmax          = 6 if isMC==False else 1 #5                     # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000                  # number of fits done in parallel
-useFit_RooMinuit = True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. Tthis happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
+useFit_RooMinuit = True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. This happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = 'EoverEtrue' if isMC==False else 'No' # Option: 'EoverEtrue' , 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
+ContainmentCorrection = 'EoverEtrue' if isMC==False else 'EoverEtrue' # Option: 'EoverEtrue' , 'No', '2012reg', '2017reg', 'Yong', 'mixed'  # see README when you change this: need to modify other settings
 foldInSuperModule = False if isMC==False else True
-fillKinematicVariables = True # fill some histograms with kinematic variables in FillEpsilonPlot.cc
+fillKinematicVariables = True # fill some histograms with kinematic variables in FillEpsilonPlot.cc, you can disable this option to save storage space, but it is really a small fraction of the total size
 
 #Remove Xtral Dead
 RemoveSeedsCloseToDeadXtal = False # if True, require that the seed is at least 1 crystal far from dead zones (the 3x3 matrix does not contain dead crystals). However, it should be already done because the algorithm reject clusters with crystals woth channelstatus > 0 (as in the case of dead channels). Leave it False for now
@@ -349,7 +351,7 @@ if ContainmentCorrection == 'EoverEtrue':  # in this case it is better to undefi
    useMVAContainmentCorrections = False
    new_pi0ContainmentCorrections = False
    useContainmentCorrectionsFromEoverEtrue = True
-   fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root"
+   fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM_v4/iter_0/contCorrEoverEtrueNormTo1inEachModule.root"
 if ContainmentCorrection == 'No':
    useEBContainmentCorrections = 'False'
    useEEContainmentCorrections = 'False'
@@ -438,7 +440,7 @@ triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else '
 L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
 useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False' # this seems to add obsolete code, keep False
-globaltag          = '94X_dataRun2_ReReco_EOY17_v2' if isMC==False else '93X_mc2017_realistic_v3' #old is GR_P_V56
+globaltag          = '94X_dataRun2_ReReco_EOY17_v2' if isMC==False else '94X_mc2017_realistic_v10' # old '93X_mc2017_realistic_v3' 
 globaltag_New      = True  # keep True, it makes the code use the newer database version (v2) for the GT
 FROMDIGI           = True if isMC==False else False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now
@@ -485,3 +487,7 @@ else:
    #Association with GenPart
    MC_Assoc = False
    isEoverEtrue = False
+
+if isMC and isMCV1:
+   inputlist_n = 'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list'
+   globaltag   = '93X_mc2017_realistic_v3'
