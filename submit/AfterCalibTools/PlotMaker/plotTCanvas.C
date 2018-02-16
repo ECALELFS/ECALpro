@@ -116,7 +116,7 @@ void plotTCanvas(const string& dirName = "pi0Gun_MC_EoverEtrue_foldSM_v4" ) {
 
   //const string& filePath = "/afs/cern.ch/work/m/mciprian/myEcalElf/2017_ECALpro/calib2017/CMSSW_9_4_1/src/CalibCode/submit/tmp_rootFiles_EoverEtrue_foldSM/pi0Gun_MC_EoverEtrue_foldSM";
 
-  const string& filePath = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
+  const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
   const Int_t& iterNum = 0;
   const Bool_t isEB = true;
   const Bool_t isMC_EoverEtrue = true;
