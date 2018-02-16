@@ -508,57 +508,59 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	  }
 	}
 	//Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           Form("STr2_L1Seed[%d]/I",NL1SEED));
-	Tree_Optim->Branch( "STr2_NPi0_rec",      &Op_NPi0_rec,         "STr2_NPi0_rec/I");
-	Tree_Optim->Branch( "STr2_Pi0recIsEB",    &Op_Pi0recIsEB,       "STr2_Pi0recIsEB[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_IsoPi0_rec",    &Op_IsoPi0_rec,       "STr2_IsoPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_HLTIsoPi0_rec", &Op_HLTIsoPi0_rec,    "STr2_HLTIsoPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_n1CrisPi0_rec", &Op_n1CrisPi0_rec,    "STr2_n1CrisPi0_rec[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_n2CrisPi0_rec", &Op_n2CrisPi0_rec,    "STr2_n2CrisPi0_rec[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_mPi0_rec",      &Op_mPi0_rec,         "STr2_mPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG1_rec",      &Op_enG1_rec,         "STr2_enG1_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG2_rec",      &Op_enG2_rec,         "STr2_enG2_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_etaPi0_rec",    &Op_etaPi0_rec,       "STr2_etaPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptPi0_rec",     &Op_ptPi0_rec,        "STr2_ptPi0_rec[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_ptPi0_nocor",   &Op_ptPi0_nocor,      "STr2_ptPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG1_nocor",    &Op_enG1_nocor,       "STr2_enG1_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_enG2_nocor",    &Op_enG2_nocor,       "STr2_enG2_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_mPi0_nocor",    &Op_mPi0_nocor,       "STr2_mPi0_nocor[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_DeltaRG1G2",    &Op_DeltaRG1G2,       "STr2_DeltaRG1G2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e1_1",       &Op_Es_e1_1,          "STr2_Es_e1_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e1_2",       &Op_Es_e1_2,          "STr2_Es_e1_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e2_1",       &Op_Es_e2_1,          "STr2_Es_e2_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Es_e2_2",       &Op_Es_e2_2,          "STr2_Es_e2_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S4S9_1",        &Op_S4S9_1,           "STr2_S4S9_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S4S9_2",        &Op_S4S9_2,           "STr2_S4S9_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S2S9_1",        &Op_S2S9_1,           "STr2_S2S9_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S2S9_2",        &Op_S2S9_2,           "STr2_S2S9_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S1S9_1",        &Op_S1S9_1,           "STr2_S1S9_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_S1S9_2",        &Op_S1S9_2,           "STr2_S1S9_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Eta_1",         &Op_Eta_1,            "STr2_Eta_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Eta_2",         &Op_Eta_2,            "STr2_Eta_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Phi_1",         &Op_Phi_1,            "STr2_Phi_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Phi_2",         &Op_Phi_2,            "STr2_Phi_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Time_1",        &Op_Time_1,           "STr2_Time_1[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_Time_2",        &Op_Time_2,           "STr2_Time_2[STr2_NPi0_rec]/F");
-	Tree_Optim->Branch( "STr2_iEtaiX_1",      &Op_iEtaiX_1,         "STr2_iEtaiX_1[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iEtaiX_2",      &Op_iEtaiX_2,         "STr2_iEtaiX_2[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhiiY_1",      &Op_iPhiiY_1,         "STr2_iPhiiY_1[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhiiY_2",      &Op_iPhiiY_2,         "STr2_iPhiiY_2[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iEta_1on5",     &Op_iEta_1on5,        "STr2_iEta_1on5[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iEta_2on5",     &Op_iEta_2on5,        "STr2_iEta_2on5[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhi_1on2",     &Op_iPhi_1on2,        "STr2_iPhi_1on2[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhi_2on2",     &Op_iPhi_2on2,        "STr2_iPhi_2on2[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iEta_1on2520",  &Op_iEta_1on2520,     "STr2_iEta_1on2520[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iEta_2on2520",  &Op_iEta_2on2520,     "STr2_iEta_2on2520[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhi_1on20",    &Op_iPhi_1on20,       "STr2_iPhi_1on20[STr2_NPi0_rec]/I");
-	Tree_Optim->Branch( "STr2_iPhi_2on20",    &Op_iPhi_2on20,       "STr2_iPhi_2on20[STr2_NPi0_rec]/I");
+	Tree_Optim->Branch( "nPi0",          &Op_NPi0,             "nPi0/I");
+	Tree_Optim->Branch( "Pi0recIsEB",    &Op_Pi0recIsEB,       "Pi0recIsEB[nPi0]/I");
+	Tree_Optim->Branch( "ClusIsoPi0",    &Op_ClusIsoPi0,       "ClusIsoPi0[nPi0]/F");
+	Tree_Optim->Branch( "HLTIsoPi0",     &Op_HLTIsoPi0,    "HLTIsoPi0[nPi0]/F");
+	Tree_Optim->Branch( "n1CrisPi0",     &Op_nCrisG1,    "nCrisG1Pi0[nPi0]/I");
+	Tree_Optim->Branch( "n2CrisPi0",     &Op_nCrisG2,    "nCrisG2Pi0[nPi0]/I");
+	Tree_Optim->Branch( "mPi0_cor",      &Op_mPi0_cor,         "mPi0_cor[nPi0]/F");
+	Tree_Optim->Branch( "enG1_cor",      &Op_enG1_cor,         "enG1_cor[nPi0]/F");
+	Tree_Optim->Branch( "enG2_cor",      &Op_enG2_cor,         "enG2_cor[nPi0]/F");
+	Tree_Optim->Branch( "etaG1_cor",     &Op_etaG1_cor,         "etaG1_cor[nPi0]/F");
+	Tree_Optim->Branch( "etaG2_cor",     &Op_etaG2_cor,         "etaG2_cor[nPi0]/F");
+	Tree_Optim->Branch( "phiG1_cor",     &Op_phiG1_cor,         "phiG1_cor[nPi0]/F");
+	Tree_Optim->Branch( "phiG2_cor",     &Op_phiG2_cor,         "phiG2_cor[nPi0]/F");
+	Tree_Optim->Branch( "etaPi0_cor",    &Op_etaPi0_cor,       "etaPi0_cor[nPi0]/F");
+	Tree_Optim->Branch( "ptPi0_cor",     &Op_ptPi0_cor,        "ptPi0_cor[nPi0]/F");
+	Tree_Optim->Branch( "ptPi0_nocor",   &Op_ptPi0_nocor,      "ptPi0_nocor[nPi0]/F");
+	Tree_Optim->Branch( "enG1_nocor",    &Op_enG1_nocor,       "enG1_nocor[nPi0]/F");
+	Tree_Optim->Branch( "enG2_nocor",    &Op_enG2_nocor,       "enG2_nocor[nPi0]/F");
+	Tree_Optim->Branch( "etaG1_nocor",   &Op_etaG1_nocor,       "etaG1_nocor[nPi0]/F");
+	Tree_Optim->Branch( "etaG2_nocor",   &Op_etaG2_nocor,       "etaG2_nocor[nPi0]/F");
+	Tree_Optim->Branch( "phiG1_nocor",   &Op_phiG1_nocor,       "phiG1_nocor[nPi0]/F");
+	Tree_Optim->Branch( "phiG2_nocor",   &Op_phiG2_nocor,       "phiG2_nocor[nPi0]/F");
+	Tree_Optim->Branch( "mPi0_nocor",    &Op_mPi0_nocor,       "mPi0_nocor[nPi0]/F");
+	Tree_Optim->Branch( "DeltaRG1G2",    &Op_DeltaRG1G2,       "DeltaRG1G2[nPi0]/F");
+	Tree_Optim->Branch( "Es_e1_1",       &Op_Es_e1_1,          "Es_e1_1[nPi0]/F");
+	Tree_Optim->Branch( "Es_e1_2",       &Op_Es_e1_2,          "Es_e1_2[nPi0]/F");
+	Tree_Optim->Branch( "Es_e2_1",       &Op_Es_e2_1,          "Es_e2_1[nPi0]/F");
+	Tree_Optim->Branch( "Es_e2_2",       &Op_Es_e2_2,          "Es_e2_2[nPi0]/F");
+	Tree_Optim->Branch( "S4S9_1",        &Op_S4S9_1,           "S4S9_1[nPi0]/F");
+	Tree_Optim->Branch( "S4S9_2",        &Op_S4S9_2,           "S4S9_2[nPi0]/F");
+	Tree_Optim->Branch( "S2S9_1",        &Op_S2S9_1,           "S2S9_1[nPi0]/F");
+	Tree_Optim->Branch( "S2S9_2",        &Op_S2S9_2,           "S2S9_2[nPi0]/F");
+	Tree_Optim->Branch( "S1S9_1",        &Op_S1S9_1,           "S1S9_1[nPi0]/F");
+	Tree_Optim->Branch( "S1S9_2",        &Op_S1S9_2,           "S1S9_2[nPi0]/F");
+	Tree_Optim->Branch( "Time_1",        &Op_Time_1,           "Time_1[nPi0]/F");
+	Tree_Optim->Branch( "Time_2",        &Op_Time_2,           "Time_2[nPi0]/F");
+	Tree_Optim->Branch( "iEtaiX_1",      &Op_iEtaiX_1,         "iEtaiX_1[nPi0]/I");
+	Tree_Optim->Branch( "iEtaiX_2",      &Op_iEtaiX_2,         "iEtaiX_2[nPi0]/I");
+	Tree_Optim->Branch( "iPhiiY_1",      &Op_iPhiiY_1,         "iPhiiY_1[nPi0]/I");
+	Tree_Optim->Branch( "iPhiiY_2",      &Op_iPhiiY_2,         "iPhiiY_2[nPi0]/I");
+	Tree_Optim->Branch( "iEta_1on5",     &Op_iEta_1on5,        "iEta_1on5[nPi0]/I");
+	Tree_Optim->Branch( "iEta_2on5",     &Op_iEta_2on5,        "iEta_2on5[nPi0]/I");
+	Tree_Optim->Branch( "iPhi_1on2",     &Op_iPhi_1on2,        "iPhi_1on2[nPi0]/I");
+	Tree_Optim->Branch( "iPhi_2on2",     &Op_iPhi_2on2,        "iPhi_2on2[nPi0]/I");
+	Tree_Optim->Branch( "iEta_1on2520",  &Op_iEta_1on2520,     "iEta_1on2520[nPi0]/I");
+	Tree_Optim->Branch( "iEta_2on2520",  &Op_iEta_2on2520,     "iEta_2on2520[nPi0]/I");
+	Tree_Optim->Branch( "iPhi_1on20",    &Op_iPhi_1on20,       "iPhi_1on20[nPi0]/I");
+	Tree_Optim->Branch( "iPhi_2on20",    &Op_iPhi_2on20,       "iPhi_2on20[nPi0]/I");
 	if( isMC_ && MC_Assoc_ ) {
-	  Tree_Optim->Branch( "STr2_enG1_true",     &Op_enG1_true,        "STr2_enG1_true[STr2_NPi0_rec]/F");
-	  Tree_Optim->Branch( "STr2_enG2_true",     &Op_enG2_true,        "STr2_enG2_true[STr2_NPi0_rec]/F");
-	  Tree_Optim->Branch( "STr2_DeltaR_1",      &Op_DeltaR_1,         "STr2_DeltaR_1[STr2_NPi0_rec]/F");
-	  Tree_Optim->Branch( "STr2_DeltaR_2",      &Op_DeltaR_2,         "STr2_DeltaR_2[STr2_NPi0_rec]/F");
-	  // Tree_Optim->Branch( "STr2_Nxtal_1",       &Op_Nxtal_1,          "STr2_Nxtal_1[STr2_NPi0_rec]/I");
-	  // Tree_Optim->Branch( "STr2_Nxtal_2",       &Op_Nxtal_2,          "STr2_Nxtal_2[STr2_NPi0_rec]/I");
+	  Tree_Optim->Branch( "enG1_true",     &Op_enG1_true,        "enG1_true[nPi0]/F");
+	  Tree_Optim->Branch( "enG2_true",     &Op_enG2_true,        "enG2_true[nPi0]/F");
+	  Tree_Optim->Branch( "DeltaR_1",      &Op_DeltaR_1,         "DeltaR_1[nPi0]/F");
+	  Tree_Optim->Branch( "DeltaR_2",      &Op_DeltaR_2,         "DeltaR_2[nPi0]/F");
 	}
     }
 
@@ -859,7 +861,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   //MC Photons (they will be associated to the clusters later)
 
-  if( isMC_ && MC_Assoc_ ) {
+  if( isMC_ ) {
 
     // get the PU collection
     edm::Handle<std::vector<PileupSummaryInfo> > PupInfo;
@@ -1184,8 +1186,18 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
-  std::vector< float > ebclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
-  std::vector< float > eeclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
+  ebclusters_used.clear(); eeclusters_used.clear();
+  // not used anymore, keep track of the whole gen photons through ebclusters_matchedGenPhoton and eeclusters_matchedGenPhoton 
+  // std::vector< float > ebclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
+  // std::vector< float > eeclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
+  // ebclusters_matchedGenPhotonEnergy.clear();
+  // eeclusters_matchedGenPhotonEnergy.clear();
+  // moved in FillEpsilonPlot.h
+  // std::vector< TLorentzVector* > ebclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster
+  // std::vector< TLorentzVector* > eeclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster
+  ebclusters_matchedGenPhoton.clear();
+  eeclusters_matchedGenPhoton.clear();
+
   if(isMC_ && MC_Assoc_) {
 
     // ebclusters_used = MCTruthAssociate(ebclusters,MC_Assoc_DeltaR,true);
@@ -1196,8 +1208,14 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     int matchedGenPairs_EE = 0;
     // based on the function implementation, the vector of clusters is such that clusters originating from the same gen pi0 are consecutive
     // therefore, we can consider each pair of clusters (i-th and (i+1)-th object, i=0,2,4,...) to be from a pi0  
-    ebclusters_used = MCTruthAssociateMultiPi0(ebclusters,unmergedGenPairs_EB,matchedGenPairs_EB,ebclusters_matchedGenPhotonEnergy,MC_Assoc_DeltaR,true);
-    eeclusters_used = MCTruthAssociateMultiPi0(eseeclusters_tot,unmergedGenPairs_EE,matchedGenPairs_EE,eeclusters_matchedGenPhotonEnergy,MC_Assoc_DeltaR,false);
+    ebclusters_used = MCTruthAssociateMultiPi0(ebclusters,
+					       unmergedGenPairs_EB,matchedGenPairs_EB,
+					       ebclusters_matchedGenPhoton,
+					       MC_Assoc_DeltaR,true);
+    eeclusters_used = MCTruthAssociateMultiPi0(eseeclusters_tot,
+					       unmergedGenPairs_EE,matchedGenPairs_EE,
+					       eeclusters_matchedGenPhoton,
+					       MC_Assoc_DeltaR,false);
     h_numberUnmergedGenPhotonPairs->Fill(unmergedGenPairs_EB+unmergedGenPairs_EE);
     h_numberMatchedGenPhotonPairs->Fill(matchedGenPairs_EB+matchedGenPairs_EE);
 
@@ -1216,13 +1234,13 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   if(isMC_ && MC_Assoc_ && isEoverEtrue_) {  // asking just for isEoverEtrue_ would be enough because it can be true only for MC (see parameters.py)
 
-    if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEoverEtrue(ebclusters_used, ebclusters_matchedGenPhotonEnergy, EcalBarrel);
-    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEoverEtrue(eeclusters_used, eeclusters_matchedGenPhotonEnergy, EcalEndcap);
+    if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEoverEtrue(ebclusters_used, ebclusters_matchedGenPhoton, EcalBarrel);
+    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEoverEtrue(eeclusters_used, eeclusters_matchedGenPhoton, EcalEndcap);
 
   } else {
 
-    if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, EcalBarrel);
-    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, EcalEndcap);
+    if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, ebclusters_matchedGenPhoton, EcalBarrel);
+    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, ebclusters_matchedGenPhoton, EcalEndcap);
   
   }
 
@@ -1989,7 +2007,7 @@ int FillEpsilonPlot::getNumberOverlappingCrystals(std::vector<CaloCluster>::cons
 std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, 
 								     int& retNumberUnmergedGen,
 								     int& retNumberMatchedGen,
-								     vector<float>& retClusters_matchedGenPhotonEnergy,
+								     std::vector<TLorentzVector*>& retClusters_matchedGenPhoton,
 								     const double deltaR = 0.1, 
 								     const bool isEB = true
 								 ) 
@@ -2137,11 +2155,15 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
       }
 
       if (g1_seed_energy_is_bigger) {
-	retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
-	retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
+	retClusters_matchedGenPhoton.push_back(&(vecGamma1MC_ptr->at(ig)));
+	retClusters_matchedGenPhoton.push_back(&(vecGamma2MC_ptr->at(ig)));
+	// retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
+	// retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
       } else {
-	retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
-	retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
+	retClusters_matchedGenPhoton.push_back(&(vecGamma2MC_ptr->at(ig)));
+	retClusters_matchedGenPhoton.push_back(&(vecGamma1MC_ptr->at(ig)));
+	// retClusters_matchedGenPhotonEnergy.push_back(vecGamma2MC_ptr->at(ig).Energy());
+	// retClusters_matchedGenPhotonEnergy.push_back(vecGamma1MC_ptr->at(ig).Energy());
       }
 
     } else {
@@ -2291,8 +2313,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
 			  zclu/total_weight ); 
 
   CaloCluster correctedCaloCluster( totalCorrectedClusterEnergy, clusPos, CaloID(CaloID::DET_ECAL_BARREL), correctedHitsAndFrac, CaloCluster::undefined, seed_id );
-  // cout << *gam << endl;
-  // cout << correctedCaloCluster << endl;
+  // cout << "before correction: " << *gam << endl;
+  // cout << "after correction: " << correctedCaloCluster << endl;
 
   return correctedCaloCluster;
 
@@ -2301,7 +2323,7 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
 //========================================================
 
 
-void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId ) 
+void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId ) 
 {
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
     throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
@@ -2352,8 +2374,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  // cout << "################################" << endl;
 	  
 	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
-	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
-	  //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
+	  // this will store G.Energy()/cosh(G.Eta()), in order to compute it only once
+	  //	  double GSort1plus2_EoverCoshEta = GSort1plus2.Energy()/cosh(GSort1plus2.Eta());  // currently not used here for EB
 
 	  int ind1 = i, ind2 = j;
 	  EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
@@ -2388,7 +2410,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //M_dist:
 	    float new_value_pi01[8]; 
 
-	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+	    value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB_used[ind1] );
 	    value_pi01[3] = ( Ncristal_EB_used[ind2] );
@@ -2435,7 +2457,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    float value_pi02[14];//#
 	    float new_value_pi02[8];
 
-	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+	    value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
 	    value_pi02[1] = ( G_Sort_2.Pt() );
 	    value_pi02[2] = ( Ncristal_EB_used[ind1] );
 	    value_pi02[3] = ( Ncristal_EB_used[ind2] );
@@ -2480,7 +2502,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	  }
 	  else{
 	    float value_pi01[10];
- 	    value_pi01[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+ 	    value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
 	    value_pi01[1] = ( G_Sort_1.Pt() );
 	    value_pi01[2] = ( Ncristal_EB_used[ind1] );
 	    value_pi01[3] = ( iEta1 );
@@ -2492,7 +2514,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    value_pi01[9] = ( iPhi1%20 );
 	    Correct1 = forest_EB_1->GetResponse(value_pi01);
 	    float value_pi02[10];
-	    value_pi02[0] = ( G_Sort_1.E()/G_Sort_2.E() );
+	    value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
 	    value_pi02[1] = ( G_Sort_2.Pt() );
 	    value_pi02[2] = ( Ncristal_EB_used[ind2] );
 	    value_pi02[3] = ( iEta2 );
@@ -2544,7 +2566,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 
 	  // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
 	  // this will store G.E()/cosh(G.Eta()), in order to compute it only once
-	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());
+	  double GSort1plus2_EoverCoshEta = GSort1plus2.Energy()/cosh(GSort1plus2.Eta());
 
 	  int ind1 = i, ind2 = j;
 	  EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy();
@@ -2567,7 +2589,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    //iY
 	  float new_value_pi01[6];
 	  value_pi01[0] = ( GSort1plus2_EoverCoshEta );
-	  value_pi01[1] = ( G_Sort_1.E()/ GSort1plus2_EoverCoshEta );
+	  value_pi01[1] = ( G_Sort_1.Energy()/ GSort1plus2_EoverCoshEta );
 	  value_pi01[2] = ( G_Sort_1.Pt() );
 	  value_pi01[3] = ( Ncristal_EE_used[ind1] );
 	  value_pi01[4] = ( Ncristal_EE_used[ind2] );
@@ -2600,14 +2622,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
                 }
 
 	  cout<<"Correction1: "<<Correct1<<" iX: "<<iX1<<" iY "<<iY1<<" Epi0 "<<GSort1plus2_EoverCoshEta
-	    <<" ratio E "<< G_Sort_1.E()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_1.Pt()
+	    <<" ratio E "<< G_Sort_1.Energy()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_1.Pt()
 	    <<" xtal "<<Ncristal_EE_used[ind1]<<" vs4s9EE "<<vs4s9EE[ind1]<<" vs1s9EE "<<vs1s9EE[ind1]<<" vs2s9EE "<<vs2s9EE[ind1]
 	    <<" ESratio "<<ESratio[ind1]<<" EtaRing_1 "<<EtaRing_1<<endl;
 
 	  float value_pi02[10];
 	  float new_value_pi02[6];
 	  value_pi02[0] = ( GSort1plus2_EoverCoshEta );
-	  value_pi02[1] = ( G_Sort_2.E()/GSort1plus2_EoverCoshEta );
+	  value_pi02[1] = ( G_Sort_2.Energy()/GSort1plus2_EoverCoshEta );
 	  value_pi02[2] = ( G_Sort_2.Pt() );
 	  value_pi02[3] = ( Ncristal_EE_used[ind1] );
 	  value_pi02[4] = ( Ncristal_EE_used[ind2] );
@@ -2640,7 +2662,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
           }
 
 	  cout<<"Correction2: "<<Correct2<<" iX: "<<iX2<<" iY "<<iY2<<" Epi0 "<<GSort1plus2_EoverCoshEta
-	    <<" ratio E "<< G_Sort_2.E()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_2.Pt()
+	    <<" ratio E "<< G_Sort_2.Energy()/GSort1plus2_EoverCoshEta<<" Pt "<<G_Sort_2.Pt()
 	    <<" xtal "<<Ncristal_EE_used[ind2]<<" vs4s9EE "<<vs4s9EE[ind2]<<" vs1s9EE "<<vs1s9EE[ind2]<<" vs2s9EE "<<vs2s9EE[ind2]
 	    <<" ESratio "<<ESratio[ind2]<<" EtaRing_1 "<<EtaRing_2<<endl;
 
@@ -2680,28 +2702,34 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	//corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
 	// this means g1 is not necessarily the leading photon
 	TLorentzVector pi0P4;
+	TLorentzVector g1_contCorr_tlv;
+	TLorentzVector g2_contCorr_tlv;
+
 	if (useContainmentCorrectionsFromEoverEtrue_) {
 
-	  // if (subDetId==EcalBarrel)
-	  //   std::cout << "Barrel: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;
-	  // else
-	  //   std::cout << "   Endcap: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;
-	  
+	  // if (subDetId==EcalBarrel)                                                                                           
+	  //   std::cout << "Barrel: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;                
+	  // else                                                                                                                          
+	  //   std::cout << "   Endcap: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;       
 	  CaloCluster g1_contCorr(getClusterAfterContainmentCorrections(g1,false,subDetId==EcalBarrel));
 	  CaloCluster g2_contCorr(getClusterAfterContainmentCorrections(g2,true,subDetId==EcalBarrel));
-	  TLorentzVector g1_contCorr_tlv; 
+
 	  g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.energy()/cosh(g1_contCorr.eta()),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
-	  // TLorentzVector g2_contCorr_tlv; 
-	  // g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
-	  // pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;
-	  pi0P4.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());
-	  pi0P4 += g1_contCorr_tlv;
+	  g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());                            
 
 	} else {
 
-	  if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
-	  else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
+	  if (g1pt > g2pt) {
+	    g1_contCorr_tlv = Corr1 * G_Sort_1;
+	    g2_contCorr_tlv = Corr2 * G_Sort_2;
+	  } else {
+	    // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it                      
+	    g1_contCorr_tlv = Corr1 * G_Sort_2;
+	    g2_contCorr_tlv = Corr2 * G_Sort_1; 
+	  }
 	}
+
+	pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;                                                                                                                      
 
 	// eta, pt, phi of corrected photons are used many times. Since their computation is tipically time consuming, store them in doubles for later usage
 	double pi0P4_pt = pi0P4.Pt();
@@ -2923,22 +2951,26 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	//Fill Optimization
 	if( MakeNtuple4optimization_ && pi0P4_mass > ((Are_pi0_)?0.03:0.2) && pi0P4_mass < ((Are_pi0_)?0.25:1.) ) {
 
+	  //FIXME: check how the tree is filled when using E/Etrue corrections (evaluate to save both corrected and uncorrected photons, because also position is changed)
+	  // add in case a flag saying which corrections are used
 	  if( nPi0>NPI0MAX-2 ) { 
 	    cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; 
 	  } else{
 	    Op_Pi0recIsEB[nPi0]    = (subDetId==EcalBarrel)? 1:0;
-	    Op_IsoPi0_rec[nPi0]    = nextClu;  
-	    Op_HLTIsoPi0_rec[nPi0] = hlt_iso;
-	    Op_n1CrisPi0_rec[nPi0] = Nxtal_g1; 
-	    Op_n2CrisPi0_rec[nPi0] = Nxtal_g2;
-	    Op_mPi0_rec[nPi0]      = pi0P4_mass;
-	    Op_enG1_rec[nPi0]      = Corr1 * g1->energy();
-	    Op_enG2_rec[nPi0]      = Corr2 * g2->energy();
-	    Op_etaPi0_rec[nPi0]    = pi0P4_eta;
-	    Op_ptPi0_rec[nPi0]     = pi0P4_pt;
+	    Op_ClusIsoPi0[nPi0]    = nextClu;  
+	    Op_HLTIsoPi0[nPi0]     = hlt_iso;
+	    Op_nCrisG1[nPi0]       = Nxtal_g1; 
+	    Op_nCrisG2[nPi0]       = Nxtal_g2;
+	    Op_enG1_cor[nPi0]      = g1_contCorr_tlv.Energy();
+	    Op_enG2_cor[nPi0]      = g2_contCorr_tlv.Energy();
+	    Op_etaG1_cor[nPi0]     = g1_contCorr_tlv.Eta();
+	    Op_etaG2_cor[nPi0]     = g2_contCorr_tlv.Eta();
+	    Op_phiG1_cor[nPi0]     = g1_contCorr_tlv.Phi();
+	    Op_phiG2_cor[nPi0]     = g2_contCorr_tlv.Phi();
+	    Op_mPi0_cor[nPi0]      = pi0P4_mass;
+	    Op_etaPi0_cor[nPi0]    = pi0P4_eta;
+	    Op_ptPi0_cor[nPi0]     = pi0P4_pt;
 	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1eta, g2eta, g1phi, g2phi );
-	    Op_enG1_nocor[nPi0]    = g1->energy(); // g1P4_nocor.E();
-	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
 	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor_pt;
 	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor_mass;
 	    Op_Es_e1_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[i];
@@ -2951,20 +2983,19 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 	    Op_S2S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[j] : vs2s9EE[j];
 	    Op_S1S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[i] : vs1s9EE[i];
 	    Op_S1S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[j] : vs1s9EE[j];
-	    Op_Eta_1[nPi0]         = g1eta;
-            Op_Eta_2[nPi0]         = g2eta;
-	    Op_Phi_1[nPi0]         = g1phi;
-	    Op_Phi_2[nPi0]         = g2phi;
+	    Op_enG1_nocor[nPi0]    = g1->energy(); // g1P4_nocor.E();
+	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
+	    Op_etaG1_nocor[nPi0]   = g1eta;
+            Op_etaG2_nocor[nPi0]   = g2eta;
+	    Op_phiG1_nocor[nPi0]   = g1phi;
+            Op_phiG2_nocor[nPi0]   = g2phi;
 	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[i] : vSeedTimeEE[i];
 	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[j] : vSeedTimeEE[j];
 	    if( isMC_ && MC_Assoc_ ) {
-	      //FIXME: be consistent with new MC, I still have to fix this part
-	      // Op_Nxtal_1[nPi0]       = Nxtal_g1;
-	      // Op_Nxtal_2[nPi0]       = Nxtal_g2;
-	      Op_enG1_true[nPi0]     = Gamma1MC.R();
-	      Op_enG2_true[nPi0]     = Gamma2MC.R();
-	      Op_DeltaR_1[nPi0]      = GetDeltaR(g1eta, Gamma1MC.Eta(), g1phi, Gamma1MC.Phi());
-	      Op_DeltaR_2[nPi0]      = GetDeltaR(g2eta, Gamma2MC.Eta(), g2phi, Gamma2MC.Phi());
+	      Op_enG1_true[nPi0]     = clusters_matchedGenPhoton[i]->Energy();
+	      Op_enG2_true[nPi0]     = clusters_matchedGenPhoton[j]->Energy();
+	      Op_DeltaR_1[nPi0]      = GetDeltaR(g1eta, clusters_matchedGenPhoton[i]->Eta(), g1phi, clusters_matchedGenPhoton[i]->Phi());
+	      Op_DeltaR_2[nPi0]      = GetDeltaR(g2eta, clusters_matchedGenPhoton[j]->Eta(), g2phi, clusters_matchedGenPhoton[j]->Phi());
 	    }
 
             if( (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) {
@@ -3176,7 +3207,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
     if (isDebug_) cout << "[DEBUG] Filling Tree" << endl; 
     //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = L1BitCollection_[i];
     //for(unsigned int i=0; i<NL1SEED; i++) Op_L1Seed[i] = l1flag[i];
-    Op_NPi0_rec = nPi0; 
+    Op_NPi0 = nPi0; 
     if(nPi0>0) Tree_Optim->Fill();
   }
  
@@ -3186,7 +3217,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, int 
 ///////======================================
 
 
-void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<float>& clusters_matchedGenPhotonEnergy, int subDetId ) 
+void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId ) 
 {
 
   // this method is meant to be used with MC using MC truth
@@ -3239,6 +3270,201 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     }
 
     GSort1plus2 = G_Sort_1 + G_Sort_2;
+
+
+#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
+    if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
+
+      // cout << "################################" << endl;
+      // cout << "### We are in the barrel! ###" << endl;
+      // cout << "################################" << endl;
+	  
+      // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
+      // this will store G.E()/cosh(G.Eta()), in order to compute it only once
+      //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
+
+      int ind1 = i, ind2 = j;
+      EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
+      EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
+#ifdef MVA_REGRESSIO_Tree
+      int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
+#endif
+
+      bool Inverted=false;
+
+      if( g1pt < g2pt ){
+	iEta1=id_2.ieta(); iEta2 = id_1.ieta();
+	iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
+#ifdef MVA_REGRESSIO_Tree
+	iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
+#endif
+	ind1=j; ind2=i;
+	Inverted=true;
+      }
+
+      float Correct1(1.), Correct2(1.);
+      if(Are_pi0_){
+	float value_pi01[14];
+	//input list for regression in 2017 EB:
+	//enG_rec
+	//Nxtal
+	//S4S9
+	//S2S9
+	//iEta
+	//iPhi
+	//SM_dist: 
+	//M_dist:
+	float new_value_pi01[8]; 
+
+	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+	value_pi01[1] = ( G_Sort_1.Pt() );
+	value_pi01[2] = ( Ncristal_EB_used[ind1] );
+	value_pi01[3] = ( Ncristal_EB_used[ind2] );
+	value_pi01[4] = ( vs4s9[ind1] );
+	value_pi01[5] = ( vs1s9[ind1] );
+	value_pi01[6] = ( vs2s9[ind1] );
+	value_pi01[7] = ( iEta1 );
+	value_pi01[8] = ( iPhi1 );
+	value_pi01[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+	value_pi01[10] = ( iEta1%5 );
+	value_pi01[11] = ( iPhi1%2 );
+	value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+	value_pi01[13] = ( iPhi1%20 );
+	    
+	new_value_pi01[0] = ( g1->energy() );
+	new_value_pi01[1] = ( Ncristal_EB_used[i] );
+	new_value_pi01[2] = ( vs4s9[i] );
+	new_value_pi01[3] = ( vs2s9[i] );
+	new_value_pi01[4] = ( id_1.ieta() );
+	new_value_pi01[5] = ( id_1.iphi() );
+	float temp_SM_dist_1 = ((id_1.iphi()-1)%20<10)*((id_1.iphi()-1)%20) + (((id_1.iphi()-1)%20)>=10)*(19-(id_1.iphi()-1)%20);
+	float temp_M_dist_1  = (abs(id_1.ieta())<=25)*(((abs(id_1.ieta())-1)%25<12)*((abs(id_1.ieta())-1)%25) + (((abs(id_1.ieta())-1)%25)>=12)*(24-(abs(id_1.ieta())-1)%25))
+	  +(abs(id_1.ieta())>25) * (((abs(id_1.ieta())-26)%20<10)*((abs(id_1.ieta())-26)%20) + (((abs(id_1.ieta())-26)%20)>=10)*(19-(abs(id_1.ieta())-26)%20));
+	new_value_pi01[6] = ( temp_SM_dist_1 );
+	new_value_pi01[7] = ( temp_M_dist_1 );
+
+	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
+	//else                                    value_pi01[14] = false ;
+	if(useMVAContainmentCorrections_)
+	  {
+	    if(new_pi0ContainmentCorrections_)
+	      {
+		float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
+		Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
+		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
+	      }
+	    else
+	      {
+		Correct1 = forest_EB_1->GetResponse(value_pi01);
+		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
+	      }
+	  }
+
+	float value_pi02[14];//#
+	float new_value_pi02[8];
+
+	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+	value_pi02[1] = ( G_Sort_2.Pt() );
+	value_pi02[2] = ( Ncristal_EB_used[ind1] );
+	value_pi02[3] = ( Ncristal_EB_used[ind2] );
+	value_pi02[4] = ( vs4s9[ind2] );
+	value_pi02[5] = ( vs1s9[ind2] );
+	value_pi02[6] = ( vs2s9[ind2] );
+	value_pi02[7] = ( iEta2 );
+	value_pi02[8] = ( iPhi2 );
+	value_pi02[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+	value_pi02[10] = ( iEta2%5 );
+	value_pi02[11] = ( iPhi2%2 );
+	value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
+	value_pi02[13] = ( iPhi2%20 );
+	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
+	//else                                    value_pi02[14] = false ;
+	   
+	new_value_pi02[0] = ( g2->energy() );
+	new_value_pi02[1] = ( Ncristal_EB_used[j] );
+	new_value_pi02[2] = ( vs4s9[j] );
+	new_value_pi02[3] = ( vs2s9[j] );
+	new_value_pi02[4] = ( id_2.ieta() );
+	new_value_pi02[5] = ( id_2.iphi() );
+	float temp_SM_dist_2 = ((id_2.iphi()-1)%20<10)*((id_2.iphi()-1)%20) + (((id_2.iphi()-1)%20)>=10)*(19-(id_2.iphi()-1)%20);
+	float temp_M_dist_2  = (abs(id_2.ieta())<=25)*(((abs(id_2.ieta())-1)%25<12)*((abs(id_2.ieta())-1)%25) + (((abs(id_2.ieta())-1)%25)>=12)*(24-(abs(id_2.ieta())-1)%25))
+	  +(abs(id_2.ieta())>25) * (((abs(id_2.ieta())-26)%20<10)*((abs(id_2.ieta())-26)%20) + (((abs(id_2.ieta())-26)%20)>=10)*(19-(abs(id_2.ieta())-26)%20));
+	new_value_pi02[6] = ( temp_SM_dist_2 );
+	new_value_pi02[7] = ( temp_M_dist_2 );
+
+
+	if(useMVAContainmentCorrections_)
+	  {
+            if(new_pi0ContainmentCorrections_)
+	      {
+                float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
+                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
+	      }
+            else
+	      {
+                Correct2 = forest_EB_2->GetResponse(value_pi02);
+	      }
+	  }
+      }
+      else{
+	float value_pi01[10];
+	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+	value_pi01[1] = ( G_Sort_1.Pt() );
+	value_pi01[2] = ( Ncristal_EB_used[ind1] );
+	value_pi01[3] = ( iEta1 );
+	value_pi01[4] = ( iPhi1 );
+	value_pi01[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+	value_pi01[6] = ( iEta1%5 );
+	value_pi01[7] = ( iPhi1%2 );
+	value_pi01[8] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+	value_pi01[9] = ( iPhi1%20 );
+	Correct1 = forest_EB_1->GetResponse(value_pi01);
+	float value_pi02[10];
+	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+	value_pi02[1] = ( G_Sort_2.Pt() );
+	value_pi02[2] = ( Ncristal_EB_used[ind2] );
+	value_pi02[3] = ( iEta2 );
+	value_pi02[4] = ( iPhi2 );
+	value_pi02[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+	value_pi02[6] = ( iEta2%5 );
+	value_pi02[7] = ( iPhi2%2 );
+	value_pi02[8] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
+	value_pi02[9] = ( iPhi2%20 );
+	Correct2 = forest_EB_2->GetResponse(value_pi02);
+      }
+	
+      // new regression trained in 2017: photon order is based on seed energy (energy in overlapped crystal taken by the first photon)
+      // old regression trained in 2012: photon order is based on photon Pt
+      if( (!Inverted) || new_pi0ContainmentCorrections_) { Corr1 = Correct1; Corr2 = Correct2; }
+      else           { Corr1 = Correct2; Corr2 = Correct1; }
+
+      //WARNIGN no CC for now! Put back in CKM 20/10/2015
+      //	  Corr1 = 1.; Corr2 = 1.; 
+#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+      //In case ES give same posizion for different clusters
+      Correction1_mva = Correct1; Correction2_mva = Correct2;
+      iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
+      iSM1_mva = iSMod_1; iSM2_mva = iSMod_2;
+
+      // Define just the original vector, the corrected vector has same direction and magnitude scaled by correction
+      // actually we just need G_sort_1 and G_sort_2, no need to define another object
+
+      // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
+      // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+      // TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
+      // TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
+
+      MassOr_mva = GSort1plus2.M();
+      pi0Eta     = GSort1plus2.Eta();
+      // get corrected mass from sum of corrected photons
+      Mass_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
+#endif
+    }
+#endif
+
+    // end of part using regression for EB (forget EE, we don't use any correction there at the moment
+    ////////////////////////////////////
+    /////////////////////////////////////
 	  	
     // uncorrected versions of photons
     // math::PtEtaPhiMLorentzVector g1P4_nocor( g1pt, g1eta, g1phi, 0. );
@@ -3247,11 +3473,40 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     // here the order is not important (while for the correction we apply corr1 to first cluster in list (not necessarily the leading in pt))
     double pi0P4_nocor_pt = GSort1plus2.Pt();
     double pi0P4_nocor_mass = GSort1plus2.M();
+
     //corrected version; note that Corr1 and Corr2 refers to first and second photon as selected looping on CaloCluster 
     // this means g1 is not necessarily the leading photon
     TLorentzVector pi0P4;
-    if (g1pt > g2pt) pi0P4 = Corr1 * G_Sort_1 + Corr2 * G_Sort_2; 
-    else             pi0P4 = Corr1 * G_Sort_2 + Corr2 * G_Sort_1;  // when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it
+    TLorentzVector g1_contCorr_tlv;
+    TLorentzVector g2_contCorr_tlv;
+
+    if (useContainmentCorrectionsFromEoverEtrue_) {
+
+      // if (subDetId==EcalBarrel)                                                                                                                                       
+      //   std::cout << "Barrel: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;                                          
+      // else                                                                                                                                                            
+      //   std::cout << "   Endcap: npi0 = " << nPi0 << "   pi0,g1,g2 eta = " << GSort1plus2.Eta(),g1.eta(),g2.eta() << std::endl;                                       
+
+      CaloCluster g1_contCorr(getClusterAfterContainmentCorrections(g1,false,subDetId==EcalBarrel));
+      CaloCluster g2_contCorr(getClusterAfterContainmentCorrections(g2,true,subDetId==EcalBarrel));
+
+      g1_contCorr_tlv.SetPtEtaPhiE(g1_contCorr.energy()/cosh(g1_contCorr.eta()),g1_contCorr.eta(),g1_contCorr.phi(),g1_contCorr.energy());
+      g2_contCorr_tlv.SetPtEtaPhiE(g2_contCorr.energy()/cosh(g2_contCorr.eta()),g2_contCorr.eta(),g2_contCorr.phi(),g2_contCorr.energy());                            
+
+    } else {
+
+      if (g1pt > g2pt) {
+	g1_contCorr_tlv = Corr1 * G_Sort_1;
+	g2_contCorr_tlv = Corr2 * G_Sort_2;
+      } else {
+	// when g1pt < g2pt, G_Sort_1 is made with g2, and Corr2 must be applied to it                      
+	g1_contCorr_tlv = Corr1 * G_Sort_2;
+	g2_contCorr_tlv = Corr2 * G_Sort_1; 
+      }
+    }
+
+    pi0P4 = g1_contCorr_tlv + g2_contCorr_tlv;                                                                                                                      
+
     // eta, pt, phi of corrected photons are used many times. Since their computation is tipically time consuming, store them in doubles for later usage
     double pi0P4_pt = pi0P4.Pt();
     double pi0P4_eta = pi0P4.Eta();
@@ -3447,8 +3702,21 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       // do not append w2 to w1, keep them separate to disentangle the 2 photons
       // w1.insert( w1.end(), w2.begin(), w2.end() );
 
-      double EoverEtrue_g1 = Corr1 * g1->energy()/clusters_matchedGenPhotonEnergy[i];
-      double EoverEtrue_g2 = Corr2 * g2->energy()/clusters_matchedGenPhotonEnergy[j];
+      double EoverEtrue_g1 = 0.0;
+      double EoverEtrue_g2 = 0.0;
+
+      // if (useContainmentCorrectionsFromEoverEtrue_) {
+      // 	EoverEtrue_g1 = g1_contCorr.energy()/clusters_matchedGenPhoton[i]->Energy();
+      // 	EoverEtrue_g2 = g2_contCorr.energy()/clusters_matchedGenPhoton[j]->Energy();
+      // } else {
+      // 	// if no corrections are used, Corr1 and Corr2 are 1.0
+      // 	EoverEtrue_g1 = Corr1 * g1->energy()/clusters_matchedGenPhoton[i]->Energy();
+      // 	EoverEtrue_g2 = Corr2 * g2->energy()/clusters_matchedGenPhoton[j]->Energy();
+      // }
+
+      EoverEtrue_g1 = g1_contCorr_tlv.Energy()/clusters_matchedGenPhoton[i]->Energy();
+      EoverEtrue_g2 = g1_contCorr_tlv.Energy()/clusters_matchedGenPhoton[j]->Energy();
+
 
       // compute quantities needed for <eps>_j in each region j
       if (subDetId==EcalBarrel) {

@@ -118,9 +118,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
-      std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, vector<float>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
-      void computeEpsilon(std::vector< CaloCluster > & clusters, int subDetId);
-      void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<float>& clusters_matchedGenPhotonEnergy, int subDetId);
+      std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, std::vector<TLorentzVector*>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
+      void computeEpsilon(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
+      void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
@@ -270,6 +270,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<TLorentzVector> vecGamma2MC_EB;
       vector<TLorentzVector> vecGamma1MC_EE;
       vector<TLorentzVector> vecGamma2MC_EE;
+      std::vector< TLorentzVector* > ebclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster (ordered pairs with seed energy)   
+      std::vector< TLorentzVector* > eeclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster (ordered pairs with seed energy)
       TH1F* h_numberUnmergedGenPhotonPairs_EB; // fraction of gen photon pairs that are not merged (i.e. the photons are separated by a DR defined in .cc)
       TH1F* h_numberMatchedGenPhotonPairs_EB;  // fraction of gen photon pairs that are succesfully matched to reco clusters
       TH1F* h_numberUnmergedGenPhotonPairs_EE; 
@@ -406,17 +408,21 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TTree*  Tree_Optim;
       Int_t   nPi0;
       //Int_t   Op_L1Seed[NL1SEED];
-      Int_t   Op_NPi0_rec;
+      Int_t   Op_NPi0;
       Int_t   Op_Pi0recIsEB[NPI0MAX];
-      Float_t Op_IsoPi0_rec[NPI0MAX];
-      Float_t Op_HLTIsoPi0_rec[NPI0MAX];
-      Int_t   Op_n1CrisPi0_rec[NPI0MAX];
-      Int_t   Op_n2CrisPi0_rec[NPI0MAX];
-      Float_t Op_mPi0_rec[NPI0MAX];
-      Float_t Op_enG1_rec[NPI0MAX];
-      Float_t Op_enG2_rec[NPI0MAX];
-      Float_t Op_etaPi0_rec[NPI0MAX];
-      Float_t Op_ptPi0_rec[NPI0MAX];
+      Float_t Op_ClusIsoPi0[NPI0MAX];
+      Float_t Op_HLTIsoPi0[NPI0MAX];
+      Int_t   Op_nCrisG1[NPI0MAX];
+      Int_t   Op_nCrisG2[NPI0MAX];
+      Float_t Op_enG1_cor[NPI0MAX];
+      Float_t Op_enG2_cor[NPI0MAX];
+      Float_t Op_etaG1_cor[NPI0MAX];
+      Float_t Op_etaG2_cor[NPI0MAX];
+      Float_t Op_phiG1_cor[NPI0MAX];
+      Float_t Op_phiG2_cor[NPI0MAX];
+      Float_t Op_mPi0_cor[NPI0MAX];
+      Float_t Op_etaPi0_cor[NPI0MAX];
+      Float_t Op_ptPi0_cor[NPI0MAX];
       Float_t Op_DeltaRG1G2[NPI0MAX];
       Float_t Op_Es_e1_1[NPI0MAX];
       Float_t Op_Es_e1_2[NPI0MAX];
@@ -428,22 +434,20 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Float_t Op_S1S9_2[NPI0MAX];
       Float_t Op_S2S9_1[NPI0MAX];
       Float_t Op_S2S9_2[NPI0MAX];
-      Float_t Op_Eta_1[NPI0MAX];
-      Float_t Op_Eta_2[NPI0MAX];
-      Float_t Op_Phi_1[NPI0MAX];
-      Float_t Op_Phi_2[NPI0MAX];
       Float_t Op_Time_1[NPI0MAX];
       Float_t Op_Time_2[NPI0MAX];
       Float_t Op_DeltaR_1[NPI0MAX];
       Float_t Op_DeltaR_2[NPI0MAX];
       Float_t Op_enG1_nocor[NPI0MAX];
       Float_t Op_enG2_nocor[NPI0MAX];
+      Float_t Op_etaG1_nocor[NPI0MAX];
+      Float_t Op_etaG2_nocor[NPI0MAX];
+      Float_t Op_phiG1_nocor[NPI0MAX];
+      Float_t Op_phiG2_nocor[NPI0MAX];
       Float_t Op_ptPi0_nocor[NPI0MAX];
       Float_t Op_mPi0_nocor[NPI0MAX];
       Float_t Op_enG1_true[NPI0MAX];
       Float_t Op_enG2_true[NPI0MAX];
-      /* Int_t Op_Nxtal_1[NPI0MAX]; */
-      /* Int_t Op_Nxtal_2[NPI0MAX]; */
       Int_t Op_iEtaiX_1[NPI0MAX];
       Int_t Op_iEtaiX_2[NPI0MAX];
       Int_t Op_iPhiiY_1[NPI0MAX];
@@ -456,6 +460,59 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       Int_t Op_iEta_2on2520[NPI0MAX];
       Int_t Op_iPhi_1on20[NPI0MAX];
       Int_t Op_iPhi_2on20[NPI0MAX];
+      /* Int_t   Op_Pi0recIsEB[NPI0MAX]; */
+      /* Float_t Op_ClusIsoPi0[NPI0MAX]; */
+      /* Float_t Op_HLTIsoPi0[NPI0MAX]; */
+      /* Int_t   Op_nCrisG1[NPI0MAX]; */
+      /* Int_t   Op_nCrisG2[NPI0MAX]; */
+      /* Float_t Op_enG1_cor[NPI0MAX]; */
+      /* Float_t Op_enG2_cor[NPI0MAX]; */
+      /* Float_t Op_etaG1_cor[NPI0MAX]; */
+      /* Float_t Op_etaG2_cor[NPI0MAX]; */
+      /* Float_t Op_phiG1_cor[NPI0MAX]; */
+      /* Float_t Op_phiG2_cor[NPI0MAX]; */
+      /* Float_t Op_mPi0_cor[NPI0MAX]; */
+      /* Float_t Op_etaPi0_cor[NPI0MAX]; */
+      /* Float_t Op_ptPi0_cor[NPI0MAX]; */
+      /* Float_t Op_DeltaRG1G2[NPI0MAX]; */
+      /* Float_t Op_Es_e1_1[NPI0MAX]; */
+      /* Float_t Op_Es_e1_2[NPI0MAX]; */
+      /* Float_t Op_Es_e2_1[NPI0MAX]; */
+      /* Float_t Op_Es_e2_2[NPI0MAX]; */
+      /* Float_t Op_S4S9_1[NPI0MAX]; */
+      /* Float_t Op_S4S9_2[NPI0MAX]; */
+      /* Float_t Op_S1S9_1[NPI0MAX]; */
+      /* Float_t Op_S1S9_2[NPI0MAX]; */
+      /* Float_t Op_S2S9_1[NPI0MAX]; */
+      /* Float_t Op_S2S9_2[NPI0MAX]; */
+      /* Float_t Op_Time_1[NPI0MAX]; */
+      /* Float_t Op_Time_2[NPI0MAX]; */
+      /* Float_t Op_DeltaR_1[NPI0MAX]; */
+      /* Float_t Op_DeltaR_2[NPI0MAX]; */
+      /* Float_t Op_enG1_nocor[NPI0MAX]; */
+      /* Float_t Op_enG2_nocor[NPI0MAX]; */
+      /* Float_t Op_etaG1_nocor[NPI0MAX]; */
+      /* Float_t Op_etaG2_nocor[NPI0MAX]; */
+      /* Float_t Op_phiG1_nocor[NPI0MAX]; */
+      /* Float_t Op_phiG2_nocor[NPI0MAX]; */
+      /* Float_t Op_ptPi0_nocor[NPI0MAX]; */
+      /* Float_t Op_mPi0_nocor[NPI0MAX]; */
+      /* Float_t Op_enG1_true[NPI0MAX]; */
+      /* Float_t Op_enG2_true[NPI0MAX]; */
+      /* Int_t Op_iEtaiX_1[NPI0MAX]; */
+      /* Int_t Op_iEtaiX_2[NPI0MAX]; */
+      /* Int_t Op_iPhiiY_1[NPI0MAX]; */
+      /* Int_t Op_iPhiiY_2[NPI0MAX]; */
+      /* Int_t Op_iEta_1on5[NPI0MAX]; */
+      /* Int_t Op_iEta_2on5[NPI0MAX]; */
+      /* Int_t Op_iPhi_1on2[NPI0MAX]; */
+      /* Int_t Op_iPhi_2on2[NPI0MAX]; */
+      /* Int_t Op_iEta_1on2520[NPI0MAX]; */
+      /* Int_t Op_iEta_2on2520[NPI0MAX]; */
+      /* Int_t Op_iPhi_1on20[NPI0MAX]; */
+      /* Int_t Op_iPhi_2on20[NPI0MAX]; */
+      // Optmization tree's variables
+
 
       vector<float> Es_1;
       vector<float> Es_2;
