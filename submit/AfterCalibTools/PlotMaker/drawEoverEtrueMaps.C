@@ -45,7 +45,9 @@ using namespace std;
  
 void realDrawEoverEtrueMaps(const string& outDir = "",
 			    const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
-			    const Int_t nPhoton = 1 // 1 or 2
+			    const Int_t nPhoton = 1, // 1 or 2
+			    const Double_t mapMin = 1.0, 
+			    const Double_t mapMax = 1.12			    
 			    )   
 {
 
@@ -107,7 +109,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   mapEB->GetYaxis()->SetTitle("i #phi");
   mapEB->GetYaxis()->SetTitleSize(0.06);
   mapEB->GetYaxis()->SetTitleOffset(0.8);
-  mapEB->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.12 : 1.12);
+  mapEB->GetZaxis()->SetRangeUser(mapMin,mapMax);
   mapEB->SetStats(0);
   gPad->Update();
   cEB->SaveAs(Form("%s/calibMap_EB_g%d_EoverEtrue_allSM.pdf",outDir.c_str(),nPhoton));
@@ -126,7 +128,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   mapEB_SM->GetYaxis()->SetTitle("i #phi");
   mapEB_SM->GetYaxis()->SetTitleSize(0.06);
   mapEB_SM->GetYaxis()->SetTitleOffset(0.8);
-  mapEB_SM->GetZaxis()->SetRangeUser(1.0,(nPhoton == 1) ? 1.12 : 1.12);
+  mapEB_SM->GetZaxis()->SetRangeUser(mapMin,mapMax);
   mapEB_SM->SetStats(0);
   gPad->Update();
   cEB->SaveAs(Form("%s/calibMap_EB_g%d_EoverEtrue_SingleSM.pdf",outDir.c_str(),nPhoton));
@@ -185,14 +187,16 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 
 
 void drawEoverEtrueMaps(const string& outDir = "",
-			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root") 
+			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
+			const Double_t mapMin = 1.0,
+			const Double_t mapMax = 1.12) 
 {
 
   system(Form("mkdir -p %s",outDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/mciprian/public/index.php %s",outDir.c_str()));
 
-  realDrawEoverEtrueMaps(outDir, inputFile, 1);
-  realDrawEoverEtrueMaps(outDir, inputFile, 2);
+  realDrawEoverEtrueMaps(outDir, inputFile, 1, mapMin, mapMax);
+  realDrawEoverEtrueMaps(outDir, inputFile, 2, mapMin, mapMax);
   
 
 }
