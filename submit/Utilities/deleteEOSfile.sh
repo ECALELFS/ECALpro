@@ -12,7 +12,7 @@ iter_ini=0
 iter_fin=6  # it is included in sequence below                                                                           
 
 eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
-dirName="pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC"
+dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueNorm1inEachModule"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)
@@ -20,7 +20,7 @@ dirName="pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC"
 patterns=( "EcalNtp" "epsilonPlots_" )
 
 #pattern="epsilonPlots_"
-pattern="EcalNtp"  # use it with grep to select which file to remove
+#pattern="EcalNtp"  # use it with grep to select which file to remove
 # use following string to test if eos directory exists: we use a regular expression to test whether this string is in the output of "eos ls ..." 
 noDirFound="No such file or directory" 
 
