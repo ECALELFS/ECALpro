@@ -12,10 +12,12 @@ iter_ini=0
 iter_fin=6  # it is included in sequence below                                                                           
 
 eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
-dirName="AlCaP0_Run2017_C_2012reg"
+dirName="pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)
+
+patterns=( "EcalNtp" "epsilonPlots_" )
 
 #pattern="epsilonPlots_"
 pattern="EcalNtp"  # use it with grep to select which file to remove
@@ -24,31 +26,40 @@ noDirFound="No such file or directory"
 
 echo ""
 
-for i in `seq $iter_ini $iter_fin`
+for pattern in "${patterns[@]}"
 do
 
-    thisFolder="${eosPath}${dirName}/iter_${i}"
-    echo "Testing existence of ${eosPath}${dirName}/iter_${i}"
+    echo "==================================="
+    echo "Pattern --> ${pattern}"
+    echo "==================================="
 
-    if [ ! -d "${thisFolder}" ]; then
-	echo "WARNING: no folder named ${thisFolder}"
-    else
+    for i in `seq $iter_ini $iter_fin`
+    do
 
-	echo "Ok, directory exists :)"
-	filesToRemove=`ls ${thisFolder} | grep ${pattern}`
-	if [ "${filesToRemove}" == "" ]; then
-	    echo "No files in ${thisFolder} matching '${pattern}'"
-	else 
-	    echo "Removing files matching '${pattern}' in ${thisFolder}"
-	    for thisfile in $filesToRemove
-	    do
-		rm ${thisFolder}/${thisfile}
-	    done	
-	fi
-	
-    fi
+    	thisFolder="${eosPath}${dirName}/iter_${i}"
+    	echo "Testing existence of ${eosPath}${dirName}/iter_${i}"
 
-    echo ""
+    	if [ ! -d "${thisFolder}" ]; then
+    	    echo "WARNING: no folder named ${thisFolder}"
+    	else
+
+    	    echo "Ok, directory exists :)"
+    	    filesToRemove=`ls ${thisFolder} | grep ${pattern}`
+    	    if [ "${filesToRemove}" == "" ]; then
+    		echo "No files in ${thisFolder} matching '${pattern}'"
+    	    else 
+    		echo "Removing files matching '${pattern}' in ${thisFolder}"
+    		for thisfile in $filesToRemove
+    		do
+    		    rm ${thisFolder}/${thisfile}
+    		done	
+    	    fi
+	    
+    	fi
+
+    	echo ""
+
+    done
 
 done
 
