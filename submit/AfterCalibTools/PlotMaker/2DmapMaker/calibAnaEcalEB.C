@@ -70,7 +70,15 @@ void calibAnaEcalEB::setHistograms() {
   th2dMinZaxisVector.push_back(0.0005);//0.0                                                                 
   if (Pi0orEta == "Pi0") {
     if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMinZaxisVector.push_back(0.130);
-    else                            th2dMinZaxisVector.push_back(0.130);
+    else {
+      string match = "iter_";
+      string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
+      Int_t iterN_int = atoi(iterN_str.c_str());
+      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+	th2dMinZaxisVector.push_back(0.134);
+      else 
+	th2dMinZaxisVector.push_back(0.130);
+    }
     th2dMinZaxisVector.push_back(0.005);
   } else {
     th2dMinZaxisVector.push_back(0.500);
@@ -91,7 +99,15 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(0.0125);//0.02                                                  
   if (Pi0orEta == "Pi0") {
     if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMaxZaxisVector.push_back(0.150);
-    else                            th2dMaxZaxisVector.push_back(0.140);
+    else {
+      string match = "iter_";
+      string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
+      Int_t iterN_int = atoi(iterN_str.c_str());
+      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+	th2dMaxZaxisVector.push_back(0.136);
+      else 
+	th2dMaxZaxisVector.push_back(0.140);
+    }
     th2dMaxZaxisVector.push_back(0.015);
   } else {
     th2dMaxZaxisVector.push_back(0.600);
@@ -202,6 +218,9 @@ void calibAnaEcalEB::Loop()
   }
 
   TCanvas *c_mean_iphi_prof = new TCanvas("c_mean_iphi_prof",("c_" + string(mean_iphiProfile->GetName())).c_str());
+  c_mean_iphi_prof->SetTickx(1);
+  c_mean_iphi_prof->SetTicky(1);
+  c_mean_iphi_prof->SetGrid();
   mean_iphiProfile->Draw("HE");
   mean_iphiProfile->GetXaxis()->SetTitle("i #phi");
   mean_iphiProfile->GetXaxis()->SetTitleSize(0.06);
@@ -209,7 +228,15 @@ void calibAnaEcalEB::Loop()
   mean_iphiProfile->GetYaxis()->SetTitle("mean [GeV]");
   if (Pi0orEta == "Pi0") {
     if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
-    else                                   mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
+    else {
+      string match = "iter_";
+      string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
+      Int_t iterN_int = atoi(iterN_str.c_str());
+      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+	mean_iphiProfile->GetYaxis()->SetRangeUser(0.134,0.136);
+      else 
+	mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);
+    }
   } else mean_iphiProfile->GetYaxis()->SetRangeUser(0.5,0.6);
   mean_iphiProfile->GetYaxis()->SetTitleSize(0.055);
   mean_iphiProfile->GetYaxis()->SetTitleOffset(0.8);

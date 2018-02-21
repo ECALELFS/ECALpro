@@ -44,7 +44,7 @@ python DrawIC.py ic_${year}_${dirName}_iter${nIter}/IC_fromECALpro.txt -o ${outD
 echo ""
 echo "Drawing IC normalized to 1 in etaRing"
 echo ""
-python DrawIC.py ic_${year}_${dirName}_iter${nIter}/IC_fromECALpro.txt -o ${outDir}norm1etaring/ --max-EB 0.1 --max-EE 0.25 --normalize-etaring ${otherOptions}
+python DrawIC.py ic_${year}_${dirName}_iter${nIter}/IC_fromECALpro.txt -o ${outDir}norm1etaring/ --max-EB 0.05 --max-EE 0.05 --normalize-etaring ${otherOptions}
 echo ""
 cp /afs/cern.ch/user/m/mciprian/public/index.php ${outDir}notNormalized/
 cp /afs/cern.ch/user/m/mciprian/public/index.php ${outDir}norm1etaring/

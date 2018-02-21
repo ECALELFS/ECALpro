@@ -163,6 +163,9 @@ void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
   string canvasName(profile->GetName());
   canvasName = "c_" + canvasName;
   TCanvas *c = new TCanvas(canvasName.c_str(),canvasName.c_str());
+  c->SetTickx(1);
+  c->SetTicky(1);
+  c->SetGrid();
   string name = wwwPath + profile->GetName() + "_" + EBorEE;  // name  (with path) of file to save canvas: EBorEE can be "EB" or "EEp" or "EEm" 
 
   profile->Draw("HE");

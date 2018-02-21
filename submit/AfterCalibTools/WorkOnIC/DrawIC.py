@@ -175,6 +175,7 @@ class ICplotter:
                     print "EE etaring %s: Nxtal %s   average %.4f" % (str(ietaring),str(xtalsInEtaRing),average)
 
                 plots2D.append(hnorm1)
+                f_ietaring.Close()
         else:
             plots2D.append(h)
 
@@ -214,12 +215,21 @@ class ICplotter:
             canv = rt.TCanvas("c","",xsize,ysize)
             if p.GetDimension()==2: p.Draw("colz")
             else: p.Draw()
+            
+            ## Save map in root file
+            outfilename = "%s.root" % p.GetName()
+
             if outdirname == '':
                 canv.SaveAs('%s.pdf' % p.GetName())
                 canv.SaveAs('%s.png' % p.GetName())
             else:
+                outfilename = outdirname + "/" + outfilename; 
                 canv.SaveAs('%s/%s.pdf' % (outdirname, p.GetName()))
                 canv.SaveAs('%s/%s.png' % (outdirname, p.GetName()))
+
+            outfile = rt.TFile(outfilename,"RECREATE")
+            p.Write()
+            outfile.Close()
 
 
     def compareIC2D(self,data2,partition,zwidth=0.07,outdirname=''):
