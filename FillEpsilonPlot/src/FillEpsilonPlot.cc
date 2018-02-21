@@ -509,58 +509,58 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	}
 	//Tree_Optim->Branch( "STr2_L1Seed",        &Op_L1Seed,           Form("STr2_L1Seed[%d]/I",NL1SEED));
 	Tree_Optim->Branch( "nPi0",          &Op_NPi0,             "nPi0/I");
-	Tree_Optim->Branch( "Pi0recIsEB",    &Op_Pi0recIsEB,       "Pi0recIsEB[nPi0]/I");
-	Tree_Optim->Branch( "ClusIsoPi0",    &Op_ClusIsoPi0,       "ClusIsoPi0[nPi0]/F");
-	Tree_Optim->Branch( "HLTIsoPi0",     &Op_HLTIsoPi0,    "HLTIsoPi0[nPi0]/F");
-	Tree_Optim->Branch( "n1CrisPi0",     &Op_nCrisG1,    "nCrisG1Pi0[nPi0]/I");
-	Tree_Optim->Branch( "n2CrisPi0",     &Op_nCrisG2,    "nCrisG2Pi0[nPi0]/I");
-	Tree_Optim->Branch( "mPi0_cor",      &Op_mPi0_cor,         "mPi0_cor[nPi0]/F");
-	Tree_Optim->Branch( "enG1_cor",      &Op_enG1_cor,         "enG1_cor[nPi0]/F");
-	Tree_Optim->Branch( "enG2_cor",      &Op_enG2_cor,         "enG2_cor[nPi0]/F");
-	Tree_Optim->Branch( "etaG1_cor",     &Op_etaG1_cor,         "etaG1_cor[nPi0]/F");
-	Tree_Optim->Branch( "etaG2_cor",     &Op_etaG2_cor,         "etaG2_cor[nPi0]/F");
-	Tree_Optim->Branch( "phiG1_cor",     &Op_phiG1_cor,         "phiG1_cor[nPi0]/F");
-	Tree_Optim->Branch( "phiG2_cor",     &Op_phiG2_cor,         "phiG2_cor[nPi0]/F");
-	Tree_Optim->Branch( "etaPi0_cor",    &Op_etaPi0_cor,       "etaPi0_cor[nPi0]/F");
-	Tree_Optim->Branch( "ptPi0_cor",     &Op_ptPi0_cor,        "ptPi0_cor[nPi0]/F");
-	Tree_Optim->Branch( "ptPi0_nocor",   &Op_ptPi0_nocor,      "ptPi0_nocor[nPi0]/F");
-	Tree_Optim->Branch( "enG1_nocor",    &Op_enG1_nocor,       "enG1_nocor[nPi0]/F");
-	Tree_Optim->Branch( "enG2_nocor",    &Op_enG2_nocor,       "enG2_nocor[nPi0]/F");
-	Tree_Optim->Branch( "etaG1_nocor",   &Op_etaG1_nocor,       "etaG1_nocor[nPi0]/F");
-	Tree_Optim->Branch( "etaG2_nocor",   &Op_etaG2_nocor,       "etaG2_nocor[nPi0]/F");
-	Tree_Optim->Branch( "phiG1_nocor",   &Op_phiG1_nocor,       "phiG1_nocor[nPi0]/F");
-	Tree_Optim->Branch( "phiG2_nocor",   &Op_phiG2_nocor,       "phiG2_nocor[nPi0]/F");
-	Tree_Optim->Branch( "mPi0_nocor",    &Op_mPi0_nocor,       "mPi0_nocor[nPi0]/F");
-	Tree_Optim->Branch( "DeltaRG1G2",    &Op_DeltaRG1G2,       "DeltaRG1G2[nPi0]/F");
-	Tree_Optim->Branch( "Es_e1_1",       &Op_Es_e1_1,          "Es_e1_1[nPi0]/F");
-	Tree_Optim->Branch( "Es_e1_2",       &Op_Es_e1_2,          "Es_e1_2[nPi0]/F");
-	Tree_Optim->Branch( "Es_e2_1",       &Op_Es_e2_1,          "Es_e2_1[nPi0]/F");
-	Tree_Optim->Branch( "Es_e2_2",       &Op_Es_e2_2,          "Es_e2_2[nPi0]/F");
-	Tree_Optim->Branch( "S4S9_1",        &Op_S4S9_1,           "S4S9_1[nPi0]/F");
-	Tree_Optim->Branch( "S4S9_2",        &Op_S4S9_2,           "S4S9_2[nPi0]/F");
-	Tree_Optim->Branch( "S2S9_1",        &Op_S2S9_1,           "S2S9_1[nPi0]/F");
-	Tree_Optim->Branch( "S2S9_2",        &Op_S2S9_2,           "S2S9_2[nPi0]/F");
-	Tree_Optim->Branch( "S1S9_1",        &Op_S1S9_1,           "S1S9_1[nPi0]/F");
-	Tree_Optim->Branch( "S1S9_2",        &Op_S1S9_2,           "S1S9_2[nPi0]/F");
-	Tree_Optim->Branch( "Time_1",        &Op_Time_1,           "Time_1[nPi0]/F");
-	Tree_Optim->Branch( "Time_2",        &Op_Time_2,           "Time_2[nPi0]/F");
-	Tree_Optim->Branch( "iEtaiX_1",      &Op_iEtaiX_1,         "iEtaiX_1[nPi0]/I");
-	Tree_Optim->Branch( "iEtaiX_2",      &Op_iEtaiX_2,         "iEtaiX_2[nPi0]/I");
-	Tree_Optim->Branch( "iPhiiY_1",      &Op_iPhiiY_1,         "iPhiiY_1[nPi0]/I");
-	Tree_Optim->Branch( "iPhiiY_2",      &Op_iPhiiY_2,         "iPhiiY_2[nPi0]/I");
-	Tree_Optim->Branch( "iEta_1on5",     &Op_iEta_1on5,        "iEta_1on5[nPi0]/I");
-	Tree_Optim->Branch( "iEta_2on5",     &Op_iEta_2on5,        "iEta_2on5[nPi0]/I");
-	Tree_Optim->Branch( "iPhi_1on2",     &Op_iPhi_1on2,        "iPhi_1on2[nPi0]/I");
-	Tree_Optim->Branch( "iPhi_2on2",     &Op_iPhi_2on2,        "iPhi_2on2[nPi0]/I");
-	Tree_Optim->Branch( "iEta_1on2520",  &Op_iEta_1on2520,     "iEta_1on2520[nPi0]/I");
-	Tree_Optim->Branch( "iEta_2on2520",  &Op_iEta_2on2520,     "iEta_2on2520[nPi0]/I");
-	Tree_Optim->Branch( "iPhi_1on20",    &Op_iPhi_1on20,       "iPhi_1on20[nPi0]/I");
-	Tree_Optim->Branch( "iPhi_2on20",    &Op_iPhi_2on20,       "iPhi_2on20[nPi0]/I");
+	Tree_Optim->Branch( "Pi0recIsEB",    &Op_Pi0recIsEB,       "Pi0recIsEB/I");
+	Tree_Optim->Branch( "ClusIsoPi0",    &Op_ClusIsoPi0,       "ClusIsoPi0/F");
+	Tree_Optim->Branch( "HLTIsoPi0",     &Op_HLTIsoPi0,    "HLTIsoPi0/F");
+	Tree_Optim->Branch( "n1CrisPi0",     &Op_nCrisG1,    "nCrisG1Pi0/I");
+	Tree_Optim->Branch( "n2CrisPi0",     &Op_nCrisG2,    "nCrisG2Pi0/I");
+	Tree_Optim->Branch( "mPi0_cor",      &Op_mPi0_cor,         "mPi0_cor/F");
+	Tree_Optim->Branch( "enG1_cor",      &Op_enG1_cor,         "enG1_cor/F");
+	Tree_Optim->Branch( "enG2_cor",      &Op_enG2_cor,         "enG2_cor/F");
+	Tree_Optim->Branch( "etaG1_cor",     &Op_etaG1_cor,         "etaG1_cor/F");
+	Tree_Optim->Branch( "etaG2_cor",     &Op_etaG2_cor,         "etaG2_cor/F");
+	Tree_Optim->Branch( "phiG1_cor",     &Op_phiG1_cor,         "phiG1_cor/F");
+	Tree_Optim->Branch( "phiG2_cor",     &Op_phiG2_cor,         "phiG2_cor/F");
+	Tree_Optim->Branch( "etaPi0_cor",    &Op_etaPi0_cor,       "etaPi0_cor/F");
+	Tree_Optim->Branch( "ptPi0_cor",     &Op_ptPi0_cor,        "ptPi0_cor/F");
+	Tree_Optim->Branch( "ptPi0_nocor",   &Op_ptPi0_nocor,      "ptPi0_nocor/F");
+	Tree_Optim->Branch( "enG1_nocor",    &Op_enG1_nocor,       "enG1_nocor/F");
+	Tree_Optim->Branch( "enG2_nocor",    &Op_enG2_nocor,       "enG2_nocor/F");
+	Tree_Optim->Branch( "etaG1_nocor",   &Op_etaG1_nocor,       "etaG1_nocor/F");
+	Tree_Optim->Branch( "etaG2_nocor",   &Op_etaG2_nocor,       "etaG2_nocor/F");
+	Tree_Optim->Branch( "phiG1_nocor",   &Op_phiG1_nocor,       "phiG1_nocor/F");
+	Tree_Optim->Branch( "phiG2_nocor",   &Op_phiG2_nocor,       "phiG2_nocor/F");
+	Tree_Optim->Branch( "mPi0_nocor",    &Op_mPi0_nocor,       "mPi0_nocor/F");
+	Tree_Optim->Branch( "DeltaRG1G2",    &Op_DeltaRG1G2,       "DeltaRG1G2/F");
+	Tree_Optim->Branch( "Es_e1_1",       &Op_Es_e1_1,          "Es_e1_1/F");
+	Tree_Optim->Branch( "Es_e1_2",       &Op_Es_e1_2,          "Es_e1_2/F");
+	Tree_Optim->Branch( "Es_e2_1",       &Op_Es_e2_1,          "Es_e2_1/F");
+	Tree_Optim->Branch( "Es_e2_2",       &Op_Es_e2_2,          "Es_e2_2/F");
+	Tree_Optim->Branch( "S4S9_1",        &Op_S4S9_1,           "S4S9_1/F");
+	Tree_Optim->Branch( "S4S9_2",        &Op_S4S9_2,           "S4S9_2/F");
+	Tree_Optim->Branch( "S2S9_1",        &Op_S2S9_1,           "S2S9_1/F");
+	Tree_Optim->Branch( "S2S9_2",        &Op_S2S9_2,           "S2S9_2/F");
+	Tree_Optim->Branch( "S1S9_1",        &Op_S1S9_1,           "S1S9_1/F");
+	Tree_Optim->Branch( "S1S9_2",        &Op_S1S9_2,           "S1S9_2/F");
+	Tree_Optim->Branch( "Time_1",        &Op_Time_1,           "Time_1/F");
+	Tree_Optim->Branch( "Time_2",        &Op_Time_2,           "Time_2/F");
+	Tree_Optim->Branch( "iEtaiX_1",      &Op_iEtaiX_1,         "iEtaiX_1/I");
+	Tree_Optim->Branch( "iEtaiX_2",      &Op_iEtaiX_2,         "iEtaiX_2/I");
+	Tree_Optim->Branch( "iPhiiY_1",      &Op_iPhiiY_1,         "iPhiiY_1/I");
+	Tree_Optim->Branch( "iPhiiY_2",      &Op_iPhiiY_2,         "iPhiiY_2/I");
+	Tree_Optim->Branch( "iEta_1on5",     &Op_iEta_1on5,        "iEta_1on5/I");
+	Tree_Optim->Branch( "iEta_2on5",     &Op_iEta_2on5,        "iEta_2on5/I");
+	Tree_Optim->Branch( "iPhi_1on2",     &Op_iPhi_1on2,        "iPhi_1on2/I");
+	Tree_Optim->Branch( "iPhi_2on2",     &Op_iPhi_2on2,        "iPhi_2on2/I");
+	Tree_Optim->Branch( "iEta_1on2520",  &Op_iEta_1on2520,     "iEta_1on2520/I");
+	Tree_Optim->Branch( "iEta_2on2520",  &Op_iEta_2on2520,     "iEta_2on2520/I");
+	Tree_Optim->Branch( "iPhi_1on20",    &Op_iPhi_1on20,       "iPhi_1on20/I");
+	Tree_Optim->Branch( "iPhi_2on20",    &Op_iPhi_2on20,       "iPhi_2on20/I");
 	if( isMC_ && MC_Assoc_ ) {
-	  Tree_Optim->Branch( "enG1_true",     &Op_enG1_true,        "enG1_true[nPi0]/F");
-	  Tree_Optim->Branch( "enG2_true",     &Op_enG2_true,        "enG2_true[nPi0]/F");
-	  Tree_Optim->Branch( "DeltaR_1",      &Op_DeltaR_1,         "DeltaR_1[nPi0]/F");
-	  Tree_Optim->Branch( "DeltaR_2",      &Op_DeltaR_2,         "DeltaR_2[nPi0]/F");
+	  Tree_Optim->Branch( "enG1_true",     &Op_enG1_true,        "enG1_true/F");
+	  Tree_Optim->Branch( "enG2_true",     &Op_enG2_true,        "enG2_true/F");
+	  Tree_Optim->Branch( "DeltaR_1",      &Op_DeltaR_1,         "DeltaR_1/F");
+	  Tree_Optim->Branch( "DeltaR_2",      &Op_DeltaR_2,         "DeltaR_2/F");
 	}
     }
 
@@ -1166,7 +1166,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
   //get status from DB
-  edm::ESHandle<EcalChannelStatus> csHandle;
+  edm::ESHandle<EcalChannelStatus> csHandle; 
   iSetup.get<EcalChannelStatusRcd>().get(csHandle);
   const EcalChannelStatus &channelStatus = *csHandle; 
   ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
@@ -1331,6 +1331,11 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
     int seed_ieta = seed_id.ieta();
     int seed_iphi = seed_id.iphi();
+
+    // following method defined in http://cmslxr.fnal.gov/source/HLTrigger/special/src/HLTRegionalEcalResonanceFilter.cc?v=CMSSW_9_4_1#0903
+    // it is used to use diff_neta_s and diff_nphi_s to get distances between crystals in number of crystals
+    // iphi is ported to 0,..,359, and ieta from -85,...,-1,0,1,2,...,84
+    // note that ieta and iphi can be 0 and iphi= 360 and ieta = 85 are "lost", so do no tuse them to access histogram content   
     convxtalid( seed_iphi,seed_ieta);
 
     // energy of 3x3 cluster
@@ -1378,6 +1383,18 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
 	int ieta = det.ieta();
 	int iphi = det.iphi();
+	// if (useContainmentCorrectionsFromEoverEtrue_) {
+	//   std::cout << "ieta,iphi,IC,CC1,CC2 " << ieta << "  " << iphi << "  " 
+	// 	    << regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id()) << "  "
+	// 	    << hCC_EoverEtrue_g1->GetBinContent(hCC_EoverEtrue_g1->FindFixBin(ieta,iphi)) << "  "
+	// 	    << hCC_EoverEtrue_g2->GetBinContent(hCC_EoverEtrue_g2->FindFixBin(ieta,iphi)) << std::endl;
+	  
+	// }
+
+	// following method defined in http://cmslxr.fnal.gov/source/HLTrigger/special/src/HLTRegionalEcalResonanceFilter.cc?v=CMSSW_9_4_1#0903
+	// it is used to use diff_neta_s and diff_nphi_s to get distances between crystals in number of crystals
+	// iphi is ported to 0,..,359, and ieta from -85,...,-1,0,1,2,...,84
+	// note that ieta and iphi can be 0 and iphi= 360 and ieta = 85 are "lost", so do no tuse them to access histogram content   
 	convxtalid(iphi,ieta);
 
 	// use calibration coeff for energy and position
@@ -1388,10 +1405,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	float en = RecHitsInWindow[j]->energy();
 	if (not isEoverEtrue_) {
 	  en *= regionalCalibration_->getCalibMap()->coeff(RecHitsInWindow[j]->id());
-	}//  else {
-	//   // check if this detId belonged to a "first" or "second" photon according to previous iteration
-	//   // I would need something like another calibration map with this information
-	// }
+	}
+
 	int dx = diff_neta_s(seed_ieta,ieta);
 	int dy = diff_nphi_s(seed_iphi,iphi);
 	EnergyCristals[j] = en;
@@ -2226,42 +2241,47 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
   // corrected energy is obtained by correcting energy in each RecHit of photon
   float totalCorrectedClusterEnergy = 0.0;
 
-  // FIXME: to be completed, put everything in a function, use a function to open the file with the corrections and get the histogram
-  // TH2 with correction given ieta and iphi
-  // TH2F* hCC_EoverEtrue_g1 = TH2F("hCC_EoverEtrue_g1","");
-  // TH2F* hCC_EoverEtrue_g2 = TH2F("hCC_EoverEtrue_g2","");
-
   if (!hCC_EoverEtrue_g1 || !hCC_EoverEtrue_g2)
     throw cms::Exception("FillEpsilonPlot::getClusterAfterContainmentCorrections") << "Pointers to histograms with CC are null\n";
   TH2F* hContainmentCorrection = (isSecondPhoton ? hCC_EoverEtrue_g2 : hCC_EoverEtrue_g1);
 
   std::vector< std::pair<DetId, float> > hitsAndFrac = gam->hitsAndFractions();
   std::vector< std::pair<DetId, float> > correctedHitsAndFrac; // as hitsAndFrac but with corrections
-  std::vector< float > correctedEnergy_it; correctedEnergy_it.clear();
-  std::vector< DetId > rechitDetId_it;     rechitDetId_it.clear();
+  float correctedEnergy_it = 0;
 
-  int ind = 1;
+  //  int ind = 1; // needed for cout below, only for debugging
+
+  // FIXME: hardcoded correction: CC was obtained from V1 MC. We had a V2 MC but statistics was not enough
+  // since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
+  // it would be better to use a histogram for CC which is already scaled, but this is more straightforward if we want to add other corrections
+  float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
+
 
   for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
 
     EBDetId ebId(it->first);
-    EBRecHitCollection::const_iterator ixtal = ebHandle->find( ebId );
-    if (ixtal->energy() < 0) continue; // should not happen
-    rechitDetId_it.push_back(ixtal->id());
-    //correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) );
-    correctedEnergy_it.push_back( ixtal->energy() * hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.ieta(),ebId.iphi())) );
+    correctedEnergy_it = it->second * hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.ieta(),ebId.iphi())) / CC_meanRatioV1overV2MC;
+
+    // DEBUG
+    // only for debugging
+    // EBRecHitCollection::const_iterator ixtal = ebHandle->find( ebId );
+    // if( ixtal == ebHandle->end() ) continue; // xtal not found
+    // if (ixtal->energy() < 0) continue; // should not happen
     // std::cout << ind 
     // 	      << ":  ieta,iphi = " << ebId.ieta() << "," << ebId.iphi() 
-    // 	      << "   corr = " << hContainmentCorrection->GetBinContent(ebId.ieta()+86,ebId.iphi()) << std::endl;
-    totalCorrectedClusterEnergy += correctedEnergy_it.back();
+    // 	      << "   RecHit_energy = " << ixtal->energy()
+    // 	      << "   ChannelStatus = " <<
+    // 	      << "   IC = " << regionalCalibration_->getCalibMap()->coeff(it->first)
+    // 	      << "   RecHit_energy_IC = " << it->second
+    // 	      << "   CC = " << hContainmentCorrection->GetBinContent(hContainmentCorrection->FindFixBin(ebId.ieta(),ebId.iphi()))
+    // 	      << "   RecHit_energy_IC_CC = " << correctedEnergy_it << std::endl;
+
+    totalCorrectedClusterEnergy += correctedEnergy_it;
     // in the rest of the code the fraction was defined as the energy of the RecHit, not the ratio with the total one
-    correctedHitsAndFrac.push_back( std::make_pair(rechitDetId_it.back(), correctedEnergy_it.back()));  
-    ind++;
+    correctedHitsAndFrac.push_back( std::make_pair(it->first, correctedEnergy_it));  
+    //ind++;
 
   }
-
-  correctedEnergy_it.clear();
-  rechitDetId_it.clear();
 
   // variables for position caculation
   float xclu(0.), yclu(0.), zclu(0.); // temp var to compute weighted average
@@ -2956,46 +2976,46 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  if( nPi0>NPI0MAX-2 ) { 
 	    cout<<"nPi0::TOO MANY PI0: ("<<nPi0<<")!!!"<<endl; 
 	  } else{
-	    Op_Pi0recIsEB[nPi0]    = (subDetId==EcalBarrel)? 1:0;
-	    Op_ClusIsoPi0[nPi0]    = nextClu;  
-	    Op_HLTIsoPi0[nPi0]     = hlt_iso;
-	    Op_nCrisG1[nPi0]       = Nxtal_g1; 
-	    Op_nCrisG2[nPi0]       = Nxtal_g2;
-	    Op_enG1_cor[nPi0]      = g1_contCorr_tlv.Energy();
-	    Op_enG2_cor[nPi0]      = g2_contCorr_tlv.Energy();
-	    Op_etaG1_cor[nPi0]     = g1_contCorr_tlv.Eta();
-	    Op_etaG2_cor[nPi0]     = g2_contCorr_tlv.Eta();
-	    Op_phiG1_cor[nPi0]     = g1_contCorr_tlv.Phi();
-	    Op_phiG2_cor[nPi0]     = g2_contCorr_tlv.Phi();
-	    Op_mPi0_cor[nPi0]      = pi0P4_mass;
-	    Op_etaPi0_cor[nPi0]    = pi0P4_eta;
-	    Op_ptPi0_cor[nPi0]     = pi0P4_pt;
-	    Op_DeltaRG1G2[nPi0]    = GetDeltaR( g1eta, g2eta, g1phi, g2phi );
-	    Op_ptPi0_nocor[nPi0]   = pi0P4_nocor_pt;
-	    Op_mPi0_nocor[nPi0]    = pi0P4_nocor_mass;
-	    Op_Es_e1_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[i];
-	    Op_Es_e1_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_1[j];
-	    Op_Es_e2_1[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[i];
-	    Op_Es_e2_2[nPi0]       = (subDetId==EcalBarrel) ? 0. : Es_2[j];
-	    Op_S4S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[i] : vs4s9EE[i];
-	    Op_S4S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs4s9[j] : vs4s9EE[j];
-	    Op_S2S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[i] : vs2s9EE[i];
-	    Op_S2S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs2s9[j] : vs2s9EE[j];
-	    Op_S1S9_1[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[i] : vs1s9EE[i];
-	    Op_S1S9_2[nPi0]        = (subDetId==EcalBarrel) ? vs1s9[j] : vs1s9EE[j];
-	    Op_enG1_nocor[nPi0]    = g1->energy(); // g1P4_nocor.E();
-	    Op_enG2_nocor[nPi0]    = g2->energy(); // g2P4_nocor.E();
-	    Op_etaG1_nocor[nPi0]   = g1eta;
-            Op_etaG2_nocor[nPi0]   = g2eta;
-	    Op_phiG1_nocor[nPi0]   = g1phi;
-            Op_phiG2_nocor[nPi0]   = g2phi;
-	    Op_Time_1[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[i] : vSeedTimeEE[i];
-	    Op_Time_2[nPi0]        = (subDetId==EcalBarrel) ? vSeedTime[j] : vSeedTimeEE[j];
+	    Op_Pi0recIsEB.push_back(  (subDetId==EcalBarrel)? 1:0);
+	    Op_ClusIsoPi0.push_back(  nextClu);  
+	    Op_HLTIsoPi0.push_back(   hlt_iso);
+	    Op_nCrisG1.push_back(     Nxtal_g1); 
+	    Op_nCrisG2.push_back(     Nxtal_g2);
+	    Op_enG1_cor.push_back(    g1_contCorr_tlv.Energy());
+	    Op_enG2_cor.push_back(    g2_contCorr_tlv.Energy());
+	    Op_etaG1_cor.push_back(   g1_contCorr_tlv.Eta());
+	    Op_etaG2_cor.push_back(   g2_contCorr_tlv.Eta());
+	    Op_phiG1_cor.push_back(   g1_contCorr_tlv.Phi());
+	    Op_phiG2_cor.push_back(   g2_contCorr_tlv.Phi());
+	    Op_mPi0_cor.push_back(    pi0P4_mass);
+	    Op_etaPi0_cor.push_back(  pi0P4_eta);
+	    Op_ptPi0_cor.push_back(   pi0P4_pt);
+	    Op_DeltaRG1G2.push_back(  GetDeltaR( g1eta, g2eta, g1phi, g2phi ));
+	    Op_ptPi0_nocor.push_back( pi0P4_nocor_pt);
+	    Op_mPi0_nocor.push_back(  pi0P4_nocor_mass);
+	    Op_Es_e1_1.push_back(     (subDetId==EcalBarrel) ? 0. : Es_1[i]);
+	    Op_Es_e1_2.push_back(     (subDetId==EcalBarrel) ? 0. : Es_1[j]);
+	    Op_Es_e2_1.push_back(     (subDetId==EcalBarrel) ? 0. : Es_2[i]);
+	    Op_Es_e2_2.push_back(     (subDetId==EcalBarrel) ? 0. : Es_2[j]);
+	    Op_S4S9_1.push_back(      (subDetId==EcalBarrel) ? vs4s9[i] : vs4s9EE[i]);
+	    Op_S4S9_2.push_back(      (subDetId==EcalBarrel) ? vs4s9[j] : vs4s9EE[j]);
+	    Op_S2S9_1.push_back(      (subDetId==EcalBarrel) ? vs2s9[i] : vs2s9EE[i]);
+	    Op_S2S9_2.push_back(      (subDetId==EcalBarrel) ? vs2s9[j] : vs2s9EE[j]);
+	    Op_S1S9_1.push_back(      (subDetId==EcalBarrel) ? vs1s9[i] : vs1s9EE[i]);
+	    Op_S1S9_2.push_back(      (subDetId==EcalBarrel) ? vs1s9[j] : vs1s9EE[j]);
+	    Op_enG1_nocor.push_back(  g1->energy()); // g1P4_nocor.E();
+	    Op_enG2_nocor.push_back(  g2->energy()); // g2P4_nocor.E();
+	    Op_etaG1_nocor.push_back( g1eta);
+            Op_etaG2_nocor.push_back( g2eta);
+	    Op_phiG1_nocor.push_back( g1phi);
+            Op_phiG2_nocor.push_back( g2phi);
+	    Op_Time_1.push_back(      (subDetId==EcalBarrel) ? vSeedTime[i] : vSeedTimeEE[i]);
+	    Op_Time_2.push_back(      (subDetId==EcalBarrel) ? vSeedTime[j] : vSeedTimeEE[j]);
 	    if( isMC_ && MC_Assoc_ ) {
-	      Op_enG1_true[nPi0]     = clusters_matchedGenPhoton[i]->Energy();
-	      Op_enG2_true[nPi0]     = clusters_matchedGenPhoton[j]->Energy();
-	      Op_DeltaR_1[nPi0]      = GetDeltaR(g1eta, clusters_matchedGenPhoton[i]->Eta(), g1phi, clusters_matchedGenPhoton[i]->Phi());
-	      Op_DeltaR_2[nPi0]      = GetDeltaR(g2eta, clusters_matchedGenPhoton[j]->Eta(), g2phi, clusters_matchedGenPhoton[j]->Phi());
+	      Op_enG1_true.push_back(   clusters_matchedGenPhoton[i]->Energy());
+	      Op_enG2_true.push_back(   clusters_matchedGenPhoton[j]->Energy());
+	      Op_DeltaR_1.push_back(    GetDeltaR(g1eta, clusters_matchedGenPhoton[i]->Eta(), g1phi, clusters_matchedGenPhoton[i]->Phi()));
+	      Op_DeltaR_2.push_back(    GetDeltaR(g2eta, clusters_matchedGenPhoton[j]->Eta(), g2phi, clusters_matchedGenPhoton[j]->Phi()));
 	    }
 
             if( (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ) {
@@ -3003,55 +3023,56 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
               EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
               EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
 
-              Op_iEtaiX_1[nPi0]     = iEta1;
-              Op_iEtaiX_2[nPi0]     = iEta2;
-              Op_iPhiiY_1[nPi0]     = iPhi1;
-              Op_iPhiiY_2[nPi0]     = iPhi2;
-              Op_iEta_1on5[nPi0]    = iEta1%5;
-              Op_iEta_2on5[nPi0]    = iEta2%5;
-              Op_iPhi_1on2[nPi0]    = iPhi1%2;
-              Op_iPhi_2on2[nPi0]    = iPhi2%2;
-              Op_iEta_1on2520[nPi0] =  (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20); //Distance in xtal from module boundaries
-              Op_iEta_2on2520[nPi0] =  (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20);
-              Op_iPhi_1on20[nPi0]   =  iPhi1%20;
-              Op_iPhi_2on20[nPi0]   =  iPhi2%20;
+              Op_iEtaiX_1.push_back(   iEta1);
+              Op_iEtaiX_2.push_back(   iEta2);
+              Op_iPhiiY_1.push_back(   iPhi1);
+              Op_iPhiiY_2.push_back(   iPhi2);
+              Op_iEta_1on5.push_back(  iEta1%5);
+              Op_iEta_2on5.push_back(  iEta2%5);
+              Op_iPhi_1on2.push_back(  iPhi1%2);
+              Op_iPhi_2on2.push_back(  iPhi2%2);
+              Op_iEta_1on2520.push_back( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20)); //Distance in xtal from module boundaries
+              Op_iEta_2on2520.push_back((TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20));
+              Op_iPhi_1on20.push_back(  iPhi1%20);
+              Op_iPhi_2on20.push_back(  iPhi2%20);
 
             } else if( (g1->seed().subdetId()==2) && (g2->seed().subdetId()==2) ) {
               
               EEDetId  id_1(g1->seed()); int iX1 = id_1.ix(); int iY1 = id_1.iy();
               EEDetId  id_2(g2->seed()); int iX2 = id_2.ix(); int iY2 = id_2.iy();
 
-              Op_iEtaiX_1[nPi0]        = (iX1 < 50) ? iX1 : 100-iX1;
-              Op_iEtaiX_2[nPi0]        = (iX2 < 50) ? iX2 : 100-iX2;
-              Op_iPhiiY_1[nPi0]        = (iY1 < 50) ? iY1 : 100-iY1;
-              Op_iPhiiY_2[nPi0]        = (iY2 < 50) ? iY2 : 100-iY2;
-              Op_iEta_1on5[nPi0]       = 999;
-              Op_iEta_2on5[nPi0]       = 999;
-              Op_iPhi_1on2[nPi0]       = 999;
-              Op_iPhi_2on2[nPi0]       = 999;
-              Op_iEta_1on2520[nPi0]    = 999;
-              Op_iEta_2on2520[nPi0]    = 999;
-              Op_iPhi_1on20[nPi0]      = 999;
-              Op_iPhi_2on20[nPi0]      = 999;
+              Op_iEtaiX_1.push_back(      (iX1 < 50) ? iX1 : 100-iX1);
+              Op_iEtaiX_2.push_back(      (iX2 < 50) ? iX2 : 100-iX2);
+              Op_iPhiiY_1.push_back(      (iY1 < 50) ? iY1 : 100-iY1);
+              Op_iPhiiY_2.push_back(      (iY2 < 50) ? iY2 : 100-iY2);
+              Op_iEta_1on5.push_back(     999);
+              Op_iEta_2on5.push_back(     999);
+              Op_iPhi_1on2.push_back(     999);
+              Op_iPhi_2on2.push_back(     999);
+              Op_iEta_1on2520.push_back(  999);
+              Op_iEta_2on2520.push_back(  999);
+              Op_iPhi_1on20.push_back(    999);
+              Op_iPhi_2on20.push_back(    999);
               
             } else {
-              Op_iEtaiX_1[nPi0]        = -999;
-              Op_iEtaiX_2[nPi0]        = -999;
-              Op_iPhiiY_1[nPi0]        = -999;
-              Op_iPhiiY_2[nPi0]        = -999;
-              Op_iEta_1on5[nPi0]       = -999;
-              Op_iEta_2on5[nPi0]       = -999;
-              Op_iPhi_1on2[nPi0]       = -999;
-              Op_iPhi_2on2[nPi0]       = -999;
-              Op_iEta_1on2520[nPi0]    = -999;
-              Op_iEta_2on2520[nPi0]    = -999;
-              Op_iPhi_1on20[nPi0]      = -999;
-              Op_iPhi_2on20[nPi0]      = -999;
+              Op_iEtaiX_1.push_back(      -999);
+              Op_iEtaiX_2.push_back(      -999);
+              Op_iPhiiY_1.push_back(      -999);
+              Op_iPhiiY_2.push_back(      -999);
+              Op_iEta_1on5.push_back(     -999);
+              Op_iEta_2on5.push_back(     -999);
+              Op_iPhi_1on2.push_back(     -999);
+              Op_iPhi_2on2.push_back(     -999);
+              Op_iEta_1on2520.push_back(  -999);
+              Op_iEta_2on2520.push_back(  -999);
+              Op_iPhi_1on20.push_back(    -999);
+              Op_iPhi_2on20.push_back(    -999);
             }
-          nPi0++;
+	    nPi0++;
 	  }
-	}
 
+	}
+	
 	if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
 
 	//Check the Conteinment correction for Barrel
@@ -4276,36 +4297,42 @@ void FillEpsilonPlot::loadEoverEtrueContainmentCorrections(const std::string& fi
   hCC_EoverEtrue_g1 = new TH2F("hCC_EoverEtrue_g1","",171,-85.5,85.5,360,0.5,360.5);
   hCC_EoverEtrue_g2 = new TH2F("hCC_EoverEtrue_g2","",171,-85.5,85.5,360,0.5,360.5);
 
-  TH2F* tmp1 = nullptr;
-  TH2F* tmp2 = nullptr;
+  TH2F* hCC_tmp1 = nullptr;
+  TH2F* hCC_tmp2 = nullptr;
 
   TFile* f = TFile::Open(fileName.c_str());
 
   if (!f) throw cms::Exception("loadEoverEtrueCC") << "Could not open file with containment corrections\n";
   else {
 
-    tmp1 = (TH2F*) ((TH2F*) f->Get("calibMap_EB"))->Clone();
-    tmp2 = (TH2F*) ((TH2F*) f->Get("calibMap_EB_g2"))->Clone();
-    if (!tmp1) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 1\n";
-    if (!tmp2) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 2\n";
+    // hCC_tmp1 = (TH2F*) ((TH2F*) f->Get("calibMap_EB"))->Clone();
+    // hCC_tmp2 = (TH2F*) ((TH2F*) f->Get("calibMap_EB_g2"))->Clone();
+    // make sure to change this name to avoid possible conflicts with the IC histograms, which have the same name
+    hCC_tmp1 = (TH2F*) ((TH2F*) f->Get("calibMap_EB"))->Clone("hCC_tmp1_CC_EoverEtrue");
+    hCC_tmp2 = (TH2F*) ((TH2F*) f->Get("calibMap_EB_g2"))->Clone("hCC_tmp2_CC_EoverEtrue");
+    if (!hCC_tmp1) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 1\n";
+    if (!hCC_tmp2) throw cms::Exception("loadEoverEtrueCC") << "Could not get histograms with containment corrections for photon 2\n";
   }
   // detach histogram from file so that we can safely close the file
-  tmp1->SetDirectory(0);
-  tmp2->SetDirectory(0);
-  f->Close();
+  // hCC_tmp1->SetDirectory(0);
+  // hCC_tmp2->SetDirectory(0);
+  // f->Close();
+  // better to close the file directly at the end
 
-  if (tmp1->GetNbinsX() != tmp2->GetNbinsX()) 
+  if (hCC_tmp1->GetNbinsX() != hCC_tmp2->GetNbinsX()) 
     throw cms::Exception("loadEoverEtrueCC") << "Histograms with containment corrections for photon 1 and 2 have different number of X bins\n";
-  if (tmp1->GetNbinsY() != tmp2->GetNbinsY()) 
+  if (hCC_tmp1->GetNbinsY() != hCC_tmp2->GetNbinsY()) 
     throw cms::Exception("loadEoverEtrueCC") << "Histograms with containment corrections for photon 1 and 2 have different number of Y bins\n";
 
   // map with CC from E/Etrue has ieta on X axis, but do check if you are not sure (someone might have changed it)
-  for (Int_t ix = 0; ix <= tmp1->GetNbinsX(); ++ix) {
-    for (Int_t iy = 0; iy <= tmp1->GetNbinsY(); ++iy) {
-      hCC_EoverEtrue_g1->SetBinContent(ix,iy, tmp1->GetBinContent(ix,iy));
-      hCC_EoverEtrue_g2->SetBinContent(ix,iy, tmp2->GetBinContent(ix,iy));
+  for (Int_t ix = 1; ix <= hCC_tmp1->GetNbinsX(); ++ix) {
+    for (Int_t iy = 1; iy <= hCC_tmp1->GetNbinsY(); ++iy) {
+      hCC_EoverEtrue_g1->SetBinContent(ix,iy, hCC_tmp1->GetBinContent(ix,iy));
+      hCC_EoverEtrue_g2->SetBinContent(ix,iy, hCC_tmp2->GetBinContent(ix,iy));
     }
   }
+
+  f->Close();
 
 }
 
