@@ -15,7 +15,7 @@ iter_fin=0                                                      # last iteration
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
 path="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"  # path to directory on eos
 #dirName="AlcaP0_Run2016G_sel16_reg12"                            # dirname (see CalibCode/submit/parameters.py)
-dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrue"
+dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3"
 #tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
 tagName="${dirName}_"
 
@@ -124,16 +124,22 @@ do
     if [ "$skipEB" = false ]; then
 	echo  "iter_$i --> EB"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Barrel/"
+	mkdir -p ${wwwPath}
+	cp /afs/cern.ch/user/m/mciprian/public/index.php {wwwPath}
 	./$mainSourceFile $path $dirName $i $tagName EB $wwwPath $Pi0orEta
     fi
     if [ "$skipEEp" = false ]; then
 	echo  "iter_$i --> EE+"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Endcap/EEp/"
+	mkdir -p ${wwwPath}
+	cp /afs/cern.ch/user/m/mciprian/public/index.php {wwwPath}
 	./$mainSourceFile $path $dirName $i $tagName EEp $wwwPath $Pi0orEta
     fi
     if [ "$skipEEm" = false ]; then
 	echo  "iter_$i --> EE-"
 	wwwPath="${wwwBasePath}${dirName}/iter_${i}/2DMaps/Endcap/EEm/"
+	mkdir -p ${wwwPath}
+	cp /afs/cern.ch/user/m/mciprian/public/index.php {wwwPath}
 	./$mainSourceFile $path $dirName $i $tagName EEm $wwwPath $Pi0orEta
     fi
 done
