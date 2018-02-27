@@ -72,11 +72,11 @@ class ICplotter:
         profiles = {}
 
         if partition=='EcalBarrel': 
-            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',360,1,360,171,-85.5,85.5)
+            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',360,0.5,360.5,171,-85.5,85.5)
             h.GetXaxis().SetTitle('i#phi')
             h.GetYaxis().SetTitle('i#eta')
         else: 
-            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',100,1,100,100,1,100)
+            h = rt.TProfile2D(('%s_%s_ic_2d' % (self.name,partition)), '',100,0.5,100.5,100,0.5,100.5)
             h.GetXaxis().SetTitle('ix')
             h.GetYaxis().SetTitle('iy')
 
@@ -103,22 +103,28 @@ class ICplotter:
 
         ering = EtaRings('InputFile/Endc_x_y_ring.txt')
 
+        huncut = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_uncut'))
+
         zmin=1-zhwidth; zmax=1+zhwidth
+
         for k,v in self.data.iteritems():
             if k.subdet() != partition: continue
             if(v.staterr < 999): 
                 # for EB, the file has ieta in x, but in the histogram ieta is in the y axis
                 if k.subdet() == "EcalBarrel":
                     h.Fill(k.y,k.x,max(zmin,min(zmax,v.val)))
+                    huncut.Fill(k.y,k.x,v.val)
                 else:
                     h.Fill(k.x,k.y,max(zmin,min(zmax,v.val)))
+                    huncut.Fill(k.x,k.y,v.val)
                 hsterr.Fill(ering.etaring(k),v.staterr)
                 hsyerr.Fill(ering.etaring(k),v.systerr)
                 htoterr.Fill(ering.etaring(k),v.toterr)
             
         h.GetZaxis().SetRangeUser(zmin,zmax)
-        
-        hnorm1 = h.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
+  
+        # use the uncutted histogram with all true value to normalize      
+        hnorm1 = huncut.Clone(str(h.GetName()).replace('ic_2d','ic_2d_norm1etaring'))
     
         if norm_etaring:
             if partition=='EcalBarrel':
