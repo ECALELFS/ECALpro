@@ -569,6 +569,10 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       triggerComposition = new TH1F("triggerComposition", "Trigger Composition", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);    
       triggerComposition_EB = new TH1F("triggerComposition_EB", "Trigger Composition in EB", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
       triggerComposition_EE = new TH1F("triggerComposition_EE", "Trigger Composition in EE", nL1SeedsPi0Stream_, -0.5, (double)nL1SeedsPi0Stream_ -0.5);
+      // for L1
+      seedIsInStream = new int[GlobalAlgBlk::maxPhysicsTriggers];
+      algoBitToName = new TString[GlobalAlgBlk::maxPhysicsTriggers];
+      l1flag = new short[GlobalAlgBlk::maxPhysicsTriggers];
     }
     areLabelsSet_ = false;
     //L1_nameAndNumb.clear();
@@ -612,10 +616,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
         forest_EE_pi02 = (GBRForest *)EEweight_file_pi02->Get("Correction");
         }
 #endif
-    // for L1
-    seedIsInStream = new int[GlobalAlgBlk::maxPhysicsTriggers];
-    algoBitToName = new TString[GlobalAlgBlk::maxPhysicsTriggers];
-    l1flag = new short[GlobalAlgBlk::maxPhysicsTriggers];
 
 }
 
@@ -744,10 +744,11 @@ FillEpsilonPlot::~FillEpsilonPlot()
   //}
 
   // for L1
-  delete[] seedIsInStream;
-  delete[] algoBitToName;
-  delete[] l1flag;
-
+  if (L1TriggerInfo_) {
+    delete[] seedIsInStream;
+    delete[] algoBitToName;
+    delete[] l1flag;
+  }
 
 }
 
@@ -772,6 +773,63 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myBunchCrossing = iEvent.bunchCrossing();
 
   // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
+
+  if (MakeNtuple4optimization_) {
+
+    Op_Pi0recIsEB.clear();
+    Op_ClusIsoPi0.clear();
+    Op_HLTIsoPi0.clear();
+    Op_nCrisG1.clear();
+    Op_nCrisG2.clear();
+    Op_enG1_cor.clear();
+    Op_enG2_cor.clear();
+    Op_etaG1_cor.clear();
+    Op_etaG2_cor.clear();
+    Op_phiG1_cor.clear();
+    Op_phiG2_cor.clear();
+    Op_mPi0_cor.clear();
+    Op_etaPi0_cor.clear();
+    Op_ptPi0_cor.clear();
+    Op_DeltaRG1G2.clear();
+    Op_Es_e1_1.clear();
+    Op_Es_e1_2.clear();
+    Op_Es_e2_1.clear();
+    Op_Es_e2_2.clear();
+    Op_S4S9_1.clear();
+    Op_S4S9_2.clear();
+    Op_S1S9_1.clear();
+    Op_S1S9_2.clear();
+    Op_S2S9_1.clear();
+    Op_S2S9_2.clear();
+    Op_Time_1.clear();
+    Op_Time_2.clear();
+    Op_DeltaR_1.clear();
+    Op_DeltaR_2.clear();
+    Op_enG1_nocor.clear();
+    Op_enG2_nocor.clear();
+    Op_etaG1_nocor.clear();
+    Op_etaG2_nocor.clear();
+    Op_phiG1_nocor.clear();
+    Op_phiG2_nocor.clear();
+    Op_ptPi0_nocor.clear();
+    Op_mPi0_nocor.clear();
+    Op_enG1_true.clear();
+    Op_enG2_true.clear();
+    Op_iEtaiX_1.clear();
+    Op_iEtaiX_2.clear();
+    Op_iPhiiY_1.clear();
+    Op_iPhiiY_2.clear();
+    Op_iEta_1on5.clear();
+    Op_iEta_2on5.clear();
+    Op_iPhi_1on2.clear();
+    Op_iPhi_2on2.clear();
+    Op_iEta_1on2520.clear();
+    Op_iEta_2on2520.clear();
+    Op_iPhi_1on20.clear();
+    Op_iPhi_2on20.clear();
+
+  }
+
 
   if( !areLabelsSet_ && L1TriggerInfo_ ){
     
@@ -2255,6 +2313,7 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
   // since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
   // it would be better to use a histogram for CC which is already scaled, but this is more straightforward if we want to add other corrections
   float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
+  //float CC_meanRatioV1overV2MC = 1.0;
 
 
   for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
