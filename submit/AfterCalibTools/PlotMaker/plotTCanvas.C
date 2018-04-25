@@ -112,44 +112,64 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "pi0Gun_MC_EoverEtrue_foldSM_v4" ) {
+void plotTCanvas(const string& dirName = "AlCaP0_Run2017_F_CCiter0", 
+		 const Int_t iterNum = 0, 
+		 const Bool_t isMC_EoverEtrue = false,
+		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/"
+		 ) {
 
   //const string& filePath = "/afs/cern.ch/work/m/mciprian/myEcalElf/2017_ECALpro/calib2017/CMSSW_9_4_1/src/CalibCode/submit/tmp_rootFiles_EoverEtrue_foldSM/pi0Gun_MC_EoverEtrue_foldSM";
 
   const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
-  const Int_t& iterNum = 0;
   const Bool_t isEB = true;
-  const Bool_t isMC_EoverEtrue = true;
-  const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/" + dirName + "/fits/";
+  string outDir = outDir_base + "CC_EoverEtrue/" + dirName + "/fits/";
+  if (not isMC_EoverEtrue) outDir = outDir_base + "ICplot/" + dirName + Form("/iter_%d/",iterNum) + "fitResPlots/" + Form("%s/", isEB ? "Barrel" : "Endcap");
+
   system(Form("mkdir -p %s",outDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/mciprian/public/index.php %s",outDir.c_str()));
 
   vector< std::pair<Int_t, Int_t> > xtal_ieta_iphi;
-  xtal_ieta_iphi.push_back( std::make_pair( 1, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(65, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(85, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(15, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(35, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(55, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(75, 1) );
-  xtal_ieta_iphi.push_back( std::make_pair(85,10) );
-  xtal_ieta_iphi.push_back( std::make_pair(84, 4) );
-  xtal_ieta_iphi.push_back( std::make_pair(15,10) );
-  xtal_ieta_iphi.push_back( std::make_pair(35,10) );
-  xtal_ieta_iphi.push_back( std::make_pair(55,10) );
-  xtal_ieta_iphi.push_back( std::make_pair(75,10) );
 
-  xtal_ieta_iphi.push_back( std::make_pair( 8, 7) );
-  xtal_ieta_iphi.push_back( std::make_pair( 8, 8) );
-  xtal_ieta_iphi.push_back( std::make_pair( 8, 9) );
-  xtal_ieta_iphi.push_back( std::make_pair( 7, 7) );
-  xtal_ieta_iphi.push_back( std::make_pair( 7, 8) );
-  xtal_ieta_iphi.push_back( std::make_pair( 7, 9) );
-  xtal_ieta_iphi.push_back( std::make_pair( 9, 7) );
-  xtal_ieta_iphi.push_back( std::make_pair( 9, 8) );
-  xtal_ieta_iphi.push_back( std::make_pair( 9, 9) );
+  if (isMC_EoverEtrue) {
 
-  xtal_ieta_iphi.push_back( std::make_pair(81, 3) );
+    xtal_ieta_iphi.push_back( std::make_pair( 1, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(65, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(85, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(15, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(35, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(55, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(75, 1) );
+    xtal_ieta_iphi.push_back( std::make_pair(85,10) );
+    xtal_ieta_iphi.push_back( std::make_pair(84, 4) );
+    xtal_ieta_iphi.push_back( std::make_pair(15,10) );
+    xtal_ieta_iphi.push_back( std::make_pair(35,10) );
+    xtal_ieta_iphi.push_back( std::make_pair(55,10) );
+    xtal_ieta_iphi.push_back( std::make_pair(75,10) );
+
+    xtal_ieta_iphi.push_back( std::make_pair( 8, 7) );
+    xtal_ieta_iphi.push_back( std::make_pair( 8, 8) );
+    xtal_ieta_iphi.push_back( std::make_pair( 8, 9) );
+    xtal_ieta_iphi.push_back( std::make_pair( 7, 7) );
+    xtal_ieta_iphi.push_back( std::make_pair( 7, 8) );
+    xtal_ieta_iphi.push_back( std::make_pair( 7, 9) );
+    xtal_ieta_iphi.push_back( std::make_pair( 9, 7) );
+    xtal_ieta_iphi.push_back( std::make_pair( 9, 8) );
+    xtal_ieta_iphi.push_back( std::make_pair( 9, 9) );
+
+    xtal_ieta_iphi.push_back( std::make_pair(81, 3) );
+
+  } else {
+
+    xtal_ieta_iphi.push_back( std::make_pair(35, 197) );
+    xtal_ieta_iphi.push_back( std::make_pair(36, 197) );
+    xtal_ieta_iphi.push_back( std::make_pair(37, 197) );
+    xtal_ieta_iphi.push_back( std::make_pair(38, 197) );
+    xtal_ieta_iphi.push_back( std::make_pair(35, 200) );
+    xtal_ieta_iphi.push_back( std::make_pair(36, 200) );
+    xtal_ieta_iphi.push_back( std::make_pair(37, 200) );
+    xtal_ieta_iphi.push_back( std::make_pair(38, 200) );
+
+  }
 
   for (UInt_t i = 0; i < xtal_ieta_iphi.size(); ++i) {
     doPlotTCanvas(filePath, iterNum, dirName, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir);

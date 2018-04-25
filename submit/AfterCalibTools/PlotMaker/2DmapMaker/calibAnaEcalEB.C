@@ -74,7 +74,7 @@ void calibAnaEcalEB::setHistograms() {
       string match = "iter_";
       string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
       Int_t iterN_int = atoi(iterN_str.c_str());
-      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+      if (iterN_int > 2 || this->getDirName().find("_ext") != string::npos) 
 	th2dMinZaxisVector.push_back(0.134);
       else 
 	th2dMinZaxisVector.push_back(0.130);
@@ -96,14 +96,14 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
   th2dMaxZaxisVector.push_back(hBackground->GetBinContent(hBackground->GetMaximumBin()));
   th2dMaxZaxisVector.push_back(10e9);
   th2dMaxZaxisVector.push_back(10e9); // when this value is very large (bigger than the default) use the default to plot axis                  
-  th2dMaxZaxisVector.push_back(0.0125);//0.02                                                  
+  th2dMaxZaxisVector.push_back(0.005);//0.02                                                  
   if (Pi0orEta == "Pi0") {
     if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMaxZaxisVector.push_back(0.150);
     else {
       string match = "iter_";
       string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
       Int_t iterN_int = atoi(iterN_str.c_str());
-      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+      if (iterN_int > 2 || this->getDirName().find("_ext") != string::npos) 
 	th2dMaxZaxisVector.push_back(0.136);
       else 
 	th2dMaxZaxisVector.push_back(0.140);
@@ -232,7 +232,7 @@ void calibAnaEcalEB::Loop()
       string match = "iter_";
       string iterN_str = this->getIterNumber().substr(this->getIterNumber().find(match) + match.size());
       Int_t iterN_int = atoi(iterN_str.c_str());
-      if (iterN_int > 4 || this->getDirName().find("_ext") != string::npos) 
+      if (iterN_int > 2 || this->getDirName().find("_ext") != string::npos) 
 	mean_iphiProfile->GetYaxis()->SetRangeUser(0.134,0.136);
       else 
 	mean_iphiProfile->GetYaxis()->SetRangeUser(0.13,0.14);

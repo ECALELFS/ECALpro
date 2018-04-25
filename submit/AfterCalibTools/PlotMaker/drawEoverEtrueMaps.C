@@ -186,10 +186,10 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 }
 
 
-void drawEoverEtrueMaps(const string& outDir = "",
-			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
-			const Double_t mapMin = 1.0,
-			const Double_t mapMax = 1.12) 
+void drawEoverEtrueMaps(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1/",
+			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1/iter_0/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1_calibMap.root",
+			const Double_t mapMin = 0.98,
+			const Double_t mapMax = 1.02) 
 {
 
   system(Form("mkdir -p %s",outDir.c_str()));

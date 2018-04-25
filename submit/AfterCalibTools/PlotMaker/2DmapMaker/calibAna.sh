@@ -8,14 +8,14 @@
 ##############################################
 
 
-iter_ini=0                                                     # first iteration to use
-iter_fin=0                                                      # last iteration to use: it is included in sequence below
+iter_ini=6                                                     # first iteration to use
+iter_fin=6                                                      # last iteration to use: it is included in sequence below
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
 path="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"  # path to directory on eos
 #dirName="AlcaP0_Run2016G_sel16_reg12"                            # dirname (see CalibCode/submit/parameters.py)
-dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3"
+dirName="AlCaP0_Run2017_C_CCiter0"
 #tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
 tagName="${dirName}_"
 
@@ -44,17 +44,17 @@ for option in "$@";
 do
     if [ $option = "-c" ]; then
         onlyCompile=true
-    elif [ $option = "-nc" ]; then
+    elif [ $option = "--nc" ]; then
         doNotCompile=true
-    elif [ $option = "-noEB" ]; then
+    elif [ $option = "--noEB" ]; then
 	skipEB=true
-    elif [ $option = "-noEEp" ]; then
+    elif [ $option = "--noEEp" ]; then
 	skipEEp=true
-    elif [ $option = "-noEEm" ]; then
+    elif [ $option = "--noEEm" ]; then
 	skipEEm=true
-    elif [ $option = "-pi0" ]; then
+    elif [ $option = "--pi0" ]; then
 	Pi0orEta="Pi0"
-    elif [ $option = "-eta" ]; then
+    elif [ $option = "--eta" ]; then
 	Pi0orEta="Eta"
     fi
 done

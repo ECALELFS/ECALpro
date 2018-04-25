@@ -38,6 +38,30 @@
 
 using namespace std;
 
+void normalizeMapTo1InEtaRing(TH2* map_norm1etaring_new = NULL, const TH2* map_new = NULL, const Bool_t isEB = true) {
+
+  if (isEB) {
+
+    for (UInt_t ieta_iy = 1; ieta_iy <= map_new->GetNbinsX(); ++ieta_iy) {
+      
+      for (UInt_t iphi_ix = 1; iphi_ix <= map_new->GetNbinsX(); ++iphi_ix) {
+	
+	
+	
+      }
+
+    }
+
+  } else {
+
+    *map_norm1etaring_new = *map_new;
+
+  }
+
+
+}
+
+
 void drawICmap(const string& wwwPath = "",
 	       const string& eosPath = "", 
 	       const string& dirName = "", 
@@ -46,8 +70,8 @@ void drawICmap(const string& wwwPath = "",
 	       const string& ECALdetToSkip = "") 
 {
 
-  gStyle->SetPalette(107, 0);  // 1:raibow palette ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
-  gStyle->SetNumberContours(50); // default is 20 
+  gStyle->SetPalette(55, 0);  // 1:raibow palette ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
+  gStyle->SetNumberContours(100); // default is 20 
 
   string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
 
@@ -88,7 +112,7 @@ void drawICmap(const string& wwwPath = "",
 
 
   TH2F *mapEB_new = new TH2F("mapEB_new","EB calib coefficients", 360, 0.5, 360.5, 171,-85.5,85.5 );
-
+  TH2F *mapEB_norm1etaring_new = new TH2F("mapEB_norm1etaring_new","EB calib coefficients (norm. to 1 in #eta-ring", 360, 0.5, 360.5, 171,-85.5,85.5 );
   // profile along ieta. ieta goea from -85 to 85, exluding 0, for a total of 170 non empty bins (they are 171 including ieta = 0 which is actually empty)
   // in the profile, ieta = 30 is the bin with x from 29.5 to 30.5
   // simila logic for profile along iphi
@@ -105,15 +129,20 @@ void drawICmap(const string& wwwPath = "",
       
       for (Int_t j = 1; j <= nbinsY; j++) {
 	
-	mapEB_new->Fill(j,(i-86.0),mapEB->GetBinContent(i,j));
+	mapEB_new->SetBinContent(j,(i-86.0),mapEB->GetBinContent(i,j));
+
 	EB_ieta_profile->Fill((i-86.0),mapEB->GetBinContent(i,j));
 	EB_iphi_profile->Fill(j,mapEB->GetBinContent(i,j));
 	
       }
       
     }
+
+    normalizeMapTo1InEtaRing(mapEB_norm1etaring_new, mapEB_new, true);
     
   }
+
+
 
   string wwwAllPath = wwwPath + dirName + "/" + iterNumber + "/2DMaps/";
   string name = "";
