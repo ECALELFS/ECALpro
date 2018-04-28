@@ -263,7 +263,13 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     useOnlyEEClusterMatchedWithES_ = iConfig.getUntrackedParameter<bool>("useOnlyEEClusterMatchedWithES"); 
     //JSON
-    if( JSONfile_!="" ) myjson=new JSON( edm::FileInPath( JSONfile_.c_str() ).fullPath().c_str() );
+    if( JSONfile_!="" ) {
+      if (JSONfile_.find("/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/") != std::string::npos)
+	// read from absolute /afs/ path
+	myjson=new JSON( JSONfile_.c_str() );
+      else 
+	myjson=new JSON( edm::FileInPath( JSONfile_.c_str() ).fullPath().c_str() );      
+    }
     // shower shape parameters
     PCparams_.param_LogWeighted_ = true;
     PCparams_.param_T0_barl_     = 7.4;
