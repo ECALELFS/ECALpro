@@ -2060,6 +2060,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     float xmin(0.58), yhi(0.80), ypass(0.05);
     if(mode==EtaEB) yhi=0.30;
+    if(mode==Pi0EE) yhi=0.5;
     line = Form("Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
     lat.DrawLatex(xmin,yhi, line.c_str());
 
@@ -2821,6 +2822,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
   float xmin(0.15), yhi(0.8), ypass(0.05);
   if(mode==EtaEB) yhi=0.30;
+  if(mode==Pi0EE) yhi=0.5;
   if(mode==Pi0EB) {
     EBDetId thisebid(EBDetId::detIdFromDenseIndex(HistoIndex) ); 
     int ieta = foldInSuperModule_ ? thisebid.ietaSM() : thisebid.ieta();
