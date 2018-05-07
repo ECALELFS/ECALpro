@@ -1329,6 +1329,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
   //bool founded=false;
   for(EBRecHitCollection::const_iterator itb= ebHandle->begin(); itb != ebHandle->end(); ++itb, ++dc) 
   {
+
+    //cout << "Check EBRecHitCollection in FillEpsilonPlot::fillEBClusters" << endl;
     EBDetId tmp_id(itb->id());
     Occupancy_EB->Fill(tmp_id.ieta(), tmp_id.iphi());
     if(itb->energy() > EB_Seed_E_)  ebseeds.push_back( *itb );
@@ -1520,8 +1522,8 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     float e2x2 = *max_element( s4s9_tmp,s4s9_tmp+4);
     float s4s9 = e2x2/e3x3;
     math::XYZPoint clusPos( xclu/total_weight, 
-	  yclu/total_weight,
-	  zclu/total_weight ); 
+			    yclu/total_weight,
+			    zclu/total_weight ); 
 
     //cout << "seed #" << seed_c << " ptClus(before): " << e3x3/cosh(clusPos.eta()) << endl;
 
@@ -1588,7 +1590,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     vSeedTime.push_back( SeedTime ); 
   } //loop over seeds to make EB clusters
 
-  //std::cout << "### FillEpsilonPlot::fillEBClusters():   dc = " << dc << std::endl;
+  //std::cout << "### FillEpsilonPlot::fillEBClusters():   dc = " << dc << "   ebclusters.size() = " << ebclusters.size() << std::endl;
 
 
 }
@@ -2413,7 +2415,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
     throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
 
-  if (isDebug_) cout << "[DEBUG] Beginning cluster loop.."<< endl;
+  if (isDebug_) cout << "[DEBUG] Beginning cluster loop.. subDetId = " << subDetId << "   clusters.size() = " << clusters.size() << endl;
 
   // loop over clusters to make Pi0
   size_t i=0;
