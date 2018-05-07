@@ -135,15 +135,28 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     // could just use entries for which iloop is even, but then if we fix the bug we should remember to modify this patch
 
     TClass *cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("RooPlot")) continue;
+    if     ((draw_RooPlot0_Canvas1 == 0) && not cl->InheritsFrom("RooPlot")) continue;
+    else if((draw_RooPlot0_Canvas1 == 1) && not cl->InheritsFrom("TCanvas")) continue;
 
-    RooPlot * xframe = (RooPlot*) key->ReadObj();
-    if (!xframe) {
-      cout << "Warning: RooPlot object not found in file. Skipping and going on with next object" <<endl;
-      continue;
+
+    RooPlot * xframe = nullptr;
+    TCanvas * cframe = nullptr;
+      
+    if (draw_RooPlot0_Canvas1 == 0) {
+      xframe = (RooPlot*) key->ReadObj();
+      if (!xframe) {
+	cout << "Warning: RooPlot object not found in file. Skipping and going on with next object" <<endl;
+	continue;
+      }
+    } else {
+      cframe = (TCanvas*) key->ReadObj();
+      if (!cframe) {
+	cout << "Warning: TCanvas object not found in file. Skipping and going on with next object" <<endl;
+	continue;
+      }
     }
 
-    string rooplotname(xframe->GetName());
+    string rooplotname = Form("%s",draw_RooPlot0_Canvas1 ? cframe->GetName() : xframe->GetName());
     if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) == string::npos)) continue;
     string rooplotTitle = "";
     string canvasname = "";
@@ -185,7 +198,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       
       //rooplotTitle = "iR = " + ss_iR + " (iEta = " + ss_ieta + "  iPhi = " + ss_iphi + ")";
       rooplotTitle = "i#eta = " + ss_ieta + "  i#phi = " + ss_iphi;
-      c = new TCanvas("c",rooplotname.c_str());
+      c = new TCanvas("c",rooplotname.c_str(),700,700);
       canvasname = rooplotname + "_ieta" + ss_ieta + "_iphi" + ss_iphi + ".png";
     
     } else {
@@ -208,20 +221,25 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       //rooplotTitle = "iR = " + ss_iR + " (iX = " + ss_ix + "  iY = " + ss_iy + "  iZ = " + ss_iz + ")";
       if (Xtal_Iz[fitIndex] > 0) rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE+";
       else rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE-";
-      c = new TCanvas("c",rooplotname.c_str());
+      c = new TCanvas("c",rooplotname.c_str(),700,700);
       canvasname = rooplotname + "_ix" + ss_ix + "_iy" + ss_iy + "_iz" + ss_iz + ".png";
 
     }
       
-    if (xframe) {
+    if (draw_RooPlot0_Canvas1 == 0) {
       c->SetTickx(1);
       c->SetTicky(1);
       xframe->SetTitle(rooplotTitle.c_str());
       xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
       xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");
       xframe->Draw();
-      c->SaveAs((outputDIR + canvasname).c_str());
+    } else {
+      cframe->SetLeftMargin(0.16);
+      c->SetTickx(1);
+      c->SetTicky(1);
+      cframe->DrawClonePad();
     }
+    c->SaveAs((outputDIR + canvasname).c_str());
 
 
     // TFile* outputFile = NULL;
