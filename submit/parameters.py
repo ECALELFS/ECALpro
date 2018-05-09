@@ -15,9 +15,17 @@ EtaRingCalibEE     = False
 SMCalibEE          = False
 CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
-skipDummyHitsInFill = True  # in the Fill cfg there is a DummyHits producer that mediates between stream inputs and the rest of the sequence. It was written to avoid messages in the logfile (from Luca and Joshua, 2 years ago), like "Rechits not found "  when rechits are missing. If this options is True, DummyHits is skipped, and to avoid crashing the job the following line is added to the cfg in the process.options:
+
+# in the Fill cfg there is a DummyHits producer that mediates between stream inputs and the rest of the sequence. It was written to avoid messages in the logfile (from Luca and Joshua, 2 years ago), like "Rechits not found "  when rechits are missing. If this options is True, DummyHits is skipped, and to avoid crashing the job the following line is added to the cfg in the process.options:
 # SkipEvent = cms.untracked.vstring("ProductNotFound")
 # This is only needed since release CMSSW_10_1_1
+skipDummyHitsInFill = False
+import os
+if "CMSSW_VERSION" in os.environ:
+   release = os.environ["CMSSW_VERSION"]   # CMSSW_X_Y_Z[<_other>]
+   rel_main = release.split('_')[1]  # get first version number
+   if (int(rel_main) >= 10):
+      skipDummyHitsInFill = True
 
 #PATH
 eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian'
