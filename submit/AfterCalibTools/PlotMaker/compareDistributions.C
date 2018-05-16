@@ -174,8 +174,8 @@ void drawTH1pair(TH1* h1, TH1* h2,
   }
 
   //  CMS_lumi(canvas,Form("%.1f",lumi));
-  if (lumi < 0) CMS_lumi(canvas,"",false,false);
-  else CMS_lumi(canvas,Form("%.1f",lumi),false,false);
+  if (lumi < 0) CMS_lumi(canvas,"",true,false);
+  else CMS_lumi(canvas,Form("%.1f",lumi),true,false);
   setTDRStyle();
 
   pad2->Draw();
@@ -186,7 +186,7 @@ void drawTH1pair(TH1* h1, TH1* h2,
   frame->GetYaxis()->SetNdivisions(5);
   frame->GetYaxis()->SetTitle(ratioPadYaxisName.c_str());
   frame->GetYaxis()->SetTitleOffset(1.2);
-  // frame->GetYaxis()->SetTitleSize(0.15);
+  frame->GetYaxis()->SetTitleSize(0.05);
   frame->GetYaxis()->CenterTitle();
   frame->GetXaxis()->SetTitle(xAxisName.c_str());
   // if (setXAxisRangeFromUser) frame->GetXaxis()->SetRangeUser(xmin,xmax);
@@ -256,7 +256,9 @@ void adjustSettings_CMS_lumi(const string& outputDir = "./") {
 
 void compareDistributionsTwoFile(const string& outDir = "",			  
 				 const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
-				 const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root"
+				 const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
+				 const string& leg1 ="file 1",
+				 const string& leg2 ="file 2"
 			  ) 
 {
 
@@ -323,7 +325,7 @@ void compareDistributionsTwoFile(const string& outDir = "",
 
   for (UInt_t i = 0; i < myPlot.size(); ++i) {
     drawTH1pair(h1[i], h2[i], myPlot[i].getXaxisName(), "a.u.", myPlot[i].getCanvasName(), outDir, 
-		"Nxtal >= 7 (both #gamma)", "Nxtal == 9 (both #gamma)", "(>=7)/(==9)", -1.0, false); 
+		leg1, leg2, "ratio", -1.0, false); 
   }    
 
 }
@@ -386,11 +388,13 @@ void compareDistributionsSameFile(const string& outDir = "",
 void compareDistributions(const string& outDir = "",			  
 			  const Bool_t fromSameFile = true,
 			  const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
-			  const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root"		
+			  const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
+			  const string& leg1 ="file 1",
+			  const string& leg2 ="file 2"		
 			  ) 
 {
 
   if (fromSameFile) compareDistributionsSameFile(outDir, inputFile);
-  else              compareDistributionsTwoFile(outDir, inputFile, inputFile2);
+  else              compareDistributionsTwoFile(outDir, inputFile, inputFile2, leg1, leg2);
 
 }

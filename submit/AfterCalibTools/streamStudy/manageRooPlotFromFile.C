@@ -171,8 +171,8 @@ void drawRooPlotFromFile(const string& inputDir = "",
   RooHist* data = xframe->getHist("data");
   Double_t maxY = 1.2 * data->getYAxisMax();
   xframe->GetYaxis()->SetRangeUser(0,maxY);
-  xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
-  xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass [GeV/c^{2 }]");
+  xframe->GetYaxis()->SetTitle("#gamma#gamma pairs");
+  xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV)");
 
   // to add a dummy legend
   TH1D* h1 = new TH1D("h1","",1,0,1);
@@ -204,7 +204,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   xframe->GetXaxis()->SetLabelSize(0.04);
   xframe->GetXaxis()->SetTitleSize(0.05);
   xframe->GetYaxis()->SetTitleOffset(1.45);
-  xframe->GetYaxis()->SetTitleSize(0.05);
+  xframe->GetYaxis()->SetTitleSize(0.055);
   xframe->Draw();
 
   TLegend *leg = NULL;
@@ -219,23 +219,46 @@ void drawRooPlotFromFile(const string& inputDir = "",
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
   leg->AddEntry(h1,"data","PLE");
-  leg->AddEntry(h2,"S + B","LF");
+  //leg->AddEntry(h2,"S + B","LF");
+  leg->AddEntry(h2,"Fit model","LF");
   leg->AddEntry(h4,"Signal","LF");
   leg->AddEntry(h3,"Background","LF");
   leg->Draw("same");
+
+  // // for "ECAL Barrel"
+  // // try TLegend
   TLegend *leg2 = NULL;
-  leg2 = new TLegend(0.20,0.75,0.7,0.95);
-  // if (isEB) leg2 = new TLegend(0.50,0.1,0.99,0.3);
-  // //else  leg2 = new TLegend(0.31,0.11,0.8,0.31);
-  // else  leg2 = new TLegend(0.4,0.15,0.9,0.35);
-  leg2->SetFillColor(0);
-  leg2->SetFillStyle(0);
-  leg2->SetBorderSize(0);
-  if (isEB) leg2->SetHeader("ECAL Barrel Crystal");
-  else {
-    leg2->SetHeader(Form("#splitline{ECAL Endcap Crystal}{#eta = %.1f}",eta));
-  }
-  leg2->Draw("same");
+  // if (isEB) leg2 = new TLegend(0.12,0.75,0.48,0.90);
+  // else leg2 = new TLegend(0.12,0.75,0.5,0.90);
+  // // if (isEB) leg2 = new TLegend(0.50,0.1,0.99,0.3);
+  // // //else  leg2 = new TLegend(0.31,0.11,0.8,0.31);
+  // // else  leg2 = new TLegend(0.4,0.15,0.9,0.35);
+  // leg2->SetFillColor(0);
+  // leg2->SetFillStyle(0);
+  // leg2->SetBorderSize(0);
+  // if (isEB) {
+  //   leg2->AddEntry((TObject*) 0, Form("ECAL Barrel"),""); // remove Crystal
+  //   leg2->AddEntry((TObject*) 0, Form("#eta = %.1g",eta),""); // remove Crystal
+  // } else {
+  //   leg2->AddEntry((TObject*) 0, Form("ECAL Endcap"),""); // remove Crystal
+  //   leg2->AddEntry((TObject*) 0, Form("#eta = %.2g ",eta),""); // remove Crystal
+  // }
+  // leg2->Draw("same");
+
+  // or TLatex
+  TLatex lat;
+  std::string line = "";
+  lat.SetNDC();
+  lat.SetTextSize(0.045);
+  lat.SetTextFont(42);
+  lat.SetTextColor(1);
+  float xmin(0.22), yhi(0.85), ypass(0.05);
+  string detector = isEB ? "Barrel" : "Endcap";
+  line = Form("ECAL %s",detector.c_str());
+  lat.DrawLatex(xmin,yhi, line.c_str());
+  line = Form("#eta = %.2g",eta);
+  lat.DrawLatex(xmin,yhi-ypass, line.c_str());
+
   canvas->RedrawAxis("sameaxis");
 
   if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),true,false);
@@ -261,7 +284,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   delete h2; 
   delete h3; 
   delete leg;
-  delete leg2;
+  if (leg2 != 0) delete leg2;
 
   f->Close();
   delete f;
@@ -372,7 +395,7 @@ void printSignificanceInFile(const string& calibMapFile = "",
 
 
 void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6", 
-			   const string& outDirName = "plot_approve_2017_test", 
+			   const string& outDirName = "plot_approve_2017_testFin", 
 			   const bool usePi0 = true, 
 			   const Int_t skip_EB1_EE2 = 0, 
 			   const double lumi = 9.8, 
@@ -393,12 +416,13 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2017_DE_run304366_
 
   int EBxtalIndex = 30003;
   string EBfitFileIndex = "15"; // need to find a way to derive it from EBxtalIndex
+  double etaEB = 0.03; // would be negative but ok
   //int EExtalIndex = 12001; //12001;
   //string EEfitFileIndex = "6"; //"6"; // need to find a way to derive it from EExtalIndex
   //double etaEE = 2.5;
-  int EExtalIndex = 8000;     //14018; //8155; //12001;
-  string EEfitFileIndex = "4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
-  double etaEE = 1.82;// 1.63;// 1.83;
+  int EExtalIndex = 8155; //8000;     //14018; //8155; //12001;
+  string EEfitFileIndex = "4";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
+  double etaEE = 1.8;// 1.63;// 1.83;
 
   if (not isPi0) {
     EBxtalIndex = 30107;
@@ -443,7 +467,7 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2017_DE_run304366_
   delete ctmp;
 
   // here we go with the real part
-  if (skip_EB1_EE2 != 1) drawRooPlotFromFile(outputDirEB, true, inputFileNameEB, EBxtalIndex, isPi0, lumi);
+  if (skip_EB1_EE2 != 1) drawRooPlotFromFile(outputDirEB, true, inputFileNameEB, EBxtalIndex, isPi0, lumi, etaEB);
   if (skip_EB1_EE2 != 2) drawRooPlotFromFile(outputDirEE, false, inputFileNameEE, EExtalIndex, isPi0, lumi, etaEE);
 
   string calibMapFile = eosPath + dirName + "/iter_" + iter + "/" + dirName + "_calibMap.root";

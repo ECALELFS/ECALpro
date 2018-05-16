@@ -9,10 +9,10 @@ if [[ ${host} != *"lxplus"* ]]; then
 fi
 
 iter_ini=0
-iter_fin=4  # it is included in sequence below                                                                           
+iter_fin=2  # it is included in sequence below                                                                           
 
 eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
-dirName="AlCaP0_Run2017_C_CCiter0"
+dirName="AlCaP0_Run2018A_test_v2_ext1_fromIter0"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)
