@@ -84,7 +84,7 @@ if( isCRAB ):
 # open list of input files
 inputlist_f = open( inputlist_n )
 # read the list containing all the input files
-inputlistbase_v = inputlist_f.readlines()
+inputlistbase_v = [x for x in inputlist_f.readlines() if not x.lstrip().startswith('#')]  # do not consider commented line
 
 print "[calib] Total number of files to be processed: " , len(inputlistbase_v)
 print "[calib] Creating cfg Files"

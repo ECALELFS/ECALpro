@@ -20,14 +20,22 @@ fileJson = sys.argv[2]
 if not( os.path.isfile(fileJson) ):
    print "WARNING!!! " + str(fileJson) + " not found!"
 
-fileNEW = "purified_"+os.path.basename(fileList)
+fileListDir = os.path.dirname(fileList)
+if len(fileListDir):
+   fileListDir += "/"
+else:
+   fileListDir = "./"
+
+fileNEW = fileListDir + "purified_"+os.path.basename(fileList)
 
 if ( os.path.isfile(fileNEW) ):
    os.remove(fileNEW)
 #open
 Filelist_f = open( fileList )
 Jsonlist_f = open( fileJson )
+print "Creating filtered list file: %s" % fileNEW 
 NEW_f = open( fileNEW, 'w' )
+NEW_f.write("# filter with Json: %s\n" % fileJson)
 #Read
 Filelistbase_v = Filelist_f.readlines()
 Jsonlistbase_v = Jsonlist_f.readlines()
