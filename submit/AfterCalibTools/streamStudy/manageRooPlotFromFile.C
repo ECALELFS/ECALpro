@@ -171,7 +171,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   RooHist* data = xframe->getHist("data");
   Double_t maxY = 1.2 * data->getYAxisMax();
   xframe->GetYaxis()->SetRangeUser(0,maxY);
-  xframe->GetYaxis()->SetTitle("#gamma#gamma pairs");
+  xframe->GetYaxis()->SetTitle("Number of #gamma#gamma pairs");
   xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV)");
 
   // to add a dummy legend
