@@ -1,14 +1,19 @@
 #! /bin/bash
 
+thisYear="18"   # use 16, 17, 18
 dayMonthYear=`date +%d_%m_%Y`
 dataset="AlCaP0"
-runYear="2018"
-JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
+runYear="20${thisYear}"
+dataEra="B"  # keep "" or select an era
+JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions${thisYear}/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
+firstRunBrilcalc="317080" # can be empty, otherwise it is used to select a run range for the brilcalc command
+lastRunBrilcalc="318944" # can be empty, otherwise it is used to select a run range for the brilcalc command
 
 ecalproFolder="${CMSSW_BASE}/src/CalibCode/submit/"
 outputdir="${ecalproFolder}InputList/"
-outputfile="${dataset}_Run${runYear}_${dayMonthYear}.list"
+outputfile="${dataset}_Run${runYear}${dataEra}_${dayMonthYear}.list"
 fileList="${outputdir}${outputfile}"
+brilcalcOutputFile="${ecalproFolder}brilcalc_${outputfile/list/txt}"
 
 cd ${ecalproFolder}
 eval `scramv1 runtime -sh`
@@ -20,12 +25,29 @@ if [[ ${host} != *"lxplus"* ]]; then
 fi
 
 echo "Creating list of file running dasgoclient"
-dasgoclient -query="file dataset=/${dataset}/Run${runYear}*/RAW" > ${fileList}
+echo "dasgoclient -query=\"file dataset=/${dataset}/Run${runYear}${dataEra}*/RAW\""
+dasgoclient -query="file dataset=/${dataset}/Run${runYear}${dataEra}*/RAW" > ${fileList}
 echo "List created in ${fileList}"
 
+echo ""
 echo "Filtering list of files with json ${JsonFilter}"
 purifyCmd="python Utilities/Purify_List.py ${fileList} ${JsonFilter}"
 echo "${purifyCmd}"
 echo "${purifyCmd}" | bash
 
+echo ""
+echo "Checking integrated luminosity with brilcalc"
+brilcalcCmd="brilcalc lumi -u /fb -i ${JsonFilter} --without-checkjson"
+if [[ "X${firstRunBrilcalc}" != "X" ]]; then
+    brilcalcCmd="${brilcalcCmd} --begin ${firstRunBrilcalc}"
+fi
+if [[ "X${lastRunBrilcalc}" != "X" ]]; then
+    brilcalcCmd="${brilcalcCmd} --end ${lastRunBrilcalc}"
+fi
+echo "${brilcalcCmd}"
+echo "Will save output in file ${brilcalcOutputFile}"
+echo "${brilcalcCmd} > ${brilcalcOutputFile}" | bash
+
+echo ""
 echo "DONE!" 
+echo ""

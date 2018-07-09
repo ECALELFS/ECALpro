@@ -19,6 +19,7 @@ FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 s
 # in the Fill cfg there is a DummyHits producer that mediates between stream inputs and the rest of the sequence. It was written to avoid messages in the logfile (from Luca and Joshua, 2 years ago), like "Rechits not found "  when rechits are missing. If this options is True, DummyHits is skipped, and to avoid crashing the job the following line is added to the cfg in the process.options:
 # SkipEvent = cms.untracked.vstring("ProductNotFound")
 # This is only needed since release CMSSW_10_1_1
+# Update: the producer was fixed and skipEvent is not needed anymore. KEEP 'forceDummyHitsInFill' TRUE 
 forceDummyHitsInFill = True
 skipDummyHitsInFill = False
 import os
