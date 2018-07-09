@@ -697,7 +697,8 @@ void drawDistribution(TH1* h = NULL,
 		      const string& outDir = "",
 		      const Double_t& xmin = 0.95, const Double_t& xmax = 1.05,
 		      const Int_t& canvasSizeX = 700, const Int_t& canvasSizeY = 600,
-		      const Bool_t noStatBox = false
+		      const Bool_t noStatBox = false,
+		      const Double_t& ymin = 0, const Double_t& ymax = -1
 		      ) 
 {
 
@@ -713,6 +714,7 @@ void drawDistribution(TH1* h = NULL,
   h->GetXaxis()->SetTitleSize(0.06);
   h->GetXaxis()->SetTitleOffset(0.7);
   h->GetXaxis()->SetRangeUser(xmin,xmax);
+  if (ymax > ymin) h->GetYaxis()->SetRangeUser(ymin,ymax);
   h->GetYaxis()->SetTitle(yaxisName.c_str());
   h->GetYaxis()->SetTitleSize(0.06);
   h->GetYaxis()->SetTitleOffset(0.8);
