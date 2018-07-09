@@ -3,7 +3,7 @@
 dayMonthYear=`date +%d_%m_%Y`
 dataset="AlCaP0"
 runYear="2018"
-JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/DCSOnly/json_DCSONLY.txt"
+JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
 
 ecalproFolder="${CMSSW_BASE}/src/CalibCode/submit/"
 outputdir="${ecalproFolder}InputList/"

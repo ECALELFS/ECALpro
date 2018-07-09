@@ -140,7 +140,7 @@ void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPrel
       latex2->SetTextSize(0.65*pad->GetTopMargin());
       latex2->SetTextFont(52);
       latex2->SetTextAlign(11);
-      latex2->DrawLatex(lm+0.25+offset, 0.95, "Preliminary 2017");
+      latex2->DrawLatex(lm+0.25+offset, 0.95, "Preliminary 2018");
     }
     else{
       latex2->SetTextSize(0.6*pad->GetTopMargin());
@@ -149,9 +149,9 @@ void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPrel
       latex2->SetTextFont(52);
       latex2->SetTextAlign(11);    
       if(reduceSize)
-	latex2->DrawLatex(lm+0.235+offset, 0.85, "Preliminary 2017");
+	latex2->DrawLatex(lm+0.235+offset, 0.85, "Preliminary 2018");
       else
-	latex2->DrawLatex(lm+0.28+offset, 0.85, "Preliminary 2017");
+	latex2->DrawLatex(lm+0.28+offset, 0.85, "Preliminary 2018");
     }
   }
 }

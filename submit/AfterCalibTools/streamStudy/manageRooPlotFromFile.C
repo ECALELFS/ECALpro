@@ -210,7 +210,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   TLegend *leg = NULL;
   if (isPi0) {
     if (isEB) leg = new TLegend(0.6,0.7,0.95,0.9);
-    else leg = new TLegend(0.60,0.35,0.95,0.55);
+    else leg = new TLegend(0.60,0.25,0.95,0.45);
     //else leg = new TLegend(0.60,0.7,0.95,0.9);
   } else {
     leg = new TLegend(0.50,0.25,0.95,0.5);
@@ -394,11 +394,11 @@ void printSignificanceInFile(const string& calibMapFile = "",
 //===============================================
 
 
-void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6", 
-			   const string& outDirName = "plot_approve_2017_testFin", 
+void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2018A", 
+			   const string& outDirName = "plot_approve_2018__AlCaP0_Run2018A", 
 			   const bool usePi0 = true, 
 			   const Int_t skip_EB1_EE2 = 0, 
-			   const double lumi = 9.8, 
+			   const double lumi = 13.9, 
 			   const int whichIteration = 6, 
 			   const string& subdirTag = "") {
 
@@ -407,7 +407,7 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2017_DE_run304366_
   // gROOT->ProcessLine(".L saveRooPlotFromFile.C++");
   // gROOT->ProcessLine(".L makeRooPlotFromFile.C++");
 
-  string eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
+  string eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/";
 
   bool isPi0 = usePi0;
   // safety check in case user makes mistakes with dirName and isPi0
