@@ -119,10 +119,11 @@ void realDrawMapRatio(const string& outDir = "",
   TH1F* hratioDistr = new TH1F("hratioDistr","",50, 0.975,1.025);
 
   TH2F* hRatio = (TH2F*) mapEB_new->Clone("ratio");
-  hRatio->Divide(mapEB2_new);
-  for (Int_t i = 0; i < hRatio->GetNbinsX(); i++) {
-    for (Int_t j = 0; j < hRatio->GetNbinsY(); j++) {
-      hratioDistr->Fill(hRatio->GetBinContent(i,j));
+  divideEBmap(hRatio,mapEB_new,mapEB2_new,true,0);
+  //hRatio->Divide(mapEB2_new);
+  for (Int_t i = 1; i <= hRatio->GetNbinsX(); i++) {
+    for (Int_t j = 1; j <= hRatio->GetNbinsY(); j++) {
+      if (j != 86) hratioDistr->Fill(hRatio->GetBinContent(i,j));
     }
   }
 
@@ -177,10 +178,10 @@ void realDrawMapRatio(const string& outDir = "",
 }
 
 
-void makeICratio(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_F_CCiter0/iter_6/2DMaps/ratio/",
-		 const string& canvasSuffix = "this_Over_Run2017_C_CCiter0_iter7",
-		 const string& inputFile1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_F_CCiter0/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
-		 const string& inputFile2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_C_CCiter0/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
+void makeICratio(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018A/iter_6/2DMaps/ratio/",
+		 const string& canvasSuffix = "this_Over__AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC__iter6",
+		 const string& inputFile1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018A/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
+		 const string& inputFile2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
 		 const string& mapName1 = "mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",
 		 const string& mapName2 = "mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",
 		 const Double_t mapMin = 0.98,
