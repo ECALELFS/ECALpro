@@ -70,7 +70,7 @@ public:
   ~Convergence() {};
 
   void addExtension( string Path, int nIter, string Tag, int nJump=1 );
-  void run(const string& detectorToSkip);
+  void run(const string& detectorToSkip, const Bool_t& saveHistograms);
 
 private:
   Int_t getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside);
@@ -131,7 +131,7 @@ Int_t Convergence::getEtaRingInEE(Int_t &ix, Int_t &iy, Int_t &zside) {
 
 //=================================================
  
-void Convergence::run(const string& detectorToSkip = "no") {
+void Convergence::run(const string& detectorToSkip = "no", const Bool_t& saveHistograms = true) {
 
   // detectorToSkip can be "EB" or "EE" (if it is "no", nothing is skipped)  
 
@@ -426,8 +426,10 @@ void Convergence::run(const string& detectorToSkip = "no") {
         // float xmin(0.55), yhi(0.80);// ypass(0.05);
         // lat.DrawLatex(xmin,yhi, line);
         
-        myc1->SaveAs((out + ".pdf").Data());
-        myc1->SaveAs((out + ".png").Data());
+	if (saveHistograms) {
+	  myc1->SaveAs((out + ".pdf").Data());
+	  myc1->SaveAs((out + ".png").Data());
+	}
 
         //hmean=h1->GetMean();
         EB_RMS[i+iterOffset] = h1->GetRMS();
@@ -458,9 +460,11 @@ void Convergence::run(const string& detectorToSkip = "no") {
 	    stat->SetY1NDC(stat->GetY2NDC() - 1.5 * (stat->GetY2NDC() - stat->GetY1NDC()));
 	    stat->Draw();
 	  }        
-          myc1->SaveAs((out + ".pdf").Data());
-          myc1->SaveAs((out + ".png").Data());
-          
+	  if (saveHistograms) {
+	    myc1->SaveAs((out + ".pdf").Data());
+	    myc1->SaveAs((out + ".png").Data());
+	  }          
+
           delete h_etaRing[k];  // delete histogram before new iteration starts
           
         }        
@@ -554,6 +558,7 @@ Int_t main(int argc, char* argv[]) {
   Int_t nJump = atoi(argv[5]);
   string extension(argv[6]);
   string detectorToSkip(argv[7]);
+  Bool_t saveHistograms = atoi(argv[8]);
 
   Convergence *conv = new Convergence(eosPath, dirName, iter_num, tagName, nJump);
 
@@ -593,7 +598,7 @@ Int_t main(int argc, char* argv[]) {
 
   }
 
-  conv->run(detectorToSkip);
+  conv->run(detectorToSkip, saveHistograms);
 
   return 0;
 

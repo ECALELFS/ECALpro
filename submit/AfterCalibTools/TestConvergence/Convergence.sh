@@ -3,8 +3,8 @@
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
-dirName="AlCaP0_Run2018A"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="7"                                                          # number n of iterations (iter_0 to iter_{n-1})
+dirName="AlCaP0_Run2018B"                            # dirname (see CalibCode/submit/parameters.py)  
+iter_number="4"                                                          # number n of iterations (iter_0 to iter_{n-1})
 tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
@@ -14,9 +14,10 @@ nJump=1
 # leave extension as "noExtension" in you don't need to add additional steps that start from the one above
 # format is newDirName_ext1,newIterNumber_ext1,newTagName_ext1:newDirName_ext2,newIterNumber_ext2,newTagName_ext2 and so on (different extensions separated by : )
 extension="noExtension"
-extensionDirName="AlCaP0_Run2018A_test_v2_ext1_fromIter0"
-extension="${extensionDirName},3,${extensionDirName}_"
+extensionDirName="AlCaP0_Run2018B_ext1_fromIter3"
+extension="${extensionDirName},5,${extensionDirName}_"
 detectorToSkip="no"   # detectorToSkip = "no" to skip nothing, "EB" to skip EB, "EE" to skip EE
+saveHistograms=1  # = 0 to skip drawing histograms (will only save final convergence graph, saving space). Any value different from 0 is equivalent to true
 
 for option in "$@";
 do
@@ -24,8 +25,12 @@ do
         detectorToSkip="EB"
     elif [ "$option" = "-noEE" ]; then
         detectorToSkip="EE"
-    elif [ "$option" = "-noext" ]; then
+    fi
+    if [ "$option" = "-noext" ]; then
 	extension="noExtension"
+    fi
+    if [ "$option" = "-nohist" ]; then
+	saveHistograms=0
     fi
 done
 
@@ -48,7 +53,7 @@ fi
 echo "Compiling Convergence.C : success :)"
 
 echo "Now runnning Convergence.C"
-./Convergence $eosPath $dirName $iter_number $tagName $nJump $extension $detectorToSkip
+./Convergence $eosPath $dirName $iter_number $tagName $nJump $extension $detectorToSkip $saveHistograms
 
 if [ $? -ne 0 ]
 then
