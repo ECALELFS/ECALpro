@@ -1820,12 +1820,13 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     TString nameHistofit = "Fit_n_" + ind.str() + Form("_attempt%d",niter);
 
     // add canvas to save rooplot on top (will save this in the file)
-    TCanvas* canvas = new TCanvas((nameHistofit+Form("_c")).Data(),"",600,700);
+    TCanvas* canvas = new TCanvas((nameHistofit+Form("_c")).Data(),"",700,700);
     canvas->cd();
     canvas->SetTickx(1);
     canvas->SetTicky(1);
     canvas->cd();
     canvas->SetRightMargin(0.06);
+    canvas->SetLeftMargin(0.15);
 
     RooRealVar x("x","#gamma#gamma invariant mass",xlo, xhi, "GeV/c^2");
 

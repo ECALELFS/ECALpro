@@ -1,13 +1,13 @@
 #!/bin/bash                                                                        
                                                                                   
-iter_ini=6
-iter_fin=6  # it is included in sequence below                                   
+iter_ini=0
+iter_fin=0  # it is included in sequence below                                   
 
 eosPrefix="root://eoscms//eos/cms"                                        
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"                             
-eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
+eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/"
 #dirName="AlcaP0_Run2016G_sel16_reg12"
-dirName="AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6"
+dirName="AlCaP0_Run2018C"
 tagName="${dirName}_"
 draw_Rooplot0_canvas1=0
 

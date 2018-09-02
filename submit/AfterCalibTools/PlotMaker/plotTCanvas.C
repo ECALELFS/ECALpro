@@ -88,8 +88,9 @@ void doPlotTCanvas(const string& filePath = "",
 
   TCanvas* canvas = (TCanvas*) f->Get(canvasNameInFile.c_str());
   if (!canvas) {
-    cout << "Could not get canvas " << canvasNameInFile << endl;
-    exit(EXIT_FAILURE);
+    cout << "Could not get canvas " << canvasNameInFile << " (ieta,iphi = " << ieta << "," << iphi << ") " << endl;
+    cout << "Maybe the crystal is a dead one, for which there is no fit. Skipping this crystal" << endl;
+    return; //exit(EXIT_FAILURE);
   }
   canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.png",outDir.c_str(),canvas->GetName(),ieta,iphi));
   canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.pdf",outDir.c_str(),canvas->GetName(),ieta,iphi));
@@ -98,8 +99,9 @@ void doPlotTCanvas(const string& filePath = "",
   if (isMC_EoverEtrue) {
     canvas_g2 = (TCanvas*) f->Get(canvasNameInFile_g2.c_str());
     if (!canvas) {
-      cout << "Could not get canvas " << canvasNameInFile_g2 << endl;
-      exit(EXIT_FAILURE);
+      cout << "Could not get canvas " << canvasNameInFile_g2 << " (ieta,iphi = " << ieta << "," << iphi << ") " << endl;
+      cout << "Maybe the crystal is a dead one, for which there is no fit. Skipping this crystal" << endl;
+      return; //exit(EXIT_FAILURE);
     }
     canvas_g2->SaveAs(Form("%s/%s_ieta%d_iphi%d.png",outDir.c_str(),canvas_g2->GetName(),ieta,iphi));
     canvas_g2->SaveAs(Form("%s/%s_ieta%d_iphi%d.pdf",outDir.c_str(),canvas_g2->GetName(),ieta,iphi));
@@ -112,15 +114,16 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "AlCaP0_Run2017_F_CCiter0", 
+void plotTCanvas(const string& dirName = "AlCaP0_Run2018C_badRunExcluded", 
 		 const Int_t iterNum = 0, 
 		 const Bool_t isMC_EoverEtrue = false,
-		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/"
+		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/",
+		 const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/"
 		 ) {
 
   //const string& filePath = "/afs/cern.ch/work/m/mciprian/myEcalElf/2017_ECALpro/calib2017/CMSSW_9_4_1/src/CalibCode/submit/tmp_rootFiles_EoverEtrue_foldSM/pi0Gun_MC_EoverEtrue_foldSM";
 
-  const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
+  //const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
   const Bool_t isEB = true;
   string outDir = outDir_base + "CC_EoverEtrue/" + dirName + "/fits/";
   if (not isMC_EoverEtrue) outDir = outDir_base + "ICplot/" + dirName + Form("/iter_%d/",iterNum) + "fitResPlots/" + Form("%s/", isEB ? "Barrel" : "Endcap");
@@ -160,14 +163,19 @@ void plotTCanvas(const string& dirName = "AlCaP0_Run2017_F_CCiter0",
 
   } else {
 
-    xtal_ieta_iphi.push_back( std::make_pair(35, 197) );
-    xtal_ieta_iphi.push_back( std::make_pair(36, 197) );
-    xtal_ieta_iphi.push_back( std::make_pair(37, 197) );
-    xtal_ieta_iphi.push_back( std::make_pair(38, 197) );
-    xtal_ieta_iphi.push_back( std::make_pair(35, 200) );
-    xtal_ieta_iphi.push_back( std::make_pair(36, 200) );
-    xtal_ieta_iphi.push_back( std::make_pair(37, 200) );
-    xtal_ieta_iphi.push_back( std::make_pair(38, 200) );
+    xtal_ieta_iphi.push_back( std::make_pair(55, 187) );
+    xtal_ieta_iphi.push_back( std::make_pair(55, 188) );
+    xtal_ieta_iphi.push_back( std::make_pair(55, 189) );
+    xtal_ieta_iphi.push_back( std::make_pair(54, 187) );
+    xtal_ieta_iphi.push_back( std::make_pair(54, 188) );
+    xtal_ieta_iphi.push_back( std::make_pair(54, 189) );
+
+    xtal_ieta_iphi.push_back( std::make_pair(55, 195) );
+    xtal_ieta_iphi.push_back( std::make_pair(54, 195) );
+    xtal_ieta_iphi.push_back( std::make_pair(53, 195) );
+    xtal_ieta_iphi.push_back( std::make_pair(55, 196) );
+    xtal_ieta_iphi.push_back( std::make_pair(54, 196) );
+    xtal_ieta_iphi.push_back( std::make_pair(53, 196) );
 
   }
 

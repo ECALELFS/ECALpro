@@ -178,10 +178,11 @@ void realDrawMapRatio(const string& outDir = "",
 }
 
 
-void makeICratio(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018A/iter_6/2DMaps/ratio/",
-		 const string& canvasSuffix = "this_Over__AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC__iter6",
-		 const string& inputFile1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018A/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
-		 const string& inputFile2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
+void makeICratio(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_F_CCiter0/iter_6/2DMaps/ratio/",
+		 const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/ratioIC/AlCaP0_Run2018B_ext1_fromIter3_iter4__Over__AlCaP0_Run2018A_iter6/",
+		 const string& canvasSuffix = "ratioIC",
+		 const string& inputFile1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018B_ext1_fromIter3/iter_4/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
+		 const string& inputFile2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018A/iter_6/2DMaps/ICmaps/IC_work/calibMap_EB_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root",
 		 const string& mapName1 = "mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",
 		 const string& mapName2 = "mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",
 		 const Double_t mapMin = 0.98,
