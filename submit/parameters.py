@@ -17,28 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 
 #PATH
-eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian'
-#
-#adding following variables to use commands like "eos ls" and "eos ls -l" commands instead of cmsLs.
-#See also here for more details --> https://twiki.cern.ch/twiki/bin/view/CMSPublic/CERNStorageTools 
-#   
-#myeoscmd = '/afs/cern.ch/project/eos/installation/0.3.84-aquamarine/bin/eos.select '  #this call directly the eos command (note that eos is an alias, see link above)
-myeoscmd = 'eos ' # from July 2017 we can use eos on lxbatch from inside scripts 
-myeosls = myeoscmd + 'ls '  #to avoid use of cmsLs that is deprecated since January 2016   
-myeoslsl = myeosls + '-l '
-myeosmkdir = myeoscmd + 'mkdir '
-myeosstage = myeoscmd + 'cp '  
-#myeosstage = 'cmsStage -f '
-# I called it myeosstage instead of myeoscp to remember that it substitutes cmsStage command
-# as a convention, when adding commands like: command = myeoscmd + "some_option ", just leave a space AFTER the some_option, not before
-# note that code used cmsStage -f, but eos cp doesn't support -f option
-# also, code will copy *.root files from /tmp/ (where they are initially created) to eosPath, but eosPath must be preceeded by "root://eoscms/eos/cms" to have eos cp
-# work as expected. So the destination will be root://eoscms/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/... . For this reason, we define here
-prefixSourceFile = 'root://cms-xrd-global.cern.ch/'  # last / is left on purpose; tipically it can be '', but if source files are not on eos you need this prefix in PoolSource
-#myPrefixToEosPath = ''
-# will modify calibJobHandler.py with this prefix to destination
-#
-# end of my additions
+eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian'   # no '/' at the end, please
 #  
 #CRAB
 isCRAB           = False               # If not is batch
