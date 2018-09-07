@@ -36,8 +36,8 @@ isEoverEtrue = False if isMC==False else True # automatically set to False if is
 MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/purified_AlCaP0_Run2018C_19_08_2018.list' #purified_AlCaP0_Run2018_02_06_2018.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIFall17DRPremix-94X_mc2017_realistic_v10.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_Run2018C_badRunExcluded' if isMC==False else 'pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/purified_AlCaP0_Run2018D_07_09_2018.list' #purified_AlCaP0_Run2018_02_06_2018.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIFall17DRPremix-94X_mc2017_realistic_v10.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
+dirname          = 'AlCaP0_Run2018D_goldenJson_07_09_2018' if isMC==False else 'pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -413,7 +413,7 @@ linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='front
 
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True' if isMC==False else 'False'                                  # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '/afs/cern.ch/work/m/mciprian/myEcalElf/2018_ECALpro/first_28apr2018/CMSSW_10_1_1/src/CalibCode/FillEpsilonPlot/data/json_DCSONLY_testRun2018C.txt' #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/DCSOnly/json_DCSONLY.txt' if isMC==False else '' 
+json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-321777_13TeV_PromptReco_Collisions18_JSON.txt' #'/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/DCSOnly/json_DCSONLY.txt' if isMC==False else '' 
 useJsonFilterInCpp = False  # True: use json filter in cfg python wrapper calling FillEpsilonPlots.cc; True: use json filter inside FillEpsilonPlots.cc
 doEnenerScale      = 'False'
 doIC               = 'False'                                   # Member of Recalibration Module
@@ -424,7 +424,7 @@ triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else '
 L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
 useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False' # this seems to add obsolete code, keep False
-globaltag          = '101X_dataRun2_Prompt_v9' if isMC==False else '94X_mc2017_realistic_v10' # old '93X_mc2017_realistic_v3' 
+globaltag          = '101X_dataRun2_Prompt_v11' if isMC==False else '94X_mc2017_realistic_v10' # old '93X_mc2017_realistic_v3' 
 globaltag_New      = True  # keep True, it makes the code use the newer database version (v2) for the GT
 FROMDIGI           = True if isMC==False else False
 DigiCustomization  = False   # keep this False since CMSSW_7_4_15, there is a module in CMSSW providing the bunchSpacing.  ===> NEW - 03/05/2016 - : can set it True because to run (at least) on data, that introduces --> outputfile.write("process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False\n") <-- in fillEpsilonPlot*.py file, which is needed to run without errors, but it also add another line to activate process.ecalMultiFitUncalibRecHit.algoPSet.activeBXs, so keep False for now

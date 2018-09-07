@@ -5,7 +5,8 @@ dayMonthYear=`date +%d_%m_%Y`
 dataset="AlCaP0"
 runYear="20${thisYear}"
 dataEra="D"  # keep "" or select an era
-JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions${thisYear}/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
+#JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions${thisYear}/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
+JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-321777_13TeV_PromptReco_Collisions18_JSON.txt"
 firstRunBrilcalc="320394" # can be empty, otherwise it is used to select a run range for the brilcalc command
 lastRunBrilcalc="" # can be empty, otherwise it is used to select a run range for the brilcalc command
 
@@ -37,7 +38,7 @@ echo "${purifyCmd}" | bash
 
 echo ""
 echo "Checking integrated luminosity with brilcalc"
-brilcalcCmd="brilcalc lumi -u /fb -i ${JsonFilter} --without-checkjson " #--normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_BRIL.json" # normtag_PHYSICS.json 
+brilcalcCmd="brilcalc lumi -u /fb -i ${JsonFilter} --without-checkjson --normtag /cvmfs/cms-bril.cern.ch/cms-lumi-pog/Normtags/normtag_BRIL.json" # normtag_PHYSICS.json 
 if [[ "X${firstRunBrilcalc}" != "X" ]]; then
     brilcalcCmd="${brilcalcCmd} --begin ${firstRunBrilcalc}"
 fi
