@@ -25,6 +25,7 @@ class EcalCalibMapBase {
         virtual void loadCalibMapFromFile(const char* cfile = "", const bool useGenPhoton2forEoverEtrue = false) =0;
         virtual int getNRegionsEB() =0;
         virtual int getNRegionsEE() =0;
+	virtual ~EcalCalibMapBase(){}
 };
 
 
