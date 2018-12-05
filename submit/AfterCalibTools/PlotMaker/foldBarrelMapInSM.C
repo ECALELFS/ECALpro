@@ -50,6 +50,10 @@ using namespace std;
 // 1) the name of the folder where to store the output plots
 // 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
 
+///////////////////////
+// OBSOLETE: now I use makeICmapAndDump.C
+//////////////////////
+
 //====================================================
 
 void foldBarrelMapInSM(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_6/2DMaps/ICmaps/norm1etaring/",

@@ -11,7 +11,7 @@ using namespace std;
 // 1) the name of the folder where to store the output plots
 // 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
  
-// the map in the calibMap filehas ieta on x axis, but we produce the map with iphi on x axis (for full EB)
+// the map in the calibMap file has ieta on x axis, but we produce the map with iphi on x axis (for full EB)
 // we keep ieta on x axis for a single SM
 
 void realDrawMapProduct(const string& outDir = "",
@@ -89,7 +89,7 @@ void realDrawMapProduct(const string& outDir = "",
   copyMapAllEB(hProduct,mapEB_new,true);
   hProduct->Multiply(mapEB2_new);
 
-  // this map is useful if the one in all EB is obtained folding all SM, so we plot one single SM to make it beter visible
+  // this map is useful if the one in all EB is obtained folding all SM, so we plot one single SM to make it better visible
   TH2F* hProduct_SM = new TH2F("hProduct_SM","CC product, single SM", 85, 0.5, 85.5, 20, 0.5, 20.5);
 
   for (Int_t iphi = 1; iphi <= 20; ++iphi) {

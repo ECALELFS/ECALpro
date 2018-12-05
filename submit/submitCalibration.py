@@ -64,7 +64,7 @@ if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
    folderCreation.communicate()
 else:
    print "[calib] Creating folders on EOS"
-   folderCreation = subprocess.Popen([myeosmkdir + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
+   folderCreation = subprocess.Popen(['mkdir -p ' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
    folderCreation.communicate()
 
 for iter in range(nIterations):
@@ -73,8 +73,8 @@ for iter in range(nIterations):
        folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
     else:
-       print "[calib]  ---  eos mkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
-       folderCreation = subprocess.Popen([myeosmkdir + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
+       print "[calib]  ---  mkdir " + eosPath + '/' + dirname + '/iter_' + str(iter)
+       folderCreation = subprocess.Popen(['mkdir ' + eosPath + '/' + dirname + '/iter_' + str(iter)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
 
 #-------- fill cfg files --------#
@@ -89,11 +89,12 @@ inputlistbase_v = [x for x in inputlist_f.readlines() if not x.lstrip().startswi
 print "[calib] Total number of files to be processed: " , len(inputlistbase_v)
 print "[calib] Creating cfg Files"
 
+ijob = 0
 for iter in range(nIterations):
     print "[calib]  '-- Fill::Iteration " + str(iter)
     # copy by value and not by reference
     inputlist_v = inputlistbase_v[:]
-    ijob=0
+    ijob = 0
 
     # Creating different list for hadd
     NrelJob = float(len(inputlist_v)) / float(ijobmax)

@@ -1,5 +1,6 @@
 from parameters import *
 ####from parameters_NEWESTCRAB import *
+import os
 
 def printFillCfg1( outputfile ):
     outputfile.write("useHLTFilter = " + useHLTFilter + "\n")
@@ -219,7 +220,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         if json_file.startswith('/afs/cern.ch/'):
             outputfile.write("process.source.lumisToProcess = LumiList.LumiList(filename = json_file).getVLuminosityBlockRange()\n")
         else:
-            outputfile.write("process.source.lumisToProcess = LumiList.LumiList(filename = 'CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
+            CMSSW_BASE=os.getenv("CMSSW_BASE")
+            outputfile.write("process.source.lumisToProcess = LumiList.LumiList(filename = '" + CMSSW_BASE + "/src/CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
 
 
     outputfile.write("\n")

@@ -3,7 +3,7 @@
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
-dirName="AlCaP0_Run2018C"                            # dirname (see CalibCode/submit/parameters.py)  
+dirName="AlCaP0_Run2018D_goldenJson_13_09_2018"                            # dirname (see CalibCode/submit/parameters.py)  
 iter_number="7"                                                          # number n of iterations (iter_0 to iter_{n-1})
 tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 

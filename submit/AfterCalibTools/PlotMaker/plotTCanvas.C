@@ -114,7 +114,7 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "AlCaP0_Run2018C_badRunExcluded", 
+void plotTCanvas(const string& dirName = "AlCaP0_Run2018D_goldenJson_13_09_2018", 
 		 const Int_t iterNum = 0, 
 		 const Bool_t isMC_EoverEtrue = false,
 		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/",
