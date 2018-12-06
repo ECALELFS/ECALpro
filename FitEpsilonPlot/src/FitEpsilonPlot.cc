@@ -2003,8 +2003,8 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     xframe->SetName((nameHistofit+Form("_rp")).Data());
     xframe->SetTitle(h->GetTitle());
     dh.plotOn(xframe, Name("data"));
-    model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
-    model->plotOn(xframe,Components(gaus),LineStyle(kDashed), LineColor(kGreen+1));
+    model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed), Name("bkgOnly"));
+    model->plotOn(xframe,Components(gaus),LineStyle(kDashed), LineColor(kGreen+1), Name("sigOnly"));
     model->plotOn(xframe, Name("model"));
 
     // TMAth::Prob() uses Chi2, not reduced Chi2, while xframe->chiSquare() returns the reduced Chi2
