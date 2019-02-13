@@ -103,11 +103,13 @@ void overlayMassPlot(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   Double_t lumi = 12.9;
 
   Bool_t isPi0 = true;
-  Bool_t isEB = true;
+  Bool_t isEB = false;
   
   string subdet = isEB ? "Barrel" : "Endcap";
   string detector = Form("ECAL %s", subdet.c_str());
   Double_t eta = isEB ? -0.82 : 1.63;  
+  Double_t sigmaOverM_multifit = isEB ? 9.57 : 11.9;
+  Double_t sigmaOverM_weight   = isEB ? 10.6 : 14.8;
 
   string id1 = isEB ? "14007" : "14018";
   string id2 = isEB ? "14007" : "14018";
@@ -252,13 +254,29 @@ void overlayMassPlot(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   float xmin(0.22), yhi(0.85), ypass(0.05);
   line = Form("%s",detector.c_str());
   lat.DrawLatex(xmin,yhi, line.c_str());
-  line = Form("#eta = %.2g",eta);
-  lat.DrawLatex(xmin,yhi-ypass, line.c_str());
+  //line = Form("#eta = %.2g",eta);
+  //lat.DrawLatex(xmin,yhi-ypass, line.c_str());
+
+  TLatex lat2;
+  lat2.SetNDC();
+  lat2.SetTextSize(0.038);
+  lat2.SetTextFont(42);
+  lat2.SetTextColor(1);
+  float xmin2 = isEB ? 0.22 : 0.62;
+  float yhi2  = isEB ? 0.8 : 0.85;
+  //line = "method: #sigma / #mu";
+  //  line = Form("multifit: #sigma/M = %.3g%%",sigmaOverM_multifit);
+  // lat2.DrawLatex(xmin2,yhi2, line.c_str());
+  line = Form("#sigma/M_{multifit} = %.1f%%",sigmaOverM_multifit);
+  lat2.DrawLatex(xmin2,yhi2, line.c_str());
+  line = Form("#sigma/M_{weight} = %.1f%%",sigmaOverM_weight);
+  lat2.DrawLatex(xmin2,yhi2-ypass, line.c_str());
+
 
   canvas->RedrawAxis("sameaxis");
 
-  if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),true,false);
-  else CMS_lumi(canvas,Form("%.1f",lumi),true,false);
+  if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),true,true);
+  else CMS_lumi(canvas,Form("%.1f",lumi),true,true);
   setTDRStyle();
   
   canvas->SaveAs((outdir + canvasname + ".pdf").c_str());

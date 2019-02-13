@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess, time, sys, os, string
+import ROOT
 
 #######
 #fileList: list of files
@@ -11,6 +12,8 @@ import subprocess, time, sys, os, string
 if len(sys.argv)<3:
    print "Usage: Purify_List.py filelist.txt json.txt"
    exit(0)
+
+checkFileIsGood = True
 
 #file name
 fileList = sys.argv[1]
@@ -40,9 +43,11 @@ NEW_f.write("# filter with Json: %s\n" % fileJson)
 Filelistbase_v = Filelist_f.readlines()
 Jsonlistbase_v = Jsonlist_f.readlines()
 
+nBadFiles = 0
 for Nline in range(len(Filelistbase_v)):
   IsThere=False
   line = Filelistbase_v[Nline]
+  if line.startswith("#"): continue
   num = line.index('000') #assume .../v1/000/251/028/...
   newLine  = line[int(num+4):int(num+7)]
   newLine += line[int(num+8):int(num)+11]
@@ -51,9 +56,18 @@ for Nline in range(len(Filelistbase_v)):
       JsonLine = str(Jsonlistbase_v[NlineJson]).strip('\n')
       if( string.find(str(JsonLine),str(newLine))>0 ): IsThere=True
   if(IsThere):
-     #print "There is!"
+     #print "There is!"     
+     if checkFileIsGood:
+        # now check whether I can open the file
+        tf = ROOT.TFile.Open("root://cms-xrd-global.cern.ch/" + Filelistbase_v[Nline])
+        if not tf or not tf.IsOpen():
+           #print "Skipping problematic file" + Filelistbase_v[Nline]
+           nBadFiles += 1
+           continue
      NEW_f.write(Filelistbase_v[Nline])
   #else:
      #print "There isn't."
 
+print "I found {n} bad files".format(n=nBadFiles)
+print ""
 print "---THE END---"

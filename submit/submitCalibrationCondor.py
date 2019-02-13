@@ -2,12 +2,12 @@
 
 import subprocess, time, sys, os
 from methods import *
-#from parameters import *
 
 from optparse import OptionParser                                                                                                                   
                                                                                           
 parser = OptionParser(usage="%prog [options]")    
 parser.add_option("-c", "--create",           dest="create", action="store_true", default=False, help="Do not submit the jobs, only create the subfolders")
+parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=False, help="Do not submit a job to manage the daemon, do it locally")
 (options, args) = parser.parse_args()
 pwd = os.getcwd()
 
@@ -28,6 +28,7 @@ if ContainmentCorrection == '2017reg':
 #-------- create folders --------#
 
 workdir = pwd+'/'+dirname
+condordir = workdir + "/condor_files/"
 cfgFillPath = workdir + '/cfgFile/Fill'
 cfgFitPath  = workdir + '/cfgFile/Fit'
 cfgHaddPath  = workdir + '/src/hadd'
@@ -36,6 +37,11 @@ srcPath  = workdir + '/src'
 print "[calib] Creating local folders (" + dirname + ")"
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
+folderCreation = subprocess.Popen(['mkdir -p ' + condordir], stdout=subprocess.PIPE, shell=True);
+folderCreation.communicate()
+for it in range(nIterations):
+    folderCreation = subprocess.Popen(['mkdir -p ' + condordir + "/iter_" + str(it)], stdout=subprocess.PIPE, shell=True);
+    folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/cfgFile/'], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/CRAB_files/'], stdout=subprocess.PIPE, shell=True);
@@ -45,9 +51,11 @@ for it in range(nIterations):
     folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + cfgFitPath], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
-for it in range(nIterations):    
-    folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/log/iter_' + str(it)], stdout=subprocess.PIPE, shell=True);
-    folderCreation.communicate()
+# created in calibJobHandlerCondor.py to follow the flow from local folders
+#for it in range(nIterations):    
+#    for dirtype in ["Fill", "Hadd", "Final_Hadd", "Fit"]:
+#        folderCreation = subprocess.Popen(['mkdir -p ' + workdir + '/log/' + dirtype + '/iter_' + str(it)], stdout=subprocess.PIPE, shell=True);
+#        folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + srcPath ], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 for it in range(nIterations):
@@ -271,13 +279,8 @@ env_script_f = open(env_script_n, 'w')
 env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("ulimit -c 0\n")
-#if(is2012):
-#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc462\n")
-#else:
-#   env_script_f.write("export SCRAM_ARCH=slc5_amd64_gcc434\n")
-
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-env_script_f.write( "python " + pwd + "/calibJobHandler.py " + str(njobs) + " " + queue + "\n")
+env_script_f.write( "python " + pwd + "/calibJobHandlerCondor.py " + str(njobs) + " " + queue + "\n")
 env_script_f.write( "rm -rf " + pwd + "/core.*\n")
 env_script_f.close()
 
@@ -285,22 +288,50 @@ env_script_f.close()
 changePermission = subprocess.Popen(['chmod 777 ' + env_script_n], stdout=subprocess.PIPE, shell=True);
 debugout = changePermission.communicate()
 
+dummy_exec = open(condordir+'/dummy_exec_daemon.sh','w')
+dummy_exec.write('#!/bin/bash\n')
+dummy_exec.write('bash $*\n')
+dummy_exec.close()
+
+condor_file_name = condordir+'/condor_submit_daemon.condor'
+condor_file = open(condor_file_name,'w')
+# line 'next_job_start_delay = 1' not needed here
+condor_file.write('''Universe = vanilla
+Executable = {de}
+use_x509userproxy = $ENV(X509_USER_PROXY)
+Log        = {ld}/$(ProcId).log
+Output     = {ld}/$(ProcId).out
+Error      = {ld}/$(ProcId).error
+getenv      = True
+environment = "LS_SUBCWD={here}"
+request_memory = 4000
++MaxRuntime = 604800
++JobBatchName = "ecalpro_daemon"\n
+'''.format(de=os.path.abspath(dummy_exec.name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
+
+condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(env_script_n)))
+condor_file.close()
+
+
 # configuring calibration handler
 
+submit_s = 'condor_submit {cdf} '.format(cdf=condor_file_name)
 if not options.create:
     print "[calib] Number of jobs created = " + str(njobs)
     print "[calib] Submitting calibration handler"
-    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
-    print "[calib]  '-- " + submit_s
     # submitting calibration handler
-    submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-    output = (submitJobs.communicate()[0]).splitlines()
-    print "[calib]  '-- " + output[0]
+    if options.daemonLocal:
+        print "[calib]  '-- source " + os.path.abspath(env_script_n)
+        os.system("source " + os.path.abspath(env_script_n))
+    else:        
+        print "[calib]  '-- " + submit_s
+        submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
+        output = (submitJobs.communicate()[0]).splitlines()
+        print "[calib]  '-- " + output[0]
 
     #    print "usage thisPyton.py pwd njobs queue"
 else:
     print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
-    submit_s = 'bsub -q ' + queueForDaemon + ' -o ' + workdir + '/calibration.log "source ' + env_script_n + '"'
     print "To run the whole code use the following command."
     print submit_s
 

@@ -1,5 +1,4 @@
 from parameters import *
-####from parameters_NEWESTCRAB import *
 import os
 
 def printFillCfg1( outputfile ):
@@ -37,7 +36,7 @@ def printFillCfg1( outputfile ):
         outputfile.write("                                     endcapHitProducer      = cms.InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE'),\n")
         outputfile.write("                                     barrelRecHitCollection = cms.untracked.string('dummyBarrelRechits'),\n")
         outputfile.write("                                     endcapRecHitCollection = cms.untracked.string('dummyEndcapRechits'),\n")
-        outputfile.write("                                     # digis\n")                                                                                                                               
+        outputfile.write("                                     # digis\n")                                                         
         outputfile.write("                                     barrelDigis            = cms." + EBdigi + ",\n")
         outputfile.write("                                     endcapDigis            = cms." + EEdigi + ",\n")
         outputfile.write("                                     barrelDigiCollection   = cms.untracked.string('dummyBarrelDigis'),\n")
@@ -425,10 +424,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     outputfile.write("process.fitEpsilon = cms.EDAnalyzer('FitEpsilonPlot')\n")
     outputfile.write("process.fitEpsilon.OutputFile = cms.untracked.string('" + NameTag + EBorEE + "_" + str(nFit) + "_" + calibMapName + "')\n")
     outputfile.write("process.fitEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('$TMPDIR')\n")
-    else:
-        outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
+    outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
     outputfile.write("process.fitEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
     outputfile.write("process.fitEpsilon.NInFit = cms.untracked.int32(" + str(nIn) + ")\n")
     outputfile.write("process.fitEpsilon.NFinFit = cms.untracked.int32(" + str(nFin) + ")\n")
@@ -484,11 +480,6 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
 
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
-        outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-        # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
-        outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     # if using RooMinuit fo the fit (obsolete according too RooFit guide), then save some pieces from stdout to check status of fit
@@ -543,14 +534,8 @@ def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, nu
     destinationWithFinalSlash = destination 
     if not destinationWithFinalSlash.endswith("/"):
         destinationWithFinalSlash = destination + "/"
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
+    outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")
@@ -566,14 +551,8 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     destinationWithFinalSlash = destination 
     if not destinationWithFinalSlash.endswith("/"):
         destinationWithFinalSlash = destination + "/"
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
+    outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")

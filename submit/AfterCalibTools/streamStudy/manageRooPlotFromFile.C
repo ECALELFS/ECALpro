@@ -108,7 +108,7 @@ void getRooplotWithIndex(const string& fitResFileOnEos = "",
     xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass [GeV/c^{2}]");
   }
 
-  TFile* outputFile = new TFile((outputDIR + outputFileName).c_str(),"UPDATE");
+  TFile* outputFile = new TFile((outputDIR + outputFileName).c_str(),"RECREATE");
   if (!outputFile || outputFile->IsZombie()) {
     cout << "Error: file not opened. Exit" << endl;
     exit(EXIT_FAILURE);
@@ -168,7 +168,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   canvas->SetRightMargin(0.06);
   canvas->SetLeftMargin(0.18);
 
-  RooHist* data = xframe->getHist("data");
+  RooHist* data = xframe->getHist("data"); // can take fit model with (RooCurve*) xframe->getCurve("model")
   Double_t maxY = 1.2 * data->getYAxisMax();
   xframe->GetYaxis()->SetRangeUser(0,maxY);
   xframe->GetYaxis()->SetTitle("Number of #gamma#gamma pairs");
@@ -267,17 +267,18 @@ void drawRooPlotFromFile(const string& inputDir = "",
   
   canvas->SaveAs((inputDir + canvasname + ".pdf").c_str());
   canvas->SaveAs((inputDir + canvasname + ".png").c_str());
+  canvas->SaveAs((inputDir + canvasname + ".C").c_str());
+  canvas->SaveAs((inputDir + canvasname + ".root").c_str());
 
-  TFile* outputFile = new TFile((inputDir + canvasname + ".root").c_str(),"RECREATE");
-  if (!outputFile || outputFile->IsZombie()) {
-    cout << "Error: file not opened. Exit" << endl;
-    exit(EXIT_FAILURE);
-  }
-  outputFile->cd();  
-  canvas->Write();
-  outputFile->Close();
-  delete outputFile;
-
+  // TFile* outputFile = new TFile((inputDir + canvasname + ".root").c_str(),"RECREATE");
+  // if (!outputFile || outputFile->IsZombie()) {
+  //   cout << "Error: file not opened. Exit" << endl;
+  //   exit(EXIT_FAILURE);
+  // }
+  // outputFile->cd();  
+  // canvas->Write();
+  // outputFile->Close();
+  // delete outputFile;
 
   delete canvas;
   delete h1; 
@@ -414,15 +415,15 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2018A",
   if (dirName.find("AlCaP0") != string::npos) isPi0 = true;
   if (dirName.find("AlCaEta") != string::npos) isPi0 = false;
 
-  int EBxtalIndex = 30003;
-  string EBfitFileIndex = "15"; // need to find a way to derive it from EBxtalIndex
-  double etaEB = 0.03; // would be negative but ok
+  int EBxtalIndex = 14007; // 30003;
+  string EBfitFileIndex = "7"; // 15  // need to find a way to derive it from EBxtalIndex, crystals are packed in bunches of 2000, might use (int) EBxtalIndex/2000
+  double etaEB = -0.82; // 0.03; // would be negative but ok
   //int EExtalIndex = 12001; //12001;
   //string EEfitFileIndex = "6"; //"6"; // need to find a way to derive it from EExtalIndex
   //double etaEE = 2.5;
-  int EExtalIndex = 8155; //8000;     //14018; //8155; //12001;
-  string EEfitFileIndex = "4";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
-  double etaEE = 1.8;// 1.63;// 1.83;
+  int EExtalIndex = 14018; //6002; //8155; //8000;     //14018; //8155; //12001;
+  string EEfitFileIndex = "7";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
+  double etaEE = 1.63; //1.68; //1.8;// 1.63;// 1.83;
 
   if (not isPi0) {
     EBxtalIndex = 30107;

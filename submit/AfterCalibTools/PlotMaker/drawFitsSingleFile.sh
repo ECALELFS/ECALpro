@@ -15,14 +15,14 @@ useMergedFitFile=false # when true, no need to specify a file index
 #BarrelOrEndcap="Barrel"  # Barrel, Endcap
 #fileIndex=14 # index for EB goes from 0 to 30 and for EE it goes from 0 to 7
 fileIndexIni=0
-fileIndexFin=5
+fileIndexFin=7
 BarrelOrEndcap="Endcap"  # Barrel, Endcap
 
 nFitsToPlot=20  # there are at most 2000 plots in each file
 
 # if fitIndexToPlot>=0, look for this specific index in the rooplots in the file and just plot that one
 # if negative just plot nFistToPlot plots
-#fitIndexToPlot="54049"  
+#fitIndexToPlot="30003"  
 fitIndexToPlot="-1"  
 
 for i in `seq $iter_ini $iter_fin`

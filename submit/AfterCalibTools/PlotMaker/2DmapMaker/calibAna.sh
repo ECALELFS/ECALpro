@@ -8,8 +8,8 @@
 ##############################################
 
 
-iter_ini=6                                                    # first iteration to use
-iter_fin=6                                                      # last iteration to use: it is included in sequence below
+iter_ini=0                                                    # first iteration to use
+iter_fin=0                                                      # last iteration to use: it is included in sequence below
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"  # path to directory on eos
 #path="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/"  # path to directory on eos
