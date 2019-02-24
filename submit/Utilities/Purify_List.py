@@ -13,7 +13,8 @@ if len(sys.argv)<3:
    print "Usage: Purify_List.py filelist.txt json.txt"
    exit(0)
 
-checkFileIsGood = True
+checkFileIsGood = False # leave it false, the check does not work and it is extremely low anyway 
+# there is a new script to do the check with condor jobs, Purify_List_fast.py, ut the check doesn't work in any case :(
 
 #file name
 fileList = sys.argv[1]

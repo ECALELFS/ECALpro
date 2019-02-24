@@ -29,10 +29,16 @@ def checkNjobsCondor(grepArg="ecalpro"):
     tmp = str(checkJobs.communicate()[0])
     if all(x in tmp for x in ["OWNER", "BATCH_NAME", "SUBMITTED", "jobs", "completed", "removed"]):   # a very dumb check, I know
         checkJobs = subprocess.Popen(['condor_q -af JobBatchName| grep {gr} | wc -l'.format(gr=grepArg)], stdout=subprocess.PIPE, shell=True);
-        nRetjobs = int(checkJobs.communicate()[0])
-        return nRetjobs
+        nRetjobs = checkJobs.communicate()[0]
+        # check nRetjobs is not a null string, but a number (either 0 or something else)
+        if len(nRetjobs) and nRetjobs.replace('\n','').isdigit():
+            return int(nRetjobs)
+        else:
+            print "Error 1: output = " + str(nRetjobs)
+            return 9999
     else:
-        # something wring with condor, return a dummy positive number to tell the code to keep checking
+        # something wrong with condor, return a dummy positive number to tell the code to keep checking
+        print "Error 2: output = " + tmp
         return 9999 
 
 
@@ -277,7 +283,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                # removing (' and `\n', None)
                FoutGrep_2 = str(FoutGrep)[2:]
                FoutGrep_2 = str(FoutGrep_2)[:-11]
-               print 'Checking ' + str(FoutGrep_2)
+               #print 'Checking ' + str(FoutGrep_2)
                #Chech The size for each line
                f = open( str(FoutGrep_2) )
                lines = f.readlines()
@@ -292,13 +298,13 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                newlines = []
                for filetoCheck in lines:
                    if not os.path.exists(filetoCheck.strip()):
-                       print 'HADD::MISSING: {f}'.format(f=os.path.basename(filetoCheck))
+                       #print 'HADD::MISSING: {f}'.format(f=os.path.basename(filetoCheck))
                        continue
                    else:
                        filesize = os.path.getsize(filetoCheck.strip())
                        #If is corrupted (size too small), remove it from the list
                        if( filesize<100000 ):
-                           print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
+                           #print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
                            continue
                    newlines.append(filetoCheck)
 
@@ -348,8 +354,8 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                    MoveComm = "cp " + prunedfile + " " + str(FoutGrep_2)
                    MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                    mvOut = MoveC.communicate()
-                   print "Some files were removed in " + str(FoutGrep_2)
-                   print "Copied " + prunedfile + " into " + str(FoutGrep_2)
+                   #print "Some files were removed in " + str(FoutGrep_2)
+                   #print "Copied " + prunedfile + " into " + str(FoutGrep_2)
             #End of the check, sending the job
             print "Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
 
@@ -389,7 +395,9 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             print "Some files are missing or empty: going to recover them"
 
         HaddRecoveryAttempt = 0
-        while goodHadds < Nlist and HaddRecoveryAttempt < 10:
+        # this recovery is often unsuccessful: if it failed the first time, there is a high chance that the problem is persistent
+        # better to try only a second time, not more
+        while goodHadds < Nlist and HaddRecoveryAttempt < 1:
 
             logdir    = logPath    + '/Hadd/iter_{it}_recovery_{nr}'.format(it=str(iters), nr=str(HaddRecoveryAttempt))
             if not os.path.exists(logdir): os.makedirs(logdir)

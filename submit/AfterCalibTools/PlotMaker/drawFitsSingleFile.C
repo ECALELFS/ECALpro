@@ -78,6 +78,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
   // nFitsToPlot is the number of fits to plot. A loop on objects in file is made and the first nFitsToPlot objects are drawn
 
   // EB
+
   if (BarrelOrEndcap == "Barrel") {
 
     for(int i = 0; i < 61200; i++)
@@ -262,7 +263,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     delete c;
 
     // if for a given crystal we have more than one fit, do not increase loop counter when evaluating the attempts
-    // iloop should refer to the nuber of crystals to plot, not actual fits to plot in total
+    // iloop should refer to the number of crystals to plot, not actual fits to plot in total
     if (fitAttemptNumber_int == 0) iloop++;
 
     if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) != string::npos)) break;

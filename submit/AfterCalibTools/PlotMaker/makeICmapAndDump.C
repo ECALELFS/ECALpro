@@ -2,10 +2,10 @@
 
 using namespace std;
 
-void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2018D_goldenJson_13_09_2018/iter_6/2DMaps/ICmaps/IC_work/",
-		      const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/AlCaP0_Run2018D_goldenJson_13_09_2018/iter_6/AlCaP0_Run2018D_goldenJson_13_09_2018_calibMap.root",
+void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_AllRun2017_condor/iter_1/2DMaps/ICmaps/IC_work_test/",
+		      const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_AllRun2017_condor/iter_1/AlCaP0_AllRun2017_condor_calibMap.root",
 		      const string& outICdumpFileName = "dumpIC_norm1etaRing.dat",
-		      const string& canvasNamePrefix = "calibMap_EB",  // currently for EB only
+		      const string& canvasNamePrefix = "calibMap_EB",
 		      const Double_t mapMin = 0.95,
 		      const Double_t mapMax = 1.05,
 		      const Bool_t iphiOnXaxis = true,
@@ -22,7 +22,7 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
   TH1::SetDefaultSumw2();
 
   gStyle->SetPalette(55, 0);  // 55:raibow palette ; 57: kBird (blue to yellow) ; 107 kVisibleSpectrum ; 77 kDarkRainBow                          
-  gStyle->SetNumberContours(100); // default is 20 
+  gStyle->SetNumberContours(101); // default is 20 
 
   ofstream outICdumpFile((outDir+outICdumpFileName).c_str());
   if (not outICdumpFile.is_open()) {
@@ -50,7 +50,7 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
 
 
   TH2F* mapEB_IC = new TH2F("mapEB_IC","EB map not normalized",360, 0.5, 360.5, 171, -85.5, 85.5);
-  TH2F* mapEB_IC_err = new TH2F("mapEB_IC_err","EB map error",360, 0.5, 360.5, 171, -85.5, 85.5);
+  TH2F* mapEB_IC_err = new TH2F("mapEB_IC_err","EB uncertainty",360, 0.5, 360.5, 171, -85.5, 85.5);
 
 
   if (all0_EB1_EE2 != 2) {
@@ -61,9 +61,9 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
   }
 
   TH2F* mapEEp_IC = new TH2F("mapEEp_IC","EE+ map not normalized", 100, 0.5, 100.5, 100, 0.5, 100.5);
-  TH2F* mapEEp_IC_err = new TH2F("mapEEp_IC_err","EE+ map error", 100, 0.5, 100.5, 100, 0.5, 100.5);
+  TH2F* mapEEp_IC_err = new TH2F("mapEEp_IC_err","EE+ uncertainty", 100, 0.5, 100.5, 100, 0.5, 100.5);
   TH2F* mapEEm_IC = new TH2F("mapEEm_IC","EE- map not normalized", 100, 0.5, 100.5, 100, 0.5, 100.5);
-  TH2F* mapEEm_IC_err = new TH2F("mapEEm_IC_err","EE- map error", 100, 0.5, 100.5, 100, 0.5, 100.5);
+  TH2F* mapEEm_IC_err = new TH2F("mapEEm_IC_err","EE- uncertainty", 100, 0.5, 100.5, 100, 0.5, 100.5);
 
   TH2F* mapEEp_IC_norm1etaRing = new TH2F("mapEEp_IC_norm1etaRing","EE+ map normalized to 1 in #eta-ring", 100, 0.5, 100.5, 100, 0.5, 100.5);
   TH2F* mapEEm_IC_norm1etaRing = new TH2F("mapEEm_IC_norm1etaRing","EE- map normalized to 1 in #eta-ring", 100, 0.5, 100.5, 100, 0.5, 100.5);
@@ -78,13 +78,16 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
     normalizeEEMapTo1_inEtaRing(mapEEm_IC_norm1etaRing);
 
     drawMap(mapEEp_IC, "iX", "iY", "IC_CalibMapEEp" , outDir, 0.75, 1.25, 700, 700);
-    drawMap(mapEEp_IC_err, "iX", "iY", "IC_err_CalibMapEEp" , outDir, 0.0, 0.02, 700, 700, 50);
+    drawMap(mapEEp_IC_err, "iX", "iY", "IC_err_CalibMapEEp" , outDir, 0.0, 0.02, 700, 700, 51);
 
     drawMap(mapEEm_IC, "iX", "iY", "IC_CalibMapEEm" , outDir, 0.75, 1.25, 700, 700);
-    drawMap(mapEEm_IC_err, "iX", "iY", "IC_err_CalibMapEEm" , outDir, 0.0, 0.02, 700, 700, 50);
+    drawMap(mapEEm_IC_err, "iX", "iY", "IC_err_CalibMapEEm" , outDir, 0.0, 0.02, 700, 700, 51);
 
     drawMap(mapEEp_IC_norm1etaRing, "iX", "iY", "IC_CalibMapEEp_norm1etaRing" , outDir, 0.9, 1.1, 700, 700);
     drawMap(mapEEm_IC_norm1etaRing, "iX", "iY", "IC_CalibMapEEm_norm1etaRing" , outDir, 0.9, 1.1, 700, 700);
+
+    mapEEp_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEp_norm1etaRing.root").c_str());
+    mapEEm_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEm_norm1etaRing.root").c_str());
   }
   //////////////////////////
 
