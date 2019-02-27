@@ -100,17 +100,23 @@ void realDrawMapRatio(const string& outDir = "",
   TH2F* mapEB2_new = new TH2F("mapEB2_new","", 360, 0.5, 360.5, 171, -85.5, 85.5);
 
   Double_t mapEB_binContent = 0.0;
-  Int_t bin = 0;
-  
+  //Int_t bin = 0;
+  Int_t binx = 0;
+  Int_t biny = 0;  
+
   for (Int_t iphi = 1; iphi <= 360; iphi++) {
 
     for (Int_t ieta = -85; ieta <= 85; ieta++) {
 
-      bin = mapEB->FindFixBin(iphi,ieta);
-      mapEB_binContent = mapEB->GetBinContent( bin );
-      mapEB_new->SetBinContent(bin, mapEB_binContent);
-      mapEB_binContent = mapEB2->GetBinContent( bin );
-      mapEB2_new->SetBinContent(bin, mapEB_binContent);
+      //bin = mapEB->FindFixBin(iphi,ieta);
+      binx = mapEB->GetXaxis()->FindFixBin(iphi);
+      biny = mapEB->GetYaxis()->FindFixBin(ieta);
+      //mapEB_binContent = mapEB->GetBinContent( bin );
+      mapEB_binContent = mapEB->GetBinContent( binx, biny );
+      mapEB_new->SetBinContent(binx, biny, mapEB_binContent);
+      //mapEB_binContent = mapEB2->GetBinContent( bin );
+      mapEB_binContent = mapEB2->GetBinContent( binx, biny );
+      mapEB2_new->SetBinContent(binx, biny, mapEB_binContent);
 
     }
 
@@ -130,6 +136,16 @@ void realDrawMapRatio(const string& outDir = "",
   TProfile* profileEB_phi_final = new TProfile("profileEB_phi_final","i#phi profile of IC ratio in EB",360, 0.5, 360.5);
   makeICprofileIphiFromMap(profileEB_phi_final, hRatio, true, true, false);
   drawDistribution(profileEB_phi_final, "i#phi", "mean IC", Form("calibMap_EB_ratio_%s_iphiProfile",canvasSuffix.c_str()), outDir, 0.5, 360.5, 700, 500, true);
+
+  // prepare spread of IC for each module
+  vector<TProfile*> profileEB_phi_mod;
+  vector<TProfile*> profileEB2_phi_mod;
+  for (Int_t i = 1; i <=4; i++) {
+    profileEB_phi_mod.push_back( new TProfile(Form("profileEB_phi_mod%d",i),"i#phi profile of IC in EB",360, 0.5, 360.5) );
+    makeICprofileIphiFromMap(profileEB_phi_mod.back(), mapEB, true, true, false, i);
+    profileEB2_phi_mod.push_back( new TProfile(Form("profileEB2_phi_mod%d",i),"i#phi profile of IC in EB",360, 0.5, 360.5) );
+    makeICprofileIphiFromMap(profileEB2_phi_mod.back(), mapEB2, true, true, false, i);
+  }
 
 
   //EB
@@ -279,10 +295,10 @@ void realDrawMapRatioEE(const string& outDir = "",
   cEB->SetRightMargin(0.14);
   cEB->cd();
   hRatio->Draw("COLZ");
-  hRatio->GetXaxis()->SetTitle("i #phi");
+  hRatio->GetXaxis()->SetTitle("iX");
   hRatio->GetXaxis()->SetTitleSize(0.06);
   hRatio->GetXaxis()->SetTitleOffset(0.7);
-  hRatio->GetYaxis()->SetTitle("i #eta");
+  hRatio->GetYaxis()->SetTitle("iY");
   hRatio->GetYaxis()->SetTitleSize(0.06);
   hRatio->GetYaxis()->SetTitleOffset(0.8);
   hRatio->GetZaxis()->SetRangeUser(mapMin, mapMax);

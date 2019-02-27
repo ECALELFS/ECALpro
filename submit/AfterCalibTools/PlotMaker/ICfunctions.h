@@ -92,15 +92,26 @@ void makeICdistributionFromMap(TH1* h, const TH2* mapEB = NULL, const Bool_t noB
 
 //================================================
 
-void makeICprofileIphiFromMap(TProfile* h, const TH2* mapEB = NULL, const Bool_t iphiOnXaxis = true, const Bool_t noBadXtals = true, const Bool_t justOneSM = true) {
+void makeICprofileIphiFromMap(TProfile* h, const TH2* mapEB = NULL, const Bool_t iphiOnXaxis = true, const Bool_t noBadXtals = true, 
+			      const Bool_t justOneSM = true, Int_t imodule = 0) {
 
   Double_t binContent = 0.0;
   Int_t maxIetaBin = justOneSM ? 85 : 171; 
   Int_t maxIphiBin = justOneSM ? 20 : 360;
 
+  Int_t absieta = -99;
+
   for (Int_t x = 1; x <= maxIphiBin; ++x) {
 
     for (Int_t y = 1; y <= maxIetaBin; ++y) {      
+
+      absieta = justOneSM ? y : fabs(y-86);
+      if (absieta == 0) continue;
+
+      if      (imodule == 1 &&  absieta > 25 ) continue;	
+      else if (imodule == 2 && (absieta < 26 || absieta > 45)) continue;	
+      else if (imodule == 3 && (absieta < 46 || absieta > 65)) continue;	
+      else if (imodule == 4 &&  absieta < 66) continue;	
 
       if (iphiOnXaxis) binContent = mapEB->GetBinContent(x,y);
       else             binContent = mapEB->GetBinContent(y,x);
@@ -265,7 +276,7 @@ void checkICnormalizedTo1_inEtaRing(TH2* h = NULL,  const Bool_t isEB = true, co
 
 //==================================================
 
-void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true) {
+void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false) {
 
   vector<Double_t> meanInEtaRing(171, 0.0); // 171 eta rings (we keep ieta = 0 for simplicity)
   vector<Double_t> nGoodXtalsInEtaRing(171, 0.0);
@@ -285,6 +296,10 @@ void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true)
       
       arrayIndex = ieta + 85;
       binContent = h->GetBinContent(bin);
+      if (excludeMod2EBm16) {
+	if (iphi > 300 && iphi <= 320 && ieta < -25 && ieta >= -45) binContent = 1;
+      }
+
       if (binContent > EPSILON && fabs(binContent -1.0) > EPSILON) {
 	nGoodXtalsInEtaRing[arrayIndex]++;
 	meanInEtaRing[arrayIndex] += binContent;
@@ -310,7 +325,8 @@ void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true)
       binContent = h->GetBinContent(bin);
 
       // do not change IC at 1, because they belong to crystals that should not be updated (bad fit or whatever)
-      if (binContent > EPSILON && fabs(binContent -1.0) > EPSILON) h->SetBinContent(bin, binContent * nGoodXtalsInEtaRing[arrayIndex] / meanInEtaRing[arrayIndex]);
+      if (binContent > EPSILON && fabs(binContent -1.0) > EPSILON) 
+	h->SetBinContent(bin, binContent * nGoodXtalsInEtaRing[arrayIndex] / meanInEtaRing[arrayIndex]);
 
     }
 
@@ -417,7 +433,7 @@ void normalizeEEMapTo1_inEtaRing(TH2* h = NULL) {
 
 //==================================================
 
-void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = true) {
+void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false) {
 
   vector<Double_t> meanInModule(36*4,0.0); // 36 SM * 4 modules each, initialized to 0
   vector<Double_t> nGoodXtalsInModule(36*4,0.0); // 36 SM * 4 modules each, initialized to 0
@@ -469,6 +485,15 @@ void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = tr
 
       // do not change IC at 1, because they belong to crystals that should not be updated (bad fit or whatever)
       if (binContent > EPSILON && fabs(binContent -1.0) > EPSILON) h->SetBinContent(bin, binContent * nGoodXtalsInModule[arrayIndex] / meanInModule[arrayIndex]);
+
+      // in this case, if we are in the 2nd module of EB-16, just put 1 everywhere
+      if (excludeMod2EBm16) {
+	if (iphi > 300 && iphi <= 320 && ieta < -25 && ieta >= -45) {
+	  h->SetBinContent(bin,1.);
+	  cout << ">>> WARNING in normalizeEBMapTo1_inEachModule(): Setting IC of mod2 in EB-16 to 1" << endl;
+	}
+      }
+
 
     }
 

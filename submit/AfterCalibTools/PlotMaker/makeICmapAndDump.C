@@ -2,15 +2,18 @@
 
 using namespace std;
 
-void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_AllRun2017_condor/iter_1/2DMaps/ICmaps/IC_work_test/",
-		      const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_AllRun2017_condor/iter_1/AlCaP0_AllRun2017_condor_calibMap.root",
+void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_AllRun2017_condor/iter_1/2DMaps/ICmaps/IC_work/",
+		      //const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_AllRun2017_condor/iter_1/AlCaP0_AllRun2017_condor_calibMap.root",
+		      const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6/iter_6/2DMaps/ICmaps/IC_work/",
+		      const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6/iter_6/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6_calibMap.root",
 		      const string& outICdumpFileName = "dumpIC_norm1etaRing.dat",
 		      const string& canvasNamePrefix = "calibMap_EB",
 		      const Double_t mapMin = 0.95,
 		      const Double_t mapMax = 1.05,
 		      const Bool_t iphiOnXaxis = true,
 		      const Bool_t iphiOnXaxisSM = false,
-		      const Int_t all0_EB1_EE2 = 0
+		      const Int_t all0_EB1_EE2 = 0,
+		      const Bool_t excludeMod2EBm16 = false
 		      ) 
 
 {
@@ -86,8 +89,8 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
     drawMap(mapEEp_IC_norm1etaRing, "iX", "iY", "IC_CalibMapEEp_norm1etaRing" , outDir, 0.9, 1.1, 700, 700);
     drawMap(mapEEm_IC_norm1etaRing, "iX", "iY", "IC_CalibMapEEm_norm1etaRing" , outDir, 0.9, 1.1, 700, 700);
 
-    mapEEp_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEp_norm1etaRing.root").c_str());
-    mapEEm_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEm_norm1etaRing.root").c_str());
+    //mapEEp_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEp_norm1etaRing.root").c_str());
+    //mapEEm_IC_norm1etaRing->SaveAs((outDir+"calibMap_EEm_norm1etaRing.root").c_str());
   }
   //////////////////////////
 
@@ -96,14 +99,14 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
   TH2F *mapEB_norm1etaRing = new TH2F("mapEB_norm1etaRing",Form("EB map normalized to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     copyMapAllEB(mapEB_norm1etaRing, mapEB_IC, iphiOnXaxis);  
-    normalizeEBMapTo1_inEtaRing(mapEB_norm1etaRing, iphiOnXaxis); 
+    normalizeEBMapTo1_inEtaRing(mapEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16); 
     drawMap(mapEB_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
   // normalize original map to 1 in each module (TT pattern still here), prepare for folding
   TH2F *mapEB_norm1eachModule = new TH2F("mapEB_norm1eachModule",Form("EB map normalized to 1 in each module"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     copyMapAllEB(mapEB_norm1eachModule, mapEB_IC, iphiOnXaxis);  
-    normalizeEBMapTo1_inEachModule(mapEB_norm1eachModule, iphiOnXaxis);
+    normalizeEBMapTo1_inEachModule(mapEB_norm1eachModule, iphiOnXaxis, excludeMod2EBm16);
     drawMap(mapEB_norm1eachModule, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
   // fold map normalized to 1 in each module
@@ -130,23 +133,23 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB, true, -1.0); 
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, iphiOnXaxis);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModule_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
 
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module, EB+,EB- same #phi), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB_samePhi, true, -1.0);
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, iphiOnXaxis);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModuleSamePhi_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
 
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module, EB+,EB- separately), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate, true, -1.0);
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, iphiOnXaxis);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
-    mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->SaveAs((outDir+canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root").c_str());
+    //mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->SaveAs((outDir+canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root").c_str());
     checkICnormalizedTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, true, true);
   }
 
@@ -271,5 +274,21 @@ void makeICmapAndDump(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/p
 
 
   outICdumpFile.close();
+
+  // now saves maps for later usage:
+  cout << "Saving maps in file: " << outDir << "calibrationMaps.root" << endl;
+  string fullname = outDir + "calibrationMaps.root";
+  TFile* f = TFile::Open(fullname.c_str(),"recreate");
+  if (!f || !f->IsOpen()) {
+    cout << "*******************************" << endl;
+    cout << "Error opening file \"" << inputFile << "\".\nApplication will be terminated." << endl;
+    cout << "*******************************" << endl;
+    exit(EXIT_FAILURE);
+  }
+  mapEEp_IC_norm1etaRing->Write("calibMap_EEp");  
+  mapEEm_IC_norm1etaRing->Write("calibMap_EEm");  
+  mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->Write("calibMap_EB");
+  f->Close();
+  delete f;
 
 }

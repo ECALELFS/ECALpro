@@ -6,7 +6,7 @@ from methods import *
 from optparse import OptionParser                                                                                                                   
                                                                                           
 parser = OptionParser(usage="%prog [options]")    
-parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=False, help="Do not submit a job to manage the daemon, do it locally")
+parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=True, help="Do not submit a job to manage the daemon, do it locally")
 (options, args) = parser.parse_args()
 
 if len(args) != 7:

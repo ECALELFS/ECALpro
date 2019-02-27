@@ -36,8 +36,6 @@ Implementation:
 #include "TROOT.h"
 #include "TStyle.h"
 
-
-
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
@@ -85,6 +83,11 @@ static double upper_bound_etamass_EE = 0.62;
 
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
+static float fitRange_high_pi0_ext = 0.222;
+
+static float fitRange_low_eta = 0.4; // value used in the fit function to define the fit range
+static float fitRange_high_eta = 0.65; // value used in the fit function to define the fit range
+static float fitRange_high_eta_ext = 0.67;
 
 static float EoverEtrue_integralMin = 25; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
@@ -1565,7 +1568,10 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		if(integral>60.) {
 
-		  Pi0FitResult fitres = FitMassPeakRooFit( histoToFit, Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
+		  Pi0FitResult fitres = FitMassPeakRooFit( histoToFit, 
+							   Are_pi0_? fitRange_low_pi0:fitRange_low_eta, 
+							   Are_pi0_? fitRange_high_pi0:fitRange_high_eta, 
+							   j, 1, Pi0EB, 0, isNot_2010_); //0.05-0.3
 		  RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 		  mean = mean_fitresult->getVal();
 
@@ -1729,7 +1735,10 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 		if(integral>70.)
 		  {
-		    Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], Are_pi0_? fitRange_low_pi0:0.4, Are_pi0_? fitRange_high_pi0:0.65, jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
+		    Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], 
+							     Are_pi0_? fitRange_low_pi0:fitRange_low_eta, 
+							     Are_pi0_? fitRange_high_pi0:fitRange_high_eta, 
+							     jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 		    RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
 		    mean = mean_fitresult->getVal();
 		    float r2 = mean/(Are_pi0_? PI0MASS:ETAMASS);
@@ -1830,21 +1839,64 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     canvas->SetRightMargin(0.06);
     canvas->SetLeftMargin(0.15);
 
+    Double_t upMassBoundaryEB = Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB; 
+    Double_t upMassBoundaryEE = Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EE; 
+    Double_t upMassBoundary = (mode==Pi0EB) ? upMassBoundaryEB : upMassBoundaryEE;
+    // need a patch for some crystals in EB that might have the peak around 160 MeV due to high laser corrections.
+    // depending on the year, the containment corrections might also increase a bit the peak position
+    // the problem is that the peak is expected to be below 150 MeV when defining the signal model, so we have to catch these exception
+    Double_t xValMaxHisto = h->GetXaxis()->GetBinCenter(h->GetMaximumBin()+1); // use value just above maximum, it will be used to set the mean of the gaussian
+    // check the maximum is within xlo and xhi (the histogram range is larger than the fit range)
+    Double_t maxMassForGaussianMean = 0.0; //upper_bound_pi0mass_EB;
+    // first check if peak is in the fit range (for EB it will be, in EE the background rises up and the maximum might not coincide wth peak)
+    if (xValMaxHisto < xhi) {
+
+      if (xValMaxHisto > upMassBoundary) {
+	maxMassForGaussianMean = xValMaxHisto;
+	xhi = Are_pi0_? fitRange_high_pi0_ext : fitRange_high_eta_ext;      //xhi + 0.012; // increase a bit the fit range
+      } else {
+	maxMassForGaussianMean = upMassBoundary;
+      }
+
+    } else {
+
+      // need to loop on bins in the fit window
+      Double_t ymaxHisto = 0.0;
+      Int_t binYmaxHisto = -1;
+      for (Int_t ibin = h->GetXaxis()->FindFixBin(xlo); ibin <= h->GetXaxis()->FindFixBin(xhi); ibin++) {
+	if (h->GetBinContent(ibin) > ymaxHisto) {
+	  ymaxHisto = h->GetBinContent(ibin);
+	  binYmaxHisto = ibin;
+	}
+      }
+      // check if maximum was found and it was not the last-1 bin
+      // in that case, use the next bin to get max value for mass, just to avoid biases (that's why we asked last-1)
+      if (binYmaxHisto > 0 && binYmaxHisto < (h->GetXaxis()->FindFixBin(xhi)-1)) {
+	maxMassForGaussianMean = h->GetXaxis()->GetBinCenter(binYmaxHisto+1);
+	if (maxMassForGaussianMean > upMassBoundary) xhi = Are_pi0_? fitRange_high_pi0_ext : fitRange_high_eta_ext;  //xhi + 0.012; // increase a bit the fit range
+
+      } else {
+	maxMassForGaussianMean = upMassBoundary; // if all this mess didn't work, just use the value we would have used in the beginning
+      }
+
+    }
+    
     RooRealVar x("x","#gamma#gamma invariant mass",xlo, xhi, "GeV/c^2");
 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
+    //RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, maxMassForGaussianMean,"GeV/c^{2}");
     RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,0.015,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE);
+	  mean.setRange( Are_pi0_? 0.1:0.45, maxMassForGaussianMean);
 	  mean.setVal(Are_pi0_? 0.13:0.55);
 	  sigma.setRange(0.005, 0.020);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.47, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB);
+	  mean.setRange(Are_pi0_? 0.105:0.47, maxMassForGaussianMean);
 	  sigma.setRange(0.003, 0.030);
     }
 
@@ -2092,12 +2144,12 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     //if(mode==Pi0EB && ( xframe->chiSquare()/pi0res.dof>0.35 || pi0res.SoB<0.6 || fabs(mean.getVal()-(Are_pi0_? 0.150:0.62))<0.0000001 ) ){
     //bool badChi2 = fabs(xframe->chiSquare() - pi0res.dof) > 5.0 * sqrt(2. * pi0res.dof);
 
-    if(mode==Pi0EB && ( fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB))<0.0000001 ) ){
+    if(mode==Pi0EB && ( fabs(mean.getVal()-maxMassForGaussianMean)<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
     }
-    if(mode==Pi0EE && ( fabs(mean.getVal()-(Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE))<0.0000001 ) ){
+    if(mode==Pi0EE && ( fabs(mean.getVal()-maxMassForGaussianMean)<0.0000001 ) ){
 	  if(niter==0) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 1, isNot_2010_);
 	  if(niter==1) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 2, isNot_2010_);
 	  if(niter==2) fitres = FitMassPeakRooFit( h, xlo, xhi, HistoIndex, ngaus, mode, 3, isNot_2010_);
@@ -2214,6 +2266,7 @@ Float_t myRightTailCrystalBall(double* x, double* par) {
 TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode, Bool_t noDrawStatBox) 
 {
 
+
   //////////////////////
   //
   // In release CMSSW_10_2_0 there seems to be an issue with the usage of the user define functions like my2sideCrystalBall
@@ -2221,344 +2274,7 @@ TFitResultPtr FitEpsilonPlot::FitEoverEtruePeak(TH1F* h1, Bool_t isSecondGenPhot
   // Since this fucntion is not used anymore (we use FitEpsilonPlot::FitEoverEtruePeakRooFit), I just comment everything out and return 0
   return 0;
 
- //  In file included from /afs/cern.ch/work/m/mciprian/myEcalElf/2018_ECALpro/first_28apr2018/CMSSW_10_2_0/src/CalibCode/FitEpsilonPlot/src/FitEpsilonPlot.cc:25:0:
-//   /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h: In instantiation of 'static void ROOT::Internal::TF1Builder<Func*>::Build(TF1*, Func*) [with Func = float(double*, double*)]':
-//   /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h:361:46:   required from 'TF1::TF1(const char*, Func, Double_t, Double_t, Int_t, Int_t, TF1::EAddToList) [with Func = float (*)(double*, double*); Double_t = double; Int_t = int]'
-//     /afs/cern.ch/work/m/mciprian/myEcalElf/2018_ECALpro/first_28apr2018/CMSSW_10_2_0/src/CalibCode/FitEpsilonPlot/src/FitEpsilonPlot.cc:2327:103:   required from here
-//     /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h:707:103: error: 'operator()' is not a member of 'float(double*, double*)'
-//     using Fnc_t = typename ROOT::Internal::GetFunctorType<decltype(ROOT::Internal::GetTheRightOp(&Func::operator()))>::type;
-//                                                                                                        ^~~~~
-// 													  /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h:707:103: error: 'operator()' is not a member of 'float(double*, double*)'
-// 													     /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h:707:103: error: 'operator()' is not a member of 'float(double*, double*)'
-// 													     /cvmfs/cms.cern.ch/slc6_amd64_gcc700/lcg/root/6.12.07-gnimlf4/include/TF1.h:707:103: error: 'operator()' is not a member of 'float(double*, double*)'
-// 													     gmake: *** [config/SCRAM/GMake/Makefile.rules:1676: tmp/slc6_amd64_gcc700/src/CalibCode/FitEpsilonPlot/src/CalibCodeFitEpsilonPlot/FitEpsilonPlot.cc.o] Error 1
-// 													     gmake: *** [There are compilation/build errors. Please see the detail log above.] Error 2
-//
-
-///////////////////////////////////////////
-/////////////////////////////////////////7
-
-
-  // int nPhoton = isSecondGenPhoton ? 2 : 1;
-
-  // bool fitDoubleCrystalBall = true; // FIXME: set manually, to be set in parameters.py
-  // bool fitSingleCrystalBall = false;
-  // //float integralInRange = h1->Integral(h1->GetXaxis()->FindFixBin(0.6), h1->GetXaxis()->FindFixBin(1.1));
-  // float integralInRange = h1->Integral();
-  // if ( integralInRange > std::min(100.0, 4.0 * EoverEtrue_integralMin)) {
-  //   fitSingleCrystalBall = true;
-  // } else {
-  //   std::cout << "FIT_EPSILON: photon " << nPhoton << " --> integral=" << integralInRange << ": fit with gaussian only" << std::endl;
-  // }
-  // bool fitCrystalBall = false;
-  // if (fitDoubleCrystalBall || fitSingleCrystalBall) fitCrystalBall = true;
-  // //fitCrystalBall = false;
-
-  // //-----------------------------------------------------------------------------------
-  // // For the moment we use the TH1::Fit function here [0] instead of RooFit for simplicity
-  // // [0] https://root.cern.ch/doc/master/classTH1.html#a7e7d34c91d5ebab4fc9bba3ca47dabdd
-
-  // // std::cout << "FitEpsilonPlot::FitEoverEtruePeak called " << std::endl;
-
-  // int niter = 0; // attempt of the fit, only 1 for the moment
-  // TString nameHistofit = Form("Fit_n_%u_attempt%d_g%d",HistoIndex,niter,nPhoton);
-
-  // // add canvas to save rooplot on top (will save this in the file)
-  // TCanvas* canvas = new TCanvas((nameHistofit+Form("_c")).Data(),"",700,700);
-  // canvas->cd();
-  // canvas->SetTickx(1);
-  // canvas->SetTicky(1);
-  // canvas->cd();
-  // canvas->SetRightMargin(0.06);
-
-  // gPad->Update();
-  // //gStyle->SetOptStat(1110);
-  // gStyle->SetOptStat(0);
-  // gStyle->SetOptFit(1102);
-
-  // h1->Draw("EP");
-  // //h1->GetXaxis()->SetTitle(Form("photon %d E(reco)/E(true)",nPhoton));
-  // h1->GetXaxis()->SetTitle(Form(" #gamma_{%d} E_{reco}/E_{true}",nPhoton));
-  // h1->GetXaxis()->SetTitleSize(0.04);
-  // h1->GetYaxis()->SetTitle("Events");
-  // h1->SetLineColor(kBlack);
-  // h1->SetMarkerColor(kBlack);
-  // h1->SetMarkerStyle(20); // 20 is big dot, 7 is smaller dot
-  // h1->SetMarkerSize(1); // it has no effect when using dot given by marker number 1, 6 or 7
-
-  // Double_t histNorm = h1->GetBinContent(h1->GetMaximumBin());  //cout << "histNorm = " << histNorm << endl;
-  // //Double_t histMean = h1->GetMean();   //  cout << "histMean = " << histMean << endl;
-  // Double_t histMean = h1->GetBinCenter(h1->GetMaximumBin());   //cout << "histMean = " << histMean << endl;
-  // // tails are huge, the Std deviation is not a good estimator of the gaussian core's width, use a constant term (but in general it will depend on the crystal)
-  // //Double_t histStdDev = h1->GetStdDev();  //cout << "histStdDev = " << histStdDev << endl;
-  // Double_t histStdDev = isSecondGenPhoton ? 0.15 : 0.1;
-  // if (histMean < 0.6) histMean = 0.9;
-
-
-  // // // for photon 2 the tail can have a peak larger than the peak around 1 !!
-  // // // so do not blindly use the maximum bin to estimate the peak position
-  // // Double_t histNorm = 0.0;
-  // // Double_t histMean = 0.0;
-  // // Double_t histStdDev = 0.0;
-
-  // // TH1F* htmp = (TH1F*) h1->Clone("h1_clone");
-  // // htmp->GetXaxis()->SetRange(0.7,1.1);
-  // // histNorm = htmp->GetBinContent(htmp->GetMaximumBin());
-  // // histMean = htmp->GetBinCenter(htmp->GetMaximumBin()); 
-  // // //histMean = htmp->GetMean(); 
-  // // histStdDev = htmp->GetStdDev();
-  // // if (isSecondGenPhoton && histStdDev > 0.15) histStdDev = 0.15;
-  // // else if (histStdDev > 0.1) histStdDev = 0.1;
-  // // if (histMean < 0.6) histMean = 0.9;
-
-  // int fitStatus = -1;
-  // // do a preliminary gaussian fit, but do not draw the function (option 0)
-  // TF1 *gaussian = new TF1("gaussian","gaus",histMean-4.0*histStdDev, histMean+4.0*histStdDev);
-  // gaussian->SetParLimits(0, 0.9 * histNorm, 1.1 * histNorm);
-  // gaussian->SetParLimits(1, histMean - histStdDev, histMean + histStdDev);
-  // gaussian->SetParLimits(2, 0.05 * histStdDev, 2.0 * histStdDev);
-  // gaussian->SetParameter(0, histNorm);
-  // gaussian->SetParameter(1, histMean);
-  // gaussian->SetParameter(2, histStdDev);
-  // gaussian->SetLineColor(kRed);
-  // gaussian->SetLineWidth(2);
-  // string gausFitOption = "E WL S Q B R";  // ad E and M for better error and minimum estimate
-  // string gausDrawOptions = fitCrystalBall ? "" : "HE SAMES";
-  // string crystalBallFitOption = "E WL S Q B R";
-  // if (fitCrystalBall) gausFitOption += " 0"; // will not draw this gaussian
-  // // TFitResultPtr frp1 = h1->Fit("gaus",gausFitOption.c_str(),"", histMean - 0.8 * histStdDev, histMean + 1.0 * histStdDev);
-  // TFitResultPtr frp1 = h1->Fit(gaussian,gausFitOption.c_str(),gausDrawOptions.c_str(), histMean - 0.8 * histStdDev, histMean + 1.0 * histStdDev);
-  // // cout << "checkpoint after fitting with gaussian" << endl; //return 0;
-  // // TF1 *mygaussian = nullptr;
-  // // if (not fitDoubleCrystalBall) {
-  // //   mygaussian = h1->GetFunction("gaus");
-  // //   if (mygaussian) {
-  // //     mygaussian->SetLineColor(kRed);
-  // //     mygaussian->SetLineWidth(2);
-  // //   //mygaussian->Draw("SAME");
-  // //   }
-  // // }
-  // fitStatus = frp1;
-  // // if gaussian fit was successful, update the gaussian mean and width values that will be used for the crystal ball below
-  // if (fitStatus != 0) {
-  //   std::cout << "FIT_EPSILON: photon " << nPhoton << " --> error occurred in FitEoverEtruePeak when fitting with gaussian. Fit status is " << fitStatus << std::endl;
-  // } else {
-  //   std::cout << "FIT_EPSILON: photon " << nPhoton << " --> Fit status is " << fitStatus << " for gaussian fit " << std::endl;
-  // }
-  // histMean = frp1->Parameter(1);  // par [2] is the gaussian sigma in ROOT
-  // histStdDev = frp1->Parameter(2);  // par [2] is the gaussian sigma in ROOT
-
-  // // cout << "checkpoint after gaussian fit status evaluation" << endl; //return 0;
-
-  // // define the fitting function
-  // TF1*doubleCB = new TF1("doubleCB",&my2sideCrystalBall,histMean-5*histStdDev, histMean+5*histStdDev,7);
-  // doubleCB->SetParNames("Const","Mean(CB)","Sigma(CB)","alphaL","nL","alphaR","nR");
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("nL"),0.1,15);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("Mean(CB)"), histMean - histStdDev, histMean + histStdDev);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("Sigma(CB)"),0.1 * histStdDev, 1.1 * histStdDev);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("nR"),0.1,15);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("alphaL"),-3.0,-0.1);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("alphaR"),0.1,3.0);
-  // doubleCB->SetParLimits(doubleCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
-  // doubleCB->SetParameters(histNorm,histMean,histStdDev,-1.0,5,1.0,5);
-  // doubleCB->SetLineColor(kGreen+2);
-  // doubleCB->SetLineWidth(2);
-
-  // TF1*leftCB = new TF1("leftCB",&myLeftTailCrystalBall,histMean-5*histStdDev, histMean+5*histStdDev,5);
-  // leftCB->SetParNames("Const","Mean(CB)","Sigma(CB)","alphaL","nL");
-  // leftCB->SetParLimits(leftCB->GetParNumber("nL"),0.1,15);
-  // leftCB->SetParLimits(leftCB->GetParNumber("Mean(CB)"), histMean - histStdDev, histMean + histStdDev);
-  // leftCB->SetParLimits(leftCB->GetParNumber("Sigma(CB)"),0.1 * histStdDev, 2.0 * histStdDev);
-  // leftCB->SetParLimits(leftCB->GetParNumber("alphaL"),-3.0,-0.1);
-  // leftCB->SetParLimits(leftCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
-  // leftCB->SetParameters(histNorm,histMean,histStdDev,-1.0,5);
-  // leftCB->SetLineColor(kGreen+2);
-  // leftCB->SetLineWidth(2);
-
-  // TF1*rightCB = new TF1("rightCB",&myRightTailCrystalBall,histMean-5*histStdDev, histMean+5*histStdDev,5);
-  // rightCB->SetParNames("Const","Mean(CB)","Sigma(CB)","alphaR","nR");
-  // rightCB->SetParLimits(rightCB->GetParNumber("nR"),0.1,15);
-  // rightCB->SetParLimits(rightCB->GetParNumber("Mean(CB)"), histMean - histStdDev, histMean + histStdDev);
-  // rightCB->SetParLimits(rightCB->GetParNumber("Sigma(CB)"),0.1 * histStdDev, 2.0 * histStdDev);
-  // rightCB->SetParLimits(rightCB->GetParNumber("alphaR"),0.1,3.0);
-  // rightCB->SetParLimits(rightCB->GetParNumber("Const"),0.8*histNorm,1.2*histNorm);
-  // rightCB->SetParameters(histNorm,histMean,histStdDev,1.0,5);
-  // rightCB->SetLineColor(kGreen+2);
-  // rightCB->SetLineWidth(2);
-
-
-  // TFitResultPtr frp2;
-  // TF1 *gaussCore = nullptr;
-  // TF1 *fittedCrystalBall = nullptr;
-
-  // if (fitCrystalBall) {
-
-  //   fittedCrystalBall = (fitDoubleCrystalBall ? doubleCB : rightCB);
-  //   if (fitDoubleCrystalBall) frp2 = h1->Fit(fittedCrystalBall,crystalBallFitOption.c_str(),"HE SAMES", histMean - 0.8 * histStdDev, histMean + 1.8 * histStdDev);
-  //   else                      frp2 = h1->Fit(fittedCrystalBall,crystalBallFitOption.c_str(),"HE SAMES", histMean - 0.8 * histStdDev, histMean + 2.0 * histStdDev);
-  //   // cout << "checkpoint after crystal ball" << endl; //return 0;
-  //   cout << "check point " << endl;
-
-  //   fitStatus = frp2;
-  //   if (fitStatus != 0) {
-  //     std::cout << "FIT_EPSILON: photon " << nPhoton << " -->  error occurred in FitEoverEtruePeak when fitting with crystal ball. Fit status is " << fitStatus << std::endl;
-  //   } else {
-  //     std::cout << "FIT_EPSILON: photon " << nPhoton << " --> Fit status is " << fitStatus << " for crystal ball fit " << std::endl;
-  //   }
-  //   if (frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) < 0.0 ) {
-  //     cout << "WARNING: CB sigma is negative!" << endl;
-  //   }
-
-  //   // get gaussian core of the CB and plot it on top to show how the CB differs from a simple gaussian
-  //   gaussCore = new TF1(*(h1->GetFunction(fittedCrystalBall->GetName())));
-  //   if (gaussCore) {
-  //     Double_t gaussMean =  frp2->Parameter(fittedCrystalBall->GetParNumber("Mean(CB)"));
-  //     Double_t gaussSigma = frp2->Parameter(fittedCrystalBall->GetParNumber("Sigma(CB)"));
-  //     Double_t alphaL =     frp2->Parameter(fittedCrystalBall->GetParNumber("alphaL"));
-  //     Double_t alphaR =     0;
-  //     if (fitDoubleCrystalBall) {
-  // 	frp2->Parameter(fittedCrystalBall->GetParNumber("alphaR"));
-  // 	gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), gaussMean + fabs(gaussSigma) * fabs(alphaR),"SAME"); // alphaL < 0, alphaR > 0
-  //     } else {
-  // 	gaussCore->DrawF1(gaussMean + fabs(gaussSigma) * -fabs(alphaL), histMean + 1.5 * histStdDev,"SAME"); // alphaL < 0, alphaR > 0
-  //     }
-  //     gaussCore->SetLineColor(kRed);
-  //     gaussCore->SetLineWidth(2);
-  //   }
-
-  // }
-
-  // TFitResultPtr retfrp = (fitCrystalBall ? frp2 : frp1);;
-
-  // canvas->Update();
-  // TPaveStats *statBox = (TPaveStats*)(h1->FindObject("stats"));
-  // if (statBox) {
-  //   statBox->SetX1NDC(0.12);   
-  //   statBox->SetX2NDC(0.42);
-  //   statBox->SetY1NDC(0.3);
-  //   statBox->SetY2NDC(0.64);
-  //   statBox->SetFillColor(0);
-  //   statBox->SetFillStyle(0);
-  //   statBox->SetBorderSize(0);
-  //   statBox->Draw();
-  // } else {
-  //   cout << "Couldn't get statbox with (TPaveStats*)(h1->FindObject(\"stats\"))" << endl;
-  // }
-  // canvas->Update();
-
-  // string legHeader = "";//"Fit components";
-  // TLegend leg (0.12,0.69,0.45,0.89);
-  // if (legHeader != "") leg.SetHeader(legHeader.c_str());
-  // leg.SetFillColor(0);
-  // leg.SetFillStyle(0);
-  // leg.SetBorderSize(0);
-  // leg.AddEntry(h1,"data","PLE");
-  // //leg.AddEntry(gaussian,"gauss","l");
-  // if (fitCrystalBall) {
-  //   if (gaussCore) leg.AddEntry(gaussCore,"gaussian core","l");
-  //   if (fitDoubleCrystalBall) leg.AddEntry(doubleCB,"double Crystal Ball","l");
-  //   else                      leg.AddEntry(rightCB,"right Crystal Ball","l");
-  // } else {
-  //   //leg.AddEntry(mygaussian,"gaussian","l");
-  //   leg.AddEntry(gaussian,"gaussian","l");
-  // }
-  // leg.Draw("same");
-  // canvas->RedrawAxis("sameaxis");
-  
-  // // if (noDrawStatBox) {
-  // //   h1->SetStats(0);
-  // //   //cout << "No Statistics box" << endl;
-  // // } else {
-  // //   //canvas->Update();
-  // //   gPad->Update();
-  // //   gStyle->SetOptStat(1110);
-  // //   gStyle->SetOptFit(1102);
-  // // }
-
-  // // gPad->Update();
-  // // //gStyle->SetOptStat(1110);
-  // // gStyle->SetOptStat(0);
-  // // gStyle->SetOptFit(1102);
-  // h1->SetStats(0);
-
-  // if (fitCrystalBall) {
-  //   cout << "FIT_EPSILON: "
-  // 	 << "photon " << nPhoton << "  "
-  // 	 << " mean(CB): " << frp2->Parameter(doubleCB->GetParNumber("Mean(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Mean(CB)"))
-  // 	 << " sigma(CB): " << frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)")) << " +/- " << frp2->ParError(doubleCB->GetParNumber("Sigma(CB)"))
-  // 	 << " chi2: " << frp2->Chi2()
-  // 	 << " DOF: " << frp2->Ndf()
-  // 	 << " N(fit.param.): " << frp2->NFreeParameters()
-  // 	 << " prob(chi2): " << frp2->Prob()
-  // 	 << endl;
-  // } else {
-  //   cout << "FIT_EPSILON: "
-  // 	 << "photon " << nPhoton << "  "
-  // 	 << " mean(gauss): " << frp1->Parameter(1) << " +/- " << frp1->ParError(1)
-  // 	 << " sigma(gauss): " << frp1->Parameter(2) << " +/- " << frp1->ParError(2)
-  // 	 << " chi2: " << frp1->Chi2()
-  // 	 << " DOF: " << frp1->Ndf()
-  // 	 << " N(fit.param.): " << frp1->NFreeParameters()
-  // 	 << " prob(chi2): " << frp1->Prob()
-  // 	 << endl;
-  // }
-
-  // // some parameters do not make sense for the E/Etrue study, but for simplicity we keep the same structure as the mass fit
-  // // basically we just need the peak position ("Mean(CB)" parameter)
-  // // let's use fitresptr_g1 and fitresptr_g2 to store all the required information, without doubling the maps
-
-  // if(mode==Pi0EB) {
-
-  //   if (isSecondGenPhoton) EBmap_fitresptr_g2[HistoIndex]=retfrp;
-  //   else                   EBmap_fitresptr_g1[HistoIndex]=retfrp;
-  // //   // EBmap_Signal[HistoIndex]=-1;
-  // //   // EBmap_Backgr[HistoIndex]=-1;
-  // //   EBmap_Chisqu[HistoIndex]=frp2->Chi2();
-  // //   EBmap_ndof[HistoIndex]=frp2->Ndf();
-  // //   EBmap_mean[HistoIndex]=frp2->Parameter(doubleCB->GetParNumber("Mean(CB)"));
-  // //   EBmap_mean_err[HistoIndex]=frp2->ParError(doubleCB->GetParNumber("Mean(CB)"));
-  // //   EBmap_sigma[HistoIndex]=frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)"));;
-  // //   // EBmap_Snorm[HistoIndex]=-1;
-  // //   // EBmap_b0[HistoIndex]=-1;
-  // //   // EBmap_b1[HistoIndex]=-1;
-  // //   // EBmap_b2[HistoIndex]=-1;
-  // //   // EBmap_b3[HistoIndex]=-1;
-  // //   // EBmap_Bnorm[HistoIndex]=-1;
-
-  // }
-
-  // if(mode==Pi0EE) {
-
-  //   if (isSecondGenPhoton) EEmap_fitresptr_g2[HistoIndex]=retfrp;
-  //   else                   EEmap_fitresptr_g1[HistoIndex]=retfrp;
-  // //   // EEmap_Signal[HistoIndex]=-1;
-  // //   // EEmap_Backgr[HistoIndex]=-1;
-  // //   EEmap_Chisqu[HistoIndex]=frp2->Chi2();
-  // //   EEmap_ndof[HistoIndex]=frp2->Ndf();
-  // //   EEmap_mean[HistoIndex]=frp2->Parameter(doubleCB->GetParNumber("Mean(CB)"));
-  // //   EEmap_mean_err[HistoIndex]=frp2->ParError(doubleCB->GetParNumber("Mean(CB)"));
-  // //   EEmap_sigma[HistoIndex]=frp2->Parameter(doubleCB->GetParNumber("Sigma(CB)"));;
-  // //   // EEmap_Snorm[HistoIndex]=-1;
-  // //   // EEmap_b0[HistoIndex]=-1;
-  // //   // EEmap_b1[HistoIndex]=-1;
-  // //   // EEmap_b2[HistoIndex]=-1;
-  // //   // EEmap_b3[HistoIndex]=-1;
-  // //   // EEmap_Bnorm[HistoIndex]=-1;
-
-  // }
-
-
-  // // if(StoreForTest_ && niter==0){
-  // if(StoreForTest_){
-  //   outfileTEST_->cd();
-  //   canvas->Write();
-  // }
-
-  // delete canvas;
-  // return retfrp;
-
 }
-
 
 //=============================================
 
