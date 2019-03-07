@@ -70,6 +70,16 @@ int getArrayIndexOfFoldedSMfromIetaIphi(const int ieta = 1, const int iphi = 1) 
 
 //====================================================
 
+Bool_t isGoodIC(const Double_t val) {
+
+  if (val > EPSILON && fabs(val -1.0) > EPSILON) return true;
+  else return false;
+
+}
+
+//====================================================
+
+
 void makeICdistributionFromMap(TH1* h, const TH2* mapEB = NULL, const Bool_t noBadXtals = true) {
 
   Double_t binContent = 0.0;
@@ -734,6 +744,10 @@ void drawDistribution(TH1* h = NULL,
   cEB->cd();
   h->Draw("HE");
   if (noStatBox) h->SetStats(0);
+  else {
+    h->SetStats(1);
+    gStyle->SetOptStat(111110);
+  }          
   h->GetXaxis()->SetTitle(xaxisName.c_str());
   h->GetXaxis()->SetTitleSize(0.06);
   h->GetXaxis()->SetTitleOffset(0.7);

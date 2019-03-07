@@ -31,7 +31,7 @@ def checkNjobsCondor(grepArg="ecalpro"):
         checkJobs = subprocess.Popen(['condor_q -af JobBatchName| grep {gr} | wc -l'.format(gr=grepArg)], stdout=subprocess.PIPE, shell=True);
         nRetjobs = checkJobs.communicate()[0]
         # check nRetjobs is not a null string, but a number (either 0 or something else)
-        if len(nRetjobs) and nRetjobs.replace('\n','').isdigit():
+        if len(nRetjobs) and nRetjobs != "\n" and nRetjobs.replace('\n','').isdigit():
             return int(nRetjobs)
         else:
             print "Error 1: output = " + str(nRetjobs)
@@ -43,7 +43,7 @@ def checkNjobsCondor(grepArg="ecalpro"):
 
 
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
-def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=4000):    
+def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=4000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
 Executable = {de}
 use_x509userproxy = $ENV(X509_USER_PROXY)
@@ -54,9 +54,9 @@ getenv      = True
 environment = "LS_SUBCWD={here}"
 next_job_start_delay = 1
 request_memory = {mem}
-+MaxRuntime = 86400
++MaxRuntime = {time}
 +JobBatchName = "{jbn}"\n
-'''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory ) )
+'''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
 
 
 
@@ -129,7 +129,7 @@ for iters in range(nIterations):
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_fill.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", memory=2500) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", memory=2500, maxtime=43200) # this does not close the file
 
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         print "Submitting " + str(njobs) + " jobs"
@@ -166,7 +166,7 @@ for iters in range(nIterations):
         print 'Waiting for filling jobs to be finished...'
         # Daemon cheking running jobs
         while nFilljobs > 0 :
-            time.sleep(300)
+            time.sleep(900)
             nFilljobs = checkNjobsCondor("ecalpro_Fill")
             print "I still see {n} jobs for Fill part".format(n=nFilljobs)
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
@@ -192,7 +192,7 @@ for iters in range(nIterations):
                 if not os.path.exists(logdir): os.makedirs(logdir)
                 condor_file_name = condordir+'/condor_submit_fill_recovery_{nr}.condor'.format(nr=str(NtpRecoveryAttempt))
                 condor_file = open(condor_file_name,'w')
-                writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill_recovery", memory=2500)  
+                writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill_recovery", memory=2500, maxtime=43200)  
                 goodNtp = 0
                 for ih in range(njobs):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
@@ -226,7 +226,7 @@ for iters in range(nIterations):
                 # Daemon cheking running jobs
                 print "Checking recovery of Ntp ..."
                 while nFilljobs > 0 :
-                    time.sleep(300)
+                    time.sleep(900)
                     nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
                     print "I still see {n} jobs for Fill_recovery part".format(n=nFilljobs)
                     checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
@@ -256,7 +256,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_hadd.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000, maxtime=5000) # this does not close the file
 
         print 'Now adding files...'
         Nlist = 0
@@ -373,7 +373,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         print 'Waiting for all the hadd...'
         # Daemon cheking running jobs
         while nHaddjobs > 0 :
-            time.sleep(120)
+            time.sleep(300)
             nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
             print "I still see {n} jobs for Hadd part".format(n=nHaddjobs)
             #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
@@ -403,7 +403,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             if not os.path.exists(logdir): os.makedirs(logdir)
             condor_file_name = condordir+'/condor_submit_hadd_recovery_{nr}.condor'.format(nr=str(HaddRecoveryAttempt))
             condor_file = open(condor_file_name,'w')
-            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000)  
+            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000, maxtime=5000)  
 
             print "Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt)
             goodHadds = 0
@@ -443,7 +443,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             # Daemon cheking running jobs
             print "Checking recovery of Hadd ..."
             while nHaddjobs > 0 :
-                time.sleep(120)
+                time.sleep(300)
                 nHaddjobs = checkNjobsCondor("ecalpro_Hadd_recovery")
                 print "I still see {n} jobs for Hadd_recovery part".format(n=nHaddjobs)
                 #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
@@ -467,7 +467,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_finalHadd.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_FinalHadd", memory=2000) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_FinalHadd", memory=2000, maxtime=5000) # this does not close the file
         
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(FHadd_src_n)))        
@@ -485,7 +485,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
         print 'Waiting for the Final hadd...'
         # Daemon cheking running jobs
         while nFinHaddjobs > 0 :
-            time.sleep(30)
+            time.sleep(120)
             nFinHaddjobs = checkNjobsCondor("ecalpro_FinalHadd")
             print "I still see {n} jobs for FinalHadd part".format(n=nFinHaddjobs)
         print 'Done with final hadd'
@@ -523,7 +523,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     if not os.path.exists(logdir): os.makedirs(logdir)
     condor_file_name = condordir+'/condor_submit_fit.condor'
     condor_file = open(condor_file_name,'w')
-    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000) # this does not close the file
+    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=2000) # this does not close the file
 
     # preparing submission of fit tasks (EB)
     print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
@@ -561,7 +561,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         print 'Waiting for fit jobs to be finished...'
         # Daemon cheking running jobs
         while nFitjobs > 0 :
-            time.sleep(20)
+            time.sleep(60)
             nFitjobs = checkNjobsCondor("ecalpro_Fit")
             print "I still see {n} jobs for Fit part".format(n=nFitjobs)
         print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
