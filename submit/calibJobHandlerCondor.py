@@ -306,6 +306,12 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                        if( filesize<100000 ):
                            #print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
                            continue
+                       else:
+                           #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
+                           tf = ROOT.TFile.Open("root://eoscms/"+filetoCheck.strip())
+                           if tf.TestBit(ROOT.TFile.kRecovered):
+                               #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
+                               continue
                    newlines.append(filetoCheck)
 
                # NumToRem = 0
