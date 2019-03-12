@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import subprocess, time, sys, os
+from ROOT import *
 from methods import *
 
 
@@ -112,11 +113,12 @@ inputlistbase_v = inputlist_f.readlines()
 
 for iters in range(nIterations):
 
+    if ( RunResub ):
+        iters = iters + int(sys.argv[2])
+
     condordir = condorPath + '/iter_' + str(iters) 
     if not os.path.exists(condordir): os.makedirs(condordir)
 
-    if ( RunResub ):
-        iters = iters + int(sys.argv[2])
     if ( not ONLYHADD and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
 
         # PREPARE CONDOR FILES FOR FILL AT ITER iters
@@ -307,11 +309,14 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                            #print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
                            continue
                        else:
+                           # at this point the file should be good, but let's check if there are no recovered keys
                            #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
-                           tf = ROOT.TFile.Open("root://eoscms/"+filetoCheck.strip())
-                           if tf.TestBit(ROOT.TFile.kRecovered):
+                           tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
+                           if tf.TestBit(TFile.kRecovered):
                                #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
+                               tf.Close()
                                continue
+                           tf.Close()
                    newlines.append(filetoCheck)
 
                # NumToRem = 0
@@ -393,12 +398,15 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             filesize=0
             if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
             if filesize>100000:
-                goodHadds += 1
+                tf = TFile.Open("root://eoscms/"+eosFile)
+                if not tf.TestBit(TFile.kRecovered):                    
+                    goodHadds += 1
+                tf.Close()
 
         if goodHadds == Nlist:
             print "All files are present: going to hadd them"
         else:
-            print "Some files are missing or empty: going to recover them"
+            print "Some files are missing or empty or some keys were recovered: going to recover them"
 
         HaddRecoveryAttempt = 0
         # this recovery is often unsuccessful: if it failed the first time, there is a high chance that the problem is persistent
@@ -423,8 +431,13 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                     #print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
                     Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
-                    #print Hadd_src_n
-                else: goodHadds += 1
+                    #print Hadd_src_n                
+                else: 
+                    tf = TFile.Open("root://eoscms/"+eosFile)
+                    if not tf.TestBit(TFile.kRecovered):                    
+                        goodHadds += 1
+                    tf.Close()
+                        
 
             print "Good files: {num}/{den}".format(num=goodHadds,den=Nlist)
             if goodHadds == Nlist: 
@@ -532,21 +545,21 @@ If this is not the case, modify FillEpsilonPlot.cc
     writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=2000) # this does not close the file
 
     # preparing submission of fit tasks (EB)
-    print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
+    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
     for inteb in range(nEB):
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
-        if (not ONLYMERGEFIT ):
+        if (not ONLYMERGEFIT):
             print 'About to EB fit:'
             print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName            
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
 
     # preparing submission of fit tasks (EE)
-    print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
+    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
     for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
-        if (not ONLYMERGEFIT ):
+        if (not ONLYMERGEFIT):
             print 'About to EE fit:'
             print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
@@ -573,7 +586,6 @@ If this is not the case, modify FillEpsilonPlot.cc
         print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
 
     # Merge Final CalibMap
-    from ROOT import *
     from PhysicsTools.PythonAnalysis import *
     gSystem.Load("libFWCoreFWLite.so")
     #AutoLibraryLoader.enable()
@@ -811,6 +823,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         # print eosFileList.communicate()
         # print "############################"
 
+        print "Going to merge the following files ..."
         for thisfile_s in ListFinalHadd:
             thisfile_s = thisfile_s.rstrip()
             print "file --> " + str(thisfile_s)
