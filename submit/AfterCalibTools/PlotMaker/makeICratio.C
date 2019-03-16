@@ -305,6 +305,7 @@ void realDrawMapRatio(const string& outDir = "",
     hinfo->DrawLatex(i*pw + clm + 0.03 + pw/2., yh-2.*pass, Form("Integral %.0f",dispersionIC2_EBmod[i]->Integral()));
     hinfo->DrawLatex(i*pw + clm + 0.03 + pw/2., yh-3.*pass, Form("Overflow %.0f",dispersionIC2_EBmod[i]->GetBinContent(dispersionIC_EBmod[i]->GetNbinsX()+1)));
     hinfo->DrawLatex(i*pw + clm + 0.03 + pw/2., yh-4.*pass, Form("Underflow  %.0f",dispersionIC2_EBmod[i]->GetBinContent(0)));
+    dispersionIC_EBmod[i]->GetXaxis()->SetRangeUser(0.002+mapMin, mapMax-0.002); // to avoid overlapping labels
   }
   TLatex* tex2 = new TLatex();
   tex2->SetTextSize(0.05);
