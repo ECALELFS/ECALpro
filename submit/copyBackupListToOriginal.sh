@@ -8,7 +8,7 @@
 # note that some files are removed, so be careful!
 
 folder="AlCaP0_AllRun2017_condor_fixEBm16"
-iter="0"
+iter="1"
 
 path="${folder}/src/hadd/"
 fullpath="$PWD/${folder}/src/hadd/"

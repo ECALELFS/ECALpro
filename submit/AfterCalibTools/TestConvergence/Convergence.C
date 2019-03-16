@@ -593,8 +593,11 @@ void Convergence::run(const string& detectorToSkip = "no", const Bool_t& saveHis
     leg.Draw("same");
 
     myc1->RedrawAxis("sameaxis");
-    if(isEB==0) out = "plot_" + Paths_[0] + "/EB_IC_Convergence_etaRings.png";
-    if(isEB==1) out = "plot_" + Paths_[0] + "/EE_IC_Convergence_etaRings.png";
+    // if(isEB==0) out = "plot_" + Paths_[0] + "/EB_IC_Convergence_etaRings.png";
+    // if(isEB==1) out = "plot_" + Paths_[0] + "/EE_IC_Convergence_etaRings.png";
+    out = "plot_" + Paths_[0] + Form("/%s_IC_Convergence_etaRings.png",(isEB==0) ? "EB" : "EE");    
+    myc1->SaveAs(out.Data());
+    out = "plot_" + Paths_[0] + Form("/%s_IC_Convergence_etaRings.pdf",(isEB==0) ? "EB" : "EE");    
     myc1->SaveAs(out.Data());
   
     delete myc1;
