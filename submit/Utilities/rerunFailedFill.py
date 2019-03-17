@@ -72,14 +72,19 @@ isGoodFile = {}
 for i in range(ntot):
     isGoodFile[int(i)] = False
 
+count = 0
 goodfiles = []
-for f in files:
+for f in sorted(files):
     #base = os.path.basename(f)
-    if os.path.getsize > 20000000:  # expect about 75 MB, so ask at least 20
+    sys.stdout.write('File {num}/{tot}   \r'.format(num=count,tot=ntot-1))
+    sys.stdout.flush()
+    count += 1
+
+    if os.path.getsize > 25000000:  # expect about 75 MB, so ask at least 20
         # at this point the file should be good, but let's check if there are no recovered keys                                                           
         #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail                             
-        tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
-        if not tf: continue
+        tf = TFile.Open("root://eoscms/"+f)
+        if not tf or tf.IsZombie(): continue
         if not tf.TestBit(TFile.kRecovered):
             goodfiles.append(f)
             base = os.path.basename(f)
@@ -95,7 +100,7 @@ for key in isGoodFile:
 
 for f in os.listdir(jobdir):
     if not f.endswith('.sh'): continue
-    jobN = (f.split(".sh")[0]).split("_")[-1] # name is like submit_iter_5_job_14.sh, need to take 14x
+    jobN = (f.split(".sh")[0]).split("_")[-1] # name is like submit_iter_5_job_14.sh, need to take 14
     if not isGoodFile[int(jobN)]:
         cmd = "bsub -q {q} -oo {ld}/{jn}.log {jd}{job}".format(q=options.queue, ld=logdir, jn=jobN, jd=jobdir, job=f)
         if options.pretend:
