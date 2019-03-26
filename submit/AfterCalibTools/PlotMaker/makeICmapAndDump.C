@@ -180,6 +180,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 	if (iphiOnXaxis) bin = map_IC_value->FindFixBin(iphi,ieta);
 	else             bin = map_IC_value->FindFixBin(ieta,iphi);
 	IC_value = map_IC_value->GetBinContent(bin); 
+	if (IC_value < 0) IC_value = 1;
 	IC_error = (map_IC_error->GetBinContent(bin) > EPSILON) ? map_IC_error->GetBinContent(bin) : 999; 
 
 	outICdumpFile << right << setw(5) << ieta << " " 
@@ -212,6 +213,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 	} else {      
 	  bin = map_IC_value->FindFixBin(ix,iy);
 	  IC_value = map_IC_value->GetBinContent(bin); 
+	  if (IC_value < 0) IC_value = 1;
 	  IC_error = (map_IC_error->GetBinContent(bin) > EPSILON) ? map_IC_error->GetBinContent(bin) : 999; 
 	}
 
@@ -241,6 +243,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 	} else {
 	  bin = map_IC_value->FindFixBin(ix,iy);
 	  IC_value = map_IC_value->GetBinContent(bin); 
+	  if (IC_value < 0) IC_value = 1;
 	  IC_error = (map_IC_error->GetBinContent(bin) > EPSILON) ? map_IC_error->GetBinContent(bin) : 999;
 	}	
 

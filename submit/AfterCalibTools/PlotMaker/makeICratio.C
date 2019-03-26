@@ -151,7 +151,7 @@ void realDrawMapRatio(const string& outDir = "",
   Int_t ysizeCanvas = 1.0 * xsizeCanvas * mapEB_new->GetNbinsY() / mapEB_new->GetNbinsX() + 0.1 *xsizeCanvas;
 
   TCanvas *cEB = new TCanvas("cEB","",xsizeCanvas,ysizeCanvas);
-  // cEB->SetLeftMargin(0.16);
+  cEB->SetLeftMargin(0.08);
   // cEB->SetRightMargin(0.20);
   cEB->SetRightMargin(0.14);
   cEB->cd();
@@ -161,8 +161,11 @@ void realDrawMapRatio(const string& outDir = "",
   hRatio->GetXaxis()->SetTitleOffset(0.7);
   hRatio->GetYaxis()->SetTitle("i #eta");
   hRatio->GetYaxis()->SetTitleSize(0.06);
-  hRatio->GetYaxis()->SetTitleOffset(0.8);
+  hRatio->GetYaxis()->SetTitleOffset(0.65);
   hRatio->GetZaxis()->SetRangeUser(mapMin, mapMax);
+  hRatio->GetZaxis()->SetTitle("IC ratio");
+  hRatio->GetZaxis()->SetTitleSize(0.05);
+  hRatio->GetZaxis()->SetTitleOffset(0.9);
   hRatio->SetStats(0);
   gPad->Update();
   cEB->SaveAs(Form("%s/calibMap_EB_ratio_%s.pdf",outDir.c_str(),canvasSuffix.c_str()));
@@ -174,6 +177,11 @@ void realDrawMapRatio(const string& outDir = "",
   // cRatio1D->SetLeftMargin(0.16);
   // cRatio1D->SetRightMargin(0.20);
   cRatio1D->cd();
+  cRatio1D->SetTickx(1);
+  cRatio1D->SetTicky(1);
+  cRatio1D->cd();
+  cRatio1D->SetGridx(1);
+  cRatio1D->SetGridy(1);
   hratioDistr->Draw("HIST");
   hratioDistr->GetXaxis()->SetTitle("ratio");
   hratioDistr->GetXaxis()->SetTitleSize(0.06);
@@ -192,6 +200,9 @@ void realDrawMapRatio(const string& outDir = "",
   for (Int_t i = 1; i <=4; i++) {
     dispersionIC_EBmod.push_back(  new TH1D(Form("dispersionIC_EBmod%d",i), Form("IC dispersion in EB Module %d",i),51, 0.95,1.05) );
     dispersionIC2_EBmod.push_back( new TH1D(Form("dispersionIC2_EBmod%d",i),Form("IC dispersion in EB Module %d",i),51, 0.95,1.05) );
+    // do not use Under/Overflow bins for these plots
+    dispersionIC_EBmod.back()->StatOverflows(0);
+    dispersionIC2_EBmod.back()->StatOverflows(0);
   }
 
   Double_t imodule = 0;
@@ -501,6 +512,11 @@ void realDrawMapRatioEE(const string& outDir = "",
   // cRatio1D->SetLeftMargin(0.16);
   // cRatio1D->SetRightMargin(0.20);
   cRatio1D->cd();
+  cRatio1D->SetTickx(1);
+  cRatio1D->SetTicky(1);
+  cRatio1D->cd();
+  cRatio1D->SetGridx(1);
+  cRatio1D->SetGridy(1);
   hratioDistr->Draw("HIST");
   hratioDistr->GetXaxis()->SetTitle("ratio");
   hratioDistr->GetXaxis()->SetTitleSize(0.06);
