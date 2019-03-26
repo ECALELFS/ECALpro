@@ -312,6 +312,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                            # at this point the file should be good, but let's check if there are no recovered keys
                            #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
                            tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
+                           if not tf or tf.IsZombie(): continue
                            if tf.TestBit(TFile.kRecovered):
                                #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
                                tf.Close()
@@ -585,6 +586,58 @@ If this is not the case, modify FillEpsilonPlot.cc
             print "I still see {n} jobs for Fit part".format(n=nFitjobs)
         print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
 
+        #Run only on EB or EE if needed
+        ListFinalHadd = list()
+        if Barrel_or_Endcap=='ONLY_BARREL':
+           ListFinalHadd = ListFinalHaddEB
+        if Barrel_or_Endcap=='ONLY_ENDCAP':
+           ListFinalHadd = ListFinalHaddEE
+        if (Barrel_or_Endcap=='ALL_PLEASE'):
+           ListFinalHadd = ListFinalHaddEB
+           ListFinalHadd = ListFinalHadd + ListFinalHaddEE
+
+        # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
+        logdir    = logPath    + '/Fit_recovery/iter_' + str(iters) 
+        if not os.path.exists(logdir): os.makedirs(logdir)
+        condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
+        condor_file = open(condor_file_name,'w')
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=2000) # this does not close the file
+
+        allFitsGood = True
+        for inteb in range(nEB):
+            fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
+            thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+            thisfile_f = TFile.Open(thisfile)
+            if not thisfile_f: 
+                allFitsGood = False
+                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
+        for inte in range(nEE):        
+            fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
+            thisfile eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+            thisfile_f = TFile.Open(thisfile)
+            if not thisfile_f:
+                allFitsGood = False
+                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
+        condor_file.close()
+
+        if not allFitsGood:
+            Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
+            print ">>> Running --> " + Fitsubmit_s
+            FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
+            FoutJobs = FsubJobs.communicate()
+            print FoutJobs
+            time.sleep(5)
+
+            nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")     
+            print "There are {n} jobs for Fit recovery part".format(n=nFitjobs)
+            print 'Waiting for fit jobs to be finished...'
+            # Daemon cheking running jobs
+            while nFitjobs > 0 :
+                time.sleep(60)
+                nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")
+                print "I still see {n} jobs for Fit recovery part".format(n=nFitjobs)
+            print "Done with fitting recovery! Now we have to merge all fits in one Calibmap.root"
+
     # Merge Final CalibMap
     from PhysicsTools.PythonAnalysis import *
     gSystem.Load("libFWCoreFWLite.so")
@@ -597,15 +650,6 @@ If this is not the case, modify FillEpsilonPlot.cc
         quit()
     else:
         f.cd()
-    #Run only on EB or EE if needed
-    ListFinalHadd = list()
-    if Barrel_or_Endcap=='ONLY_BARREL':
-       ListFinalHadd = ListFinalHaddEB
-    if Barrel_or_Endcap=='ONLY_ENDCAP':
-       ListFinalHadd = ListFinalHaddEE
-    if (Barrel_or_Endcap=='ALL_PLEASE'):
-       ListFinalHadd = ListFinalHaddEB
-       ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
     for n_repeat in range(2):
 
@@ -828,9 +872,12 @@ If this is not the case, modify FillEpsilonPlot.cc
             thisfile_s = thisfile_s.rstrip()
             print "file --> " + str(thisfile_s)
             thisfile_f = TFile.Open(thisfile_s)
+            if not thisfile_f: 
+                print "Error in calibJobHandlerCondor.py --> file not found" 
+                quit()
             #Taking Interval and EB or EE
             h_Int = thisfile_f.Get("hint")
-            #print "Error in calibJobHandlerCondor.py --> h_Int = thisfile_f.Get("hint"): h_Int is a null pointer. Calling sys.exit()"
+            #
             #sys.exit()
             init = h_Int.GetBinContent(1)
             finit = h_Int.GetBinContent(2)

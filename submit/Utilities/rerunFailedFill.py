@@ -4,7 +4,7 @@ import subprocess, time, sys, os, string
 from ROOT import *
 
 # example:
-# python Utilities/rerunFailedFill.py -e /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/ -d AlCaP0_AllRun2017_condor_fixEBm16 -i 5 --useLSF -q cmscaf1nd
+# python Utilities/rerunFailedFill.py -e /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/ -d AlCaP0_AllRun2017_condor_fixEBm16 -i 5 --useLSF -q cmscaf1nd --remove-zombie -p
 # add -p to check what will be done, without running jobs
 
 from optparse import OptionParser
@@ -15,9 +15,11 @@ parser.add_option("-d", "--dirname", dest="dirname",  type="string", default="",
 parser.add_option("-i", "--iter", dest="iter",  type="int", default=-1, help="Number of iteration to match the iter_<n> folder (n >= 0)")
 parser.add_option("--useLSF", dest="useLSF",  action="store_true", default=False, help="Run jobs using LSF instead of condor")
 parser.add_option("-q", "--queue", dest="queue",  type="string", default="cmscaf1nd", help="Name of queue for job submission (for LSF)")
-parser.add_option("-p", "--petend", dest="pretend",  action="store_true", default=False, help="Just print commands, do not submit jobs")
+parser.add_option("-p", "--pretend", dest="pretend",  action="store_true", default=False, help="Just print commands, do not submit jobs")
 # not needed, can take it from folder
 #parser.add_option("-n", "--n-tot", dest="nTot",  type="int", default=-1, help="Total number of expected fill files")
+parser.add_option(       "--remove-zombie", dest="removeZombie",  action="store_true", default=False, help="Remove zombie file before submitting new jobs")
+parser.add_option(       "--check-zombie", dest="checkZombie",  action="store_true", default=False, help="Only check for zombies and exit")
 (options, args) = parser.parse_args()
 
 if len(options.eosdir) == 0:
@@ -74,17 +76,24 @@ for i in range(ntot):
 
 count = 0
 goodfiles = []
+zombiefiles = []
+#nZombie = 0
 for f in sorted(files):
     #base = os.path.basename(f)
     sys.stdout.write('File {num}/{tot}   \r'.format(num=count,tot=ntot-1))
     sys.stdout.flush()
     count += 1
 
-    if os.path.getsize > 25000000:  # expect about 75 MB, so ask at least 20
+    if os.path.getsize > 30000000:  # expect about 75 MB, so ask at least 20
         # at this point the file should be good, but let's check if there are no recovered keys                                                           
         #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail                             
-        tf = TFile.Open("root://eoscms/"+f)
-        if not tf or tf.IsZombie(): continue
+        tf = TFile.Open("root://eoscms/"+f)        
+        #if not tf:             
+        #    continue
+        if not tf or tf.IsZombie(): 
+            #nZombie += 1
+            zombiefiles.append(f)
+            continue
         if not tf.TestBit(TFile.kRecovered):
             goodfiles.append(f)
             base = os.path.basename(f)
@@ -93,6 +102,19 @@ for f in sorted(files):
         tf.Close()
 
 print "I see {n} good EcalNtp files".format(n=len(goodfiles))
+#print "There were {n} zombie EcalNtp files {text}".format(n=nZombie,text= "(removed)" if options.removeZombie else "(to be removed)")
+print "There were {n} zombie EcalNtp files".format(n=len(zombiefiles))
+if options.checkZombie:
+    quit()
+
+if options.removeZombie:
+    print "### Removing zombies"
+    for f in sorted(zombiefiles):
+        cmd = "rm " + f
+        if options.pretend:            
+            print cmd
+        else:
+            os.system(cmd)
 
 nJobToRun = 0
 for key in isGoodFile:
