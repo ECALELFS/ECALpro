@@ -597,30 +597,36 @@ If this is not the case, modify FillEpsilonPlot.cc
            ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
         # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
-        logdir    = logPath    + '/Fit_recovery/iter_' + str(iters) 
-        if not os.path.exists(logdir): os.makedirs(logdir)
-        condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
-        condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=2000) # this does not close the file
+        # this check should be made until all fits are present, otherwise the code crashes, butif it keeps happening there might be something serious to solve
+        # so better to have the code crash and investigate locally
 
         allFitsGood = True
+        fit_src_toResub = []
         for inteb in range(nEB):
             fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
             thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
             thisfile_f = TFile.Open(thisfile)
             if not thisfile_f: 
                 allFitsGood = False
-                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
+                fit_src_toResub.append(fit_src_n)
         for inte in range(nEE):        
             fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
             thisfile eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
             thisfile_f = TFile.Open(thisfile)
             if not thisfile_f:
                 allFitsGood = False
-                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
-        condor_file.close()
+                fit_src_toResub.append(fit_src_n)
 
         if not allFitsGood:
+            logdir    = logPath    + '/Fit_recovery/iter_' + str(iters) 
+            if not os.path.exists(logdir): os.makedirs(logdir)
+            condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
+            condor_file = open(condor_file_name,'w')
+            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=2000) # this does not close the file
+            for fit in fit_src_toResub:
+                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit)))               
+            condor_file.close()
+
             Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
             print ">>> Running --> " + Fitsubmit_s
             FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
