@@ -611,7 +611,7 @@ If this is not the case, modify FillEpsilonPlot.cc
                 fit_src_toResub.append(fit_src_n)
         for inte in range(nEE):        
             fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-            thisfile eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+            thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
             thisfile_f = TFile.Open(thisfile)
             if not thisfile_f:
                 allFitsGood = False
