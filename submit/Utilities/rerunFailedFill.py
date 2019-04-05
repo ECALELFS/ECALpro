@@ -105,6 +105,9 @@ print "I see {n} good EcalNtp files".format(n=len(goodfiles))
 #print "There were {n} zombie EcalNtp files {text}".format(n=nZombie,text= "(removed)" if options.removeZombie else "(to be removed)")
 print "There were {n} zombie EcalNtp files".format(n=len(zombiefiles))
 if options.checkZombie:
+    print "Printing list of zombies"
+    for f in sorted(zombiefiles):
+        print f
     quit()
 
 if options.removeZombie:
