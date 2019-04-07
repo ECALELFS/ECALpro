@@ -3017,19 +3017,32 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 
 	if (fillKinematicVariables_) {
 
-	  if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
-	  else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
-	  else if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
-	  else whichRegionEcalStreamPi0 = 3;
+	  // here the cut on mass was not applied yet, this apparently means that when subDetId==EcalEndcap, I can have photons one in EE+ and the other in EE-
+	  // indeed, it looks like these distributions for abs(eta_pi0) < 1.479 have some events with Nxtal = 6, which is the cut for EE (it is 7 for EB)
+	  // so, I should actually require explicitely whether I am looking at EB or EE
+	  // also, I should add the mass cut
+	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
-	  pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
-	  g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
-	  g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
-	  g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g1);
-	  g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g2);
-	  pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
-	  if (isMC_) {
-	    pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+	  if (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) {
+
+	    if (subDetId == EcalBarrel) {
+	      if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
+	      else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
+	    } else {
+	      if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
+	      else whichRegionEcalStreamPi0 = 3;	     
+	    }
+
+	    pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
+	    g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
+	    g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
+	    g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g1);
+	    g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g2);
+	    pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	    if (isMC_) {
+	      pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+	    }	   
+
 	  }
 
 	}
@@ -3763,20 +3776,34 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
     if (fillKinematicVariables_) {
 
-      if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
-      else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
-      else if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
-      else whichRegionEcalStreamPi0 = 3;
+      // here the cut on mass was not applied yet, this apparently means that when subDetId==EcalEndcap, I can have photons one in EE+ and the other in EE-
+      // indeed, it looks like these distributions for abs(eta_pi0) < 1.479 have some events with Nxtal = 6, which is the cut for EE (it is 7 for EB)
+      // so, I should actually require explicitely whether I am looking at EB or EE
+      // also, I should add the mass cut
+      // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
-      pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
-      g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
-      g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
-      g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma);
-      g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma2);
-      pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
-      if (isMC_) {
-	pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+      if (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) {
+
+	if (subDetId == EcalBarrel) {
+	  if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
+	  else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
+	} else {
+	  if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
+	  else whichRegionEcalStreamPi0 = 3;	  
+	}
+
+	pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
+	g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
+	g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
+	g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma);
+	g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma2);
+	pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	if (isMC_) {
+	  pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);	
+	}
+
       }
+
     }
 
     if (!MakeNtuple4optimization_) {
