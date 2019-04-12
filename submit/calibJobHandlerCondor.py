@@ -55,6 +55,7 @@ getenv      = True
 environment = "LS_SUBCWD={here}"
 next_job_start_delay = 1
 request_memory = {mem}
+requirements = (OpSysAndVer =?= "SLCern6")
 +MaxRuntime = {time}
 +JobBatchName = "{jbn}"\n
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
@@ -320,42 +321,6 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                            tf.Close()
                    newlines.append(filetoCheck)
 
-               # NumToRem = 0
-               # for filetoCheck in lines:
-               #     if( NumToRem!=0 ):
-               #        Num = NumToRem - 1
-               #        f2 = open(str(FoutGrep_2) + str(Num))
-               #        lines = f2.readlines()
-               #        f2.close()
-               #     if not os.path.exists(filetoCheck.strip()):
-               #        updated_list = str(FoutGrep_2) + str(NumToRem)
-               #        print 'HADD::MISSING: ' + str(filetoCheck)
-               #        print 'removing from Hadd, in: ' + updated_list
-               #        f1 = open(updated_list,"w")
-               #        NumToRem = NumToRem + 1
-               #        for line in lines:
-               #            if line!=str(filetoCheck):
-               #                 f1.write(line)
-               #            # else:                              
-               #            #     print "Not printing " + str(line) + " in updated file " + str(updated_list)
-               #        f1.close()
-               #     else:
-               #         filesize = os.path.getsize(filetoCheck.strip())
-               #         #If is corrupted (size too small), remove it from the list
-               #         if( filesize<100000 ):
-               #             print 'HADD::Bad size for: ' + str(filetoCheck)
-               #             print 'removing from Hadd, in: ' + str(FoutGrep_2) + str(NumToRem)
-               #             f1 = open(str(FoutGrep_2) + str(NumToRem),"w+")
-               #             updated_list = str(FoutGrep_2) + str(NumToRem)
-               #             NumToRem = NumToRem + 1
-               #             #lines1 = f1.readlines() # don'tunderstand the purpose of this line
-               #             for line in lines: 
-               #                 if line!=str(filetoCheck):
-               #                      f1.write(line)
-               #                 # else:                              
-               #                 #     print "Not printing " + str(line) + " in updated file " + str(updated_list)
-               #             f1.close()
-
                #moving the .list to the correct one
                if( len(newlines) ):
                    prunedfile = FoutGrep_2.replace(".list","_pruned.list")
@@ -400,6 +365,7 @@ It is better that you run on all the output files using a TChain. Indeed, these 
             if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
             if filesize>100000:
                 tf = TFile.Open("root://eoscms/"+eosFile)
+                if not tf or tf.IsZombie(): continue
                 if not tf.TestBit(TFile.kRecovered):                    
                     goodHadds += 1
                 tf.Close()
@@ -428,13 +394,16 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                 if os.path.exists(eosFile): 
                     filesize = os.path.getsize(eosFile)
                 # should be of the order of some MB, so ask at least 100 kB (if empty, it is about 1.1 kB)
+                Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                 if filesize<100000:
                     #print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
-                    Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
                     #print Hadd_src_n                
                 else: 
                     tf = TFile.Open("root://eoscms/"+eosFile)
+                    if not tf or tf.IsZombie():
+                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+                        continue
                     if not tf.TestBit(TFile.kRecovered):                    
                         goodHadds += 1
                     tf.Close()
