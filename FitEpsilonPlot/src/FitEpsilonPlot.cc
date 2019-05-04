@@ -44,6 +44,8 @@ Implementation:
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
+#include "PhysicsTools/TagAndProbe/interface/RooCMSShape.h"
+
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
 #include "DataFormats/EcalDetId/interface/EEDetId.h"
 
@@ -113,9 +115,14 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     useFit_RooMinuit_ = iConfig.getUntrackedParameter<bool>("useFit_RooMinuit",false);
     foldInSuperModule_ = iConfig.getUntrackedParameter<bool>("foldInSuperModule",false);
 
+    // apparently for E/Etrue the fits are much better (I tried RooCMSShape + double-Crystal-Ball)
+    // some tuning might be required, though
+    // if (isEoverEtrue_) useFit_RooMinuit_ = false;
+    // eventually I decided to use FitTo method for E/Etrue
+
     //foldInSuperModule_ = true;
     fitEoverEtrueWithRooFit_ = true;   // use bare TH1::Fit or RooFit (better, can stay true)
-    readFoldedHistogramFromFile_ = false;  // read directly folded histograms (the folding is done in this analyzer, so the very first time this option is false)
+    readFoldedHistogramFromFile_ = true;  // read directly folded histograms (the folding is done in this analyzer, so the very first time this option is false)
     foldEB_all0_onlyPlus1_onlyMinus2_ = 0; // 0 to put all 36 SM in one, 1 for using EB+ only, 2 for using EB- only (but then they are used on all barrel because I only have a single SM map)
 
     // I should add a code that do the folding before going to the fitting part
@@ -282,6 +289,8 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 FitEpsilonPlot::~FitEpsilonPlot()
 {
 
+  cout << "Beginning of destructor" << endl;
+
   if ((Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" )) {
 
     if (isEoverEtrue_) {
@@ -310,6 +319,9 @@ FitEpsilonPlot::~FitEpsilonPlot()
 
   }
 
+  cout << "After EB" << endl;
+
+
   if ((Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" )) {
 
     if (isEoverEtrue_) {
@@ -324,8 +336,13 @@ FitEpsilonPlot::~FitEpsilonPlot()
 
   }
 
-  if (inputEpsilonFile_->IsOpen())
-    inputEpsilonFile_->Close();
+  cout << "After EE" << endl;
+
+  // do not close file, it produces a segmentation fault
+  if (inputEpsilonFile_ != nullptr) {
+    if (inputEpsilonFile_->IsOpen()) inputEpsilonFile_->Close();
+  }
+  cout << "End of destructor" << endl;
 
 }
 
@@ -649,7 +666,7 @@ void  FitEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
     for(int jR=0; jR<size; jR++)
 	  delete h[jR];
 
-    delete h;
+    //delete h; // do not delete it, otherwise it makes the code crash and the end of the destructor
 }
 
 
@@ -2334,11 +2351,14 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 {
 
   // some flags for the fit
-  // usign the double Crystal Ball seems the better choice, but might require some parameters tuning
-  bool noFitBkg = true;  // use only signal model for the fit
+  // using the double Crystal Ball seems the better choice, but might require some parameters tuning
+  bool simpleFitTo = true; // will use neither RooMinuit nor RooMinimizer, but rather simple x.fitTo()
+  bool noFitBkg = isSecondGenPhoton ? false : true;  // if true, use only signal model for the fit
+  bool useRooCMSShapeAsBkg = isSecondGenPhoton ? false : false;
   bool useCBtoFit = isSecondGenPhoton ? true : false;  // use Crystal Ball (tail orientation depends on the parameter alpha given below)
   //  bool useCB2toFit = isSecondGenPhoton ? true : false;
-  bool useCB2toFit = true;   // use double Crystal Ball (overrides useCBtoFit)
+  bool useCB2toFit = isSecondGenPhoton ? false : true;   // use double Crystal Ball (overrides useCBtoFit)
+  //bool useCB2toFit = isSecondGenPhoton ? false : false;   // use double Crystal Ball (overrides useCBtoFit)
 
   // std::cout << "FitEpsilonPlot::FitEoverEtruePeak called " << std::endl;
   int nPhoton = isSecondGenPhoton ? 2 : 1;
@@ -2363,69 +2383,114 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
     h1narrow->SetBinContent(i,h1->GetBinContent(h1->FindFixBin(h1narrow->GetBinCenter(i))));
   }
   float rmsh1narrow = h1narrow->GetStdDev();
-  float xmaxbin = h1narrow->GetBinCenter(h1narrow->GetMaximumBin());
-  delete h1narrow;
+  float xmaxbin = h1narrow->GetBinCenter(h1narrow->GetMaximumBin());  
+  delete h1narrow;  
 
+  //cout << "FIT_EPSILON: photon " << (isSecondGenPhoton ?  2 : 1) << " --> xmaxbin :: rmsh1narrow = " << xmaxbin << " :: " << rmsh1narrow << endl;
 
   // fit range, allow for differences between two photons
   // float_t xlo = isSecondGenPhoton ? 0.82 : 0.82;
-  float_t xlo = std::max(0.82, isSecondGenPhoton ? (xmaxbin - 1.6 * rmsh1narrow) : (xmaxbin - 1.7 * rmsh1narrow));
-  //float_t xhi = isSecondGenPhoton ? 1.15 : 1.15;
-  float_t xhi = std::min(1.15, isSecondGenPhoton ? (xmaxbin + 2.0 * rmsh1narrow) : (xmaxbin + 2.2 * rmsh1narrow));
+  // float_t xlo = std::max(0.82, isSecondGenPhoton ? (xmaxbin - 1.6 * rmsh1narrow) : (xmaxbin - 1.7 * rmsh1narrow));
+  // //float_t xhi = isSecondGenPhoton ? 1.15 : 1.15;
+  // float_t xhi = std::min(1.15, isSecondGenPhoton ? (xmaxbin + 2.0 * rmsh1narrow) : (xmaxbin + 2.2 * rmsh1narrow));
 
-  RooRealVar x("x",Form("#gamma %d E/E_{true}",nPhoton), 0.0, 1.5, "");
-  RooDataHist dh("dh",Form("#gamma %d E/E_{true}",nPhoton),RooArgList(x),h1);
+  float_t xlo = 0.5;
+  float_t xhi = 1.4;
 
-  RooRealVar mean("mean","peak position", xmaxbin, xmaxbin-0.1, xmaxbin+0.1, "");
-  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, 0.001,std::max(0.15,1.2*rmsh1narrow),"");
+  if (noFitBkg) {
+    if (useCB2toFit or useCBtoFit) {
+      xlo = isSecondGenPhoton ? 0.87 : 0.87;
+      xhi = 1.48;      
+    } else {
+      xlo = 0.8;
+      xhi = 1.1;
+    }
+  } else {
+    if (useRooCMSShapeAsBkg) {
+      xlo = 0.15;
+      xhi = 1.48;
+    } else{
+      xlo = 0.6;
+      xhi = 1.48;
+    }
+  }
+
+  RooRealVar x("x",Form("#gamma_{%d} E/E_{true}",nPhoton), 0.0, 1.5, "");
+  RooDataHist dh("dh",Form("#gamma_{%d} E/E_{true}",nPhoton),RooArgList(x),h1);
+
+  RooRealVar mean("mean","peak position", xmaxbin, xmaxbin-0.15, xmaxbin+0.15, "");
+  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, std::min(0.001,0.9*rmsh1narrow),std::max(0.15,1.1*rmsh1narrow),"");
 
   //  RooRealVar Nsig("Nsig","signal yield",h1->Integral()*0.7,0.,h1->Integral()*1.1); // signal represents the peak in E/Etrue (even though it is actually only signal)
   //Nsig.setVal( h->GetSum()*0.1);
-  RooRealVar Nsig("Nsig","signal yield",0.7,0.,1.0); // should use normalization
-  
+  RooRealVar Nsig("Nsig","signal yield",
+		  isSecondGenPhoton ? 0.3 : 0.8 ,
+		  0.,
+		  isSecondGenPhoton ? 0.9 : 1.0); // should use normalization
+  if (noFitBkg) Nsig.setRange(0.0,1.0);  
 
   RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
 
-  RooRealVar alphaCB  ("alphaCB","",-1,-5,-0.1);  // positive for left tail, negative for right one
-  RooRealVar nCB ("nCB","",10,0.1,50);
-  RooRealVar alphaCB2  ("alphaCB2","",1,0.1,5.0);  // the double CB I use requires positive parameter
-  RooRealVar nCB2 ("nCB2","",10,0.1,50);
+  RooRealVar alphaCB  ("alphaCB","",
+		       useCB2toFit ? 2.5  : -1, 
+		       useCB2toFit ? 0.01 : -5.0,
+		       useCB2toFit ? 5.0  : -0.01);  // for CB1, this alpha parameter is positive for left tail, negative for right one
+  RooRealVar nCB ("nCB","",0.5,0.01,50);
+  RooRealVar alphaCB2  ("alphaCB2","",1.07,0.01,5.0);  // the double CB I use requires positive parameter
+  RooRealVar nCB2 ("nCB2","",2,0.01,50);
   RooCBShape cb_sig ("cb_sig","Crystal Ball",x, mean, sigma, alphaCB,nCB);
-  if (useCB2toFit) {
-    // the double CB I use requires positive parameter
-    alphaCB.setVal(1);
-    alphaCB.setRange(0.1,5.0);
-  }
   My_double_CB cb2_sig = My_double_CB("cb2_sig", "cb2_sig", x, mean, sigma, alphaCB,nCB, alphaCB2,nCB2);
+  
+  RooRealVar alphaCMSshape("alphaCMSshape","alphaCMSshape", 1.0, -50.0,50.0);
+  RooRealVar betaCMSshape("betaCMSshape","betaCMSshape", 3.0, 0.0, 50.0);
+  RooRealVar gammaCMSshape("gammaCMSshape","gammaCMSshape", 3.0, -50.0,50.0);
+  RooRealVar peakCMSshape("peakCMSshape","peakCMSshape", 0.15, 0.01,1.1);
+  RooCMSShape cmsshape = RooCMSShape("rooCMSshape","cmsShape",x,alphaCMSshape,betaCMSshape,gammaCMSshape,peakCMSshape);  
 
-  RooRealVar cb0("cb0","cb0", 0.0, -5.0,5.0);
-  RooRealVar cb1("cb1","cb1", 0.0, -5.,5);
-  RooRealVar cb2("cb2","cb2",-1,  -5.,5.);
+  RooRealVar cb0("cb0","cb0", 0.0, -10.0,200.0);
+  RooRealVar cb1("cb1","cb1", 0.0, -50.,50);
+  RooRealVar cb2("cb2","cb2",-1  ,  -5.,5.);
   RooRealVar cb3("cb3","cb3", 0.0,  -5.,5.);
   RooRealVar cb4("cb4","cb4", 0.0,  -5.,5.);
   RooRealVar cb5("cb5","cb5", 0.0,  -5.,5.);
   RooRealVar cb6("cb6","cb6", 0.0,  -5.,5.);
-  //  RooRealVar cb7("cb","cb7", 0.0,  -5.,5.);
+  //RooRealVar cb7("cb7","cb7", 0.0,  -5.,5.);
 
   // define a background shape in addition for the bare gaussian or Crystal Ball for the peak
-  RooArgList cbpars(cb0,cb1,cb2);  
+  RooArgList cbpars(cb0,cb1,cb2,cb3);  
   RooArgList cbparsMore(cb0,cb1,cb2,cb3,cb4,cb5,cb6);
   RooArgList *cbparsPtr = isSecondGenPhoton ? &cbpars : &cbpars;
   RooChebychev bkg("bkg","bkg model", x, *cbparsPtr );
   //  RooRealVar Nbkg("Nbkg","background yield",h1->Integral()*0.3,0.,h1->Integral()*1.1);
-  RooRealVar Nbkg("Nbkg","background yield",0.3,0.,1.0);
+  RooRealVar Nbkg("Nbkg","background yield",
+		  isSecondGenPhoton ? 0.8 : 0.3 ,
+		  0.,
+		  isSecondGenPhoton ? 1.0 : 0.8);
 
   //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3,p4,p5,p6) );
   //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3) );
 
   RooAbsPdf* model=0;
 
-  RooAddPdf model1("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
-  RooAddPdf model2("model","sig+bkg",RooArgList(cb_sig,bkg),RooArgList(Nsig,Nbkg));
-  RooAddPdf model3("model","sig+bkg",RooArgList(cb2_sig,bkg),RooArgList(Nsig,Nbkg));
+  // pass only Nsig if it is a fraction of events (0 < x < 1). If both Nsig and Nbkg are passed, the extended likelihood case is assumed, and they would be
+  // interpreted as actual number of events
+  // RooAddPdf model1("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
+  // RooAddPdf model2("model","sig+bkg",RooArgList(cb_sig,bkg),RooArgList(Nsig,Nbkg));
+  // RooAddPdf model3("model","sig+bkg",RooArgList(cb2_sig,bkg),RooArgList(Nsig,Nbkg));
+  RooAddPdf model1("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig));
+  RooAddPdf model2("model","sig+bkg",RooArgList(cb_sig,bkg),RooArgList(Nsig));
+  RooAddPdf model3("model","sig+bkg",RooArgList(cb2_sig,bkg),RooArgList(Nsig));
+
   RooAddPdf model4("model","sig",RooArgList(cb2_sig),RooArgList(Nsig));
   RooAddPdf model5("model","sig",RooArgList(cb_sig),RooArgList(Nsig));
   RooAddPdf model6("model","sig",RooArgList(gaus),RooArgList(Nsig));
+
+  // RooAddPdf model7("model","sig+bkg",RooArgList(cb2_sig,cmsshape),RooArgList(Nsig,Nbkg));
+  // RooAddPdf model8("model","sig+bkg",RooArgList(cb_sig,cmsshape),RooArgList(Nsig,Nbkg));
+  // RooAddPdf model9("model","sig+bkg",RooArgList(gaus,cmsshape),RooArgList(Nsig,Nbkg));
+  RooAddPdf model7("model","sig+bkg",RooArgList(cb2_sig,cmsshape),RooArgList(Nsig));
+  RooAddPdf model8("model","sig+bkg",RooArgList(cb_sig,cmsshape),RooArgList(Nsig));
+  RooAddPdf model9("model","sig+bkg",RooArgList(gaus,cmsshape),RooArgList(Nsig));
 
   if (noFitBkg) {
     if (useCB2toFit)     model = &model4;
@@ -2433,29 +2498,41 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
     else                 model = &model6;
   }
   else {
-    if (useCB2toFit)     model = &model3;
-    else if (useCBtoFit) model = &model2;
-    else                 model = &model1;
+    if (useCB2toFit) {
+      if (useRooCMSShapeAsBkg) model = &model7;
+      else                     model = &model3;
+    } else if (useCBtoFit) {
+      if (useRooCMSShapeAsBkg) model = &model8;
+      else                     model = &model2;
+    } else {
+      if (useRooCMSShapeAsBkg) model = &model9;
+      else                     model = &model1;
+    }
   }
 
-  RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));  
+  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(kTRUE), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
+  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
 
   RooFitResult* res = nullptr;
-  RooMinuit m(nll);
-  RooMinimizer mfit(nll);
 
   // if (useCB2toFit) res = cb2_sig.fitTo(dh,RooFit::SumW2Error(kTRUE),RooFit::Save(),RooFit::Range(xlo, xhi));
   // else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::SumW2Error(kTRUE),RooFit::Save(),RooFit::Range(xlo, xhi));
   // else            res = gaus.fitTo(dh,RooFit::SumW2Error(kTRUE),RooFit::Save(),RooFit::Range(xlo, xhi));
-  if (noFitBkg) {
-    if (useCB2toFit)     res = cb2_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
-    else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
-    else                 res = gaus.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
+  if (simpleFitTo) {
+    //res = model->fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE),RooFit::Strategy(2),RooFit::Minos(RooArgSet(mean)),RooFit::PrintLevel(-1));
+    res = model->fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::Strategy(2),RooFit::PrintLevel(-1),RooFit::SumW2Error(kFALSE));
+    // if (useCB2toFit)     res = cb2_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
+    // else if (useCBtoFit) res = cb_sig.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
+    // else                 res = gaus.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
   } else {
-    
+
+    // warning: I removed definition of nll and m and mfit from outside here, because I don't think I want to use them
+    // in case I do, this might crash, because once res is returned, it might be destroyed outside this scope
     if (useFit_RooMinuit_) {
+
+      RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
+      RooMinuit m(nll);
 
       // // original fit
       // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
@@ -2468,6 +2545,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
     } else {
 
+      RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
+      RooMinimizer mfit(nll);
       // alternative fit (results are pretty much the same)
       // IMPORTANT, READ CAREFULLY: sometimes this method fails.
       // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
@@ -2486,7 +2565,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
       //cout << "FIT_EPSILON: Minimize hesse " << endl;
       mfit.minimize("Minuit2","hesse");
       //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
-      mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+      //mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+      //mfit.minos(RooArgSet(mean));
       res = mfit.save() ;
 
     }
@@ -2531,6 +2611,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed), RooFit::Range(xlo,xhi));
   //if (useCBtoFit and isSecondGenPhoton) model->plotOn(xframe,Components(cb_sig),LineStyle(kDashed), LineColor(kGreen+1), RooFit::Range(xlo,xhi));
   if (not noFitBkg) {
+    if (useRooCMSShapeAsBkg) model->plotOn(xframe,Components(cmsshape),LineStyle(kDashed), LineColor(kRed), RooFit::Range(xlo,xhi));
+    else                     model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed), RooFit::Range(xlo,xhi));
     if (useCB2toFit)     model->plotOn(xframe,Components(cb2_sig),LineStyle(kDashed), LineColor(kGreen+1), RooFit::Range(xlo,xhi));
     else if (useCBtoFit) model->plotOn(xframe,Components(cb_sig),LineStyle(kDashed), LineColor(kGreen+1), RooFit::Range(xlo,xhi));
     else                 model->plotOn(xframe,Components(gaus),LineStyle(kDashed), LineColor(kGreen+1), RooFit::Range(xlo,xhi));
@@ -2541,21 +2623,41 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   pi0res.chi2 = xframe->chiSquare("model","data",pi0res.nFitParam) * pi0res.dof;
   pi0res.probchi2 = TMath::Prob(pi0res.chi2, ndof);
 
+  // set better y axis range for photon 2 when plotting points, such that TLatex text do not largely overlap with peak at low E/Etrue
+  if (isSecondGenPhoton) {
+  // get RMS in narrow range around the peak
+    TH1F* h1lowEoverEtrue = new TH1F("h1lowEoverEtrue","",
+				     1 + h1->FindFixBin(0.701) - h1->FindFixBin(0.001), 
+				     h1->GetBinLowEdge(h1->FindFixBin(0.001)), 
+				     h1->GetBinLowEdge(1 + h1->FindFixBin(0.701))
+				     );
+    for (int i = 0; i <= h1lowEoverEtrue->GetNbinsX(); i++) {
+      h1lowEoverEtrue->SetBinContent(i,h1->GetBinContent(h1->FindFixBin(h1lowEoverEtrue->GetBinCenter(i))));
+    }
+    double ymaxInLowerRange = h1lowEoverEtrue->GetBinContent(h1lowEoverEtrue->GetMaximumBin());
+    cout << ">>>> xmaxInLowerRange : xmaxbin = " << h1lowEoverEtrue->GetBinCenter(h1lowEoverEtrue->GetMaximumBin()) << " : " << xmaxbin << endl;
+    cout << ">>>> ymaxInLowerRange : h1->GetBinContent(h1->FindFixBin(xmaxbin)) = " << ymaxInLowerRange << " : " << h1->GetBinContent(h1->FindFixBin(xmaxbin)) << endl;
+    if (ymaxInLowerRange > 0.8 * h1->GetBinContent(h1->FindFixBin(xmaxbin))) {
+      xframe->GetYaxis()->SetRangeUser(0, 1.5 * ymaxInLowerRange);
+    }
+    delete h1lowEoverEtrue;
+  }
+
   xframe->Draw();
 
   cout << "FIT_EPSILON: "
        << "photon " << nPhoton << "  "
        << " mean " << mean.getVal() << " +/- " << mean.getError()
        << " sigma " << sigma.getVal() << " +/- " << sigma.getError()
-       << " Nsig: " << Nsig.getVal() 
-       << " nsig 2sig: " << normSig*Nsig.getVal()
-       << " nbkg 2sig: " << normBkg*Nbkg.getVal()
-       << " S/B: " << pi0res.SoB << " +/- " << pi0res.SoBerr
-       << " chi2: " << pi0res.chi2
-       << " chi2 reduced: " << pi0res.chi2 / pi0res.dof
-       << " DOF: " << pi0res.dof
-       << " N(fit.param.): " << pi0res.nFitParam
-       << " prob(chi2): " << pi0res.probchi2
+    //<< " Nsig: " << Nsig.getVal() 
+    //<< " nsig 2sig: " << normSig*Nsig.getVal()
+    //<< " nbkg 2sig: " << normBkg*Nbkg.getVal()
+    //<< " S/B: " << pi0res.SoB << " +/- " << pi0res.SoBerr
+       << " chi2: " << pi0res.chi2 << "/" << pi0res.dof
+    //<< " chi2 reduced: " << pi0res.chi2 / pi0res.dof
+    //<< " DOF: " << pi0res.dof
+    //<< " N(fit.param.): " << pi0res.nFitParam
+    //<< " prob(chi2): " << pi0res.probchi2
        << endl;
 
   TLatex lat;
@@ -2564,28 +2666,28 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   lat.SetTextSize(0.040);
   lat.SetTextColor(1);
 
-  float xmin(0.15), yhi(0.8), ypass(0.05);
+  float xmin(0.15), yhi(0.82), ypass(0.05);
   if(mode==EtaEB) yhi=0.30;
   if(mode==Pi0EE) yhi=0.5;
   if(mode==Pi0EB) {
     EBDetId thisebid(EBDetId::detIdFromDenseIndex(HistoIndex) ); 
     int ieta = foldInSuperModule_ ? thisebid.ietaSM() : thisebid.ieta();
     int iphi = foldInSuperModule_ ? thisebid.iphiSM() : thisebid.iphi();
-    if (foldInSuperModule_) line = Form("#gamma%d: i#eta = %d, i#phi = %d, ic() = %d", nPhoton, ieta, iphi, thisebid.ic());
-    else                    line = Form("#gamma%d: i#eta = %d, i#phi = %d", nPhoton, ieta, iphi);
+    if (foldInSuperModule_) line = Form("i#eta = %d, i#phi = %d, ic() = %d", ieta, iphi, thisebid.ic());
+    else                    line = Form("i#eta = %d, i#phi = %d", ieta, iphi);
 
   } else {
-    line = Form("#gamma%d", nPhoton);
+    line = Form("#gamma_{%d}", nPhoton);
   }
   lat.DrawLatex(xmin,yhi, line.c_str());
 
-  line = Form("peak: %.2f #pm %.2f", mean.getVal(), mean.getError() );
+  line = Form("peak: %.3f #pm %.3f", mean.getVal(), mean.getError() );
   lat.DrawLatex(xmin,yhi-ypass, line.c_str());
 
-  line = Form("#sigma: %.2f #pm %.2f", sigma.getVal(), sigma.getError());
+  line = Form("#sigma: %.3f #pm %.3f", sigma.getVal(), sigma.getError());
   lat.DrawLatex(xmin,yhi-2.*ypass, line.c_str());
 
-  line = Form("#Chi^{2}: %.2f (%d dof)", pi0res.chi2, pi0res.dof );
+  line = Form("#Chi^{2}: %.1f / %d", pi0res.chi2, pi0res.dof );
   lat.DrawLatex(xmin,yhi-3.*ypass, line.c_str());
 
   line = Form("fit param. %d", pi0res.nFitParam );
@@ -2694,6 +2796,7 @@ FitEpsilonPlot::beginJob()
     if(StoreForTest_){
       outfileTEST_ = new TFile(fitFileName_.c_str(),"RECREATE");
       if(!outfileTEST_) cout << "WARNING: file " << fitFileName_ << " with fit not created." << endl;
+      else outfileTEST_->cd();
     }
 }
 
@@ -2715,9 +2818,9 @@ FitEpsilonPlot::endJob()
   }
 
   if(StoreForTest_){
-    cout << "FIT_EPSILON: Fit stored in " << fitFileName_ << endl;
     outfileTEST_->Write();
     outfileTEST_->Close();
+    cout << "FIT_EPSILON: Fit stored in " << fitFileName_ << endl;
   }
 
 }

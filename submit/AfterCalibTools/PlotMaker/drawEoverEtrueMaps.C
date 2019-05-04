@@ -54,7 +54,7 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
   TH1::SetDefaultSumw2();
 
   gStyle->SetPalette(55, 0);  // 55:raibow palette ; 57: kBird (blue to yellow) ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
-  gStyle->SetNumberContours(50); // default is 20 
+  gStyle->SetNumberContours(51); // default is 20 
 
   TFile* f = TFile::Open(inputFile.c_str(),"READ");
   if (!f || !f->IsOpen()) {
@@ -186,10 +186,10 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 }
 
 
-void drawEoverEtrueMaps(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1/",
-			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1/iter_0/pi0Gun_MCV2_EoverEtrue_foldSM_EoverEtrueCC_iter1_calibMap.root",
-			const Double_t mapMin = 0.98,
-			const Double_t mapMax = 1.02) 
+void drawEoverEtrueMaps(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/pi0CC_2018_EoverEtrue_foldSM_v2_iter0/",
+			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_v2/iter_0/pi0CC_2018_EoverEtrue_foldSM_v2_calibMap.root",
+			const Double_t mapMin = 1.0,
+			const Double_t mapMax = 1.12) 
 {
 
   system(Form("mkdir -p %s",outDir.c_str()));

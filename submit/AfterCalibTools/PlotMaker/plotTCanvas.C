@@ -114,18 +114,19 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "AlCaP0_Run2018D_goldenJson_13_09_2018", 
+void plotTCanvas(const string& dirName = "pi0CC_2018_EoverEtrue_foldSM_v2", 
 		 const Int_t iterNum = 0, 
-		 const Bool_t isMC_EoverEtrue = false,
+		 const Bool_t isMC_EoverEtrue = true,
 		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/",
-		 const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/"
+		 const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/",
+		 const string& EoEtrueFolderName = "CC_EoverEtrue_2018"
 		 ) {
 
   //const string& filePath = "/afs/cern.ch/work/m/mciprian/myEcalElf/2017_ECALpro/calib2017/CMSSW_9_4_1/src/CalibCode/submit/tmp_rootFiles_EoverEtrue_foldSM/pi0Gun_MC_EoverEtrue_foldSM";
 
   //const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
   const Bool_t isEB = true;
-  string outDir = outDir_base + "CC_EoverEtrue/" + dirName + "/fits/";
+  string outDir = outDir_base + EoEtrueFolderName + "/" + dirName + "/fits/";
   if (not isMC_EoverEtrue) outDir = outDir_base + "ICplot/" + dirName + Form("/iter_%d/",iterNum) + "fitResPlots/" + Form("%s/", isEB ? "Barrel" : "Endcap");
 
   system(Form("mkdir -p %s",outDir.c_str()));

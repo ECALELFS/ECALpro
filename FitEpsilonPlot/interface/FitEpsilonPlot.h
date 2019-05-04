@@ -16,6 +16,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "PhysicsTools/TagAndProbe/interface/RooCMSShape.h"
+
 #include "CalibCode/CalibTools/interface/EcalRegionalCalibration.h"
 #include "CalibCode/CalibTools/interface/EcalCalibTypes.h"
 

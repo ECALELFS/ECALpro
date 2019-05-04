@@ -7,8 +7,8 @@
 # specify the folder and the iteration number to be affected
 # note that some files are removed, so be careful!
 
-folder="AlCaP0_AllRun2017_condor_fixEBm16"
-iter="1"
+folder="pi0CC_2018_EoverEtrue_foldSM"
+iter="0"
 
 path="${folder}/src/hadd/"
 fullpath="$PWD/${folder}/src/hadd/"

@@ -512,7 +512,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     if not os.path.exists(logdir): os.makedirs(logdir)
     condor_file_name = condordir+'/condor_submit_fit.condor'
     condor_file = open(condor_file_name,'w')
-    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=2000) # this does not close the file
+    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400) # this does not close the file
 
     # preparing submission of fit tasks (EB)
     if (not ONLYMERGEFIT): print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
@@ -591,7 +591,7 @@ If this is not the case, modify FillEpsilonPlot.cc
             if not os.path.exists(logdir): os.makedirs(logdir)
             condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
             condor_file = open(condor_file_name,'w')
-            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=2000) # this does not close the file
+            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400) # this does not close the file
             for fit in fit_src_toResub:
                 condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit)))               
             condor_file.close()

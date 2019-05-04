@@ -40,7 +40,9 @@
 
 using namespace std;
 
-void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_epsilonPlots.root", const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/") {
+void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_v2/iter_0/pi0CC_2018_EoverEtrue_foldSM_v2_epsilonPlots.root", 
+				     const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/pi0CC_2018_EoverEtrue_foldSM_v2_iter0/",
+				     const bool isPi0 = true) {
 
   system(Form("mkdir -p %s",outDir.c_str()));
   system(Form("cp /afs/cern.ch/user/m/mciprian/public/index.php %s",outDir.c_str()));
@@ -78,7 +80,8 @@ void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//e
     myPlot.push_back(plotManager(Form("g2Nxtal_afterCuts_%s",regId[i].c_str()),"Number of crystals (#gamma_{2})",Form("g2Nxtal_afterCuts_%s",regId[i].c_str()),1,1));
     myPlot.push_back(plotManager(Form("pi0PhotonsNoverlappingXtals_afterCuts_%s",regId[i].c_str()),"Number of overlapping crystals",Form("pi0PhotonsNoverlappingXtals_afterCuts_%s",regId[i].c_str()),1,1));
 
-    histoName2D.push_back(Form("pi0MassVsPU_%s",regId[i].c_str()));
+    //histoName2D.push_back(Form("%sMassVsPU_%s", (isPi0 ? "pi0" : "eta"), regId[i].c_str()));
+    histoName2D.push_back(Form("pi0MassVsPU_%s", regId[i].c_str()));
 
   }  
 
@@ -179,9 +182,13 @@ void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//e
 
     }
 
-    draw_nTH1(hproj_PU, "#pi^{0} mass [GeV]::0.08,0.21", "a.u.", histoName2D[i]+"_compareProjection", outDir, legEntries, "", -1.0, 1, false, false);
+    string xtitle = "#pi^{0} mass [GeV]::0.08,0.21";
+    if (not isPi0) xtitle = "#eta^{0} mass [GeV]::0.40,0.65";
+    draw_nTH1(hproj_PU, xtitle, "a.u.", histoName2D[i]+"_compareProjection", outDir, legEntries, "", -1.0, 1, false, false);
 
-    drawCorrelationPlot(htmp,"#pi^{0} mass [GeV]","number of true PU events","Events",histoName2D[i],"",outDir,
+    xtitle = "#pi^{0} mass [GeV]";
+    if (not isPi0) xtitle = "#eta^{0} mass [GeV]";
+    drawCorrelationPlot(htmp,xtitle,"number of true PU events","Events",histoName2D[i],"",outDir,
 			2,1,false,false,false,1);
 
   }

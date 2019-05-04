@@ -216,11 +216,11 @@ finListB = list()
 inListE = list()
 finListE = list()
 for tmp in range(nEB):
-    inListB.append( 2000*tmp )
-    finListB.append( 2000*tmp+1999 )
+    inListB.append( nFit*tmp )
+    finListB.append( nFit*tmp+(nFit-1) )
 for tmp in range(nEE):
-    inListE.append( 2000*tmp )
-    finListE.append( 2000*tmp+1999 )
+    inListE.append( nFit*tmp )
+    finListE.append( nFit*tmp+(nFit-1) )
     # cfg
 for it in range(nIterations):
     print "[calib]  '-- Fit::Iteration " + str(it)

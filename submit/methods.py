@@ -416,6 +416,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("process.p *= process.analyzerFillEpsilon\n")
 
 def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
+    if isEoverEtrue and localFolderToWriteFits:
+        outputDir = outputDir.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
     outputfile.write("import FWCore.ParameterSet.Config as cms\n")
     outputfile.write("process = cms.Process('FitEpsilonPlot')\n")
     outputfile.write("process.load('FWCore.MessageService.MessageLogger_cfi')\n")
@@ -479,6 +481,8 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
 
 
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
+    if isEoverEtrue and localFolderToWriteFits:        
+        source = source.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
