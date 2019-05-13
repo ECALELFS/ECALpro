@@ -186,8 +186,8 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 }
 
 
-void drawEoverEtrueMaps(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/pi0CC_2018_EoverEtrue_foldSM_v2_iter0/",
-			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_v2/iter_0/pi0CC_2018_EoverEtrue_foldSM_v2_calibMap.root",
+void drawEoverEtrueMaps(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2017/pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019/",
+			const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019/iter_0/pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019_calibMap.root",
 			const Double_t mapMin = 1.0,
 			const Double_t mapMax = 1.12) 
 {

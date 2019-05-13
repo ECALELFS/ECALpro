@@ -119,6 +119,7 @@ for iters in range(nIterations):
 
     condordir = condorPath + '/iter_' + str(iters) 
     if not os.path.exists(condordir): os.makedirs(condordir)
+    if not os.path.exists(logPath): os.makedirs(logPath)
 
     if ( not ONLYHADD and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
 
@@ -491,13 +492,34 @@ If this is not the case, modify FillEpsilonPlot.cc
         print "Done with iteration " + str(iters)
         quit()
 
+    # if running with flag to fold SM, first do that part. It is not needed to run a job, can be done locally in few minutes
+    # in case we only need to merge fit, this is likely not needed, so skip it
+
+    if foldInSuperModule and not ONLYMERGEFIT:
+        # check if the file is already present, in which case this step can be skipped
+        histograms_foldedInSM_exists = False
+        hFoldFile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'histograms_foldedInSM.root'
+        if not os.path.isfile(hFoldFile):
+            srcFold_n = srcPath + "/Fit/submit_justFoldSM_iter_" + str(iters) + ".sh"
+            Fitsubmit_s = "{src}".format(src=srcFold_n)
+            print ">>> Running --> " + Fitsubmit_s      
+            FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
+            FoutJobs = FsubJobs.communicate()  # do I really need to communicate to stdout?
+            print FoutJobs        
+            #os.system(Fitsubmit_s)    
+
     # N of Fit to send
-    nEB = 61199/nFit
-    if (61199%nFit != 0) :
+    nEBindependentXtals = 1699 if foldInSuperModule else 61199
+    nEB = nEBindependentXtals/nFit
+    if (nEBindependentXtals%nFit != 0):
         nEB = int(nEB) +1
     nEE = 14647/nFit
     if (14647%nFit != 0) :
         nEE = int(nEE) +1
+
+    if Barrel_or_Endcap == "ONLY_ENDCAP": nEB = 0
+    if Barrel_or_Endcap == "ONLY_BARREL": nEE = 0
+        
     # For final hadd
     ListFinalHaddEB = list()
     ListFinalHaddEE = list()
@@ -550,70 +572,71 @@ If this is not the case, modify FillEpsilonPlot.cc
         print 'Waiting for fit jobs to be finished...'
         # Daemon cheking running jobs
         while nFitjobs > 0 :
-            time.sleep(60)
+            time.sleep(300)
             nFitjobs = checkNjobsCondor("ecalpro_Fit")
             print "I still see {n} jobs for Fit part".format(n=nFitjobs)
         print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
 
-        #Run only on EB or EE if needed
-        ListFinalHadd = list()
-        if Barrel_or_Endcap=='ONLY_BARREL':
-           ListFinalHadd = ListFinalHaddEB
-        if Barrel_or_Endcap=='ONLY_ENDCAP':
-           ListFinalHadd = ListFinalHaddEE
-        if (Barrel_or_Endcap=='ALL_PLEASE'):
-           ListFinalHadd = ListFinalHaddEB
-           ListFinalHadd = ListFinalHadd + ListFinalHaddEE
+    # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
+    # this check should be made until all fits are present, otherwise the code crashes, butif it keeps happening there might be something serious to solve
+    # so better to have the code crash and investigate locally
 
-        # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
-        # this check should be made until all fits are present, otherwise the code crashes, butif it keeps happening there might be something serious to solve
-        # so better to have the code crash and investigate locally
+    allFitsGood = True
+    fit_src_toResub = []
+    for inteb in range(nEB):
+        fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
+        thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+        thisfile_f = TFile.Open(thisfile)
+        if not thisfile_f: 
+            allFitsGood = False
+            fit_src_toResub.append(fit_src_n)
+    for inte in range(nEE):        
+        fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
+        thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+        thisfile_f = TFile.Open(thisfile)
+        if not thisfile_f:
+            allFitsGood = False
+            fit_src_toResub.append(fit_src_n)
 
-        allFitsGood = True
-        fit_src_toResub = []
-        for inteb in range(nEB):
-            fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
-            thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
-            thisfile_f = TFile.Open(thisfile)
-            if not thisfile_f: 
-                allFitsGood = False
-                fit_src_toResub.append(fit_src_n)
-        for inte in range(nEE):        
-            fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
-            thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
-            thisfile_f = TFile.Open(thisfile)
-            if not thisfile_f:
-                allFitsGood = False
-                fit_src_toResub.append(fit_src_n)
+    if not allFitsGood:
+        logdir    = logPath    + '/Fit_recovery/iter_' + str(iters) 
+        if not os.path.exists(logdir): os.makedirs(logdir)
+        condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
+        condor_file = open(condor_file_name,'w')
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400) # this does not close the file
+        for fit in fit_src_toResub:
+            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit)))               
+        condor_file.close()
 
-        if not allFitsGood:
-            logdir    = logPath    + '/Fit_recovery/iter_' + str(iters) 
-            if not os.path.exists(logdir): os.makedirs(logdir)
-            condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
-            condor_file = open(condor_file_name,'w')
-            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400) # this does not close the file
-            for fit in fit_src_toResub:
-                condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit)))               
-            condor_file.close()
+        Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
+        print ">>> Running --> " + Fitsubmit_s
+        FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
+        FoutJobs = FsubJobs.communicate()
+        print FoutJobs
+        time.sleep(5)
 
-            Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-            print ">>> Running --> " + Fitsubmit_s
-            FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
-            FoutJobs = FsubJobs.communicate()
-            print FoutJobs
-            time.sleep(5)
-
-            nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")     
-            print "There are {n} jobs for Fit recovery part".format(n=nFitjobs)
-            print 'Waiting for fit jobs to be finished...'
-            # Daemon cheking running jobs
-            while nFitjobs > 0 :
-                time.sleep(60)
-                nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")
-                print "I still see {n} jobs for Fit recovery part".format(n=nFitjobs)
-            print "Done with fitting recovery! Now we have to merge all fits in one Calibmap.root"
+        nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")     
+        print "There are {n} jobs for Fit recovery part".format(n=nFitjobs)
+        print 'Waiting for fit jobs to be finished...'
+        # Daemon cheking running jobs
+        while nFitjobs > 0 :
+            time.sleep(60)
+            nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")
+            print "I still see {n} jobs for Fit recovery part".format(n=nFitjobs)
+        print "Done with fitting recovery! Now we have to merge all fits in one Calibmap.root"
 
     # Merge Final CalibMap
+
+    #Run only on EB or EE if needed
+    ListFinalHadd = list()
+    if Barrel_or_Endcap=='ONLY_BARREL':
+       ListFinalHadd = ListFinalHaddEB
+    if Barrel_or_Endcap=='ONLY_ENDCAP':
+       ListFinalHadd = ListFinalHaddEE
+    if (Barrel_or_Endcap=='ALL_PLEASE'):
+       ListFinalHadd = ListFinalHaddEB
+       ListFinalHadd = ListFinalHadd + ListFinalHaddEE
+
     from PhysicsTools.PythonAnalysis import *
     gSystem.Load("libFWCoreFWLite.so")
     #AutoLibraryLoader.enable()
@@ -989,12 +1012,23 @@ If this is not the case, modify FillEpsilonPlot.cc
                Init = int(init)
                Fin = int(finit+1)
                for nFitB in range(Init,Fin):
-                   if nFitB < 61200:
-                      myRechit = EBDetId( EBDetId.detIdFromDenseIndex(nFitB) )
-                      bin_x = myRechit.ieta()+MaxEta+1
-                      bin_y = myRechit.iphi()
-                      value = thisHistoEB.GetBinContent(bin_x,bin_y)
-                      calibMap_EB.SetBinContent(bin_x,bin_y,value)
+                   if foldInSuperModule:  
+                       # in this case Init,Fin span a region within 0-1700, 
+                       # and the map is basically in a single SM (but repreated in all the others as well)
+                       if nFitB < 1700:
+                           for ism in range(1,37):
+                               myRechit = EBDetId(ism, nFitB+1, 1)
+                               bin_x = myRechit.ieta()+MaxEta+1
+                               bin_y = myRechit.iphi()
+                               value = thisHistoEB.GetBinContent(bin_x,bin_y)
+                               calibMap_EB.SetBinContent(bin_x,bin_y,value)
+                   else:
+                       if nFitB < 61200:
+                           myRechit = EBDetId( EBDetId.detIdFromDenseIndex(nFitB) )
+                           bin_x = myRechit.ieta()+MaxEta+1
+                           bin_y = myRechit.iphi()
+                           value = thisHistoEB.GetBinContent(bin_x,bin_y)
+                           calibMap_EB.SetBinContent(bin_x,bin_y,value)
             else :
                Init1 = int(init)
                Fin1 = int(finit+1)

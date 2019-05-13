@@ -200,12 +200,16 @@ njobs = ijob
 
 #-------- fit cfg files --------#
     # Fit parallelized
-nEB = 61199/nFit
-if (61199%nFit != 0) :
+nEBindependentXtals = 1699 if foldInSuperModule else 61199  # this is actual number -1 (imagine it is a counter that starts from 0)
+nEB = nEBindependentXtals/nFit
+if (nEBindependentXtals%nFit != 0) :
     nEB = int(nEB) +1
 nEE = 14647/nFit
 if (14647%nFit != 0) :
     nEE = int(nEE) +1
+
+if Barrel_or_Endcap == "ONLY_ENDCAP": nEB = 0
+if Barrel_or_Endcap == "ONLY_BARREL": nEE = 0
 
 print '[calib] Splitting Fit Task: ' + str(nEB) + ' jobs on EB, ' + str(nEE) + ' jobs on EE'
 #print 'I will submit ' + str(nEB) + ' jobs to fit the Barrel'
@@ -224,6 +228,27 @@ for tmp in range(nEE):
     # cfg
 for it in range(nIterations):
     print "[calib]  '-- Fit::Iteration " + str(it)
+    
+    if foldInSuperModule:
+        # create cfg file for folding (done in the fit analyzer)
+        fit_cfg_n = cfgFitPath + "/fitEpsilonPlot_justFoldSM_iter_" + str(it) + ".py"
+        fit_cfg_f = open( fit_cfg_n, 'w' )
+        # print the cfg file
+        printFitCfg( fit_cfg_f , it, "/tmp",0,0,"Barrel",0,justDoHistogramFolding=True)
+        fit_cfg_f.close()
+        # print source file for batch submission of FitEpsilonPlot task
+        fitSrc_n = srcPath + "/Fit/submit_justFoldSM_iter_" + str(it) + ".sh"
+        fitSrc_f = open( fitSrc_n, 'w')
+        destination_s = eosPath + '/' + dirname + '/iter_' + str(it) + "/" + NameTag + "Barrel_" + str(nFit)+ "_" + calibMapName
+        logpath = pwd + "/" + dirname + "/log/" + "fitEpsilonPlot_justFoldSM_iter_" + str(it) + ".log"
+        printSubmitFitSrc(fitSrc_f, fit_cfg_n, "/tmp/" + NameTag + "justFoldSM_" + calibMapName, destination_s, pwd, logpath, justDoHistogramFolding=True)
+        fitSrc_f.close()
+
+        # make the source file executable
+        changePermission = subprocess.Popen(['chmod 777 ' + fitSrc_n], stdout=subprocess.PIPE, shell=True);
+        debugout = changePermission.communicate()
+
+
     for nFit in range(nEB):
         # create cfg file
         fit_cfg_n = cfgFitPath + "/fitEpsilonPlot_EB_" + str(nFit) + "_iter_" + str(it) + ".py"

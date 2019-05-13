@@ -34,6 +34,7 @@ Implementation:
 #include "TFitResult.h"
 #include "TLegend.h"
 #include "TROOT.h"
+#include "TDirectory.h"
 #include "TStyle.h"
 
 // user include files
@@ -114,6 +115,7 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     isEoverEtrue_ = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
     useFit_RooMinuit_ = iConfig.getUntrackedParameter<bool>("useFit_RooMinuit",false);
     foldInSuperModule_ = iConfig.getUntrackedParameter<bool>("foldInSuperModule",false);
+    makeFoldedHistograms_ = iConfig.getUntrackedParameter<bool>("makeFoldedHistograms",false);
 
     // apparently for E/Etrue the fits are much better (I tried RooCMSShape + double-Crystal-Ball)
     // some tuning might be required, though
@@ -122,7 +124,10 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 
     //foldInSuperModule_ = true;
     fitEoverEtrueWithRooFit_ = true;   // use bare TH1::Fit or RooFit (better, can stay true)
-    readFoldedHistogramFromFile_ = true;  // read directly folded histograms (the folding is done in this analyzer, so the very first time this option is false)
+
+    // read directly folded histograms (the folding is done in this analyzer, so the very first time this option is false)
+    readFoldedHistogramFromFile_ = makeFoldedHistograms_ ? false : true; 
+
     foldEB_all0_onlyPlus1_onlyMinus2_ = 0; // 0 to put all 36 SM in one, 1 for using EB+ only, 2 for using EB- only (but then they are used on all barrel because I only have a single SM map)
 
     // I should add a code that do the folding before going to the fitting part
@@ -399,17 +404,19 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
   // If opening the following file, before writing objects we should do TFile::cd() (with the other files where histograms are saved)
   // This is because Root changes the current directory and messes up the filesystem
   //////////////////
+  // copy path of current directory
+  const char* currFilePath = gDirectory->GetPath();
 
   // // create file containing folded histograms (could be used later without folding again)
-  // string foldFileName = filename;
-  // std::string strToReplace = "epsilonPlots";
-  // foldFileName.replace(filename.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
+  string foldFileName = filename;
+  std::string strToReplace = "epsilonPlots";
+  foldFileName.replace(filename.find(strToReplace.c_str()),strToReplace.size(),"histograms_foldedInSM");
 
-  // string foldFileOpeningMode = (whichPhoton == 1) ? "RECREATE" : "UPDATE";
-  // TFile* f = TFile::Open(foldFileName.c_str(),foldFileOpeningMode.c_str());
-  // if (!f || !f->IsOpen()) {
-  //   throw cms::Exception("FitEpsilonPlot") << "error opening file '" << foldFileName << "' to save folded histogram\n";
-  // }
+  string foldFileOpeningMode = (whichPhoton == 1) ? "RECREATE" : "UPDATE";
+  TFile* f = TFile::Open(foldFileName.c_str(),foldFileOpeningMode.c_str());
+  if (!f || !f->IsOpen()) {
+    throw cms::Exception("FitEpsilonPlot") << "error opening file '" << foldFileName << "' to save folded histogram\n";
+  }
 
   TH1F* htmp = nullptr;
 
@@ -446,11 +453,18 @@ void FitEpsilonPlot::addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::
   }
 
   // // save folded histogrmas
-  // f->cd();
-  // for (unsigned int i = 0; i < hvec.size(); i++) {
-  //   hvec[i]->Write();
-  // }
-  // f->Close();
+  f->cd();
+  for (unsigned int i = 0; i < hvec.size(); i++) {
+    hvec[i]->Write();
+  }
+  f->Close();
+
+  // now restore previous path is ROOT filesystem (so to get back to previous file)
+  if (currFilePath != nullptr) { 
+    gROOT->cd(currFilePath);
+  } else {
+    throw cms::Exception("addHistogramsToFoldSM") << "Could not restore path in currFilePath: variable was empty\n";
+  }
 
 }
 
@@ -555,7 +569,9 @@ void FitEpsilonPlot::loadEoverEtruePlotFoldedInSM(const int whichPhoton = 1) {
     
     for (int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++) {
 
-      int indexSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
+      // when folding into SM, we interpret iR as the EBDetId::ic() number (which goes from 1 to 1700, so need to subtract 1)
+      //int indexSM = getArrayIndexOfFoldedSMfromDenseIndex(iR);
+      int indexSM = iR;
       line = Form("%s_%d",histoNamePattern.c_str(), indexSM);
 
       if (whichPhoton == 1) {
@@ -942,17 +958,47 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
   std::map<int,TFitResultPtr>& EEmap_fitresptrToUse = (isSecondGenPhoton) ? EEmap_fitresptr_g2 : EEmap_fitresptr_g1;
 
   //filling Barrel Map
-  for(int j=0; j<regCalibToUse->getCalibMap()->getNRegionsEB(); ++j)  
-    {
-      std::vector<DetId> ids = regCalibToUse->allDetIdsInEBRegion(j);
-      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
-  	EBDetId ebid(*iid);
-  	int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
+  if (foldInSuperModule_) {
 
-  	float coeffValue = regCalibToUse->getCalibMap()->coeff(*iid) > 0. ? regCalibToUse->getCalibMap()->coeff(*iid) : 1.;
-  	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
-      } // loop over DetId in regions
-    }
+    // in this case we only used the index given by ic in a single SM
+    // we do not use regCalibToUse->allDetIdsInEBRegion(), we assume we are making xtals
+
+    for(int j = inRangeFit_; j <= finRangeFit_; ++j)  
+      {      
+
+	// in this configuration j is interpreted as the xtal number given by EBDetId::ic() (be careful, make sure this is how the number is used in the previous methods)
+	// WARNING: j starts from 0, while ic() is always >= 1: need to sum 1 to interpret j as ic() 
+	// go to EB+1 from ic(): iphi,ieta = 1,1 has ic = 20 (for EB- iphi = 1 has ic = 1) 
+	// we use EBDetId constructor with SM number, xtal number ( i.e. ic() ) and mode = EBDetId::SMCRYSTALMODE == 1
+	// SM number is 1 for EB+1 (up to 18), and 19 for EB-1 (up to EB-18 which has iSM = 36)
+
+	EBDetId ebid(1,j+1,1);
+	float coeffValue = regCalibToUse->getCalibMap()->coeff(ebid) > 0. ? regCalibToUse->getCalibMap()->coeff(ebid) : 1.;	      
+	int ix = ebid.ieta() + EBDetId::MAX_IETA+1;
+	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+	// now fill all other SM in the same way
+	for (int ism = 2; ism <= 36; ++ism) {
+	  EBDetId ebid(ism,j+1,1);
+	  int ix = ebid.ieta() + EBDetId::MAX_IETA+1;
+	  hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+	}
+      }
+
+  } else {
+
+    for(int j=0; j<regCalibToUse->getCalibMap()->getNRegionsEB(); ++j)  
+      {
+	std::vector<DetId> ids = regCalibToUse->allDetIdsInEBRegion(j);
+	for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
+	  EBDetId ebid(*iid);
+	  int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
+
+	  float coeffValue = regCalibToUse->getCalibMap()->coeff(*iid) > 0. ? regCalibToUse->getCalibMap()->coeff(*iid) : 1.;
+	  hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+	} // loop over DetId in regions
+      }
+
+  }
 
   hmap_EB->SetMinimum(0.9);
   hmap_EB->SetStats(false);
@@ -1183,6 +1229,10 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrue(const bool isSecondGenPhoton = f
 void FitEpsilonPlot::saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhoton = false) 
 {
 
+  // when saving the coefficients, if we are folding in SM, we need to fill just one SM and copy on all the other
+  // so, from denseIndex we go to ic() (beware, it could be ic() was not used for the folding, so there could be an inconsistency)
+  // then we must get iphi and ieta in SM (ieta in 1-85 and iphi in 1-20)
+
   // important, if using the second photon the output file is updated, so the call with isSecondGenPhoton = true should be made as the second one
   // otherwise, based on the current implementation, at the time you open the file for the first photon the file would be overwritten due to RECREATE mode
 
@@ -1216,17 +1266,51 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhot
   EcalRegionalCalibrationBase* regCalibToUse = (isSecondGenPhoton) ? regionalCalibration_g2_ : regionalCalibration_;
 
   //filling Barrel Map
-  for(int j=0; j<regCalibToUse->getCalibMap()->getNRegionsEB(); ++j)  
-    {
-      std::vector<DetId> ids = regCalibToUse->allDetIdsInEBRegion(j);
-      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
-  	EBDetId ebid(*iid);
-  	int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
+  if (foldInSuperModule_) {
 
-  	float coeffValue = regCalibToUse->getCalibMap()->coeff(*iid) > 0. ? regCalibToUse->getCalibMap()->coeff(*iid) : 1.;
-  	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
-      } // loop over DetId in regions
-    }
+    // in this case we only used the index given by ic in a single SM
+    // we do not use regCalibToUse->allDetIdsInEBRegion(), we assume we are making xtals
+
+    for(int j = inRangeFit_; j <= finRangeFit_; ++j)  
+      {      
+
+	// in this configuration j is interpreted as the xtal number given by EBDetId::ic() (be careful, make sure this is how the number is used in the previous methods)
+	// WARNING: j starts from 0, while ic() is always >= 1: need to sum 1 to interpret j as ic() 
+	// go to EB+1 from ic(): iphi,ieta = 1,1 has ic = 20 (for EB- iphi = 1 has ic = 1) 
+	// we use EBDetId constructor with SM number, xtal number ( i.e. ic() ) and mode = EBDetId::SMCRYSTALMODE == 1
+	// SM number is 1 for EB+1 (up to 18), and 19 for EB-1 (up to EB-18 which has iSM = 36)
+
+	EBDetId ebid(1,j+1,1);
+	float coeffValue = regCalibToUse->getCalibMap()->coeff(ebid) > 0. ? regCalibToUse->getCalibMap()->coeff(ebid) : 1.;	      
+	int ix = ebid.ieta() + EBDetId::MAX_IETA+1;
+	hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+	// now fill all other SM in the same way
+	for (int ism = 2; ism <= 36; ++ism) {
+	  EBDetId ebid(ism,j+1,1);
+	  int ix = ebid.ieta() + EBDetId::MAX_IETA+1;
+	  hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+	}
+      }
+
+  } else {
+
+    //filling Barrel Map
+    for(int j=0; j<regCalibToUse->getCalibMap()->getNRegionsEB(); ++j)  
+      {
+      	std::vector<DetId> ids = regCalibToUse->allDetIdsInEBRegion(j);
+
+	for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) {
+
+	  EBDetId ebid(*iid);
+	  float coeffValue = regCalibToUse->getCalibMap()->coeff(*iid) > 0. ? regCalibToUse->getCalibMap()->coeff(*iid) : 1.;
+	  int ix = ebid.ieta()+EBDetId::MAX_IETA+1;
+	  hmap_EB->SetBinContent( ix, ebid.iphi(), coeffValue );
+
+	} // loop over DetId in regions
+
+      }
+
+  }
 
   hmap_EB->SetMinimum(0.9);
   hmap_EB->SetStats(false);
@@ -1448,6 +1532,12 @@ void FitEpsilonPlot::saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhot
 void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
+    // if we only wanted to fold histograms, like the first time we call this whole code, we don't need to fit anything here
+    if (foldInSuperModule_ && makeFoldedHistograms_) {
+      cout << "FIT_EPSILON: not doing anything inside analyze(): we only wanted to fold histograms" << endl;
+      return;
+    }
+
     TF1 ffit("gausa","gaus(0)+[3]*x+[4]",-0.5,0.5);
     ffit.SetParameters(100,0,0.1);
     ffit.SetParNames("Constant","Mean_value","Sigma","a","b");
@@ -1471,7 +1561,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 	  if (isEoverEtrue_) {
 		  
-	    int crystalIndexInSM = getArrayIndexOfFoldedSMfromDenseIndex(j);
+	    int crystalIndexInSM = foldInSuperModule_ ? j : getArrayIndexOfFoldedSMfromDenseIndex(j);
 	    TH1F* histoToFit_g1 = (foldInSuperModule_ ? EoverEtrue_g1_EB_SM_hvec[crystalIndexInSM] : EoverEtrue_g1_EB_h[j]);
 		  
 	    // first photon 
@@ -1609,20 +1699,43 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
 	  }
 
-	  std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(j);
-	  // actually it is just one crystal, unless we do a calibration based on trigger towers or etaring
-	  for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
-	    {
-	      if (isEoverEtrue_) regionalCalibration_->getCalibMap()->coeff(*iid) *= (mean==0.) ? 1. : 1./(mean);
-	      else               regionalCalibration_->getCalibMap()->coeff(*iid) *= (mean==0.) ? 1. : 1./(1.+mean);
-	    } // loop over DetId in regions
-
 	  if (isEoverEtrue_) {
-	    ids = regionalCalibration_g2_->allDetIdsInEBRegion(j);
+
+	    if (foldInSuperModule_) {
+
+	      // we assume j is a single xtal if we are here
+	      // get SM 1 in EB+ to fill calibration map (it will be copied on all SM later).
+	      // use EBDetId constructor that used SM number, EBDetId::ic() and EBDetId::SMCRYSTALMODE == 1
+	      EBDetId ebid(1,j+1,1);
+	      regionalCalibration_   ->getCalibMap()->coeff(ebid) *= (mean==0.)    ? 1. : 1./(mean);
+	      regionalCalibration_g2_->getCalibMap()->coeff(ebid) *= (mean_g2==0.) ? 1. : 1./(mean_g2);
+	      
+	    } else {
+
+	      std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(j);
+	      // actually it is just one crystal, unless we do a calibration based on trigger towers or etaring
+	      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
+		{
+		    regionalCalibration_->getCalibMap()->coeff(*iid) *= (mean==0.) ? 1. : 1./(mean);
+		} // loop over DetId in regions
+
+	      ids = regionalCalibration_g2_->allDetIdsInEBRegion(j);
+	      for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
+		{
+		  regionalCalibration_g2_->getCalibMap()->coeff(*iid) *= (mean_g2==0.) ? 1. : 1./(mean_g2);
+		} // loop over DetId in regions	   
+
+	    }	    
+
+	  } else {
+
+	    std::vector<DetId> ids = regionalCalibration_->allDetIdsInEBRegion(j);
+	    // actually it is just one crystal, unless we do a calibration based on trigger towers or etaring
 	    for(std::vector<DetId>::const_iterator iid = ids.begin(); iid != ids.end(); ++iid) 
 	      {
-		regionalCalibration_g2_->getCalibMap()->coeff(*iid) *= (mean_g2==0.) ? 1. : 1./(mean_g2);
+		regionalCalibration_->getCalibMap()->coeff(*iid) *= (mean==0.) ? 1. : 1./(1.+mean);
 	      } // loop over DetId in regions
+	    
 	  }
 		  
 	} // loop over regions
@@ -2350,6 +2463,19 @@ Double_t My_double_CB::evaluate() const
 Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGenPhoton, uint32_t HistoIndex, FitMode mode) 
 {
 
+  int ieta = -999;
+  int iphi = -999;
+    
+  if (foldInSuperModule_) {
+    EBDetId thisebid(1,HistoIndex+1,1);
+    ieta = thisebid.ieta();
+    iphi = thisebid.iphi();
+  } else {
+    EBDetId thisebid(EBDetId::detIdFromDenseIndex(HistoIndex) ); 
+    ieta = thisebid.ieta();
+    iphi = thisebid.iphi();
+  }
+
   // some flags for the fit
   // using the double Crystal Ball seems the better choice, but might require some parameters tuning
   bool simpleFitTo = true; // will use neither RooMinuit nor RooMinimizer, but rather simple x.fitTo()
@@ -2359,6 +2485,43 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //  bool useCB2toFit = isSecondGenPhoton ? true : false;
   bool useCB2toFit = isSecondGenPhoton ? false : true;   // use double Crystal Ball (overrides useCBtoFit)
   //bool useCB2toFit = isSecondGenPhoton ? false : false;   // use double Crystal Ball (overrides useCBtoFit)
+  bool usePol2 = false;  // when using background model as well, use pol2 (by default pol3 is used, if RooCMSShape is not specified)
+
+  double hardCodedXmin = -1.0;
+  double hardCodedXmax = -1.0;
+  // hardcoded stuff for CC in 2018
+  // if (isSecondGenPhoton) {
+  //   if (ieta >= 55) {
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = true;
+  //     useCB2toFit = false;
+  //     useCBtoFit = false;      
+  //   }
+  // } else {
+  //   if (ieta == 83 and iphi == 18) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = true;
+  //   } else if (ieta == 46 and iphi == 5) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = true;
+  //   }
+  // }
+
+  // hardcoded stuff for CC in 2017
+  if (isSecondGenPhoton) {
+    noFitBkg = false;
+    useRooCMSShapeAsBkg = true;
+    useCB2toFit = true;
+    hardCodedXmin = 0.07;
+  } else {
+    if (iphi%20 == 1 || iphi%20 == 0 || ieta == 1 || ieta == 25 || ieta == 26 || ieta == 45 || ieta == 46 || ieta == 65 || ieta == 66 || ieta == 85) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = true;    
+    }
+  }
+  
 
   // std::cout << "FitEpsilonPlot::FitEoverEtruePeak called " << std::endl;
   int nPhoton = isSecondGenPhoton ? 2 : 1;
@@ -2415,6 +2578,9 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
     }
   }
 
+  if (hardCodedXmin > 0.0) xlo = hardCodedXmin;
+  if (hardCodedXmax > 0.0) xhi = hardCodedXmax;
+
   RooRealVar x("x",Form("#gamma_{%d} E/E_{true}",nPhoton), 0.0, 1.5, "");
   RooDataHist dh("dh",Form("#gamma_{%d} E/E_{true}",nPhoton),RooArgList(x),h1);
 
@@ -2457,9 +2623,10 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //RooRealVar cb7("cb7","cb7", 0.0,  -5.,5.);
 
   // define a background shape in addition for the bare gaussian or Crystal Ball for the peak
-  RooArgList cbpars(cb0,cb1,cb2,cb3);  
-  RooArgList cbparsMore(cb0,cb1,cb2,cb3,cb4,cb5,cb6);
-  RooArgList *cbparsPtr = isSecondGenPhoton ? &cbpars : &cbpars;
+  RooArgList cbpars(cb0,cb1,cb2);  
+  //RooArgList cbparsMore(cb0,cb1,cb2,cb3,cb4,cb5,cb6);
+  RooArgList cbparsMore(cb0,cb1,cb2,cb3);
+  RooArgList *cbparsPtr = usePol2 ? &cbpars : &cbparsMore;
   RooChebychev bkg("bkg","bkg model", x, *cbparsPtr );
   //  RooRealVar Nbkg("Nbkg","background yield",h1->Integral()*0.3,0.,h1->Integral()*1.1);
   RooRealVar Nbkg("Nbkg","background yield",
@@ -2670,12 +2837,12 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   if(mode==EtaEB) yhi=0.30;
   if(mode==Pi0EE) yhi=0.5;
   if(mode==Pi0EB) {
-    EBDetId thisebid(EBDetId::detIdFromDenseIndex(HistoIndex) ); 
-    int ieta = foldInSuperModule_ ? thisebid.ietaSM() : thisebid.ieta();
-    int iphi = foldInSuperModule_ ? thisebid.iphiSM() : thisebid.iphi();
-    if (foldInSuperModule_) line = Form("i#eta = %d, i#phi = %d, ic() = %d", ieta, iphi, thisebid.ic());
-    else                    line = Form("i#eta = %d, i#phi = %d", ieta, iphi);
-
+    if (foldInSuperModule_) {
+      EBDetId thisebid(1,HistoIndex+1,1);
+      line = Form("i#eta = %d, i#phi = %d, ic() = %d", ieta, iphi, thisebid.ic());
+    } else {
+      line = Form("i#eta = %d, i#phi = %d", ieta, iphi);
+    }
   } else {
     line = Form("#gamma_{%d}", nPhoton);
   }
@@ -2804,6 +2971,12 @@ FitEpsilonPlot::beginJob()
     void 
 FitEpsilonPlot::endJob() 
 {
+
+  if (foldInSuperModule_ and makeFoldedHistograms_) {
+    cout << "FIT_EPSILON: not doing anything inside endJob(): we only wanted to fold histograms" << endl;
+    return;
+  }
+
   if (isEoverEtrue_) {
     // call it first with false to save first photon coefficients
     if (fitEoverEtrueWithRooFit_) {

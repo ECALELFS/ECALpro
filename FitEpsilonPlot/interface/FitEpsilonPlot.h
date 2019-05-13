@@ -147,6 +147,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       bool foldInSuperModule_;
       bool fitEoverEtrueWithRooFit_;
       bool readFoldedHistogramFromFile_;
+      bool makeFoldedHistograms_;  // this flag makes sense with foldInSuperModule_, but to use folded histograms we first need to make them (makeFoldedHistograms_ = true)
       Int_t foldEB_all0_onlyPlus1_onlyMinus2_;
 
       calibGranularity calibTypeNumber_;

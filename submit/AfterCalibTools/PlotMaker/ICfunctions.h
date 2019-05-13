@@ -577,6 +577,8 @@ void foldEBMapInSM(const TH2* h = NULL, TH2* hSM = NULL, TH2* hSM_allEB = NULL, 
   }
 
   // now we fill the full EB map repeating the SM
+  // note that the single SM was chosen as EB+1, so iphi,ieta = 1,1 for the folded map should go into the same crystal for full EB
+  // this means I should not use iphiSM() when using useEBDetId_ic_scheme, but rather (21 - id.iphiSM()) or equivalently (((iphi -1) % EBDetId::kCrystalsInPhi) +1)
   if (hSM_allEB != NULL) {
 
     for (Int_t iphi = 1; iphi <= 360; iphi++) {
@@ -585,7 +587,8 @@ void foldEBMapInSM(const TH2* h = NULL, TH2* hSM = NULL, TH2* hSM_allEB = NULL, 
 
 	if (ieta == 0) continue;
 	EBDetId id(ieta,iphi);	
-	Int_t iphi_foldSM = useEBDetId_ic_scheme ? id.iphiSM() : (((iphi -1) % EBDetId::kCrystalsInPhi) +1);
+	// Int_t iphi_foldSM = useEBDetId_ic_scheme ? id.iphiSM() : (((iphi -1) % EBDetId::kCrystalsInPhi) +1);
+	Int_t iphi_foldSM = ((iphi -1) % EBDetId::kCrystalsInPhi) +1;
 	Int_t ieta_foldSM = id.ietaSM();
 
 	if (iphiOnXaxisSM) binContent = hSM->GetBinContent(iphi_foldSM, ieta_foldSM);

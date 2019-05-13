@@ -415,7 +415,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         outputfile.write("process.p *= process.ecalLocalRecoSequence\n")
     outputfile.write("process.p *= process.analyzerFillEpsilon\n")
 
-def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
+def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, justDoHistogramFolding=False ):
     if isEoverEtrue and localFolderToWriteFits:
         outputDir = outputDir.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
     outputfile.write("import FWCore.ParameterSet.Config as cms\n")
@@ -476,11 +476,15 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+    if justDoHistogramFolding:
+        outputfile.write("process.fitEpsilon.makeFoldedHistograms = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.makeFoldedHistograms = cms.untracked.bool(False)\n")
 
     outputfile.write("process.p = cms.EndPath(process.fitEpsilon)\n")
 
 
-def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
+def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, justDoHistogramFolding=False):
     if isEoverEtrue and localFolderToWriteFits:        
         source = source.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
     outputfile.write("#!/bin/bash\n")
@@ -496,20 +500,22 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     else:
         outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
-    sourcerooplot = source.replace("calibMap","fitRes")
-    destrooplot = destination.replace("calibMap","fitRes")
-    outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
-    outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-    outputfile.write("echo 'ls " + sourcerooplot + " >> " + logpath + " 2>&1' \n" )
-    outputfile.write("ls " + sourcerooplot + " >> " + logpath + " 2>&1 \n" )
-    outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
-    outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
-    outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("cp " + sourcerooplot + " " + destrooplot + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
-    outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f " + sourcerooplot + "' >> " + logpath + " \n")
-    outputfile.write("rm -f " + sourcerooplot + " >> " + logpath + " 2>&1 \n")
+    # if only folding there won't be any actual output in /tmp
+    if not justDoHistogramFolding:
+        sourcerooplot = source.replace("calibMap","fitRes")
+        destrooplot = destination.replace("calibMap","fitRes")
+        outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
+        outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+        outputfile.write("echo 'ls " + sourcerooplot + " >> " + logpath + " 2>&1' \n" )
+        outputfile.write("ls " + sourcerooplot + " >> " + logpath + " 2>&1 \n" )
+        outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
+        outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
+        outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("cp " + sourcerooplot + " " + destrooplot + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
+        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'rm -f " + sourcerooplot + "' >> " + logpath + " \n")
+        outputfile.write("rm -f " + sourcerooplot + " >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")

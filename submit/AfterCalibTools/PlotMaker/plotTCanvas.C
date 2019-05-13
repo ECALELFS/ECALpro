@@ -51,7 +51,9 @@ void doPlotTCanvas(const string& filePath = "",
 		   const int iphi = 1,
 		   const Bool_t isEB = true,
 		   const Bool_t isMC_EoverEtrue = true,
-		   const string& outDir = ""
+		   const string& outDir = "",
+		   const Int_t nFitPerFile = 50,
+		   const bool foldSM = true
 		   ) {
 
 
@@ -61,9 +63,16 @@ void doPlotTCanvas(const string& filePath = "",
   // int ieta = ebseed.ieta();
   // int iphi = ebseed.iphi();		
 
-  EBDetId ebseed(ieta,iphi);
-  Int_t fitIndex = ebseed.hashedIndex();
-  Int_t fitFileIndex = (Int_t) fitIndex/N_FIT_IN_FILE;
+  Int_t fitIndex = -1;
+  EBDetId ebseed(ieta,iphi,0);
+  if (foldSM) {
+    fitIndex = ebseed.ic()-1;
+    //printf("EBDetId.ieta() = %d    EBDetId.iphi() = %d    EBDetId.iphiSM() = %d\n",ebseed.ieta(),ebseed.iphi(),ebseed.iphiSM());
+  } else {
+    fitIndex = ebseed.hashedIndex();
+  }
+  //Int_t fitFileIndex = (Int_t) fitIndex/N_FIT_IN_FILE;
+  Int_t fitFileIndex = (Int_t) fitIndex/nFitPerFile;
 
   string filename= filePath + dirName + Form("/iter_%d/",iterNum) + dirName + Form("_%s_%d_fitRes.root",(isEB ? "Barrel" : "Endcap"),fitFileIndex);
   //string filename= filePath + Form("_%s_%d_fitRes.root",(isEB ? "Barrel" : "Endcap"),fitFileIndex);
@@ -114,13 +123,17 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "pi0CC_2018_EoverEtrue_foldSM_v2", 
+void plotTCanvas(const string& dirName = "pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019", 
 		 const Int_t iterNum = 0, 
 		 const Bool_t isMC_EoverEtrue = true,
 		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/",
 		 const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/",
-		 const string& EoEtrueFolderName = "CC_EoverEtrue_2018"
+		 const string& EoEtrueFolderName = "CC_EoverEtrue_2017",
+		 const Int_t nFitPerFile = 10,
+		 const bool foldSM = true
 		 ) {
+
+  // is foldSM is true, it means there where only 1700 fits (1 SM)
 
   //const string& filePath = "/afs/cern.ch/work/m/mciprian/myEcalElf/2017_ECALpro/calib2017/CMSSW_9_4_1/src/CalibCode/submit/tmp_rootFiles_EoverEtrue_foldSM/pi0Gun_MC_EoverEtrue_foldSM";
 
@@ -160,7 +173,9 @@ void plotTCanvas(const string& dirName = "pi0CC_2018_EoverEtrue_foldSM_v2",
     xtal_ieta_iphi.push_back( std::make_pair( 9, 8) );
     xtal_ieta_iphi.push_back( std::make_pair( 9, 9) );
 
+    xtal_ieta_iphi.push_back( std::make_pair(83, 18) );
     xtal_ieta_iphi.push_back( std::make_pair(81, 3) );
+    xtal_ieta_iphi.push_back( std::make_pair(46, 5) );
 
   } else {
 
@@ -181,7 +196,7 @@ void plotTCanvas(const string& dirName = "pi0CC_2018_EoverEtrue_foldSM_v2",
   }
 
   for (UInt_t i = 0; i < xtal_ieta_iphi.size(); ++i) {
-    doPlotTCanvas(filePath, iterNum, dirName, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir);
+    doPlotTCanvas(filePath, iterNum, dirName, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir, nFitPerFile, foldSM);
     //doPlotTCanvas(filePath, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir);
   }
 

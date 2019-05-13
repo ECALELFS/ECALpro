@@ -40,8 +40,8 @@
 
 using namespace std;
 
-void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_v2/iter_0/pi0CC_2018_EoverEtrue_foldSM_v2_epsilonPlots.root", 
-				     const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/pi0CC_2018_EoverEtrue_foldSM_v2_iter0/",
+void drawControlHistogramsEoverEtrue(const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit50_onlyEB/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit50_onlyEB_epsilonPlots.root", 
+				     const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/pi0CC_2018_EoverEtrue_foldSM_nFit50_onlyEB/",
 				     const bool isPi0 = true) {
 
   system(Form("mkdir -p %s",outDir.c_str()));
