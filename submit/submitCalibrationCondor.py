@@ -11,16 +11,16 @@ parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_
 (options, args) = parser.parse_args()
 pwd = os.getcwd()
 
-if not options.create:
-    #-------- check if you have right access to queues --------#
-    checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
-    output = checkAccessToQueues.communicate()[1]
-    if(output.find('command not found')==-1):
-        print "[calib] Correct setup for batch submission"
-    else:
-        print "[calib] Missing access to queues"
-        if not( isCRAB and storageSite=="T2_BE_IIHE" ):
-            sys.exit(1)
+# if not options.create:
+#     #-------- check if you have right access to queues --------#
+#     checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
+#     output = checkAccessToQueues.communicate()[1]
+#     if(output.find('command not found')==-1):
+#         print "[calib] Correct setup for batch submission"
+#     else:
+#         print "[calib] Missing access to queues"
+#         if not( isCRAB and storageSite=="T2_BE_IIHE" ):
+#             sys.exit(1)
 #-------- copy regression files -------#
 if ContainmentCorrection == '2017reg':
 	os.system("cp /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/zhicaiz/GBRForest_2017/* ../FillEpsilonPlot/data/")
@@ -331,8 +331,13 @@ getenv      = True
 environment = "LS_SUBCWD={here}"
 request_memory = 4000
 +MaxRuntime = 604800
-+JobBatchName = "ecalpro_daemon"\n
++JobBatchName = "ecalpro_daemon"
 '''.format(de=os.path.abspath(dummy_exec.name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
+if os.environ['USER'] in ['mciprian']:
+    condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
+else:
+    condor_file.write('\n')
+
 
 condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(env_script_n)))
 condor_file.close()

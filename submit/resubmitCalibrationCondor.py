@@ -74,8 +74,13 @@ getenv      = True
 environment = "LS_SUBCWD={here}"
 request_memory = 4000
 +MaxRuntime = 604800
-+JobBatchName = "ecalpro_daemon"\n
++JobBatchName = "ecalpro_daemon"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
+if os.environ['USER'] in ['mciprian']:
+    condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
+else:
+    condor_file.write('\n')
+
 
 condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(env_script_n)))
 condor_file.close()

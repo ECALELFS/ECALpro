@@ -184,6 +184,7 @@ for f in os.listdir(jobdir):
     jobN = (f.split("_iter")[0]).split("submit_")[-1] 
     if "EB" in jobN and options.detector == "EE": continue
     if "EE" in jobN and options.detector == "EB": continue
+    if "justFoldSM" in jobN: continue
     if not isGoodFile[jobN]:
         cmd = "bsub -q {q} -oo {ld}/{jn}.log {jd}{job}".format(q=options.queue, ld=logdir, jn=jobN, jd=jobdir, job=f)
         if options.pretend:

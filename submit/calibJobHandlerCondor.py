@@ -55,11 +55,14 @@ getenv      = True
 environment = "LS_SUBCWD={here}"
 next_job_start_delay = 1
 request_memory = {mem}
-requirements = (OpSysAndVer =?= "SLCern6")
+#requirements = (OpSysAndVer =?= "SLCern6")
 +MaxRuntime = {time}
-+JobBatchName = "{jbn}"\n
++JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
-
+    if os.environ['USER'] in ['mciprian']:
+        condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
+    else:
+        condor_file.write('\n')
 
 
 mode = str(sys.argv[1])
@@ -586,15 +589,18 @@ If this is not the case, modify FillEpsilonPlot.cc
     for inteb in range(nEB):
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
         thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
-        thisfile_f = TFile.Open(thisfile)
-        if not thisfile_f: 
+        #thisfile_f = TFile.Open(thisfile)
+        if not os.path.isfile(thisfile):
+            print "Will resubmit missing file {f}".format(f=thisfile)
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
     for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
         thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
-        thisfile_f = TFile.Open(thisfile)
-        if not thisfile_f:
+        #thisfile_f = TFile.Open(thisfile)
+        #if not thisfile_f:
+        if not os.path.isfile(thisfile):
+            print "Will resubmit missing file {f}".format(f=thisfile)
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
 
