@@ -101,6 +101,16 @@ void getRooplotWithIndex(const string& fitResFileOnEos = "",
   if (!xframe) {
     cout << "Warning: RooPlot object with name \"Fit_n_" << rooplotIndex << "_attempt0_rp\" not found in file " << fitResFileOnEos<< ". Exit" <<endl;
     exit(EXIT_FAILURE);
+  } else {
+    // check if there are other attempts
+    for (Int_t irp = 3; irp >= 1; irp--) {
+      string plotInFile = Form("Fit_n_%d_attempt%d_rp",rooplotIndex,irp);
+      RooPlot * xframe_irp = (RooPlot*) f->Get(plotInFile.c_str());
+      if (xframe_irp) {
+	cout << "Found object with name " << plotInFile << ". Will plot this one" << endl;
+	xframe = (RooPlot*) f->Get(plotInFile.c_str());
+      }
+    }
   }
 
   if (xframe) {
@@ -108,7 +118,7 @@ void getRooplotWithIndex(const string& fitResFileOnEos = "",
     xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass [GeV/c^{2}]");
   }
 
-  TFile* outputFile = new TFile((outputDIR + outputFileName).c_str(),"RECREATE");
+  TFile* outputFile = new TFile((outputDIR + outputFileName).c_str(),"UPDATE");
   if (!outputFile || outputFile->IsZombie()) {
     cout << "Error: file not opened. Exit" << endl;
     exit(EXIT_FAILURE);
@@ -132,7 +142,8 @@ void drawRooPlotFromFile(const string& inputDir = "",
 			 const Int_t rooplotIndex = 1, 
 			 const bool isPi0 = true,
 			 const double lumi= 0.18,
-			 const double eta = 1.6  // currently used only for EE
+			 const double eta = 1.6, 
+			 const Int_t year = 2017
 			 ) 
 {
 
@@ -154,6 +165,16 @@ void drawRooPlotFromFile(const string& inputDir = "",
     cout << inputFileName;
     cout << "Abort" << endl;
     exit(EXIT_FAILURE);
+  } else {
+    // check if there are other attempts
+    for (Int_t irp = 3; irp >= 1; irp--) {
+      plotInFile = Form("Fit_n_%d_attempt%d_rp",rooplotIndex,irp);
+      RooPlot * xframe_irp = (RooPlot*) f->Get(plotInFile.c_str());
+      if (xframe_irp) {
+	cout << "Found object with name " << plotInFile << ". Will plot this one" << endl;
+	xframe = (RooPlot*) f->Get(plotInFile.c_str());
+      }
+    }      
   }
 
   string canvasname = isEB ? "pi0MassEBxtal" : "pi0MassEExtal";
@@ -168,7 +189,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   canvas->SetRightMargin(0.06);
   canvas->SetLeftMargin(0.18);
 
-  RooHist* data = xframe->getHist("data"); // can take fit model with (RooCurve*) xframe->getCurve("model")
+  RooHist* data = xframe->getHist("data");
   Double_t maxY = 1.2 * data->getYAxisMax();
   xframe->GetYaxis()->SetRangeUser(0,maxY);
   xframe->GetYaxis()->SetTitle("Number of #gamma#gamma pairs");
@@ -210,10 +231,11 @@ void drawRooPlotFromFile(const string& inputDir = "",
   TLegend *leg = NULL;
   if (isPi0) {
     if (isEB) leg = new TLegend(0.6,0.7,0.95,0.9);
-    else leg = new TLegend(0.60,0.25,0.95,0.45);
+    else leg = new TLegend(0.60,0.35,0.95,0.55);
     //else leg = new TLegend(0.60,0.7,0.95,0.9);
   } else {
-    leg = new TLegend(0.50,0.25,0.95,0.5);
+    if (isEB) leg = new TLegend(0.2,0.25,0.55,0.5);
+    else      leg = new TLegend(0.50,0.25,0.95,0.5);
   }
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
@@ -256,29 +278,30 @@ void drawRooPlotFromFile(const string& inputDir = "",
   string detector = isEB ? "Barrel" : "Endcap";
   line = Form("ECAL %s",detector.c_str());
   lat.DrawLatex(xmin,yhi, line.c_str());
-  line = Form("#eta = %.2g",eta);
+  line = Form("#eta = %.2f",eta);
   lat.DrawLatex(xmin,yhi-ypass, line.c_str());
 
   canvas->RedrawAxis("sameaxis");
 
-  if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),true,false);
-  else CMS_lumi(canvas,Form("%.1f",lumi),true,false);
+  if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),true,false,0,0,0,year);
+  else CMS_lumi(canvas,Form("%.1f",lumi),true,false,0,0,0,year);
   setTDRStyle();
   
   canvas->SaveAs((inputDir + canvasname + ".pdf").c_str());
   canvas->SaveAs((inputDir + canvasname + ".png").c_str());
-  canvas->SaveAs((inputDir + canvasname + ".C").c_str());
   canvas->SaveAs((inputDir + canvasname + ".root").c_str());
+  canvas->SaveAs((inputDir + canvasname + ".C").c_str());
 
-  // TFile* outputFile = new TFile((inputDir + canvasname + ".root").c_str(),"RECREATE");
-  // if (!outputFile || outputFile->IsZombie()) {
-  //   cout << "Error: file not opened. Exit" << endl;
-  //   exit(EXIT_FAILURE);
-  // }
-  // outputFile->cd();  
-  // canvas->Write();
-  // outputFile->Close();
-  // delete outputFile;
+  TFile* outputFile = new TFile((inputDir + canvasname + ".root").c_str(),"RECREATE");
+  if (!outputFile || outputFile->IsZombie()) {
+    cout << "Error: file not opened. Exit" << endl;
+    exit(EXIT_FAILURE);
+  }
+  outputFile->cd();  
+  canvas->Write();
+  outputFile->Close();
+  delete outputFile;
+
 
   delete canvas;
   delete h1; 
@@ -395,40 +418,41 @@ void printSignificanceInFile(const string& calibMapFile = "",
 //===============================================
 
 
-void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2018A", 
-			   const string& outDirName = "plot_approve_2018__AlCaP0_Run2018A", 
-			   const bool usePi0 = true, 
+void manageRooPlotFromFile(const string& dirName = "AlCaEta_AllRun2017_condor_pi0CC_tuneSel", 
+			   const string& outDirName = "plot_approve_full2017data_Eta", 
+			   const bool usePi0 = false, 
 			   const Int_t skip_EB1_EE2 = 0, 
-			   const double lumi = 13.9, 
-			   const int whichIteration = 6, 
-			   const string& subdirTag = "") {
+			   const double lumi = 41.4, 
+			   const int whichIteration = 0, 
+			   const string& subdirTag = "",
+			   const Int_t year = 2017,
+			   const string& eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/" 
+			   ) {
 
   // intLumi is in /fb, use 2 digits after .
 
   // gROOT->ProcessLine(".L saveRooPlotFromFile.C++");
   // gROOT->ProcessLine(".L makeRooPlotFromFile.C++");
 
-  string eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/";
-
   bool isPi0 = usePi0;
   // safety check in case user makes mistakes with dirName and isPi0
   if (dirName.find("AlCaP0") != string::npos) isPi0 = true;
   if (dirName.find("AlCaEta") != string::npos) isPi0 = false;
 
-  int EBxtalIndex = 14007; // 30003;
-  string EBfitFileIndex = "7"; // 15  // need to find a way to derive it from EBxtalIndex, crystals are packed in bunches of 2000, might use (int) EBxtalIndex/2000
-  double etaEB = -0.82; // 0.03; // would be negative but ok
+  int EBxtalIndex = 18003;
+  string EBfitFileIndex = "9"; // need to find a way to derive it from EBxtalIndex
+  double etaEB = -0.61; // would be negative but ok
   //int EExtalIndex = 12001; //12001;
   //string EEfitFileIndex = "6"; //"6"; // need to find a way to derive it from EExtalIndex
   //double etaEE = 2.5;
-  int EExtalIndex = 14018; //6002; //8155; //8000;     //14018; //8155; //12001;
-  string EEfitFileIndex = "7";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
-  double etaEE = 1.63; //1.68; //1.8;// 1.63;// 1.83;
+  int EExtalIndex =8000; //8000;     //14018; //8155; //12001;
+  string EEfitFileIndex = "4";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
+  double etaEE = 1.82;// 1.63;// 1.83;
 
-  if (not isPi0) {
-    EBxtalIndex = 30107;
-    EExtalIndex = 6397;
-  }
+  // if (not isPi0) {
+  //   EBxtalIndex = 30107;
+  //   EExtalIndex = 6397;
+  // }
 
   string iter = string(Form("%d",whichIteration));
 
@@ -468,8 +492,8 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_Run2018A",
   delete ctmp;
 
   // here we go with the real part
-  if (skip_EB1_EE2 != 1) drawRooPlotFromFile(outputDirEB, true, inputFileNameEB, EBxtalIndex, isPi0, lumi, etaEB);
-  if (skip_EB1_EE2 != 2) drawRooPlotFromFile(outputDirEE, false, inputFileNameEE, EExtalIndex, isPi0, lumi, etaEE);
+  if (skip_EB1_EE2 != 1) drawRooPlotFromFile(outputDirEB, true, inputFileNameEB, EBxtalIndex, isPi0, lumi, etaEB, year);
+  if (skip_EB1_EE2 != 2) drawRooPlotFromFile(outputDirEE, false, inputFileNameEE, EExtalIndex, isPi0, lumi, etaEE, year);
 
   string calibMapFile = eosPath + dirName + "/iter_" + iter + "/" + dirName + "_calibMap.root";
   string significanceFileNameEB = fileTagName + Form("_index_%d_significance.txt",EBxtalIndex);

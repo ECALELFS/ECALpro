@@ -81,16 +81,17 @@ using namespace RooFit;
 // the upper boundary must be consistent with <some_number>
 static double upper_bound_pi0mass_EB = 0.15;
 static double upper_bound_pi0mass_EE = 0.16;
-static double upper_bound_etamass_EB = 0.62;
-static double upper_bound_etamass_EE = 0.62;
+static double upper_bound_etamass_EB = 0.6;
+static double upper_bound_etamass_EE = 0.6;
 
 static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
 static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
 static float fitRange_high_pi0_ext = 0.222;
 
 static float fitRange_low_eta = 0.4; // value used in the fit function to define the fit range
-static float fitRange_high_eta = 0.65; // value used in the fit function to define the fit range
-static float fitRange_high_eta_ext = 0.67;
+static float fitRange_low_etaEE = 0.38; // value used in the fit function to define the fit range
+static float fitRange_high_eta = 0.68; // value used in the fit function to define the fit range
+static float fitRange_high_eta_ext = 0.7;
 
 static float EoverEtrue_integralMin = 25; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
@@ -1866,7 +1867,7 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		if(integral>70.)
 		  {
 		    Pi0FitResult fitres = FitMassPeakRooFit( epsilon_EE_h[jR], 
-							     Are_pi0_? fitRange_low_pi0:fitRange_low_eta, 
+							     Are_pi0_? fitRange_low_pi0:fitRange_low_etaEE, 
 							     Are_pi0_? fitRange_high_pi0:fitRange_high_eta, 
 							     jR, 1, Pi0EE, 0, isNot_2010_);//0.05-0.3
 		    RooRealVar* mean_fitresult = (RooRealVar*)(((fitres.res)->floatParsFinal()).find("mean"));
@@ -2016,18 +2017,18 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),h);
 
     //RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
-    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, maxMassForGaussianMean,"GeV/c^{2}");
-    RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,0.015,"GeV/c^{2}");
+    RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.45, maxMassForGaussianMean,"GeV/c^{2}");
+    RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,Are_pi0_ ? 0.015 : 0.025,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-	  mean.setRange( Are_pi0_? 0.1:0.45, maxMassForGaussianMean);
-	  mean.setVal(Are_pi0_? 0.13:0.55);
-	  sigma.setRange(0.005, 0.020);
+      mean.setRange( Are_pi0_? 0.1:0.45, maxMassForGaussianMean);
+      mean.setVal(Are_pi0_? 0.13:0.55);
+      sigma.setRange(0.005, Are_pi0_ ? 0.020 : 0.035);
     }
     if(mode==Pi0EB && niter==1){
-	  mean.setRange(Are_pi0_? 0.105:0.47, maxMassForGaussianMean);
-	  sigma.setRange(0.003, 0.030);
+      mean.setRange(Are_pi0_? 0.105:0.47, maxMassForGaussianMean);
+      sigma.setRange(0.003, 0.030);	  
     }
 
     //RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
@@ -2243,7 +2244,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     lat.SetTextSize(0.040);
     lat.SetTextColor(1);
 
-    float xmin(0.58), yhi(0.80), ypass(0.05);
+    float xmin(0.2), yhi(0.80), ypass(0.05);
     if(mode==EtaEB) yhi=0.30;
     if(mode==Pi0EE) yhi=0.5;
     line = Form("Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );

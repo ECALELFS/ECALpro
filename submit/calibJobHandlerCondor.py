@@ -407,8 +407,10 @@ It is better that you run on all the output files using a TChain. Indeed, these 
                     tf = TFile.Open("root://eoscms/"+eosFile)
                     if not tf or tf.IsZombie():
                         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
-                        continue
-                    if not tf.TestBit(TFile.kRecovered):                    
+                        continue # must not close file
+                    if tf.TestBit(TFile.kRecovered):
+                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+                    else:
                         goodHadds += 1
                     tf.Close()
                         

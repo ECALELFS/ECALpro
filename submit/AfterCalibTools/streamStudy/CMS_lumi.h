@@ -96,7 +96,7 @@ void setTDRStyle (){
 
 }
 
-void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPreliminary = true, int reduceSize = false, float offset = 0,float offsetLumi = 0){
+void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPreliminary = true, int reduceSize = false, float offset = 0,float offsetLumi = 0, int year = 2017){
 
   // keep track of pad margin, otherwise CMS Preliminary goes out of the margin
   float lm = pad->GetLeftMargin() - 0.15;  // 0.15 should be the default
@@ -140,7 +140,7 @@ void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPrel
       latex2->SetTextSize(0.65*pad->GetTopMargin());
       latex2->SetTextFont(52);
       latex2->SetTextAlign(11);
-      latex2->DrawLatex(lm+0.25+offset, 0.95, "Preliminary 2018");
+      latex2->DrawLatex(lm+0.25+offset, 0.95, Form("Preliminary %d",year));
     }
     else{
       latex2->SetTextSize(0.6*pad->GetTopMargin());
@@ -149,9 +149,9 @@ void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPrel
       latex2->SetTextFont(52);
       latex2->SetTextAlign(11);    
       if(reduceSize)
-	latex2->DrawLatex(lm+0.235+offset, 0.85, "Preliminary 2018");
+	latex2->DrawLatex(lm+0.235+offset, 0.85, Form("Preliminary %d",year));
       else
-	latex2->DrawLatex(lm+0.28+offset, 0.85, "Preliminary 2018");
+	latex2->DrawLatex(lm+0.28+offset, 0.85, Form("Preliminary %d",year));
     }
   }
 }
