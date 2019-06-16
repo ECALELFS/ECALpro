@@ -420,8 +420,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       regionStreamPi0.push_back("region2EB");
       regionStreamPi0.push_back("region1EE");
       regionStreamPi0.push_back("region2EE");
+      regionStreamPi0.push_back("region3EE");
 
-      for (int iregEcal = 0; iregEcal < 4; ++iregEcal) {
+      for (unsigned int iregEcal = 0; iregEcal < regionStreamPi0.size(); ++iregEcal) {
 
 	pi0pt_afterCuts.push_back( new TH1F(Form("pi0pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} p_{T} after cuts",60,0.0,15.0) );
 	g1pt_afterCuts.push_back( new TH1F(Form("g1pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma p_{T} after cuts",60,0.0,10.0) );
@@ -429,6 +430,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	g1Nxtal_afterCuts.push_back( new TH1F(Form("g1Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
 	g2Nxtal_afterCuts.push_back( new TH1F(Form("g2Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"trailing (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
 	pi0PhotonsNoverlappingXtals_afterCuts.push_back( new TH1F(Form("pi0PhotonsNoverlappingXtals_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",10,-0.5,9.5) );
+	g1g2DR_afterCuts.push_back( new TH1F(Form("gig2DR_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"#Delta R (#gamma_{1},#gamma_{2}) after cuts",40,0.0,0.4) );
 	if (isMC_) {
 	  pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} mass vs PU",100,0.05,0.25,50,0.5,50.5) );
 	}
@@ -453,6 +455,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     pi0MassVsETEB = new TH2F("pi0MassVsETEB", "#pi^{0} mass vs E_{T}(pi^{0})",120,0.,20.,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsETEB->GetXaxis()->SetTitle("E_{T}(pi^{0})");
     pi0MassVsETEB->GetYaxis()->SetTitle("#pi^{0} mass");
+    photonDeltaRVsIetaEB = new TH2F("photonDeltaRVsIetaEB","#Delta R (#gamma_{1},#gamma_{2}) vs i#eta",85,0.5,85.5,40,0.0, 0.4);
+    photonDeltaRVsIetaEB->GetXaxis()->SetTitle("i#eta");
+    photonDeltaRVsIetaEB->GetYaxis()->SetTitle("#Delta R (#gamma_{1},#gamma_{2})");
 
     //DeadXtal from Map
     if( RemoveDead_Map_!="" ){
@@ -678,6 +683,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
       delete g1Nxtal_afterCuts[i];
       delete g2Nxtal_afterCuts[i];
       delete pi0PhotonsNoverlappingXtals_afterCuts[i];
+      delete g1g2DR_afterCuts[i];
       if (isMC_) {
 	delete pi0MassVsPU[i];
       }
@@ -688,6 +694,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
     g1Nxtal_afterCuts.clear();
     g2Nxtal_afterCuts.clear();
     pi0PhotonsNoverlappingXtals_afterCuts.clear();
+    g1g2DR_afterCuts.clear();
   }
 
   delete entries_EEp;
@@ -698,6 +705,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete Occupancy_EB;
   delete pi0MassVsIetaEB;
   delete pi0MassVsETEB;
+  delete photonDeltaRVsIetaEB;
   if (L1TriggerInfo_) {
     delete triggerComposition;
     delete triggerComposition_EB;
@@ -2320,8 +2328,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
   // FIXME: hardcoded correction: CC was obtained from V1 MC. We had a V2 MC but statistics was not enough
   // since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
   // it would be better to use a histogram for CC which is already scaled, but this is more straightforward if we want to add other corrections
-  float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
-  //float CC_meanRatioV1overV2MC = 1.0;
+  //float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
+  float CC_meanRatioV1overV2MC = 1.0;
 
 
   for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
@@ -3006,8 +3014,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	  } 
 
-	  pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
+	  double pi0_ieta = fabs(pi0P4_eta)/0.0174;
+	  pi0MassVsIetaEB->Fill( pi0_ieta, pi0P4_mass);
 	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	  photonDeltaRVsIetaEB->Fill( pi0_ieta, GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	  if (isDebug_) EventFlow_EB_debug->Fill(4.);
 	  EventFlow_EB->Fill(5.);
 
@@ -3030,7 +3040,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	      else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
 	    } else {
 	      if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
-	      else whichRegionEcalStreamPi0 = 3;	     
+	      else if (fabs(pi0P4_eta)<2.0) whichRegionEcalStreamPi0 = 3;
+	      else whichRegionEcalStreamPi0 = 4;	     
 	    }
 
 	    pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
@@ -3039,6 +3050,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g1);
 	    g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g2);
 	    pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	    g1g2DR_afterCuts[whichRegionEcalStreamPi0]->Fill(GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	    if (isMC_) {
 	      pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
 	    }	   
@@ -3748,8 +3760,10 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	} 
 
-	pi0MassVsIetaEB->Fill( fabs(pi0P4_eta)/0.0174, pi0P4_mass);
+	double pi0_ieta = fabs(pi0P4_eta)/0.0174;
+	pi0MassVsIetaEB->Fill( pi0_ieta, pi0P4_mass);
 	pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	photonDeltaRVsIetaEB->Fill( pi0_ieta, GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	if (isDebug_) EventFlow_EB_debug->Fill(4.);
 	EventFlow_EB->Fill(5.);
 
@@ -3789,7 +3803,8 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
 	} else {
 	  if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
-	  else whichRegionEcalStreamPi0 = 3;	  
+	  else if (fabs(pi0P4_eta)<2.0) whichRegionEcalStreamPi0 = 3;
+	  else whichRegionEcalStreamPi0 = 4;	  
 	}
 
 	pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
@@ -3797,7 +3812,8 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
 	g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma);
 	g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma2);
-	pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));	
+	g1g2DR_afterCuts[whichRegionEcalStreamPi0]->Fill(GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	if (isMC_) {
 	  pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);	
 	}
@@ -4279,6 +4295,7 @@ void FillEpsilonPlot::endJob(){
   Occupancy_EB->Write();
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
+  photonDeltaRVsIetaEB->Write();
   if (L1TriggerInfo_) {
     triggerComposition->Write();
     triggerComposition_EB->Write();
@@ -4302,6 +4319,7 @@ void FillEpsilonPlot::endJob(){
       g1Nxtal_afterCuts[i]->Write();
       g2Nxtal_afterCuts[i]->Write();
       pi0PhotonsNoverlappingXtals_afterCuts[i]->Write();
+      g1g2DR_afterCuts[i]->Write();
       if (isMC_) {
 	pi0MassVsPU[i]->Write();
       }

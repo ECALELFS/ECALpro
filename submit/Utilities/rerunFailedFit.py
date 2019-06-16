@@ -78,6 +78,7 @@ if any(options.detector == x for x in ["EB","EE"]):
 for f in os.listdir(jobdir):
     if not f.endswith('.sh'): continue
     if not f.startswith('submit_'): continue
+    if not "iter_{i}.sh".format(i=niter) in f: continue
     #if detIdMatch != "" and not detIdMatch in f: continue
     #else:
     if "EB" in f:
@@ -180,6 +181,7 @@ for key in isGoodFile:
 for f in os.listdir(jobdir):
     if not f.endswith('.sh'): continue
     if not f.startswith('submit_'): continue
+    if not "iter_{i}.sh".format(i=niter) in f: continue
     # name is like submit_EB_10_iter_0.sh, need to take EB_10
     jobN = (f.split("_iter")[0]).split("submit_")[-1] 
     if "EB" in jobN and options.detector == "EE": continue

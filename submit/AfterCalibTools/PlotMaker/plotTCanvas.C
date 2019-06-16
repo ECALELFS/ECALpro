@@ -53,7 +53,8 @@ void doPlotTCanvas(const string& filePath = "",
 		   const Bool_t isMC_EoverEtrue = true,
 		   const string& outDir = "",
 		   const Int_t nFitPerFile = 50,
-		   const bool foldSM = true
+		   const bool foldSM = true,
+		   const bool saveOnly_g2 = false
 		   ) {
 
 
@@ -101,8 +102,10 @@ void doPlotTCanvas(const string& filePath = "",
     cout << "Maybe the crystal is a dead one, for which there is no fit. Skipping this crystal" << endl;
     return; //exit(EXIT_FAILURE);
   }
-  canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.png",outDir.c_str(),canvas->GetName(),ieta,iphi));
-  canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.pdf",outDir.c_str(),canvas->GetName(),ieta,iphi));
+  if (not saveOnly_g2) {
+    canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.png",outDir.c_str(),canvas->GetName(),ieta,iphi));
+    canvas->SaveAs(Form("%s/%s_ieta%d_iphi%d.pdf",outDir.c_str(),canvas->GetName(),ieta,iphi));
+  }
 
   TCanvas* canvas_g2 = nullptr;
   if (isMC_EoverEtrue) {
@@ -123,14 +126,15 @@ void doPlotTCanvas(const string& filePath = "",
 }
 
 
-void plotTCanvas(const string& dirName = "pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019", 
+void plotTCanvas(const string& dirName = "pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_test", 
 		 const Int_t iterNum = 0, 
 		 const Bool_t isMC_EoverEtrue = true,
 		 const string& outDir_base = "/afs/cern.ch/user/m/mciprian/www/pi0calib/",
 		 const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/",
-		 const string& EoEtrueFolderName = "CC_EoverEtrue_2017",
+		 const string& EoEtrueFolderName = "CC_EoverEtrue_2018",
 		 const Int_t nFitPerFile = 10,
-		 const bool foldSM = true
+		 const bool foldSM = true,
+		 const bool saveOnly_g2 = false
 		 ) {
 
   // is foldSM is true, it means there where only 1700 fits (1 SM)
@@ -149,42 +153,48 @@ void plotTCanvas(const string& dirName = "pi0CC_2017_EoverEtrue_foldSM_nFit10_on
 
   if (isMC_EoverEtrue) {
 
-    xtal_ieta_iphi.push_back( std::make_pair( 1, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(65, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(85, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(15, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(35, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(55, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(75, 1) );
-    xtal_ieta_iphi.push_back( std::make_pair(85,10) );
-    xtal_ieta_iphi.push_back( std::make_pair(84, 4) );
-    xtal_ieta_iphi.push_back( std::make_pair(15,10) );
-    xtal_ieta_iphi.push_back( std::make_pair(35,10) );
-    xtal_ieta_iphi.push_back( std::make_pair(55,10) );
-    xtal_ieta_iphi.push_back( std::make_pair(75,10) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 1, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(65, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(85, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(15, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(35, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(55, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(75, 1) );
+    // xtal_ieta_iphi.push_back( std::make_pair(85,10) );
+    // xtal_ieta_iphi.push_back( std::make_pair(84, 4) );
+    // xtal_ieta_iphi.push_back( std::make_pair(15,10) );
+    // xtal_ieta_iphi.push_back( std::make_pair(35,10) );
+    // xtal_ieta_iphi.push_back( std::make_pair(55,10) );
+    // xtal_ieta_iphi.push_back( std::make_pair(75,10) );
 
-    xtal_ieta_iphi.push_back( std::make_pair( 8, 7) );
-    xtal_ieta_iphi.push_back( std::make_pair( 8, 8) );
-    xtal_ieta_iphi.push_back( std::make_pair( 8, 9) );
-    xtal_ieta_iphi.push_back( std::make_pair( 7, 7) );
-    xtal_ieta_iphi.push_back( std::make_pair( 7, 8) );
-    xtal_ieta_iphi.push_back( std::make_pair( 7, 9) );
-    xtal_ieta_iphi.push_back( std::make_pair( 9, 7) );
-    xtal_ieta_iphi.push_back( std::make_pair( 9, 8) );
-    xtal_ieta_iphi.push_back( std::make_pair( 9, 9) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 8, 7) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 8, 8) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 8, 9) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 7, 7) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 7, 8) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 7, 9) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 9, 7) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 9, 8) );
+    // xtal_ieta_iphi.push_back( std::make_pair( 9, 9) );
 
-    xtal_ieta_iphi.push_back( std::make_pair(83, 18) );
-    xtal_ieta_iphi.push_back( std::make_pair(81, 3) );
-    xtal_ieta_iphi.push_back( std::make_pair(46, 5) );
+    // xtal_ieta_iphi.push_back( std::make_pair(83, 18) );
+    // xtal_ieta_iphi.push_back( std::make_pair(81, 3) );
+    // xtal_ieta_iphi.push_back( std::make_pair(46, 5) );
+    for (Int_t ieta = 1; ieta <= 85; ieta++) {
+      for (Int_t iphi = 1; iphi <= 20; iphi++) {
+    	xtal_ieta_iphi.push_back( std::make_pair(ieta, iphi) ); 
+      }
+    }
+    //xtal_ieta_iphi.push_back( std::make_pair(82, 18) );
 
   } else {
 
-    xtal_ieta_iphi.push_back( std::make_pair(55, 187) );
-    xtal_ieta_iphi.push_back( std::make_pair(55, 188) );
-    xtal_ieta_iphi.push_back( std::make_pair(55, 189) );
-    xtal_ieta_iphi.push_back( std::make_pair(54, 187) );
-    xtal_ieta_iphi.push_back( std::make_pair(54, 188) );
-    xtal_ieta_iphi.push_back( std::make_pair(54, 189) );
+    // xtal_ieta_iphi.push_back( std::make_pair(55, 187) );
+    // xtal_ieta_iphi.push_back( std::make_pair(55, 188) );
+    // xtal_ieta_iphi.push_back( std::make_pair(55, 189) );
+    // xtal_ieta_iphi.push_back( std::make_pair(54, 187) );
+    // xtal_ieta_iphi.push_back( std::make_pair(54, 188) );
+    // xtal_ieta_iphi.push_back( std::make_pair(54, 189) );
 
     xtal_ieta_iphi.push_back( std::make_pair(55, 195) );
     xtal_ieta_iphi.push_back( std::make_pair(54, 195) );
@@ -196,7 +206,9 @@ void plotTCanvas(const string& dirName = "pi0CC_2017_EoverEtrue_foldSM_nFit10_on
   }
 
   for (UInt_t i = 0; i < xtal_ieta_iphi.size(); ++i) {
-    doPlotTCanvas(filePath, iterNum, dirName, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir, nFitPerFile, foldSM);
+    doPlotTCanvas(filePath, iterNum, dirName, 
+		  xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, 
+		  isEB, isMC_EoverEtrue, outDir, nFitPerFile, foldSM, saveOnly_g2);
     //doPlotTCanvas(filePath, xtal_ieta_iphi[i].first, xtal_ieta_iphi[i].second, isEB, isMC_EoverEtrue, outDir);
   }
 

@@ -114,6 +114,11 @@ def printFillCfg1( outputfile ):
             outputfile.write("              tag = cms.string('" + GeVTag + "'),\n")
             outputfile.write("              connect = cms.string('" + GeVDB + "')\n")
             outputfile.write('     ),\n')
+        if not(PFRechitTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + PFRechitTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + PFRechitTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + PFRechitDB + "')\n")
+            outputfile.write('     ),\n')
         if not(pulseShapeTag==''):
             outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
             outputfile.write("              tag = cms.string('" + pulseShapeTag + "'),\n")

@@ -41,7 +41,7 @@ MakeNtuple4optimization = False
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 inputlist_n      = 'InputList/purified_AlCaP0_Run2017_23_12_2018.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_AllRun2017_condor_fixEBm16' if isMC==False else 'pi0CC_2017_EoverEtrue_foldSM_nFit10_onlyEB_testNewFitsMay2019'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'AlCaP0_AllRun2017_condor_fixEBm16' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_testV2'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap

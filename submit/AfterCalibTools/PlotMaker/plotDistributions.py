@@ -37,6 +37,7 @@ if __name__ == "__main__":
     f1 = args[0]
     hist1 = args[1]
     hist2 = args[2]
+    if hist2 == "PTPI0": hist2 = hist1
 
     leg1 = "h1"
     leg2 = "h2"
@@ -128,9 +129,9 @@ if __name__ == "__main__":
 
     if options.yAxisTitle == "arbitrary units":
         h1.Scale(1./h1.Integral())
-        h2.Scale(1./h2.Integral())
+        if hist1 != hist2: h2.Scale(1./h2.Integral())
     leg2ext = ""
-    if options.scaleHist2:
+    if hist1 != hist2 and options.scaleHist2:
         if options.scaleHist2 > 0: 
             h2.Scale(options.scaleHist2)
             leg2ext = " x " + str(options.scaleHist2)
@@ -144,7 +145,7 @@ if __name__ == "__main__":
     h1.GetYaxis().SetRangeUser(0., 1.15*maxy1)
 
     h1.Draw("HIST")
-    h2.Draw("HIST SAME")
+    if hist1 != hist2: h2.Draw("HIST SAME")
 
     canvas.RedrawAxis("sameaxis")
 
@@ -156,7 +157,7 @@ if __name__ == "__main__":
         #leg.SetHeader("#bf{%s}" % options.legendTitle)
         leg.AddEntry(None,"","")
     leg.AddEntry(h1,leg1,"LF")
-    leg.AddEntry(h2,leg2+leg2ext,"LF")
+    if hist1 != hist2: leg.AddEntry(h2,leg2+leg2ext,"LF")
     leg.Draw("same")
 
     latCMS = ROOT.TLatex()

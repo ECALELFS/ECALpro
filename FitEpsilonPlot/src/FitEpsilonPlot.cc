@@ -1564,7 +1564,6 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 		  
 	    int crystalIndexInSM = foldInSuperModule_ ? j : getArrayIndexOfFoldedSMfromDenseIndex(j);
 	    TH1F* histoToFit_g1 = (foldInSuperModule_ ? EoverEtrue_g1_EB_SM_hvec[crystalIndexInSM] : EoverEtrue_g1_EB_h[j]);
-		  
 	    // first photon 
 	    // int iMin = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
 	    // int iMax = EoverEtrue_g1_EB_h[j]->GetXaxis()->FindFixBin(1.1);
@@ -1594,6 +1593,9 @@ void FitEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 	    }
 
 	    TH1F* histoToFit_g2 = (foldInSuperModule_ ? EoverEtrue_g2_EB_SM_hvec[crystalIndexInSM] : EoverEtrue_g2_EB_h[j]);
+	    if (foldInSuperModule_ and (crystalIndexInSM == 1336 || crystalIndexInSM == 1611 || crystalIndexInSM == 1625)) {
+	      histoToFit_g2 = EoverEtrue_g2_EB_SM_hvec[crystalIndexInSM-1];
+	    }
 
 	    // second photon 
 	    // iMin = EoverEtrue_g2_EB_h[j]->GetXaxis()->FindFixBin(0.6); 
@@ -2468,6 +2470,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   int iphi = -999;
     
   if (foldInSuperModule_) {
+    //if (HistoIndex == 1336 || HistoIndex == 1611 || HistoIndex = 1625) HistoIndex = HistoIndex -1;
     EBDetId thisebid(1,HistoIndex+1,1);
     ieta = thisebid.ieta();
     iphi = thisebid.iphi();
@@ -2491,37 +2494,128 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   double hardCodedXmin = -1.0;
   double hardCodedXmax = -1.0;
   // hardcoded stuff for CC in 2018
-  // if (isSecondGenPhoton) {
-  //   if (ieta >= 55) {
-  //     useRooCMSShapeAsBkg = false;
-  //     usePol2 = true;
-  //     useCB2toFit = false;
-  //     useCBtoFit = false;      
-  //   }
-  // } else {
-  //   if (ieta == 83 and iphi == 18) {
-  //     noFitBkg = false;
-  //     useRooCMSShapeAsBkg = false;
-  //     usePol2 = true;
-  //   } else if (ieta == 46 and iphi == 5) {
-  //     noFitBkg = false;
-  //     useRooCMSShapeAsBkg = false;
-  //     usePol2 = true;
-  //   }
-  // }
-
-  // hardcoded stuff for CC in 2017
   if (isSecondGenPhoton) {
-    noFitBkg = false;
-    useRooCMSShapeAsBkg = true;
-    useCB2toFit = true;
-    hardCodedXmin = 0.07;
-  } else {
-    if (iphi%20 == 1 || iphi%20 == 0 || ieta == 1 || ieta == 25 || ieta == 26 || ieta == 45 || ieta == 46 || ieta == 65 || ieta == 66 || ieta == 85) {
+    if (ieta == 5 && iphi == 14) {
+      usePol2 = true;
+      hardCodedXmin = 0.4;
+      hardCodedXmax = 1.45;      
+    } else if ((ieta == 5 && iphi == 6) || (ieta == 8 && iphi == 14)) {
+      usePol2 = true;
+      hardCodedXmin = 0.3;
+      hardCodedXmax = 1.45;      
+    } else if ((ieta == 8 && iphi == 5) || (ieta >= 15 && ieta <= 16 && iphi == 6)) {
+      usePol2 = true;
+      hardCodedXmin = 0.4;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 36 && iphi == 18) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 40 && iphi == 7) {
+      usePol2 = true;
+      hardCodedXmin = 0.4;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 45 && iphi == 14) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 46 && iphi == 16) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 50 && iphi == 4) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta >= 50 && ieta <= 51 && iphi == 15) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 55 && iphi == 3) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 52 && iphi == 3) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } if (ieta == 57 && iphi == 1) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta > 55) {
+      useRooCMSShapeAsBkg = true;
       noFitBkg = false;
-      useRooCMSShapeAsBkg = true;    
+      usePol2 = false;
+      useCB2toFit = false;
+      useCBtoFit = false;  // CB up to 1.4 was fine for many crystals     
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    }
+    // override few xtals above ieta=55
+    if (ieta == 74 && iphi >= 15 && iphi <= 16) {
+      useRooCMSShapeAsBkg = true;
+      useCBtoFit = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 72 && iphi == 2) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 73 && iphi == 5) {
+      useRooCMSShapeAsBkg = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 76 && iphi == 8) {
+      useRooCMSShapeAsBkg = true;
+      useCBtoFit = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } else if (ieta == 83 && iphi == 7) {
+      useRooCMSShapeAsBkg = true;
+      //useCBtoFit = true;
+      hardCodedXmin = 0.2;
+      hardCodedXmax = 1.45;
+    } 
+
+
+
+  } else {
+    if (ieta == 83 and iphi == 18) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      hardCodedXmin = 0.8;
+    } else if (ieta == 82 and iphi == 18) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = true;
+      usePol2 = false;
+      hardCodedXmin = 0.2;
+    } else if (ieta == 46 and iphi == 5) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      hardCodedXmin = 0.8;
+    } else if (ieta == 40 and iphi == 9) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = true;
+      hardCodedXmin = 0.4;
     }
   }
+
+  // // hardcoded stuff for CC in 2017
+  // if (isSecondGenPhoton) {
+  //   noFitBkg = false;
+  //   useRooCMSShapeAsBkg = true;
+  //   useCB2toFit = true;
+  //   hardCodedXmin = 0.07;
+  // } else {
+  //   if (iphi%20 == 1 || iphi%20 == 0 || ieta == 1 || ieta == 25 || ieta == 26 || ieta == 45 || ieta == 46 || ieta == 65 || ieta == 66 || ieta == 85) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = true;    
+  //   }
+  // }
   
 
   // std::cout << "FitEpsilonPlot::FitEoverEtruePeak called " << std::endl;
@@ -2585,8 +2679,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   RooRealVar x("x",Form("#gamma_{%d} E/E_{true}",nPhoton), 0.0, 1.5, "");
   RooDataHist dh("dh",Form("#gamma_{%d} E/E_{true}",nPhoton),RooArgList(x),h1);
 
-  RooRealVar mean("mean","peak position", xmaxbin, xmaxbin-0.15, xmaxbin+0.15, "");
-  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, std::min(0.001,0.9*rmsh1narrow),std::max(0.15,1.1*rmsh1narrow),"");
+  RooRealVar mean("mean","peak position", xmaxbin, std::max(xmaxbin-0.15,0.89), std::min(1.0,xmaxbin+0.15), "");
+  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, std::min(0.02,0.9*rmsh1narrow),0.1,"");
 
   //  RooRealVar Nsig("Nsig","signal yield",h1->Integral()*0.7,0.,h1->Integral()*1.1); // signal represents the peak in E/Etrue (even though it is actually only signal)
   //Nsig.setVal( h->GetSum()*0.1);
@@ -2678,6 +2772,10 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
     }
   }
 
+  // cout << "===============================================" << endl;
+  // cout << "===============================================" << endl;
+  // cout << "===============================================" << endl;
+
   //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(kTRUE), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
   //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
@@ -2741,15 +2839,28 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
   }
 
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
+  // cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  // cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  // cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+
   // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
   //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
   int ndof = h1->FindFixBin(xhi) - h1->FindFixBin(xlo) + 1 - res->floatParsFinal().getSize(); 
 
   //compute S/B and chi2
-  x.setRange("sobRange",mean.getVal() - 2.0*sigma.getVal(), mean.getVal() + 2.*sigma.getVal());
+  //x.setRange("sobRange",mean.getVal() - 2.0*sigma.getVal(), mean.getVal() + 2.*sigma.getVal());
+  x.setRange("sobRange",xlo,xhi);
+  //RooChi2Var chi2("chi2","chi2 var",*model,dh, true,"sobRange");
+  RooChi2Var chi2("chi2","chi2 var",*model,dh, false,"sobRange");
+  // cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
   RooAbsReal* integralSig = gaus.createIntegral(x,NormSet(x),Range("sobRange"));
+  // cout << "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY" << endl;
   RooAbsReal* integralBkg = bkg.createIntegral(x,NormSet(x),Range("sobRange"));
+
+  // cout << "--------------------------------------------------------------" << endl;
+  // cout << "--------------------------------------------------------------" << endl;
+  // cout << "--------------------------------------------------------------" << endl;
+
 
   float normSig = integralSig->getVal();
   float normBkg = integralBkg->getVal();

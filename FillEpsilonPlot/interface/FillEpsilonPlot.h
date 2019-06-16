@@ -295,12 +295,13 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // Some kinematic variables (use option in parameters.py to choose whether to fill and save them)
       bool fillKinematicVariables_;
       int whichRegionEcalStreamPi0; // will be used to say in which region we are based on eta of pi0
-      std::vector<TH1F*> pi0pt_afterCuts;  // 4 regions (2 in EB and 2 in EE, there would be 3 in EE but last two are merged)
+      std::vector<TH1F*> pi0pt_afterCuts;  // 5 regions (2 in EB and 3 in EE, last 2 in EE could be merged)
       std::vector<TH1F*> g1pt_afterCuts;
       std::vector<TH1F*> g2pt_afterCuts;
       std::vector<TH1F*> g1Nxtal_afterCuts;
       std::vector<TH1F*> g2Nxtal_afterCuts;
       std::vector<TH1F*> pi0PhotonsNoverlappingXtals_afterCuts;
+      std::vector<TH1F*> g1g2DR_afterCuts;
       std::vector<TH2F*> pi0MassVsPU;  // BX 0
       //std::vector<TH2F*> pi0MassVsPU_BXm1;
       //std::vector<TH2F*> pi0MassVsPU_BXm2;
@@ -351,6 +352,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F *Occupancy_EB;
       TH2F *pi0MassVsIetaEB;
       TH2F *pi0MassVsETEB;
+      TH2F *photonDeltaRVsIetaEB;
       bool useMassInsteadOfEpsilon_;
 
 #ifdef SELECTION_TREE

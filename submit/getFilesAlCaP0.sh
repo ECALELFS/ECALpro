@@ -4,11 +4,11 @@ thisYear="18"   # use 16, 17, 18
 dayMonthYear=`date +%d_%m_%Y`
 dataset="AlCaP0"
 runYear="20${thisYear}"
-dataEra="D"  # keep "" or select an era
+dataEra=""  # keep "" or select an era
 #JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions${thisYear}/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
-JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-322057_13TeV_PromptReco_Collisions18_JSON.txt"
-firstRunBrilcalc="320394" # can be empty, otherwise it is used to select a run range for the brilcalc command
-lastRunBrilcalc="322260" # can be empty, otherwise it is used to select a run range for the brilcalc command
+JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/PromptReco/Cert_314472-325175_13TeV_PromptReco_Collisions18_JSON.txt"
+firstRunBrilcalc="" # can be empty, otherwise it is used to select a run range for the brilcalc command
+lastRunBrilcalc="" # can be empty, otherwise it is used to select a run range for the brilcalc command
 
 ecalproFolder="${CMSSW_BASE}/src/CalibCode/submit/"
 outputdir="${ecalproFolder}InputList/"
