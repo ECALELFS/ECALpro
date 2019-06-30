@@ -4,7 +4,7 @@ import subprocess, time, sys, os, string
 from ROOT import *
 
 # example:
-# python Utilities/rerunFailedFill.py -e /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/ -d AlCaP0_AllRun2017_condor_fixEBm16 -i 5 --useLSF -q cmscaf1nd --remove-zombie -p --detector EB
+# python Utilities/rerunFailedFit.py -e /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/ -d AlCaP0_AllRun2017_condor_fixEBm16 -i 5 --useLSF -q cmscaf1nd --check-zombie -p --detector EB
 # add -p to check what will be done, without running jobs
 
 from optparse import OptionParser

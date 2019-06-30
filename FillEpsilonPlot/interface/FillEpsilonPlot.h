@@ -278,6 +278,9 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F* h_numberMatchedGenPhotonPairs_EE;  
       TH1F* h_numberUnmergedGenPhotonPairs; // absolute number without separating EB and EE 
       TH1F* h_numberMatchedGenPhotonPairs;  
+      TH1F* g1RecoGenDR_EB;
+      TH1F* g2RecoGenDR_EB;
+      TH1F* diff_g2Recog1GenDR_g2RecoGenDR_EB;
       // for E/Etrue with MC
       TH1F **EoverEtrue_g1_EB_h;  
       TH1F **EoverEtrue_g1_EE_h;  

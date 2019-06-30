@@ -2490,95 +2490,111 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   bool useCB2toFit = isSecondGenPhoton ? false : true;   // use double Crystal Ball (overrides useCBtoFit)
   //bool useCB2toFit = isSecondGenPhoton ? false : false;   // use double Crystal Ball (overrides useCBtoFit)
   bool usePol2 = false;  // when using background model as well, use pol2 (by default pol3 is used, if RooCMSShape is not specified)
+  bool usePol1 = false;
 
   double hardCodedXmin = -1.0;
   double hardCodedXmax = -1.0;
-  // hardcoded stuff for CC in 2018
-  if (isSecondGenPhoton) {
-    if (ieta == 5 && iphi == 14) {
-      usePol2 = true;
-      hardCodedXmin = 0.4;
-      hardCodedXmax = 1.45;      
-    } else if ((ieta == 5 && iphi == 6) || (ieta == 8 && iphi == 14)) {
-      usePol2 = true;
-      hardCodedXmin = 0.3;
-      hardCodedXmax = 1.45;      
-    } else if ((ieta == 8 && iphi == 5) || (ieta >= 15 && ieta <= 16 && iphi == 6)) {
-      usePol2 = true;
-      hardCodedXmin = 0.4;
+  // for 2018, after bug fix
+  if (isSecondGenPhoton) {  
+    // ok except for some crystals, were it could actually work but it didn't
+    hardCodedXmin = 0.25;
+    hardCodedXmax = 1.45;
+    useCB2toFit = false;
+    noFitBkg = false;
+    useRooCMSShapeAsBkg = false;
+    usePol2 = true;
+    // following is ok, but sometimes fit doesn't converge
+    if (ieta >= 55) {
+      // hardCodedXmin = 0.02;
+      // hardCodedXmax = 1.45;
+      // useCB2toFit = false;
+      // noFitBkg = false;
+      // useRooCMSShapeAsBkg = true;
+      // usePol2 = false;
+      hardCodedXmin = 0.02;
       hardCodedXmax = 1.45;
-    } else if (ieta == 36 && iphi == 18) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 40 && iphi == 7) {
-      usePol2 = true;
-      hardCodedXmin = 0.4;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 45 && iphi == 14) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 46 && iphi == 16) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 50 && iphi == 4) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta >= 50 && ieta <= 51 && iphi == 15) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 55 && iphi == 3) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 52 && iphi == 3) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } if (ieta == 57 && iphi == 1) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta > 55) {
-      useRooCMSShapeAsBkg = true;
-      noFitBkg = false;
-      usePol2 = false;
       useCB2toFit = false;
-      useCBtoFit = false;  // CB up to 1.4 was fine for many crystals     
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = true;
     }
-    // override few xtals above ieta=55
-    if (ieta == 74 && iphi >= 15 && iphi <= 16) {
-      useRooCMSShapeAsBkg = true;
-      useCBtoFit = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 72 && iphi == 2) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 73 && iphi == 5) {
-      useRooCMSShapeAsBkg = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 76 && iphi == 8) {
-      useRooCMSShapeAsBkg = true;
-      useCBtoFit = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } else if (ieta == 83 && iphi == 7) {
-      useRooCMSShapeAsBkg = true;
-      //useCBtoFit = true;
-      hardCodedXmin = 0.2;
-      hardCodedXmax = 1.45;
-    } 
-
-
+    if (ieta == 1 and (iphi == 1 || iphi == 19)) { 
+      noFitBkg = true;      
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      useCB2toFit = true; 
+      hardCodedXmin = 0.75;
+      hardCodedXmax = 1.1;
+    } else if (iphi == 1 and (ieta == 7 || ieta == 8 || ieta == 20 || ieta == 26)) {
+      noFitBkg = true; 
+      useRooCMSShapeAsBkg = false;   
+      //useCB2toFit = true;
+      useCB2toFit = true; 
+      usePol2 = false;   
+      hardCodedXmin = 0.75; 
+      hardCodedXmax = 1.1;
+    } else if ((iphi == 19 and (ieta == 19 || ieta == 60)) || (ieta == 25 and iphi == 3) || ((ieta == 32 || ieta == 54) and iphi == 12)) {
+      noFitBkg = false; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      hardCodedXmin = 0.1;
+      hardCodedXmax = 1.3; 
+    } else if (ieta == 27 and iphi == 20) {
+      noFitBkg = true; 
+      useRooCMSShapeAsBkg = false;   
+      usePol2 = false;   
+      useCB2toFit = true;
+      hardCodedXmin = 0.8;
+      hardCodedXmax = 1.1; 
+    } else if (iphi == 2 and ieta == 48) {
+      noFitBkg = false; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      hardCodedXmin = 0.05;     
+    } else if (iphi == 7 and (ieta == 45 || ieta == 53)) {
+      noFitBkg = true; 
+      useRooCMSShapeAsBkg = false;   
+      usePol2 = false;   
+      useCB2toFit = true;
+      hardCodedXmin = 0.8;     
+      hardCodedXmax = 1.1; 
+    } else if ((iphi == 20 and ieta == 63) || (ieta == 64 and (iphi == 1 || iphi == 20))) {
+      noFitBkg = true; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      useCB2toFit = true;
+      hardCodedXmin = 0.8;
+      hardCodedXmax = 1.1; 
+    } else if (iphi == 4 and ieta == 65) {
+      noFitBkg = false; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      hardCodedXmin = 0.1;
+      hardCodedXmax = 1.3; 
+    } else if (ieta == 66 and (iphi == 5 || iphi == 14)) {
+      noFitBkg = true; 
+      useRooCMSShapeAsBkg = false;   
+      usePol2 = false;   
+      hardCodedXmin = 0.8;
+      hardCodedXmax = 1.1; 
+    } else if ((iphi == 20 and ieta == 67) || (ieta == 69 and iphi == 10) || (ieta == 74 and iphi == 17) || (ieta == 76 and iphi == 9)) {
+      noFitBkg = false; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      hardCodedXmin = 0.05; 
+    } else if ((iphi == 20 and (ieta == 77 || ieta == 78)) || (ieta == 84 and iphi == 18)) {
+      noFitBkg = false; 
+      useRooCMSShapeAsBkg = true;   
+      usePol2 = false;   
+      hardCodedXmin = 0.05; 
+    } else if (ieta ==78 and iphi == 1) { 
+      noFitBkg = true;      
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      //useCB2toFit = true; 
+      hardCodedXmin = 0.8;
+      hardCodedXmax = 1.05;
+    }
 
   } else {
     if (ieta == 83 and iphi == 18) {
@@ -2586,11 +2602,29 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
       useRooCMSShapeAsBkg = false;
       usePol2 = false;
       hardCodedXmin = 0.8;
+    } else if (ieta == 26 and iphi == 1) {
+      noFitBkg = true;
+      hardCodedXmin = 0.7;
     } else if (ieta == 82 and iphi == 18) {
       noFitBkg = false;
       useRooCMSShapeAsBkg = true;
       usePol2 = false;
       hardCodedXmin = 0.2;
+    } else if (ieta == 75 and iphi == 8) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      hardCodedXmin = 0.3;
+    } else if (ieta == 78 and iphi == 20) {
+      noFitBkg = false;
+      useRooCMSShapeAsBkg = false;
+      usePol2 = false;
+      hardCodedXmin = 0.3;
+    // } else if (ieta == 64 and iphi == 5) {
+    //   noFitBkg = false;
+    //   useRooCMSShapeAsBkg = false;
+    //   usePol2 = false;
+    //   hardCodedXmin = 0.3;
     } else if (ieta == 46 and iphi == 5) {
       noFitBkg = false;
       useRooCMSShapeAsBkg = false;
@@ -2601,8 +2635,126 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
       useRooCMSShapeAsBkg = false;
       usePol2 = true;
       hardCodedXmin = 0.4;
+    } else if (ieta == 65 and iphi == 1) {
+      // noFitBkg = false;
+      // useRooCMSShapeAsBkg = false;
+      // usePol2 = true;
+      hardCodedXmin = 0.8;
     }
   }
+
+
+  // hardcoded stuff for CC in 2018
+
+  // // used with bugged CC for 2018 (bad second photon E/Etrue, where E was the one of photon 1)
+  // if (isSecondGenPhoton) {
+
+  //   if (ieta == 5 && iphi == 14) {
+  //     usePol2 = true;
+  //     hardCodedXmin = 0.4;
+  //     hardCodedXmax = 1.45;      
+  //   } else if ((ieta == 5 && iphi == 6) || (ieta == 8 && iphi == 14)) {
+  //     usePol2 = true;
+  //     hardCodedXmin = 0.3;
+  //     hardCodedXmax = 1.45;      
+  //   } else if ((ieta == 8 && iphi == 5) || (ieta >= 15 && ieta <= 16 && iphi == 6)) {
+  //     usePol2 = true;
+  //     hardCodedXmin = 0.4;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 36 && iphi == 18) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 40 && iphi == 7) {
+  //     usePol2 = true;
+  //     hardCodedXmin = 0.4;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 45 && iphi == 14) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 46 && iphi == 16) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 50 && iphi == 4) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta >= 50 && ieta <= 51 && iphi == 15) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 55 && iphi == 3) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 52 && iphi == 3) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } if (ieta == 57 && iphi == 1) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta > 55) {
+  //     useRooCMSShapeAsBkg = true;
+  //     noFitBkg = false;
+  //     usePol2 = false;
+  //     useCB2toFit = false;
+  //     useCBtoFit = false;  // CB up to 1.4 was fine for many crystals     
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   }
+  //   // override few xtals above ieta=55
+  //   if (ieta == 74 && iphi >= 15 && iphi <= 16) {
+  //     useRooCMSShapeAsBkg = true;
+  //     useCBtoFit = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 72 && iphi == 2) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 73 && iphi == 5) {
+  //     useRooCMSShapeAsBkg = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 76 && iphi == 8) {
+  //     useRooCMSShapeAsBkg = true;
+  //     useCBtoFit = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } else if (ieta == 83 && iphi == 7) {
+  //     useRooCMSShapeAsBkg = true;
+  //     //useCBtoFit = true;
+  //     hardCodedXmin = 0.2;
+  //     hardCodedXmax = 1.45;
+  //   } 
+
+  // } else {
+  //   if (ieta == 83 and iphi == 18) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = false;
+  //     hardCodedXmin = 0.8;
+  //   } else if (ieta == 82 and iphi == 18) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = true;
+  //     usePol2 = false;
+  //     hardCodedXmin = 0.2;
+  //   } else if (ieta == 46 and iphi == 5) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = false;
+  //     hardCodedXmin = 0.8;
+  //   } else if (ieta == 40 and iphi == 9) {
+  //     noFitBkg = false;
+  //     useRooCMSShapeAsBkg = false;
+  //     usePol2 = true;
+  //     hardCodedXmin = 0.4;
+  //   }
+  // }
 
   // // hardcoded stuff for CC in 2017
   // if (isSecondGenPhoton) {
@@ -2679,15 +2831,20 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   RooRealVar x("x",Form("#gamma_{%d} E/E_{true}",nPhoton), 0.0, 1.5, "");
   RooDataHist dh("dh",Form("#gamma_{%d} E/E_{true}",nPhoton),RooArgList(x),h1);
 
-  RooRealVar mean("mean","peak position", xmaxbin, std::max(xmaxbin-0.15,0.89), std::min(1.0,xmaxbin+0.15), "");
-  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, std::min(0.02,0.9*rmsh1narrow),0.1,"");
+  RooRealVar mean("mean","peak position", 
+		  xmaxbin, 
+		  std::min(xmaxbin - 0.01, std::max(xmaxbin-0.1,isSecondGenPhoton ? 0.88 : 0.89)), 
+		  std::max(xmaxbin + 0.01,std::min(0.98,xmaxbin+0.1)), "");
+  //Double_t g2sigma = noFitBkg ? 0.14 : 0.12;
+  Double_t g2sigma = 0.14;
+  RooRealVar sigma("sigma","core #sigma",rmsh1narrow, std::min(0.025,0.9*rmsh1narrow),isSecondGenPhoton ? g2sigma : 0.1,"");
 
   //  RooRealVar Nsig("Nsig","signal yield",h1->Integral()*0.7,0.,h1->Integral()*1.1); // signal represents the peak in E/Etrue (even though it is actually only signal)
   //Nsig.setVal( h->GetSum()*0.1);
   RooRealVar Nsig("Nsig","signal yield",
-		  isSecondGenPhoton ? 0.3 : 0.8 ,
+		  isSecondGenPhoton ? 0.7 : 0.8 ,
 		  0.,
-		  isSecondGenPhoton ? 0.9 : 1.0); // should use normalization
+		  isSecondGenPhoton ? 0.95 : 1.0); // should use normalization
   if (noFitBkg) Nsig.setRange(0.0,1.0);  
 
   RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
@@ -2697,7 +2854,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 		       useCB2toFit ? 0.01 : -5.0,
 		       useCB2toFit ? 5.0  : -0.01);  // for CB1, this alpha parameter is positive for left tail, negative for right one
   RooRealVar nCB ("nCB","",0.5,0.01,50);
-  RooRealVar alphaCB2  ("alphaCB2","",1.07,0.01,5.0);  // the double CB I use requires positive parameter
+  RooRealVar alphaCB2  ("alphaCB2","",1.07,0.05,5.0);  // the double CB I use requires positive parameter
   RooRealVar nCB2 ("nCB2","",2,0.01,50);
   RooCBShape cb_sig ("cb_sig","Crystal Ball",x, mean, sigma, alphaCB,nCB);
   My_double_CB cb2_sig = My_double_CB("cb2_sig", "cb2_sig", x, mean, sigma, alphaCB,nCB, alphaCB2,nCB2);
@@ -2705,9 +2862,10 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   RooRealVar alphaCMSshape("alphaCMSshape","alphaCMSshape", 1.0, -50.0,50.0);
   RooRealVar betaCMSshape("betaCMSshape","betaCMSshape", 3.0, 0.0, 50.0);
   RooRealVar gammaCMSshape("gammaCMSshape","gammaCMSshape", 3.0, -50.0,50.0);
-  RooRealVar peakCMSshape("peakCMSshape","peakCMSshape", 0.15, 0.01,1.1);
+  RooRealVar peakCMSshape("peakCMSshape","peakCMSshape", 0.2, 0.01,0.5);
   RooCMSShape cmsshape = RooCMSShape("rooCMSshape","cmsShape",x,alphaCMSshape,betaCMSshape,gammaCMSshape,peakCMSshape);  
 
+  // cb0 is not used, because RooChebychev assumes we give parameters from the linear term
   RooRealVar cb0("cb0","cb0", 0.0, -10.0,200.0);
   RooRealVar cb1("cb1","cb1", 0.0, -50.,50);
   RooRealVar cb2("cb2","cb2",-1  ,  -5.,5.);
@@ -2717,17 +2875,23 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   RooRealVar cb6("cb6","cb6", 0.0,  -5.,5.);
   //RooRealVar cb7("cb7","cb7", 0.0,  -5.,5.);
 
+  //RooRealVar p0("p0","p0", 100.0, 0.0, 500.0);
+  RooRealVar p1("p1","p1", -5, -500.0, 0.0);
+
   // define a background shape in addition for the bare gaussian or Crystal Ball for the peak
-  RooArgList cbpars(cb0,cb1,cb2);  
+  //RooArgList cbpars(cb0,cb1,cb2);  
+  RooArgList cbpars(cb1,cb2);
   //RooArgList cbparsMore(cb0,cb1,cb2,cb3,cb4,cb5,cb6);
-  RooArgList cbparsMore(cb0,cb1,cb2,cb3);
+  RooArgList cbparsMore(cb1,cb2,cb3);
+  RooArgList pol1pars(p1);
   RooArgList *cbparsPtr = usePol2 ? &cbpars : &cbparsMore;
+  if (usePol1) cbparsPtr = &pol1pars;
   RooChebychev bkg("bkg","bkg model", x, *cbparsPtr );
   //  RooRealVar Nbkg("Nbkg","background yield",h1->Integral()*0.3,0.,h1->Integral()*1.1);
   RooRealVar Nbkg("Nbkg","background yield",
-		  isSecondGenPhoton ? 0.8 : 0.3 ,
+		  isSecondGenPhoton ? 0.3 : 0.3 ,
 		  0.,
-		  isSecondGenPhoton ? 1.0 : 0.8);
+		  isSecondGenPhoton ? 0.9 : 0.8);
 
   //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3,p4,p5,p6) );
   //RooPolynomial bkg("bkg","background model",x,RooArgList(p0,p1,p2,p3) );
@@ -2914,6 +3078,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
       h1lowEoverEtrue->SetBinContent(i,h1->GetBinContent(h1->FindFixBin(h1lowEoverEtrue->GetBinCenter(i))));
     }
     double ymaxInLowerRange = h1lowEoverEtrue->GetBinContent(h1lowEoverEtrue->GetMaximumBin());
+    cout << "ieta, iphi, ic() = " << ieta << ", " << iphi << ", " << HistoIndex+1 << endl;
     cout << ">>>> xmaxInLowerRange : xmaxbin = " << h1lowEoverEtrue->GetBinCenter(h1lowEoverEtrue->GetMaximumBin()) << " : " << xmaxbin << endl;
     cout << ">>>> ymaxInLowerRange : h1->GetBinContent(h1->FindFixBin(xmaxbin)) = " << ymaxInLowerRange << " : " << h1->GetBinContent(h1->FindFixBin(xmaxbin)) << endl;
     if (ymaxInLowerRange > 0.8 * h1->GetBinContent(h1->FindFixBin(xmaxbin))) {

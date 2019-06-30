@@ -452,8 +452,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsIetaEB->GetXaxis()->SetTitle("i#eta");
     pi0MassVsIetaEB->GetYaxis()->SetTitle("#pi^{0} mass");
-    pi0MassVsETEB = new TH2F("pi0MassVsETEB", "#pi^{0} mass vs E_{T}(pi^{0})",120,0.,20.,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
-    pi0MassVsETEB->GetXaxis()->SetTitle("E_{T}(pi^{0})");
+    pi0MassVsETEB = new TH2F("pi0MassVsETEB", "#pi^{0} mass vs E_{T}(#pi^{0}) in EB",120,0.,20.,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
+    pi0MassVsETEB->GetXaxis()->SetTitle("E_{T}(#pi^{0})");
     pi0MassVsETEB->GetYaxis()->SetTitle("#pi^{0} mass");
     photonDeltaRVsIetaEB = new TH2F("photonDeltaRVsIetaEB","#Delta R (#gamma_{1},#gamma_{2}) vs i#eta",85,0.5,85.5,40,0.0, 0.4);
     photonDeltaRVsIetaEB->GetXaxis()->SetTitle("i#eta");
@@ -597,6 +597,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       h_numberMatchedGenPhotonPairs_EE = new TH1F("h_numberMatchedGenPhotonPairs_EE","fraction of gen photon pairs in EE matched to reco clusters",20,0,1.01);
       h_numberUnmergedGenPhotonPairs = new TH1F("h_numberUnmergedGenPhotonPairs",Form("gen photon pairs with #DeltaR > %.3f",DR_FOR_UNMERGED_GEN_PHOTONS),21,-0.5,20.5);
       h_numberMatchedGenPhotonPairs = new TH1F("h_numberMatchedGenPhotonPairs","gen photon pairs succesfully matched to reco clusters",21,-0.5,20.5);
+      g1RecoGenDR_EB = new TH1F("g1RecoGenDR_EB","#DeltaR(#gamma_{1}^{gen},#gamma_{1}^{reco})",100,0.0,MC_Assoc_DeltaR);
+      g2RecoGenDR_EB = new TH1F("g2RecoGenDR_EB","#DeltaR(#gamma_{2}^{gen},#gamma_{2}^{reco})",100,0.0,MC_Assoc_DeltaR);
+      diff_g2Recog1GenDR_g2RecoGenDR_EB = new TH1F("diff_g2Recog1GenDR_g2RecoGenDR_EB","#DeltaR(#gamma_{1}^{gen},#gamma_{2}^{reco}) - #DeltaR(#gamma_{2}^{gen},#gamma_{2}^{reco})",300,0.0,0.3);
     }
 
 #ifdef MVA_REGRESSIO
@@ -719,6 +722,9 @@ FillEpsilonPlot::~FillEpsilonPlot()
     delete h_numberMatchedGenPhotonPairs_EE;
     delete h_numberUnmergedGenPhotonPairs;
     delete h_numberMatchedGenPhotonPairs;
+    delete g1RecoGenDR_EB;
+    delete g2RecoGenDR_EB;
+    delete diff_g2Recog1GenDR_g2RecoGenDR_EB;
   }
 
 
@@ -1006,7 +1012,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if(!isDiphoton) continue;
 
       //fill GEN pi0
-      if ((*genParticles)[iG].pdgId() == 111) {
+      Int_t mesonPdgId = Are_pi0_ ? 111 : 221;
+      if ((*genParticles)[iG].pdgId() == mesonPdgId) {
 
 	TLorentzVector gamma1_temp, gamma2_temp;
 	//  g1_tmp.SetXYZ(*genParticles)[iG].daughter(0)->momentum().x(),(*genParticles)[iG].daughter(0)->momentum().y(),(*genParticles)[iG].daughter(0)->momentum().z());
@@ -2273,10 +2280,19 @@ std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociateMultiPi0(std::vector
 	Ncristal_EE_used.pop_back();
 	Ncristal_EE_used.pop_back();
       }
+      retClusters_matchedGenPhoton.pop_back();
+      retClusters_matchedGenPhoton.pop_back();
       ret.pop_back();
       ret.pop_back();
       numberUnmatchedGenPhotonPairs++;
       continue;
+    }
+
+    // fill some utility distributions for DeltaR between gen and reco photons
+    if (isEB) {
+      g1RecoGenDR_EB->Fill(deltaR1_tmp);
+      g2RecoGenDR_EB->Fill(deltaR2_tmp);
+      diff_g2Recog1GenDR_g2RecoGenDR_EB->Fill(GetDeltaR(clusters[n_tmp2].eta(), etaGen1, clusters[n_tmp2].phi(), phiGen1) - deltaR2_tmp);
     }
 
     // std::cout << "deltaR1,2_tmp = " << deltaR1_tmp << "  " << deltaR2_tmp << std::endl;
@@ -2325,8 +2341,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
 
   //  int ind = 1; // needed for cout below, only for debugging
 
-  // FIXME: hardcoded correction: CC was obtained from V1 MC. We had a V2 MC but statistics was not enough
-  // since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
+  // FIXME: hardcoded correction for 2017: CC for 2017 was obtained from V1 MC. We had a V2 MC but statistics was not enough
+  // However, since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
   // it would be better to use a histogram for CC which is already scaled, but this is more straightforward if we want to add other corrections
   //float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
   float CC_meanRatioV1overV2MC = 1.0;
@@ -3385,195 +3401,195 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     GSort1plus2 = G_Sort_1 + G_Sort_2;
 
 
-#if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
-    if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
+// #if !defined(NEW_CONTCORR) && defined(MVA_REGRESSIO) || defined(REGRESS_AND_PARAM_CONTCORR)
+//     if( subDetId==EcalBarrel && (g1->seed().subdetId()==1) && (g2->seed().subdetId()==1) ){
 
-      // cout << "################################" << endl;
-      // cout << "### We are in the barrel! ###" << endl;
-      // cout << "################################" << endl;
+//       // cout << "################################" << endl;
+//       // cout << "### We are in the barrel! ###" << endl;
+//       // cout << "################################" << endl;
 	  
-      // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
-      // this will store G.E()/cosh(G.Eta()), in order to compute it only once
-      //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
+//       // following variable should be equivalent to transverse energy of the photon pair (for massless object it is equal to Pt() )
+//       // this will store G.E()/cosh(G.Eta()), in order to compute it only once
+//       //	  double GSort1plus2_EoverCoshEta = GSort1plus2.E()/cosh(GSort1plus2.Eta());  // currently not used here for EB
 
-      int ind1 = i, ind2 = j;
-      EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
-      EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
-#ifdef MVA_REGRESSIO_Tree
-      int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
-#endif
+//       int ind1 = i, ind2 = j;
+//       EBDetId  id_1(g1->seed()); int iEta1 = id_1.ieta(); int iPhi1 = id_1.iphi();
+//       EBDetId  id_2(g2->seed()); int iEta2 = id_2.ieta(); int iPhi2 = id_2.iphi();
+// #ifdef MVA_REGRESSIO_Tree
+//       int iSMod_1 = id_1.ism(); int iSMod_2 = id_2.ism();
+// #endif
 
-      bool Inverted=false;
+//       bool Inverted=false;
 
-      if( g1pt < g2pt ){
-	iEta1=id_2.ieta(); iEta2 = id_1.ieta();
-	iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
-#ifdef MVA_REGRESSIO_Tree
-	iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
-#endif
-	ind1=j; ind2=i;
-	Inverted=true;
-      }
+//       if( g1pt < g2pt ){
+// 	iEta1=id_2.ieta(); iEta2 = id_1.ieta();
+// 	iPhi1=id_2.iphi(); iPhi2 = id_1.iphi();
+// #ifdef MVA_REGRESSIO_Tree
+// 	iSMod_1=id_2.ism(); iSMod_2=id_1.ism();
+// #endif
+// 	ind1=j; ind2=i;
+// 	Inverted=true;
+//       }
 
-      float Correct1(1.), Correct2(1.);
-      if(Are_pi0_){
-	float value_pi01[14];
-	//input list for regression in 2017 EB:
-	//enG_rec
-	//Nxtal
-	//S4S9
-	//S2S9
-	//iEta
-	//iPhi
-	//SM_dist: 
-	//M_dist:
-	float new_value_pi01[8]; 
+//       float Correct1(1.), Correct2(1.);
+//       if(Are_pi0_){
+// 	float value_pi01[14];
+// 	//input list for regression in 2017 EB:
+// 	//enG_rec
+// 	//Nxtal
+// 	//S4S9
+// 	//S2S9
+// 	//iEta
+// 	//iPhi
+// 	//SM_dist: 
+// 	//M_dist:
+// 	float new_value_pi01[8]; 
 
-	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
-	value_pi01[1] = ( G_Sort_1.Pt() );
-	value_pi01[2] = ( Ncristal_EB_used[ind1] );
-	value_pi01[3] = ( Ncristal_EB_used[ind2] );
-	value_pi01[4] = ( vs4s9[ind1] );
-	value_pi01[5] = ( vs1s9[ind1] );
-	value_pi01[6] = ( vs2s9[ind1] );
-	value_pi01[7] = ( iEta1 );
-	value_pi01[8] = ( iPhi1 );
-	value_pi01[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
-	value_pi01[10] = ( iEta1%5 );
-	value_pi01[11] = ( iPhi1%2 );
-	value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
-	value_pi01[13] = ( iPhi1%20 );
+// 	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+// 	value_pi01[1] = ( G_Sort_1.Pt() );
+// 	value_pi01[2] = ( Ncristal_EB_used[ind1] );
+// 	value_pi01[3] = ( Ncristal_EB_used[ind2] );
+// 	value_pi01[4] = ( vs4s9[ind1] );
+// 	value_pi01[5] = ( vs1s9[ind1] );
+// 	value_pi01[6] = ( vs2s9[ind1] );
+// 	value_pi01[7] = ( iEta1 );
+// 	value_pi01[8] = ( iPhi1 );
+// 	value_pi01[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+// 	value_pi01[10] = ( iEta1%5 );
+// 	value_pi01[11] = ( iPhi1%2 );
+// 	value_pi01[12] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+// 	value_pi01[13] = ( iPhi1%20 );
 	    
-	new_value_pi01[0] = ( g1->energy() );
-	new_value_pi01[1] = ( Ncristal_EB_used[i] );
-	new_value_pi01[2] = ( vs4s9[i] );
-	new_value_pi01[3] = ( vs2s9[i] );
-	new_value_pi01[4] = ( id_1.ieta() );
-	new_value_pi01[5] = ( id_1.iphi() );
-	float temp_SM_dist_1 = ((id_1.iphi()-1)%20<10)*((id_1.iphi()-1)%20) + (((id_1.iphi()-1)%20)>=10)*(19-(id_1.iphi()-1)%20);
-	float temp_M_dist_1  = (abs(id_1.ieta())<=25)*(((abs(id_1.ieta())-1)%25<12)*((abs(id_1.ieta())-1)%25) + (((abs(id_1.ieta())-1)%25)>=12)*(24-(abs(id_1.ieta())-1)%25))
-	  +(abs(id_1.ieta())>25) * (((abs(id_1.ieta())-26)%20<10)*((abs(id_1.ieta())-26)%20) + (((abs(id_1.ieta())-26)%20)>=10)*(19-(abs(id_1.ieta())-26)%20));
-	new_value_pi01[6] = ( temp_SM_dist_1 );
-	new_value_pi01[7] = ( temp_M_dist_1 );
+// 	new_value_pi01[0] = ( g1->energy() );
+// 	new_value_pi01[1] = ( Ncristal_EB_used[i] );
+// 	new_value_pi01[2] = ( vs4s9[i] );
+// 	new_value_pi01[3] = ( vs2s9[i] );
+// 	new_value_pi01[4] = ( id_1.ieta() );
+// 	new_value_pi01[5] = ( id_1.iphi() );
+// 	float temp_SM_dist_1 = ((id_1.iphi()-1)%20<10)*((id_1.iphi()-1)%20) + (((id_1.iphi()-1)%20)>=10)*(19-(id_1.iphi()-1)%20);
+// 	float temp_M_dist_1  = (abs(id_1.ieta())<=25)*(((abs(id_1.ieta())-1)%25<12)*((abs(id_1.ieta())-1)%25) + (((abs(id_1.ieta())-1)%25)>=12)*(24-(abs(id_1.ieta())-1)%25))
+// 	  +(abs(id_1.ieta())>25) * (((abs(id_1.ieta())-26)%20<10)*((abs(id_1.ieta())-26)%20) + (((abs(id_1.ieta())-26)%20)>=10)*(19-(abs(id_1.ieta())-26)%20));
+// 	new_value_pi01[6] = ( temp_SM_dist_1 );
+// 	new_value_pi01[7] = ( temp_M_dist_1 );
 
-	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
-	//else                                    value_pi01[14] = false ;
-	if(useMVAContainmentCorrections_)
-	  {
-	    if(new_pi0ContainmentCorrections_)
-	      {
-		float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
-		Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
-		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
-	      }
-	    else
-	      {
-		Correct1 = forest_EB_1->GetResponse(value_pi01);
-		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
-	      }
-	  }
+// 	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi01[14] = true ;
+// 	//else                                    value_pi01[14] = false ;
+// 	if(useMVAContainmentCorrections_)
+// 	  {
+// 	    if(new_pi0ContainmentCorrections_)
+// 	      {
+// 		float Correct1_tmp = forestD_EB_1->GetResponse(new_value_pi01);
+// 		Correct1 = meanoffset + meanscale*TMath::Sin(Correct1_tmp);
+// 		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... new regression Correct1 = "<<Correct1<<endl;
+// 	      }
+// 	    else
+// 	      {
+// 		Correct1 = forest_EB_1->GetResponse(value_pi01);
+// 		// cout<<"DEBUG in FillEpsilonPlot.cc... computeEpsilon... old regression Correct1 = "<<Correct1<<endl;
+// 	      }
+// 	  }
 
-	float value_pi02[14];//#
-	float new_value_pi02[8];
+// 	float value_pi02[14];//#
+// 	float new_value_pi02[8];
 
-	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
-	value_pi02[1] = ( G_Sort_2.Pt() );
-	value_pi02[2] = ( Ncristal_EB_used[ind1] );
-	value_pi02[3] = ( Ncristal_EB_used[ind2] );
-	value_pi02[4] = ( vs4s9[ind2] );
-	value_pi02[5] = ( vs1s9[ind2] );
-	value_pi02[6] = ( vs2s9[ind2] );
-	value_pi02[7] = ( iEta2 );
-	value_pi02[8] = ( iPhi2 );
-	value_pi02[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
-	value_pi02[10] = ( iEta2%5 );
-	value_pi02[11] = ( iPhi2%2 );
-	value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
-	value_pi02[13] = ( iPhi2%20 );
-	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
-	//else                                    value_pi02[14] = false ;
+// 	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+// 	value_pi02[1] = ( G_Sort_2.Pt() );
+// 	value_pi02[2] = ( Ncristal_EB_used[ind1] );
+// 	value_pi02[3] = ( Ncristal_EB_used[ind2] );
+// 	value_pi02[4] = ( vs4s9[ind2] );
+// 	value_pi02[5] = ( vs1s9[ind2] );
+// 	value_pi02[6] = ( vs2s9[ind2] );
+// 	value_pi02[7] = ( iEta2 );
+// 	value_pi02[8] = ( iPhi2 );
+// 	value_pi02[9] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+// 	value_pi02[10] = ( iEta2%5 );
+// 	value_pi02[11] = ( iPhi2%2 );
+// 	value_pi02[12] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
+// 	value_pi02[13] = ( iPhi2%20 );
+// 	//if( fabs((G_Sort_1+G_Sort_2).Eta())>1 ) value_pi02[14] = true ;
+// 	//else                                    value_pi02[14] = false ;
 	   
-	new_value_pi02[0] = ( g2->energy() );
-	new_value_pi02[1] = ( Ncristal_EB_used[j] );
-	new_value_pi02[2] = ( vs4s9[j] );
-	new_value_pi02[3] = ( vs2s9[j] );
-	new_value_pi02[4] = ( id_2.ieta() );
-	new_value_pi02[5] = ( id_2.iphi() );
-	float temp_SM_dist_2 = ((id_2.iphi()-1)%20<10)*((id_2.iphi()-1)%20) + (((id_2.iphi()-1)%20)>=10)*(19-(id_2.iphi()-1)%20);
-	float temp_M_dist_2  = (abs(id_2.ieta())<=25)*(((abs(id_2.ieta())-1)%25<12)*((abs(id_2.ieta())-1)%25) + (((abs(id_2.ieta())-1)%25)>=12)*(24-(abs(id_2.ieta())-1)%25))
-	  +(abs(id_2.ieta())>25) * (((abs(id_2.ieta())-26)%20<10)*((abs(id_2.ieta())-26)%20) + (((abs(id_2.ieta())-26)%20)>=10)*(19-(abs(id_2.ieta())-26)%20));
-	new_value_pi02[6] = ( temp_SM_dist_2 );
-	new_value_pi02[7] = ( temp_M_dist_2 );
+// 	new_value_pi02[0] = ( g2->energy() );
+// 	new_value_pi02[1] = ( Ncristal_EB_used[j] );
+// 	new_value_pi02[2] = ( vs4s9[j] );
+// 	new_value_pi02[3] = ( vs2s9[j] );
+// 	new_value_pi02[4] = ( id_2.ieta() );
+// 	new_value_pi02[5] = ( id_2.iphi() );
+// 	float temp_SM_dist_2 = ((id_2.iphi()-1)%20<10)*((id_2.iphi()-1)%20) + (((id_2.iphi()-1)%20)>=10)*(19-(id_2.iphi()-1)%20);
+// 	float temp_M_dist_2  = (abs(id_2.ieta())<=25)*(((abs(id_2.ieta())-1)%25<12)*((abs(id_2.ieta())-1)%25) + (((abs(id_2.ieta())-1)%25)>=12)*(24-(abs(id_2.ieta())-1)%25))
+// 	  +(abs(id_2.ieta())>25) * (((abs(id_2.ieta())-26)%20<10)*((abs(id_2.ieta())-26)%20) + (((abs(id_2.ieta())-26)%20)>=10)*(19-(abs(id_2.ieta())-26)%20));
+// 	new_value_pi02[6] = ( temp_SM_dist_2 );
+// 	new_value_pi02[7] = ( temp_M_dist_2 );
 
 
-	if(useMVAContainmentCorrections_)
-	  {
-            if(new_pi0ContainmentCorrections_)
-	      {
-                float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
-                Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
-	      }
-            else
-	      {
-                Correct2 = forest_EB_2->GetResponse(value_pi02);
-	      }
-	  }
-      }
-      else{
-	float value_pi01[10];
-	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
-	value_pi01[1] = ( G_Sort_1.Pt() );
-	value_pi01[2] = ( Ncristal_EB_used[ind1] );
-	value_pi01[3] = ( iEta1 );
-	value_pi01[4] = ( iPhi1 );
-	value_pi01[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
-	value_pi01[6] = ( iEta1%5 );
-	value_pi01[7] = ( iPhi1%2 );
-	value_pi01[8] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
-	value_pi01[9] = ( iPhi1%20 );
-	Correct1 = forest_EB_1->GetResponse(value_pi01);
-	float value_pi02[10];
-	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
-	value_pi02[1] = ( G_Sort_2.Pt() );
-	value_pi02[2] = ( Ncristal_EB_used[ind2] );
-	value_pi02[3] = ( iEta2 );
-	value_pi02[4] = ( iPhi2 );
-	value_pi02[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
-	value_pi02[6] = ( iEta2%5 );
-	value_pi02[7] = ( iPhi2%2 );
-	value_pi02[8] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
-	value_pi02[9] = ( iPhi2%20 );
-	Correct2 = forest_EB_2->GetResponse(value_pi02);
-      }
+// 	if(useMVAContainmentCorrections_)
+// 	  {
+//             if(new_pi0ContainmentCorrections_)
+// 	      {
+//                 float Correct2_tmp = forestD_EB_2->GetResponse(new_value_pi02);
+//                 Correct2 = meanoffset + meanscale*TMath::Sin(Correct2_tmp);
+// 	      }
+//             else
+// 	      {
+//                 Correct2 = forest_EB_2->GetResponse(value_pi02);
+// 	      }
+// 	  }
+//       }
+//       else{
+// 	float value_pi01[10];
+// 	value_pi01[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+// 	value_pi01[1] = ( G_Sort_1.Pt() );
+// 	value_pi01[2] = ( Ncristal_EB_used[ind1] );
+// 	value_pi01[3] = ( iEta1 );
+// 	value_pi01[4] = ( iPhi1 );
+// 	value_pi01[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+// 	value_pi01[6] = ( iEta1%5 );
+// 	value_pi01[7] = ( iPhi1%2 );
+// 	value_pi01[8] = ( (TMath::Abs(iEta1)<=25)*(iEta1%25) + (TMath::Abs(iEta1)>25)*((iEta1-25*TMath::Abs(iEta1)/iEta1)%20) );
+// 	value_pi01[9] = ( iPhi1%20 );
+// 	Correct1 = forest_EB_1->GetResponse(value_pi01);
+// 	float value_pi02[10];
+// 	value_pi02[0] = ( G_Sort_1.Energy()/G_Sort_2.Energy() );
+// 	value_pi02[1] = ( G_Sort_2.Pt() );
+// 	value_pi02[2] = ( Ncristal_EB_used[ind2] );
+// 	value_pi02[3] = ( iEta2 );
+// 	value_pi02[4] = ( iPhi2 );
+// 	value_pi02[5] = ( sqrt(pow((iEta1-iEta2),2)+pow((iPhi1-iPhi2),2)));
+// 	value_pi02[6] = ( iEta2%5 );
+// 	value_pi02[7] = ( iPhi2%2 );
+// 	value_pi02[8] = ( (TMath::Abs(iEta2)<=25)*(iEta2%25) + (TMath::Abs(iEta2)>25)*((iEta2-25*TMath::Abs(iEta2)/iEta2)%20) );
+// 	value_pi02[9] = ( iPhi2%20 );
+// 	Correct2 = forest_EB_2->GetResponse(value_pi02);
+//       }
 	
-      // new regression trained in 2017: photon order is based on seed energy (energy in overlapped crystal taken by the first photon)
-      // old regression trained in 2012: photon order is based on photon Pt
-      if( (!Inverted) || new_pi0ContainmentCorrections_) { Corr1 = Correct1; Corr2 = Correct2; }
-      else           { Corr1 = Correct2; Corr2 = Correct1; }
+//       // new regression trained in 2017: photon order is based on seed energy (energy in overlapped crystal taken by the first photon)
+//       // old regression trained in 2012: photon order is based on photon Pt
+//       if( (!Inverted) || new_pi0ContainmentCorrections_) { Corr1 = Correct1; Corr2 = Correct2; }
+//       else           { Corr1 = Correct2; Corr2 = Correct1; }
 
-      //WARNIGN no CC for now! Put back in CKM 20/10/2015
-      //	  Corr1 = 1.; Corr2 = 1.; 
-#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
-      //In case ES give same posizion for different clusters
-      Correction1_mva = Correct1; Correction2_mva = Correct2;
-      iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
-      iSM1_mva = iSMod_1; iSM2_mva = iSMod_2;
+//       //WARNIGN no CC for now! Put back in CKM 20/10/2015
+//       //	  Corr1 = 1.; Corr2 = 1.; 
+// #if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
+//       //In case ES give same posizion for different clusters
+//       Correction1_mva = Correct1; Correction2_mva = Correct2;
+//       iEta1_mva = iEta1; iEta2_mva = iEta2; iPhi1_mva = iPhi1; iPhi2_mva = iPhi2; Pt1_mva = G_Sort_1.Pt(); Pt2_mva = G_Sort_2.Pt();
+//       iSM1_mva = iSMod_1; iSM2_mva = iSMod_2;
 
-      // Define just the original vector, the corrected vector has same direction and magnitude scaled by correction
-      // actually we just need G_sort_1 and G_sort_2, no need to define another object
+//       // Define just the original vector, the corrected vector has same direction and magnitude scaled by correction
+//       // actually we just need G_sort_1 and G_sort_2, no need to define another object
 
-      // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
-      // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
-      // TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
-      // TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
+//       // TLorentzVector mvag1P4; mvag1P4.SetPtEtaPhiE( Correct1*G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), Correct1*G_Sort_1.E() );
+//       // TLorentzVector mvag2P4; mvag2P4.SetPtEtaPhiE( Correct2*G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), Correct2*G_Sort_2.E() );
+//       // TLorentzVector mvaOrg1P4; mvaOrg1P4.SetPtEtaPhiE( G_Sort_1.Pt(), G_Sort_1.Eta(), G_Sort_1.Phi(), G_Sort_1.E() );
+//       // TLorentzVector mvaOrg2P4; mvaOrg2P4.SetPtEtaPhiE( G_Sort_2.Pt(), G_Sort_2.Eta(), G_Sort_2.Phi(), G_Sort_2.E() );
 
-      MassOr_mva = GSort1plus2.M();
-      pi0Eta     = GSort1plus2.Eta();
-      // get corrected mass from sum of corrected photons
-      Mass_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
-#endif
-    }
-#endif
+//       MassOr_mva = GSort1plus2.M();
+//       pi0Eta     = GSort1plus2.Eta();
+//       // get corrected mass from sum of corrected photons
+//       Mass_mva = (Correct1 * G_Sort_1 + Correct2 * G_Sort_2).M();
+// #endif
+//     }
+// #endif
 
     // end of part using regression for EB (forget EE, we don't use any correction there at the moment
     ////////////////////////////////////
@@ -3846,7 +3862,7 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
       // }
 
       EoverEtrue_g1 = g1_contCorr_tlv.Energy()/clusters_matchedGenPhoton[i]->Energy();
-      EoverEtrue_g2 = g1_contCorr_tlv.Energy()/clusters_matchedGenPhoton[j]->Energy();
+      EoverEtrue_g2 = g2_contCorr_tlv.Energy()/clusters_matchedGenPhoton[j]->Energy();
 
 
       // compute quantities needed for <eps>_j in each region j
@@ -3857,6 +3873,12 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	allEoverEtrue_g1_EEnw->Fill( EoverEtrue_g1 );
 	allEoverEtrue_g2_EEnw->Fill( EoverEtrue_g2 );
       }
+
+      // Double_t weight_dataMC_pi0pt = 1.0;
+      // if (reweight_pi0pt_dataMC) {
+      // 	// set weight_dataMC_pi0pt to something
+      // }
+	
 
       for (RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 
@@ -4308,6 +4330,10 @@ void FillEpsilonPlot::endJob(){
     h_numberMatchedGenPhotonPairs_EE->Write();
     h_numberUnmergedGenPhotonPairs->Write();
     h_numberMatchedGenPhotonPairs->Write();
+    g1RecoGenDR_EB->Write();
+    g2RecoGenDR_EB->Write();
+    diff_g2Recog1GenDR_g2RecoGenDR_EB->Write();
+
   }
 
   if (fillKinematicVariables_) {

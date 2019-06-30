@@ -7,7 +7,7 @@
 # specify the folder and the iteration number to be affected
 # note that some files are removed, so be careful!
 
-folder="pi0CC_2018_EoverEtrue_foldSM"
+folder="ntuplesPi02018_newCC2018"
 iter="0"
 
 path="${folder}/src/hadd/"

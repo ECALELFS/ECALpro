@@ -235,7 +235,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
     //else leg = new TLegend(0.60,0.35,0.95,0.55);
     //else leg = new TLegend(0.60,0.7,0.95,0.9);
   } else {
-    if (isEB) leg = new TLegend(0.2,0.25,0.5,0.5); // new TLegend(0.63,0.66,0.93,0.91);
+    if (isEB) leg = new TLegend(0.63,0.66,0.93,0.91); // new TLegend(0.2,0.25,0.5,0.5); 
     else      leg = new TLegend(0.50,0.25,0.95,0.5);
   }
   leg->SetFillColor(0);
@@ -422,11 +422,14 @@ void printSignificanceInFile(const string& calibMapFile = "",
 void manageRooPlotFromFile(const string& dirName = "AlCaEta_AllRun2017_condor_pi0CC_tuneSel", 
 			   const string& outDirName = "plot_approve_full2017data_Eta", 
 			   const bool usePi0 = false, 
+			   //const string& dirName = "AlCaP0_AllRun2017_condor_fixEBm16", 
+			   //const string& outDirName = "plot_approve_full2017data_Pi0_legacyReRecoCalib", 
+			   //const bool usePi0 = true, 
 			   // const string& dirName = "AlCaP0_Run2018D_goldenJson_13_09_2018", 
 			   // const string& outDirName = "plot_approve_2018D_pi0", 
 			   // const bool usePi0 = true, 
-			   const Int_t skip_EB1_EE2 = 2, 
-			   const double lumi = 41.4, 
+			   const Int_t skip_EB1_EE2 = 0, 
+			   const double lumi = 41.5, 
 			   const int whichIteration = 0, 
 			   const string& subdirTag = "",
 			   const Int_t year = 2017,
@@ -443,15 +446,15 @@ void manageRooPlotFromFile(const string& dirName = "AlCaEta_AllRun2017_condor_pi
   if (dirName.find("AlCaP0") != string::npos) isPi0 = true;
   if (dirName.find("AlCaEta") != string::npos) isPi0 = false;
 
-  int EBxtalIndex = 10002;
-  string EBfitFileIndex = "5"; // need to find a way to derive it from EBxtalIndex
-  double etaEB = -1.01; // would be negative but ok
+  int EBxtalIndex = 30003;
+  string EBfitFileIndex = "15"; // need to find a way to derive it from EBxtalIndex
+  double etaEB = -0.03; // would be negative but ok
   //int EExtalIndex = 12001; //12001;
   //string EEfitFileIndex = "6"; //"6"; // need to find a way to derive it from EExtalIndex
   //double etaEE = 2.5;
-  int EExtalIndex =14003; //8000;     //14018; //8155; //12001;
-  string EEfitFileIndex = "7";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
-  double etaEE = 1.58;// 1.63;// 1.83;
+  int EExtalIndex = 8155; //8000;     //14018; //8155; //12001;
+  string EEfitFileIndex = "4";  //4"; // "7"; // 4//"6"; // need to find a way to derive it from EExtalIndex
+  double etaEE = 1.83;// 1.63;// 1.83;
 
   // if (not isPi0) {
   //   EBxtalIndex = 30107;

@@ -242,13 +242,13 @@ for iters in range(nIterations):
                 NtpRecoveryAttempt += 1
                 print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
 
-    if MakeNtuple4optimization:
-        print """MakeNtuple4optimization is set to True in parameters.py
-Code will stop know before adding the *EcalNtp*.root files.
-It is better that you run on all the output files using a TChain. Indeed, these are big files, and the hadd part is slow and the jobs can fail in producing the output. 
-"""
-        print "Done with iteration " + str(iters)
-        quit()
+#     if MakeNtuple4optimization:
+#         print """MakeNtuple4optimization is set to True in parameters.py
+# Code will stop know before adding the *EcalNtp*.root files.
+# It is better that you run on all the output files using a TChain. Indeed, these are big files, and the hadd part is slow and the jobs can fail in producing the output. 
+# """
+#         print "Done with iteration " + str(iters)
+#         quit()
 
     #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
