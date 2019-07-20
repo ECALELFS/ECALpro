@@ -301,7 +301,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     /// external hardcoded geometry
 
     externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
-    if(!externalGeometryFile_) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
+    if(!externalGeometryFile_ or not externalGeometryFile_->IsOpen()) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
     GeometryService::setGeometryName(externalGeometry_);
     GeometryService::setGeometryPtr(geom_);
@@ -469,8 +469,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     // output file
     string fileName = "";
     fileName = outputDir_ + outfilename_;
-    outfile_ = new TFile(fileName.c_str(),"RECREATE");
-    if(!outfile_) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
+    outfile_ = TFile::Open(fileName.c_str(),"RECREATE");
+    if(!outfile_ or not outfile_->IsOpen()) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
 #ifdef SELECTION_TREE
     CutVariables_EB = new TTree("CutVariables_EB","(EB) Variables used at first cuts");
     CutVariables_EB->Branch("NSeeds_EB", &NSeeds_EB, "NSeeds_EB/F");
@@ -635,6 +635,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
 FillEpsilonPlot::~FillEpsilonPlot()
 {
+  delete geom_;
   externalGeometryFile_->Close();
   outfile_->Write();
   outfile_->Close();
@@ -643,6 +644,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
     delete hCC_EoverEtrue_g1;
     delete hCC_EoverEtrue_g2;
   }
+  
 
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
@@ -736,7 +738,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
 #endif
 
   EndcapTools::freeMemory();
-  delete geom_;
+  //delete geom_;  // if not commented I get seg fault, maybe I should delete it before closing geometry file above
   delete ebtopology_;
   delete eetopology_;
 
@@ -745,6 +747,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   delete EBPHI_ConCorr_m;
 #endif
   //JSON
+
   if(JSONfile_ != "") delete myjson;
   //#ifdef MVA_REGRESSIO
   //  // if the analyzer did not run it crash because you do not create it. Better never delete it
@@ -771,6 +774,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   }
 
 }
+
 
 
 //
@@ -2461,6 +2465,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	Double_t g2eta = g2->eta();
 	Double_t g1phi = g1->phi();
 	Double_t g2phi = g2->phi();
+	// get DR and immediately reject clusters that are too far from each other
+	// Double_t preliminary_deltaR_clusters = GetDeltaR(g1eta, g2eta, g1phi, g2phi)
+	if (GetDeltaR(g1eta, g2eta, g1phi, g2phi) > 0.4) continue;
 	Double_t g1pt = g1->energy()/cosh(g1eta);
 	Double_t g2pt = g2->energy()/cosh(g2eta);
 	// following two object store the two photons ordered by pt
@@ -4440,7 +4447,7 @@ void FillEpsilonPlot::loadEoverEtrueContainmentCorrections(const std::string& fi
 
   TFile* f = TFile::Open(fileName.c_str());
 
-  if (!f) throw cms::Exception("loadEoverEtrueCC") << "Could not open file with containment corrections\n";
+  if (!f or not f->IsOpen()) throw cms::Exception("loadEoverEtrueCC") << "Could not open file with containment corrections\n";
   else {
 
     // hCC_tmp1 = (TH2F*) ((TH2F*) f->Get("calibMap_EB"))->Clone();

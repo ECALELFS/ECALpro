@@ -7,6 +7,8 @@ from optparse import OptionParser
                                                                                           
 parser = OptionParser(usage="%prog [options]")    
 parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=True, help="Do not submit a job to manage the daemon, do it locally")
+parser.add_option(      "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
+parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
 (options, args) = parser.parse_args()
 
 if len(args) != 7:
@@ -50,6 +52,9 @@ env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("ulimit -c 0\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
 pycmd =  "python " + pwd + "/calibJobHandlerCondor.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs)
+if options.recoverFill: pycmd += " --recover-fill "
+if options.daemonLocal: pycmd += " --daemon-local "
+if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
 print pycmd
 env_script_f.write(pycmd + "\n")
 env_script_f.write("rm -rf " + pwd + "/core.*\n")

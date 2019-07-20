@@ -7,6 +7,7 @@ from optparse import OptionParser
 
 parser = OptionParser(usage="%prog [options] filelist.txt")    
 parser.add_option("-n", "--filter_every-n", dest="filterEveryN",  type="int",     default=3,   help="Will take 1 file every N specified by this option")
+parser.add_option("-i", "--invert", dest="invert",  action="store_true", default=False, help="Instead of taking 1 file every N, keep the other N-1 files")
 (options, args) = parser.parse_args()
 
 if len(args)<1:

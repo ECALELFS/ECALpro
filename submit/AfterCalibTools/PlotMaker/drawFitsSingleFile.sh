@@ -4,12 +4,12 @@ iter_ini=0
 iter_fin=0  # it is included in sequence below                                   
 
 eosPrefix="root://eoscms//eos/cms"                                        
-wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"                             
-eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2018/mciprian/"
+wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"                             
+eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/"
 #dirName="AlcaP0_Run2016G_sel16_reg12"
-dirName="AlCaP0_Run2018D_goldenJson_13_09_2018"
+dirName="AlCaP0_2018_ULrereco_1every2"
 tagName="${dirName}_"
-draw_Rooplot0_canvas1=0
+draw_Rooplot0_canvas1=1
 
 useMergedFitFile=false # when true, no need to specify a file index
 #BarrelOrEndcap="Barrel"  # Barrel, Endcap
@@ -18,7 +18,7 @@ fileIndexIni=0
 fileIndexFin=7
 BarrelOrEndcap="Endcap"  # Barrel, Endcap
 
-nFitsToPlot=20  # there are at most 2000 plots in each file
+nFitsToPlot=10  # there are at most 2000 plots in each file
 
 # if fitIndexToPlot>=0, look for this specific index in the rooplots in the file and just plot that one
 # if negative just plot nFistToPlot plots
