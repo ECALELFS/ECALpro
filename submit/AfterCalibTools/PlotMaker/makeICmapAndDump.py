@@ -4,7 +4,7 @@ import time
 ROOT.gROOT.SetBatch(True)
 
 foldername = "AlCaP0_2018_ULrereco_1every2_ext1_fromIter6"
-niter = 1       # generally it starts from 0
+niter = 0       # generally it starts from 0
 eosPi0Folder = "piZero_Run2"
 excludeMod2EBm16 = True
 
