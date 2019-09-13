@@ -168,6 +168,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string calibMapPath_; 
       std::string jsonFile_; 
       std::string fileEoverEtrueContainmentCorrections_;
+      double scalingEoverEtrueCC_g1_;
+      double scalingEoverEtrueCC_g2_;
       std::string ebContainmentCorrections_;
       std::string MVAEBContainmentCorrections_01_;
       std::string MVAEBContainmentCorrections_02_;
@@ -251,7 +253,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double nXtal_2_cut_high_[3];
       double S4S9_cut_low_[3];
       double S4S9_cut_high_[3];
-      double SystOrNot_;
+      int SystOrNot_;
 
       // MC stuff
       bool isMC_;

@@ -130,6 +130,8 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     /// parameters from python
     Are_pi0_                           = iConfig.getUntrackedParameter<bool>("Are_pi0",true);
     useContainmentCorrectionsFromEoverEtrue_ = iConfig.getUntrackedParameter<bool>("useContainmentCorrectionsFromEoverEtrue",true);
+    scalingEoverEtrueCC_g1_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g1",1.0);
+    scalingEoverEtrueCC_g2_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g2",1.0);
     useMVAContainmentCorrections_      = iConfig.getUntrackedParameter<bool>("useMVAContainmentCorrections",true);
     new_pi0ContainmentCorrections_     = iConfig.getUntrackedParameter<bool>("new_pi0ContainmentCorrections",false);
 
@@ -1186,8 +1188,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   using namespace edm;
   nPi0=0;
   //For Syst error SystOrNot_=1 or 2, for normal calib is 0
-  if(SystOrNot_==1. && int(iEvent.id().event())%2!=0 ) return;
-  else if(SystOrNot_==2. && int(iEvent.id().event())%2==0 ) return;
+  if(SystOrNot_==1 && int(iEvent.id().event())%2!=0 ) return;
+  else if(SystOrNot_==2 && int(iEvent.id().event())%2==0 ) return;
 
   iEvent.getByToken ( EBRecHitCollectionToken_, ebHandle);
   iEvent.getByToken ( EERecHitCollectionToken_, eeHandle);
@@ -2349,8 +2351,8 @@ CaloCluster FillEpsilonPlot::getClusterAfterContainmentCorrections(std::vector<C
   // However, since the ratio is nearly flat, we divided CC from V1 MC by the mean of the ratio
   // it would be better to use a histogram for CC which is already scaled, but this is more straightforward if we want to add other corrections
   //float CC_meanRatioV1overV2MC = isSecondPhoton ? 1.006 : 1.01;
-  float CC_meanRatioV1overV2MC = 1.0;
-
+  // float CC_meanRatioV1overV2MC = 1.0;
+  float CC_meanRatioV1overV2MC = isSecondPhoton ? scalingEoverEtrueCC_g2_ : scalingEoverEtrueCC_g1_;
 
   for (std::vector< std::pair<DetId, float> >::const_iterator it  = hitsAndFrac.begin(); it != hitsAndFrac.end(); ++it) {	  
 

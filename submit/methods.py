@@ -301,6 +301,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     if useContainmentCorrectionsFromEoverEtrue:
         outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
+        outputfile.write("process.analyzerFillEpsilon.scalingEoverEtrueCC_g1 = cms.untracked.double("+ scalingEoverEtrueCC_g1 +")\n")
+        outputfile.write("process.analyzerFillEpsilon.scalingEoverEtrueCC_g2 = cms.untracked.double("+ scalingEoverEtrueCC_g2 +")\n")
         if copyCCfileToTMP:
             copiedCCfile = str(fileEoverEtrueContainmentCorrections.split('/')[-1])
             copiedCCfile = "/tmp/" + copiedCCfile.replace(".root","_iter_{ni}_job_{nj}.root".format(ni=iteration, nj=ijob))
