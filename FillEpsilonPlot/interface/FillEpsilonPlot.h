@@ -131,6 +131,11 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F** initializeEpsilonHistograms(const char *name, const char *title, int size );
       void deleteEpsilonPlot(TH1F **h, int size);
       void writeEpsilonPlot(TH1F **h, const char *folder, int size);
+
+      TH2F* initializeEpsilonHistograms2D(const char *name, const char *title, int size );
+      void deleteEpsilonPlot2D(TH2F *h);
+      void writeEpsilonPlot2D(TH2F *h, const char *folder);
+
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       //bool getTriggerByName( std::string s ); not used anymore
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
@@ -288,6 +293,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F **EoverEtrue_g1_EE_h;  
       TH1F **EoverEtrue_g2_EB_h;  
       TH1F **EoverEtrue_g2_EE_h;  
+      TH2F *EoverEtrue_g1_EB_h2D;  
+      TH2F *EoverEtrue_g2_EB_h2D;  
+      TH2F *EoverEtrue_g1_EE_h2D;  
+      TH2F *EoverEtrue_g2_EE_h2D;  
       TH1F *allEoverEtrue_g1_EE; 
       TH1F *allEoverEtrue_g1_EEnw; 
       TH1F *allEoverEtrue_g1_EB;
@@ -345,6 +354,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F *EventFlow_EE_debug;
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
+      TH2F *epsilon_EB_h2D;  // epsilon distribution by region
+      TH2F *epsilon_EE_h2D;  // epsilon distribution by region
       TH1F *allEpsilon_EE; 
       TH1F *allEpsilon_EEnw; 
       TH1F *allEpsilon_EB;

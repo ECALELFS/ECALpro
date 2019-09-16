@@ -346,29 +346,41 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       if (isEoverEtrue_) {
 
 	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
-	  EoverEtrue_g1_EB_h = initializeEpsilonHistograms("EoverEtrue_g1_EB_iR_","reco/gen #gamma1 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
-	  EoverEtrue_g2_EB_h = initializeEpsilonHistograms("EoverEtrue_g2_EB_iR_","reco/gen #gamma2 energy EB - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+	  //EoverEtrue_g1_EB_h = initializeEpsilonHistograms("EoverEtrue_g1_EB_iR_","reco/gen #gamma1 energy EB - iR", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  //EoverEtrue_g2_EB_h = initializeEpsilonHistograms("EoverEtrue_g2_EB_iR_","reco/gen #gamma2 energy EB - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+	  EoverEtrue_g1_EB_h2D = initializeEpsilonHistograms2D("EoverEtrue_g1_EB_iR","reco/gen #gamma1 energy EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  EoverEtrue_g2_EB_h2D = initializeEpsilonHistograms2D("EoverEtrue_g2_EB_iR","reco/gen #gamma2 energy EB", regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
 	}
 	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
-	  EoverEtrue_g1_EE_h = initializeEpsilonHistograms("EoverEtrue_g1_EE_iR_","reco/gen #gamma1 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
-	  EoverEtrue_g2_EE_h = initializeEpsilonHistograms("EoverEtrue_g2_EE_iR_","reco/gen #gamma2 energy - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+	  // EoverEtrue_g1_EE_h = initializeEpsilonHistograms("EoverEtrue_g1_EE_iR_","reco/gen #gamma1 energy - iR", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	  // EoverEtrue_g2_EE_h = initializeEpsilonHistograms("EoverEtrue_g2_EE_iR_","reco/gen #gamma2 energy - iR", regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+	  EoverEtrue_g1_EE_h2D = initializeEpsilonHistograms2D("EoverEtrue_g1_EE_iR","reco/gen #gamma1 energy", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	  EoverEtrue_g2_EE_h2D = initializeEpsilonHistograms2D("EoverEtrue_g2_EE_iR","reco/gen #gamma2 energy", regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
 	}
 
       } else {
 
 	if(useMassInsteadOfEpsilon_ ) {
 
+	  // if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  //  epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","#pi^{0} Mass distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  // if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  //   epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","#pi^{0} Mass distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
 	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	    epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","#pi^{0} Mass distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","#pi^{0} Mass distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	    epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","#pi^{0} Mass distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","#pi^{0} Mass distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
 	
 	} else {
 	
+	  // if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  // epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","Epsilon distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	  // if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  //   epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","Epsilon distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
 	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	    epsilon_EB_h = initializeEpsilonHistograms("epsilon_EB_iR_","Epsilon distribution EB - iR ", regionalCalibration_->getCalibMap()->getNRegionsEB() );
+	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","Epsilon distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
-	    epsilon_EE_h = initializeEpsilonHistograms("epsilon_EE_iR_","Epsilon distribution EE - iR ", regionalCalibration_->getCalibMap()->getNRegionsEE() );
+	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","Epsilon distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
 	
 	}
 
@@ -650,19 +662,25 @@ FillEpsilonPlot::~FillEpsilonPlot()
 
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
-      deleteEpsilonPlot(EoverEtrue_g1_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
-      deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+      //deleteEpsilonPlot(EoverEtrue_g1_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      //deleteEpsilonPlot(EoverEtrue_g2_EB_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+      deleteEpsilonPlot2D(EoverEtrue_g1_EB_h2D);
+      deleteEpsilonPlot2D(EoverEtrue_g2_EB_h2D);
     } else {
-      deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      //deleteEpsilonPlot(epsilon_EB_h, regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      deleteEpsilonPlot2D(epsilon_EB_h2D);
     }
   }
 
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
-      deleteEpsilonPlot(EoverEtrue_g1_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
-      deleteEpsilonPlot(EoverEtrue_g2_EE_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+      // deleteEpsilonPlot(EoverEtrue_g1_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      // deleteEpsilonPlot(EoverEtrue_g2_EE_h, regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+      deleteEpsilonPlot2D(EoverEtrue_g1_EE_h2D);
+      deleteEpsilonPlot2D(EoverEtrue_g2_EE_h2D);
     } else {
-      deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      // deleteEpsilonPlot(epsilon_EE_h, regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      deleteEpsilonPlot2D(epsilon_EE_h2D);
     }
   }
 
@@ -2001,6 +2019,57 @@ TH1F** FillEpsilonPlot::initializeEpsilonHistograms(const char *name, const char
 }
 
 
+TH2F* FillEpsilonPlot::initializeEpsilonHistograms2D(const char *name, const char *title, int size )
+{
+
+  TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
+
+  // x axis has the mass or E/Etrue values, y axis has the histogram ID
+  int nbins = 0;
+  double lowEdge = 0.0;
+  double upEdge = 0.0;
+
+  if (isEoverEtrue_) {
+    nbins   = 75;
+    lowEdge = 0.0;
+    upEdge  = 1.5;
+    std::cout << "FillEpsilonPlot::initializeEpsilonHistograms2D::isEoverEtrue_ = " << isEoverEtrue_ << std::endl;
+  } else {
+    if(useMassInsteadOfEpsilon_) {
+      // let's keep 0.004 GeV/bin
+      if (Are_pi0_) {
+	nbins   = 70;
+	lowEdge = 0.02;
+	upEdge  = 0.30;
+      } else {
+	nbins   = 80;
+	lowEdge = 0.38;
+	upEdge  = 0.70;
+      }
+    } else {
+      nbins   = 120;
+      lowEdge = -0.5;
+      upEdge  = 1.0;      
+    }
+    std::cout << "FillEpsilonPlot::initializeEpsilonHistograms2D::useMassInsteadOfEpsilon_ = " << useMassInsteadOfEpsilon_ << std::endl;
+  }
+
+  TH2F *h = new TH2F(name, title, 
+		     nbins, lowEdge, upEdge, 
+		     size, -0.5, ((double) size) - 0.5);
+  if (isEoverEtrue_) {
+    h->GetXaxis()->SetTitle("photon E/E_{true}");
+  } else {
+    if(useMassInsteadOfEpsilon_) h->GetXaxis()->SetTitle("Mass(#gamma#gamma)");
+    else                         h->GetXaxis()->SetTitle("Epsilon");	
+  }
+  h->GetYaxis()->SetTitle("crystal index");
+
+  return h;
+
+}
+
+
 void  FillEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
 {
   for(int jR=0; jR<size; jR++)
@@ -2009,6 +2078,12 @@ void  FillEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
   delete h;
 }
 
+void  FillEpsilonPlot::deleteEpsilonPlot2D(TH2F *h)
+{
+  // probably this function is not needed if I only have 1 histogram
+  // but let's keep it for consistency with previous version of the code using TH1
+  delete h;
+}
 
 void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
 {
@@ -2016,6 +2091,13 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
   outfile_->cd(folder);
   for(int jR=0; jR<size; jR++)
     h[jR]->Write();
+}
+
+void  FillEpsilonPlot::writeEpsilonPlot2D(TH2F *h, const char *folder)
+{
+  if (not outfile_->GetKey(folder)) outfile_->mkdir(folder);
+  outfile_->cd(folder);
+  h->Write();
 }
 
 // std::vector< CaloCluster > FillEpsilonPlot::MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB) {
@@ -2467,7 +2549,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	Double_t g2eta = g2->eta();
 	Double_t g1phi = g1->phi();
 	Double_t g2phi = g2->phi();
+	// since: end of Spring 2019
 	// get DR and immediately reject clusters that are too far from each other
+	// w/o this cut, selected pairs would probably be the same due to other cuts, but this should speed up
 	// Double_t preliminary_deltaR_clusters = GetDeltaR(g1eta, g2eta, g1phi, g2phi)
 	if (GetDeltaR(g1eta, g2eta, g1phi, g2phi) > 0.4) continue;
 	Double_t g1pt = g1->energy()/cosh(g1eta);
@@ -3223,7 +3307,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 
 	    if(subDetId==EcalBarrel){
 		if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7) ){
-		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  //if( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
+		    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
 		  allEpsilon_EB->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EB and probably wrong. Getting iEta and iPhi elsewhere
@@ -3234,14 +3320,20 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		  if( EtaRingCalibEB_ ){
 		    for(auto const &iterator : ListEtaFix_xtalEB){
 			if( iterator.first == iEta ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			    //epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
+			  }
 			}
 		    }
 		  }
 		  if( SMCalibEB_ ){
 		    for(auto const &iterator : ListSMFix_xtalEB){
 			if( iterator.first == iSM ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			    //epsilon_EB_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
+			  }
 			}
 		    }
 		  }
@@ -3263,7 +3355,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    }
 	    else {
 		if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ){
-		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  //if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
+		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
 		  allEpsilon_EE->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EE. Getting ix and iy elsewhere
@@ -3275,14 +3368,20 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEm){
 			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			      // epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+			    }
 			  }
 			}
 		    }
 		    if( SMCalibEE_ ){
 			for(auto const &iterator : ListQuadFix_xtalEEm){
 			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			      // epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+			    }
 			  }
 			}
 		    }
@@ -3293,14 +3392,20 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEp){
 			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			      //epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+			    }
 			  }
 			}
 		    }
 		    if( SMCalibEE_ ){
 			for(auto const &iterator : ListQuadFix_xtalEEp){
 			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); }
+			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			      //epsilon_EE_h[ iterator.second[iRtmp] ]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w ); 
+			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+			    }
 			  }
 			}
 		    }
@@ -3899,7 +4004,8 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  // if using the reco selection, select only a window in pi0 mass, otherwise just skip the selection
 	  if ( not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7)) ) {
 
-	    EoverEtrue_g1_EB_h[iR]->Fill( EoverEtrue_g1, w );
+	    //EoverEtrue_g1_EB_h[iR]->Fill( EoverEtrue_g1, w );
+	    EoverEtrue_g1_EB_h2D->Fill( EoverEtrue_g1, (double) iR, w );
 	    allEoverEtrue_g1_EB->Fill( EoverEtrue_g1, w );
 	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
 	    int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
@@ -3912,7 +4018,8 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	  if (  not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) ) {
 
-	    EoverEtrue_g1_EE_h[iR]->Fill( EoverEtrue_g1, w );
+	    //EoverEtrue_g1_EE_h[iR]->Fill( EoverEtrue_g1, w );
+	    EoverEtrue_g1_EE_h2D->Fill( EoverEtrue_g1, (double) iR, w );
 	    allEoverEtrue_g1_EE->Fill( EoverEtrue_g1, w );
 	    int iX = List_IR_XYZ.find(iR)->second[0]; 
 	    int iY = List_IR_XYZ.find(iR)->second[1]; 
@@ -4366,19 +4473,25 @@ void FillEpsilonPlot::endJob(){
 
   if( !MakeNtuple4optimization_ &&(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
-      writeEpsilonPlot(EoverEtrue_g1_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
-      writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+      //writeEpsilonPlot(EoverEtrue_g1_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      //writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
+      writeEpsilonPlot2D(EoverEtrue_g1_EB_h2D, "Barrel");
+      writeEpsilonPlot2D(EoverEtrue_g2_EB_h2D, "Barrel");
     } else {
-      writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      //writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
+      writeEpsilonPlot2D(epsilon_EB_h2D, "Barrel");
     }
   }
 
   if( !MakeNtuple4optimization_ && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
     if (isEoverEtrue_) {
-      writeEpsilonPlot(EoverEtrue_g1_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
-      writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+      // writeEpsilonPlot(EoverEtrue_g1_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      // writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
+      writeEpsilonPlot2D(EoverEtrue_g1_EE_h2D, "Endcap" );
+      writeEpsilonPlot2D(EoverEtrue_g2_EE_h2D, "Endcap" );
     } else {
-      writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      // writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
+      writeEpsilonPlot2D(epsilon_EE_h2D, "Endcap" );
     }
   }
 
