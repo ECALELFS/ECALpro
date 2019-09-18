@@ -56,7 +56,7 @@ pycmd =  "python " + pwd + "/calibJobHandlerCondor.py " + Mode + " " + str(itera
 if options.recoverFill: pycmd += " --recover-fill "
 if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
-if option.minEfficiencyToRecoverFill >= 0.0:
+if options.minEfficiencyToRecoverFill >= 0.0:
         pycmd += " --min-efficiency-recover-fill "
 
 print pycmd

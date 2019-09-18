@@ -306,7 +306,7 @@ calibCMD = "python " + pwd + "/calibJobHandlerCondor.py " + str(njobs) + " " + q
 if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)
-if option.minEfficiencyToRecoverFill >= 0.0:
+if options.minEfficiencyToRecoverFill >= 0.0:
         calibCMD += " --min-efficiency-recover-fill "
 calibCMD += "\n"
 
