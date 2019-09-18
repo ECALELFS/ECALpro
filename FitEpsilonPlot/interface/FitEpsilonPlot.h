@@ -97,6 +97,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       void loadEpsilonPlot(const std::string& filename);
+      void loadEpsilonPlot2D(const std::string& filename); // when epsilon plot is a TH2
       void loadEoverEtruePlot(const std::string& filename, const int whichPhoton);
       void loadEoverEtruePlotFoldedInSM(const int whichPhoton);
       void loadEpsilonPlotFoldedInSM();
@@ -105,6 +106,7 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       void saveCoefficientsEoverEtrueRooFit(const bool isSecondGenPhoton);
       void IterativeFit(TH1F* h, TF1 & ffit); 
       void deleteEpsilonPlot(TH1F **h, int size);
+      void deleteEpsilonPlot2D(TH2F *h);
       void addHistogramsToFoldSM(std::vector<TH1F*>& hvec, const std::string& filename, const int whichPhoton);
 
       int getArrayIndexOfFoldedSMfromIetaIphi(const int, const int);
@@ -154,6 +156,9 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
 
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
+      // can keep 1D histograms, the fit part is fast ans should not have problems with memory
+      //TH2F *epsilon_EB_h2D;  // epsilon distribution by region (mass vs crystal index)
+      //TH2F *epsilon_EE_h2D;  // epsilon distribution in EE (mass vs crystal index)
 
       // for E/Etrue with MC 
       bool isEoverEtrue_;

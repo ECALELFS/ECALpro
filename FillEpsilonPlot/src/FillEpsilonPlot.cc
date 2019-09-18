@@ -409,21 +409,21 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"nxtal");
     }
 
-    if (isEoverEtrue_) {
-      allEoverEtrue_g1_EB = new TH1F("allEoverEtrue_g1_EB", "allEoverEtrue_g1_EB", 150, 0.0, 1.5);
-      allEoverEtrue_g1_EBnw = new TH1F("allEoverEtrue_g1_EBnw", "allEoverEtrue_g1_EBnw", 150, 0.0, 1.5);
-      allEoverEtrue_g1_EE = new TH1F("allEoverEtrue_g1_EE", "allEoverEtrue_g1_EE", 150, 0.0, 1.5);
-      allEoverEtrue_g1_EEnw = new TH1F("allEoverEtrue_g1_EEnw", "allEoverEtrue_g1_EEnw", 150, 0.0, 1.5);
-      allEoverEtrue_g2_EB = new TH1F("allEoverEtrue_g2_EB", "allEoverEtrue_g2_EB", 150, 0.0, 1.5);
-      allEoverEtrue_g2_EBnw = new TH1F("allEoverEtrue_g2_EBnw", "allEoverEtrue_g2_EBnw", 150, 0.0, 1.5);
-      allEoverEtrue_g2_EE = new TH1F("allEoverEtrue_g2_EE", "allEoverEtrue_g2_EE", 150, 0.0, 1.5);
-      allEoverEtrue_g2_EEnw = new TH1F("allEoverEtrue_g2_EEnw", "allEoverEtrue_g2_EEnw", 150, 0.0, 1.5);
-    } else { 
-      allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-      allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-      allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-      allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
-    }
+    // if (isEoverEtrue_) {
+    //   allEoverEtrue_g1_EB = new TH1F("allEoverEtrue_g1_EB", "allEoverEtrue_g1_EB", 150, 0.0, 1.5);
+    //   allEoverEtrue_g1_EBnw = new TH1F("allEoverEtrue_g1_EBnw", "allEoverEtrue_g1_EBnw", 150, 0.0, 1.5);
+    //   allEoverEtrue_g1_EE = new TH1F("allEoverEtrue_g1_EE", "allEoverEtrue_g1_EE", 150, 0.0, 1.5);
+    //   allEoverEtrue_g1_EEnw = new TH1F("allEoverEtrue_g1_EEnw", "allEoverEtrue_g1_EEnw", 150, 0.0, 1.5);
+    //   allEoverEtrue_g2_EB = new TH1F("allEoverEtrue_g2_EB", "allEoverEtrue_g2_EB", 150, 0.0, 1.5);
+    //   allEoverEtrue_g2_EBnw = new TH1F("allEoverEtrue_g2_EBnw", "allEoverEtrue_g2_EBnw", 150, 0.0, 1.5);
+    //   allEoverEtrue_g2_EE = new TH1F("allEoverEtrue_g2_EE", "allEoverEtrue_g2_EE", 150, 0.0, 1.5);
+    //   allEoverEtrue_g2_EEnw = new TH1F("allEoverEtrue_g2_EEnw", "allEoverEtrue_g2_EEnw", 150, 0.0, 1.5);
+    // } else { 
+    //   allEpsilon_EB = new TH1F("allEpsilon_EB", "allEpsilon_EB",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    //   allEpsilon_EBnw = new TH1F("allEpsilon_EBnw", "allEpsilon_EBnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    //   allEpsilon_EE = new TH1F("allEpsilon_EE", "allEpsilon_EE",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    //   allEpsilon_EEnw = new TH1F("allEpsilon_EEnw", "allEpsilon_EEnw",240, Are_pi0_? 0.:0.3 , Are_pi0_? 0.5:0.8 );
+    // }
 
     if (fillKinematicVariables_) {
 
@@ -455,12 +455,12 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     }
 
-    entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
-    entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
-    entries_EB    = new TH2F("entries_EB","entries_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
-    Occupancy_EEp = new TH2F("Occupancy_EEp","Occupancy_EEp",101,-0.5,100.5,101,-0.5,100.5);
-    Occupancy_EEm = new TH2F("Occupancy_EEm","Occupancy_EEm",101,-0.5,100.5,101,-0.5,100.5);
-    Occupancy_EB  = new TH2F("Occupancy_EB","Occupancy_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
+    // entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
+    // entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
+    // entries_EB    = new TH2F("entries_EB","entries_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
+    // Occupancy_EEp = new TH2F("Occupancy_EEp","Occupancy_EEp",101,-0.5,100.5,101,-0.5,100.5);
+    // Occupancy_EEm = new TH2F("Occupancy_EEm","Occupancy_EEm",101,-0.5,100.5,101,-0.5,100.5);
+    // Occupancy_EB  = new TH2F("Occupancy_EB","Occupancy_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
 
 
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
@@ -684,21 +684,21 @@ FillEpsilonPlot::~FillEpsilonPlot()
     }
   }
 
-  if (isEoverEtrue_) {
-    delete allEoverEtrue_g1_EB;
-    delete allEoverEtrue_g1_EBnw;
-    delete allEoverEtrue_g1_EE;
-    delete allEoverEtrue_g1_EEnw;
-    delete allEoverEtrue_g2_EB;
-    delete allEoverEtrue_g2_EBnw;
-    delete allEoverEtrue_g2_EE;
-    delete allEoverEtrue_g2_EEnw;
-  } else {
-    delete allEpsilon_EB;
-    delete allEpsilon_EBnw;
-    delete allEpsilon_EE;
-    delete allEpsilon_EEnw;
-  }
+  // if (isEoverEtrue_) {
+  //   delete allEoverEtrue_g1_EB;
+  //   delete allEoverEtrue_g1_EBnw;
+  //   delete allEoverEtrue_g1_EE;
+  //   delete allEoverEtrue_g1_EEnw;
+  //   delete allEoverEtrue_g2_EB;
+  //   delete allEoverEtrue_g2_EBnw;
+  //   delete allEoverEtrue_g2_EE;
+  //   delete allEoverEtrue_g2_EEnw;
+  // } else {
+  //   delete allEpsilon_EB;
+  //   delete allEpsilon_EBnw;
+  //   delete allEpsilon_EE;
+  //   delete allEpsilon_EEnw;
+  // }
 
   if (fillKinematicVariables_) {
     for (uint32_t i = 0; i < pi0pt_afterCuts.size(); ++i) {
@@ -722,12 +722,12 @@ FillEpsilonPlot::~FillEpsilonPlot()
     g1g2DR_afterCuts.clear();
   }
 
-  delete entries_EEp;
-  delete entries_EEm;
-  delete entries_EB;
-  delete Occupancy_EEp;
-  delete Occupancy_EEm;
-  delete Occupancy_EB;
+  // delete entries_EEp;
+  // delete entries_EEm;
+  // delete entries_EB;
+  // delete Occupancy_EEp;
+  // delete Occupancy_EEm;
+  // delete Occupancy_EB;
   delete pi0MassVsIetaEB;
   delete pi0MassVsETEB;
   delete photonDeltaRVsIetaEB;
@@ -1371,7 +1371,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 
     //cout << "Check EBRecHitCollection in FillEpsilonPlot::fillEBClusters" << endl;
     EBDetId tmp_id(itb->id());
-    Occupancy_EB->Fill(tmp_id.ieta(), tmp_id.iphi());
+    //Occupancy_EB->Fill(tmp_id.ieta(), tmp_id.iphi());
     if(itb->energy() > EB_Seed_E_)  ebseeds.push_back( *itb );
     ////Preselection
     //if(itb->energy() > 0.200-0.200*(28.3/100)) founded=true;
@@ -1659,8 +1659,8 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
   //bool found=false;
   for(EERecHitCollection::const_iterator ite= eeHandle->begin(); ite != eeHandle->end(); ++ite, ++dc) {
     EEDetId idXtal( ite->id() );
-    if(idXtal.zside()<0) Occupancy_EEm->Fill(idXtal.ix(),idXtal.iy()); 
-    if(idXtal.zside()>0) Occupancy_EEp->Fill(idXtal.ix(),idXtal.iy()); 
+    // if(idXtal.zside()<0) Occupancy_EEm->Fill(idXtal.ix(),idXtal.iy()); 
+    // if(idXtal.zside()>0) Occupancy_EEp->Fill(idXtal.ix(),idXtal.iy()); 
     GlobalPoint posThis;
     if( GeometryFromFile_ ) posThis = geom_->getPosition(idXtal,0.);
     else{
@@ -2082,7 +2082,8 @@ void  FillEpsilonPlot::deleteEpsilonPlot2D(TH2F *h)
 {
   // probably this function is not needed if I only have 1 histogram
   // but let's keep it for consistency with previous version of the code using TH1
-  delete h;
+  //delete h;
+  return;
 }
 
 void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
@@ -3299,8 +3300,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  //average <eps> for cand k
 	  float eps_k = 0.5 * ( r2 - 1. );
 	  // compute quantities needed for <eps>_j in each region j
-	  if(subDetId==EcalBarrel) allEpsilon_EBnw->Fill( pi0P4_mass );
-	  else                     allEpsilon_EEnw->Fill( pi0P4_mass );
+	  // if(subDetId==EcalBarrel) allEpsilon_EBnw->Fill( pi0P4_mass );
+	  // else                     allEpsilon_EEnw->Fill( pi0P4_mass );
 	  for(RegionWeightVector::const_iterator it = w1.begin(); it != w1.end(); ++it) {
 	    const uint32_t& iR = (*it).iRegion;
 	    const float& w = (*it).value;
@@ -3310,12 +3311,14 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		  //if( !EtaRingCalibEB_ && !SMCalibEB_ ) epsilon_EB_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
 		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
 		    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
-		  allEpsilon_EB->Fill( pi0P4_mass, w );
+		  //allEpsilon_EB->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EB and probably wrong. Getting iEta and iPhi elsewhere
 		  std::map<int,vector<int>>::iterator it; 
-		  int iEta = List_IR_EtaPhi.find(iR)->second[0]; int iPhi = List_IR_EtaPhi.find(iR)->second[1]; int iSM = List_IR_EtaPhi.find(iR)->second[2];
-		  entries_EB->Fill( iEta, iPhi, w );
+		  int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+		  //int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
+		  int iSM = List_IR_EtaPhi.find(iR)->second[2];
+		  //entries_EB->Fill( iEta, iPhi, w );
 		  //If Low Statistic fill all the Eta Ring
 		  if( EtaRingCalibEB_ ){
 		    for(auto const &iterator : ListEtaFix_xtalEB){
@@ -3357,13 +3360,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		if( pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75) ){
 		  //if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h[iR]->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, w );
 		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
-		  allEpsilon_EE->Fill( pi0P4_mass, w );
+		  //allEpsilon_EE->Fill( pi0P4_mass, w );
 		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
 		  //allDetIdsInEERegion is not reliable for EE. Getting ix and iy elsewhere
 		  std::map<int,vector<int>>::iterator it; 
-		  int iX = List_IR_XYZ.find(iR)->second[0]; int iY = List_IR_XYZ.find(iR)->second[1]; int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
+		  int iX = List_IR_XYZ.find(iR)->second[0]; 
+		  int iY = List_IR_XYZ.find(iR)->second[1]; 
+		  int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
 		  if( iZ==-1 ){
-		    entries_EEm->Fill( iX, iY, w );
+		    //entries_EEm->Fill( iX, iY, w );
 		    //If Low Statistic fill all the Eta Ring
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEm){
@@ -3387,7 +3392,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		    }
 		  }
 		  else{
-		    entries_EEp->Fill( iX, iY, w );
+		    //entries_EEp->Fill( iX, iY, w );
 		    //If Low Statistic fill all the Eta Ring
 		    if( EtaRingCalibEE_ ){
 			for(auto const &iterator : ListEtaFix_xtalEEp){
@@ -3980,13 +3985,13 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 
       // compute quantities needed for <eps>_j in each region j
-      if (subDetId==EcalBarrel) {
-	allEoverEtrue_g1_EBnw->Fill( EoverEtrue_g1 );
-	allEoverEtrue_g2_EBnw->Fill( EoverEtrue_g2 );
-      } else {
-	allEoverEtrue_g1_EEnw->Fill( EoverEtrue_g1 );
-	allEoverEtrue_g2_EEnw->Fill( EoverEtrue_g2 );
-      }
+      // if (subDetId==EcalBarrel) {
+      // 	allEoverEtrue_g1_EBnw->Fill( EoverEtrue_g1 );
+      // 	allEoverEtrue_g2_EBnw->Fill( EoverEtrue_g2 );
+      // } else {
+      // 	allEoverEtrue_g1_EEnw->Fill( EoverEtrue_g1 );
+      // 	allEoverEtrue_g2_EEnw->Fill( EoverEtrue_g2 );
+      // }
 
       // Double_t weight_dataMC_pi0pt = 1.0;
       // if (reweight_pi0pt_dataMC) {
@@ -4006,11 +4011,11 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	    //EoverEtrue_g1_EB_h[iR]->Fill( EoverEtrue_g1, w );
 	    EoverEtrue_g1_EB_h2D->Fill( EoverEtrue_g1, (double) iR, w );
-	    allEoverEtrue_g1_EB->Fill( EoverEtrue_g1, w );
-	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
-	    int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
+	    //allEoverEtrue_g1_EB->Fill( EoverEtrue_g1, w );
+	    // int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+	    //int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
 	    //int iSM = List_IR_EtaPhi.find(iR)->second[2];
-	    entries_EB->Fill( iEta, iPhi, w );
+	    //entries_EB->Fill( iEta, iPhi, w );
 	  
 	  }
 
@@ -4020,13 +4025,13 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	    //EoverEtrue_g1_EE_h[iR]->Fill( EoverEtrue_g1, w );
 	    EoverEtrue_g1_EE_h2D->Fill( EoverEtrue_g1, (double) iR, w );
-	    allEoverEtrue_g1_EE->Fill( EoverEtrue_g1, w );
-	    int iX = List_IR_XYZ.find(iR)->second[0]; 
-	    int iY = List_IR_XYZ.find(iR)->second[1]; 
-	    int iZ = List_IR_XYZ.find(iR)->second[2]; 
+	    //allEoverEtrue_g1_EE->Fill( EoverEtrue_g1, w );
+	    // int iX = List_IR_XYZ.find(iR)->second[0]; 
+	    // int iY = List_IR_XYZ.find(iR)->second[1]; 
+	    // int iZ = List_IR_XYZ.find(iR)->second[2]; 
 	    //int Quad = List_IR_XYZ.find(iR)->second[3];
-	    if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
-	    else entries_EEp->Fill( iX, iY, w );
+	    // if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
+	    // else entries_EEp->Fill( iX, iY, w );
 	 
 	  }  // closes condition on mass boundary
 
@@ -4046,11 +4051,11 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  if ( not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.23:0.7)) ) {
 
 	    EoverEtrue_g2_EB_h[iR]->Fill( EoverEtrue_g2, w );
-	    allEoverEtrue_g2_EB->Fill( EoverEtrue_g2, w );
-	    int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
-	    int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
+	    //allEoverEtrue_g2_EB->Fill( EoverEtrue_g2, w );
+	    //int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+	    //int iPhi = List_IR_EtaPhi.find(iR)->second[1]; 
 	    //int iSM = List_IR_EtaPhi.find(iR)->second[2];
-	    entries_EB->Fill( iEta, iPhi, w );
+	    //entries_EB->Fill( iEta, iPhi, w );
 	  
 	  }
 
@@ -4059,13 +4064,13 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  if (  not applySelectionForEoverEtrue || (pi0P4_mass>((Are_pi0_)?0.03:0.35) && pi0P4_mass<((Are_pi0_)?0.28:0.75)) ) {
 
 	    EoverEtrue_g2_EE_h[iR]->Fill( EoverEtrue_g2, w );
-	    allEoverEtrue_g2_EE->Fill( EoverEtrue_g2, w );
-	    int iX = List_IR_XYZ.find(iR)->second[0]; 
-	    int iY = List_IR_XYZ.find(iR)->second[1]; 
-	    int iZ = List_IR_XYZ.find(iR)->second[2]; 
+	    //allEoverEtrue_g2_EE->Fill( EoverEtrue_g2, w );
+	    // int iX = List_IR_XYZ.find(iR)->second[0]; 
+	    // int iY = List_IR_XYZ.find(iR)->second[1]; 
+	    // int iZ = List_IR_XYZ.find(iR)->second[2]; 
 	    //int Quad = List_IR_XYZ.find(iR)->second[3];
-	    if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
-	    else entries_EEp->Fill( iX, iY, w );
+	    // if ( iZ==-1 ) entries_EEm->Fill( iX, iY, w );
+	    // else entries_EEp->Fill( iX, iY, w );
 	 
 	  }  // closes condition on mass boundary
 
@@ -4410,27 +4415,27 @@ void FillEpsilonPlot::endJob(){
   EventFlow_EB->Write();  if (isDebug_) EventFlow_EB_debug->Write();
   EventFlow_EE->Write();  if (isDebug_) EventFlow_EE_debug->Write();
 
-  if (isEoverEtrue_) {
-    allEoverEtrue_g1_EB->Write();
-    allEoverEtrue_g1_EBnw->Write();
-    allEoverEtrue_g1_EE->Write();
-    allEoverEtrue_g1_EEnw->Write();
-    allEoverEtrue_g2_EB->Write();
-    allEoverEtrue_g2_EBnw->Write();
-    allEoverEtrue_g2_EE->Write();
-    allEoverEtrue_g2_EEnw->Write();
-  } else {
-    allEpsilon_EB->Write();
-    allEpsilon_EBnw->Write();
-    allEpsilon_EE->Write();
-    allEpsilon_EEnw->Write();
-  }
-  entries_EEp->Write();
-  entries_EEm->Write();
-  entries_EB->Write();
-  Occupancy_EEp->Write();
-  Occupancy_EEm->Write();
-  Occupancy_EB->Write();
+  // if (isEoverEtrue_) {
+  //   allEoverEtrue_g1_EB->Write();
+  //   allEoverEtrue_g1_EBnw->Write();
+  //   allEoverEtrue_g1_EE->Write();
+  //   allEoverEtrue_g1_EEnw->Write();
+  //   allEoverEtrue_g2_EB->Write();
+  //   allEoverEtrue_g2_EBnw->Write();
+  //   allEoverEtrue_g2_EE->Write();
+  //   allEoverEtrue_g2_EEnw->Write();
+  // } else {
+  //   allEpsilon_EB->Write();
+  //   allEpsilon_EBnw->Write();
+  //   allEpsilon_EE->Write();
+  //   allEpsilon_EEnw->Write();
+  // }
+  // entries_EEp->Write();
+  // entries_EEm->Write();
+  // entries_EB->Write();
+  // Occupancy_EEp->Write();
+  // Occupancy_EEm->Write();
+  // Occupancy_EB->Write();
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
   photonDeltaRVsIetaEB->Write();

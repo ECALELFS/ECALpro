@@ -5,15 +5,15 @@ ROOT.gROOT.SetBatch(True)
 
 outpath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/ratioIC/"
 #outdir = "AlCaP0_AllRun2017_condor_iter1__Over__AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6_iter6/"
-outdir = "AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018_iter0__Over_AlCaP0_2018_ULrereco_firstThirdNotUsedFor2018IC_fromIC2018_iter0/"
+outdir = "TESTmemoryOptimWithTH2_AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018_iter0__Over_AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018_iter0/"
 canvasSuffix = "ratioIC"
 #label1 = "2018 UL (half 2018, ~30 fb^{-1 })"
 #label2 = "2018 test (other half, ~30 fb^{-1 })"
-label1 = "2018, third ~10 fb^{-1 } not used for UL"
-label2 = "2018, first ~10 fb^{-1 } not used for UL"
+label1 = "2018, third ~10 fb^{-1 } not used for UL (Memory Optim)"
+label2 = "2018, third ~10 fb^{-1 } not used for UL"
 
-f1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018/iter_0/2DMaps/ICmaps/IC_work/calibrationMaps.root"
-f2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_2018_ULrereco_firstThirdNotUsedFor2018IC_fromIC2018/iter_0/2DMaps/ICmaps/IC_work/calibrationMaps.root"
+f1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/TESTmemoryOptimWithTH2_AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018/iter_0/2DMaps/ICmaps/IC_work/calibrationMaps.root"
+f2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018/iter_0/2DMaps/ICmaps/IC_work/calibrationMaps.root"
 
 n1 = { "EB"  : "calibMap_EB",
        "EEp" : "calibMap_EEp",

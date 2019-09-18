@@ -297,14 +297,14 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F *EoverEtrue_g2_EB_h2D;  
       TH2F *EoverEtrue_g1_EE_h2D;  
       TH2F *EoverEtrue_g2_EE_h2D;  
-      TH1F *allEoverEtrue_g1_EE; 
-      TH1F *allEoverEtrue_g1_EEnw; 
-      TH1F *allEoverEtrue_g1_EB;
-      TH1F *allEoverEtrue_g1_EBnw;
-      TH1F *allEoverEtrue_g2_EE; 
-      TH1F *allEoverEtrue_g2_EEnw; 
-      TH1F *allEoverEtrue_g2_EB;
-      TH1F *allEoverEtrue_g2_EBnw;
+      /* TH1F *allEoverEtrue_g1_EE;  */
+      /* TH1F *allEoverEtrue_g1_EEnw;  */
+      /* TH1F *allEoverEtrue_g1_EB; */
+      /* TH1F *allEoverEtrue_g1_EBnw; */
+      /* TH1F *allEoverEtrue_g2_EE;  */
+      /* TH1F *allEoverEtrue_g2_EEnw;  */
+      /* TH1F *allEoverEtrue_g2_EB; */
+      /* TH1F *allEoverEtrue_g2_EBnw; */
 
       // Some kinematic variables (use option in parameters.py to choose whether to fill and save them)
       bool fillKinematicVariables_;
@@ -356,16 +356,16 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
       TH2F *epsilon_EB_h2D;  // epsilon distribution by region
       TH2F *epsilon_EE_h2D;  // epsilon distribution by region
-      TH1F *allEpsilon_EE; 
-      TH1F *allEpsilon_EEnw; 
-      TH1F *allEpsilon_EB;
-      TH1F *allEpsilon_EBnw;
-      TH2F *entries_EEp;
-      TH2F *entries_EEm;
-      TH2F *entries_EB;
-      TH2F *Occupancy_EEp;
-      TH2F *Occupancy_EEm;
-      TH2F *Occupancy_EB;
+      /* TH1F *allEpsilon_EE;  */
+      /* TH1F *allEpsilon_EEnw;  */
+      /* TH1F *allEpsilon_EB; */
+      /* TH1F *allEpsilon_EBnw; */
+      /* TH2F *entries_EEp; */
+      /* TH2F *entries_EEm; */
+      /* TH2F *entries_EB; */
+      /* TH2F *Occupancy_EEp; */
+      /* TH2F *Occupancy_EEm; */
+      /* TH2F *Occupancy_EB; */
       TH2F *pi0MassVsIetaEB;
       TH2F *pi0MassVsETEB;
       TH2F *photonDeltaRVsIetaEB;

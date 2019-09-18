@@ -245,7 +245,8 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
 	epsilon_EE_h = new TH1F*[regionalCalibration_->getCalibMap()->getNRegionsEE()];
       }
       cout << "FIT_EPSILON: FitEpsilonPlot:: loading epsilon plots from file: " << epsilonPlotFileName_ << endl;
-      loadEpsilonPlot(epsilonPlotFileName_);
+      //loadEpsilonPlot(epsilonPlotFileName_);
+      loadEpsilonPlot2D(epsilonPlotFileName_);
 
       if (foldInSuperModule_ && EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE")) {
 
@@ -660,6 +661,7 @@ void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
 	  throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
 	else if(!(iR%1000))
 	  cout << "FIT_EPSILON: Epsilon distribution for EB region " << iR << " loaded" << endl;
+	epsilon_EB_h[iR]->SetDirectory(0);
       }
   }
   else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
@@ -671,6 +673,60 @@ void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
 	  throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
 	else if(!(jR%1000))
 	  cout << "FIT_EPSILON: Epsilon distribution for EE region " << jR << " loaded" << endl;
+	epsilon_EE_h[jR]->SetDirectory(0);
+      }
+  }
+
+}
+
+void FitEpsilonPlot::loadEpsilonPlot2D(const std::string& filename)
+{
+  std::string line = "";
+
+  inputEpsilonFile_ = TFile::Open(filename.c_str());
+  if(!inputEpsilonFile_) 
+    throw cms::Exception("loadEpsilonPlot2D") << "Cannot open file " << filename << "\n"; 
+
+  if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
+
+    line = "Barrel/epsilon_EB_iR";
+    TH2F* h2_tmp_epsilon = (TH2F*)inputEpsilonFile_->Get(line.c_str());
+    if(!h2_tmp_epsilon)
+      throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";    
+
+    for(int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
+      {
+	// take slice of TH2 at index whose bin center is iR. 
+	// Since ProjectionX needs the bin number, use iR+1 (iR goes from 0 to N(xtals)-1 ) 
+	// range iR+1 to iR+1 will just select bin iR+1
+	// do projection to return TH1D*, then clone inot TH1F* (should be the same except for precision loss)
+	// but precision loss should be negligible (if not, convert everything to TH1D*)
+	epsilon_EB_h[iR] = (TH1F*) (h2_tmp_epsilon->ProjectionX(Form("proj_epsilon_EB_h%d",iR),iR+1,iR+1,"e"))->Clone(Form("epsilon_EB_h%d",iR));
+
+	if(!epsilon_EB_h[iR])
+	  throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";
+	else if(!(iR%1000))
+	  cout << "FIT_EPSILON: Epsilon distribution for EB region " << iR << " loaded" << endl;
+	epsilon_EB_h[iR]->SetDirectory(0);
+      }
+    
+
+  }
+  else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
+
+    line = Form("Endcap/epsilon_EE_iR");
+    TH2F* h2_tmp_epsilon = (TH2F*)inputEpsilonFile_->Get(line.c_str());
+    if(!h2_tmp_epsilon)
+      throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";
+
+    for(int jR=inRangeFit_; jR <= finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
+      {
+	epsilon_EE_h[jR] = (TH1F*) (h2_tmp_epsilon->ProjectionX(Form("proj_epsilon_EE_h%d",jR),jR+1,jR+1,"e"))->Clone(Form("epsilon_EE_h%d",jR));
+	if(!epsilon_EE_h[jR])
+	  throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";
+	else if(!(jR%1000))
+	  cout << "FIT_EPSILON: Epsilon distribution for EE region " << jR << " loaded" << endl;
+	epsilon_EE_h[jR]->SetDirectory(0);
       }
   }
 
@@ -685,6 +741,12 @@ void  FitEpsilonPlot::deleteEpsilonPlot(TH1F **h, int size)
 
     //delete h; // do not delete it, otherwise it makes the code crash and the end of the destructor
 }
+
+// void  FitEpsilonPlot::deleteEpsilonPlot2D(TH2F *h)
+// {
+//   // is it needed? Probably not, and might make the code crash
+//   delete h;
+// }
 
 
 void FitEpsilonPlot::saveCoefficients() 
