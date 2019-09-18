@@ -74,6 +74,7 @@ parser = OptionParser(usage="%prog [options]")
 parser.add_option(  "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
 parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=False, help="Tells this script if the daemon is running locally (needed to renew the AFS token)")
 parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
+parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp abive this number to skip recover");
 (options, args) = parser.parse_args()
 
 mode = str(args[0])
@@ -313,35 +314,42 @@ for iters in range(nIterations):
                                             
                 condor_file.close()
                 print "Found {n}/{ntot} good EcalNtp files. Resubmitting the rest".format(n=goodNtp,ntot=njobs)
-                Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-                # actually submitting recovery tasks
-                subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
-                outJobs = subJobs.communicate()
-                print outJobs
+                nGoodOverTot = float(goodNtp)/float(njobs)
+                if nGoodOverTot < options.minEfficiencyToRecoverFill:
 
-                time.sleep(30)
-                nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                print "There are {n} jobs for Fill_recovery part".format(n=nFilljobs)
+                    Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
+                    # actually submitting recovery tasks
+                    subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
+                    outJobs = subJobs.communicate()
+                    print outJobs
 
-                print 'Waiting for filling jobs to be finished...'
-                # Daemon cheking running jobs
-                print "Checking recovery of Ntp ..."
-                nCheck = 0
-                while nFilljobs > 0 :
-                    sleeptime = 900
-                    time.sleep(sleeptime)
+                    time.sleep(30)
                     nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                    print "I still see {n} jobs for Fill_recovery part".format(n=nFilljobs)
-                    checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
-                    datalines2 = (checkJobs2.communicate()[0]).splitlines()
-                    nCheck += 1
-                    if nCheck * sleeptime > 43200: 
-                        renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
-                        nCheck = 0
+                    print "There are {n} jobs for Fill_recovery part".format(n=nFilljobs)
 
+                    print 'Waiting for filling jobs to be finished...'
+                    # Daemon cheking running jobs
+                    print "Checking recovery of Ntp ..."
+                    nCheck = 0
+                    while nFilljobs > 0 :
+                        sleeptime = 900
+                        time.sleep(sleeptime)
+                        nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
+                        print "I still see {n} jobs for Fill_recovery part".format(n=nFilljobs)
+                        checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
+                        datalines2 = (checkJobs2.communicate()[0]).splitlines()
+                        nCheck += 1
+                        if nCheck * sleeptime > 43200: 
+                            renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
+                            nCheck = 0
+
+
+                    print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
+                else:
+                    print "Fraction of EcalNtp root file was {perc:.1%} (tolerance was set to {tol:.1%}".format(perc=nGoodOverTot, tol=options.minEfficiencyToRecoverFill)
+                    print "Fill recovery was not attempted."
 
                 NtpRecoveryAttempt += 1
-                print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
         #  END OF FILL RECOVERY
         #########################
 

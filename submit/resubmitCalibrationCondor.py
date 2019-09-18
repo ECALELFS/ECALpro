@@ -9,6 +9,7 @@ parser = OptionParser(usage="%prog [options]")
 parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=True, help="Do not submit a job to manage the daemon, do it locally")
 parser.add_option(      "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
 parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
+parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp abive this number to skip recover");
 (options, args) = parser.parse_args()
 
 if len(args) != 7:
@@ -55,6 +56,9 @@ pycmd =  "python " + pwd + "/calibJobHandlerCondor.py " + Mode + " " + str(itera
 if options.recoverFill: pycmd += " --recover-fill "
 if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
+if option.minEfficiencyToRecoverFill >= 0.0:
+        pycmd += " --min-efficiency-recover-fill "
+
 print pycmd
 env_script_f.write(pycmd + "\n")
 env_script_f.write("rm -rf " + pwd + "/core.*\n")
