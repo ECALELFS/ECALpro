@@ -286,7 +286,7 @@ void checkICnormalizedTo1_inEtaRing(TH2* h = NULL,  const Bool_t isEB = true, co
 
 //==================================================
 
-void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false) {
+void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false, const Bool_t excludeMod4EBm06 = false) {
 
   vector<Double_t> meanInEtaRing(171, 0.0); // 171 eta rings (we keep ieta = 0 for simplicity)
   vector<Double_t> nGoodXtalsInEtaRing(171, 0.0);
@@ -308,6 +308,9 @@ void normalizeEBMapTo1_inEtaRing(TH2* h = NULL, const Bool_t iphiOnXaxis = true,
       binContent = h->GetBinContent(bin);
       if (excludeMod2EBm16) {
 	if (iphi > 300 && iphi <= 320 && ieta < -25 && ieta >= -45) binContent = 1;
+      }
+      if (excludeMod4EBm06) {
+	if (((iphi > 40 && iphi <= 60) || (iphi > 100 && iphi <= 120)) && ieta < -65) binContent = 1;
       }
 
       if (binContent > EPSILON && fabs(binContent -1.0) > EPSILON) {
@@ -443,7 +446,7 @@ void normalizeEEMapTo1_inEtaRing(TH2* h = NULL) {
 
 //==================================================
 
-void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false) {
+void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = true, const Bool_t excludeMod2EBm16 = false, const Bool_t excludeMod4EBm06 = false) {
 
   vector<Double_t> meanInModule(36*4,0.0); // 36 SM * 4 modules each, initialized to 0
   vector<Double_t> nGoodXtalsInModule(36*4,0.0); // 36 SM * 4 modules each, initialized to 0
@@ -503,7 +506,13 @@ void normalizeEBMapTo1_inEachModule(TH2* h = NULL, const Bool_t iphiOnXaxis = tr
 	  cout << ">>> WARNING in normalizeEBMapTo1_inEachModule(): Setting IC of mod2 in EB-16 to 1" << endl;
 	}
       }
-
+      // in this case, if we are in the 4th module of EB-06, just put 1 everywhere
+      if (excludeMod4EBm06) {
+	if (((iphi > 40 && iphi <= 60) || (iphi > 100 && iphi <= 120)) && ieta < -65) {
+	  h->SetBinContent(bin,1.);
+	  cout << ">>> WARNING in normalizeEBMapTo1_inEachModule(): Setting IC of mod4 in EB-06 to 1" << endl;
+	}
+      }
 
     }
 

@@ -2,6 +2,7 @@
 
 import subprocess, time, sys, os
 from methods import *
+from datetime import datetime
 
 from optparse import OptionParser                                                                                                                   
                                                                                           
@@ -307,7 +308,7 @@ if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)
 if options.minEfficiencyToRecoverFill >= 0.0:
-        calibCMD += " --min-efficiency-recover-fill "
+        calibCMD += (" --min-efficiency-recover-fill " + str(options.minEfficiencyToRecoverFill)) 
 calibCMD += "\n"
 
 ### setting environment
@@ -346,6 +347,13 @@ request_memory = 4000
 +JobBatchName = "ecalpro_daemon"
 '''.format(de=os.path.abspath(dummy_exec.name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
 if os.environ['USER'] in ['mciprian']:
+    # mydate = datetime.today()
+    # month = int(mydate.month)
+    # year  = int(mydate.year)
+    # if month == 10 and year == 2019:
+    #     condor_file.write('+AccountingGroup = "group_u_CMS.u_zh.priority"\n\n')
+    # else:
+    #     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
 else:
     condor_file.write('\n')

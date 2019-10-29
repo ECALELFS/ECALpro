@@ -7,7 +7,7 @@ ExternalGeometry   = 'caloGeometry.root'
 CalibType          = 'xtal'              # Calibrating single xtals. I never try but you could calibrate EtaRing ot Trigger Towers
 
 #Are Pi0
-Are_pi0            = True               # True = using Pi0, False = using Eta
+Are_pi0            = False               # True = using Pi0, False = using Eta
 #Fold per Eta Ring
 EtaRingCalibEB     = False
 SMCalibEB          = False
@@ -42,7 +42,7 @@ useCalibrationSelection = True # to use saem selection of calibration when makin
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 inputlist_n      = 'InputList/purified_AlCaP0_Run2016_07_09_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_2016_ULrereco' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'AlCaEta_2016_ULrereco_from0' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
@@ -51,13 +51,13 @@ queue            = 'cmscaf1nd'
 nIterations      = 7 if isMC==False else 1 # 7
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 
-SubmitFurtherIterationsFromExisting = True
+SubmitFurtherIterationsFromExisting = False
 # maybe I don't need the root://eoscms/ prefix if eos is mounted
-startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_2018_ULrereco_1every2_ext1_fromIter6/iter_3/AlCaP0_2018_ULrereco_1every2_ext1_fromIter6_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
+startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_2016_ULrereco_from0/iter_6/AlCaP0_2016_ULrereco_from0_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
 SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It works only if you submit this new iteration from an existing one, therefore SubmitFurtherIterationsFromExisting must be set true. Tipically 0 is the default and has no real effect, it is like submitting usual iterations.  
 
 #N files
-ijobmax          = 20 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
+ijobmax          = 30 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
 useFit_RooMinuit = False if isEoverEtrue else True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. This happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
@@ -199,16 +199,16 @@ if(Are_pi0):
 else:
    #inner barrel
    Pi0PtCutEB_low = '3.0'
-   gPtCutEB_low = '1.3'
-   Pi0IsoCutEB_low = '0.0'
+   gPtCutEB_low = '1.2'
+   Pi0IsoCutEB_low = '0.1'
    Pi0HLTIsoCutEB_low = "0.5"
    nXtal_1_EB_low = '7'
    nXtal_2_EB_low = '7'
    S4S9_EB_low = '0.83'
    #outer barrel 
    Pi0PtCutEB_high = '3.0'
-   gPtCutEB_high = '1.4'
-   Pi0IsoCutEB_high = '0.0'
+   gPtCutEB_high = '1.2'
+   Pi0IsoCutEB_high = '0.1'
    Pi0HLTIsoCutEB_high = '0.5'
    nXtal_1_EB_high = '7'
    nXtal_2_EB_high = '7'
@@ -216,19 +216,19 @@ else:
    #low eta EE
    Pi0PtCutEE_low = '2.0'
    gPtCutEE_low = '0.95'
-   Pi0IsoCutEE_low = '0.0'
+   Pi0IsoCutEE_low = '0.1'
    Pi0HLTIsoCutEE_low = '0.5'
-   nXtal_1_EE_low = '4'
-   nXtal_2_EE_low = '4'
-   S4S9_EE_low = '0.95'
+   nXtal_1_EE_low = '5'
+   nXtal_2_EE_low = '5'
+   S4S9_EE_low = '0.88'
    #high eta EE
    Pi0PtCutEE_high = '2.0'
    gPtCutEE_high = '0.65'
-   Pi0IsoCutEE_high = '0.0'
+   Pi0IsoCutEE_high = '0.1'
    Pi0HLTIsoCutEE_high = '0.5'
-   nXtal_1_EE_high = '4'
-   nXtal_2_EE_high = '4'
-   S4S9_EE_high = '0.95'
+   nXtal_1_EE_high = '5'
+   nXtal_2_EE_high = '5'
+   S4S9_EE_high = '0.88'
    # #inner barrel
    # Pi0PtCutEB_low = '1'
    # gPtCutEB_low = '.4'

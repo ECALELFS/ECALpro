@@ -7,8 +7,8 @@
 # specify the folder and the iteration number to be affected
 # note that some files are removed, so be careful!
 
-folder="AlCaP0_2018_ULrereco_1every2_inverted_ext1_fromIter0"
-iter="1"
+folder="AlCaP0_2016_ULrereco_from0"
+iter="4"
 
 path="${folder}/src/hadd/"
 fullpath="$PWD/${folder}/src/hadd/"

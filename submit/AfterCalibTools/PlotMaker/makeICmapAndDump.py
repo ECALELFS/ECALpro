@@ -3,10 +3,11 @@ import time
 
 ROOT.gROOT.SetBatch(True)
 
-foldername = "TESTmemoryOptimWithTH2_AlCaP0_2018_ULrereco_thirdThirdNotUsedFor2018IC_fromIC2018"
+foldername = "AlCaP0_2016_ULrereco_from0_ext1_fromIter6"
 niter = 0       # generally it starts from 0
 eosPi0Folder = "piZero_Run2"
 excludeMod2EBm16 = True
+excludeMod4EBm06 = True if "2016" in foldername else False # might also have iphi in 41-60
 
 outpath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"
 outfull = outpath + foldername + "/iter_" + str(niter) + "/2DMaps/ICmaps/IC_work/"
@@ -20,7 +21,8 @@ print "="*30
 cmd = "root -l -b -q 'makeICmapAndDump.C++(\"{out}\",\"{f1}\",\"dumpIC_norm1etaRing.dat\",\"calibMap_EB\"".format(out=outfull, 
                                                                                                                   f1=f1)
                                                                                            
-cmd += ", 0.95, 1.05,true,false,0,{ex})'".format(ex="true" if excludeMod2EBm16 else "false")
+cmd += ", 0.95, 1.05,true,false,0,{ex1},{ex2})'".format(ex1="true" if excludeMod2EBm16 else "false",
+                                                        ex2="true" if excludeMod4EBm06 else "false")
 
 
 print "-"*30

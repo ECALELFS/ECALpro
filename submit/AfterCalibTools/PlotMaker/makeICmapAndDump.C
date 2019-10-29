@@ -13,7 +13,8 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 		      const Bool_t iphiOnXaxis = true,
 		      const Bool_t iphiOnXaxisSM = false,
 		      const Int_t all0_EB1_EE2 = 0,
-		      const Bool_t excludeMod2EBm16 = false
+		      const Bool_t excludeMod2EBm16 = false,
+		      const Bool_t excludeMod4EBm06 = false
 		      ) 
 
 {
@@ -99,14 +100,14 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
   TH2F *mapEB_norm1etaRing = new TH2F("mapEB_norm1etaRing",Form("EB map normalized to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     copyMapAllEB(mapEB_norm1etaRing, mapEB_IC, iphiOnXaxis);  
-    normalizeEBMapTo1_inEtaRing(mapEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16); 
+    normalizeEBMapTo1_inEtaRing(mapEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06); 
     drawMap(mapEB_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
   // normalize original map to 1 in each module (TT pattern still here), prepare for folding
   TH2F *mapEB_norm1eachModule = new TH2F("mapEB_norm1eachModule",Form("EB map normalized to 1 in each module"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     copyMapAllEB(mapEB_norm1eachModule, mapEB_IC, iphiOnXaxis);  
-    normalizeEBMapTo1_inEachModule(mapEB_norm1eachModule, iphiOnXaxis, excludeMod2EBm16);
+    normalizeEBMapTo1_inEachModule(mapEB_norm1eachModule, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06);
     drawMap(mapEB_norm1eachModule, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
   // fold map normalized to 1 in each module
@@ -133,21 +134,21 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB, true, -1.0); 
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModule_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
 
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module, EB+,EB- same #phi), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB_samePhi, true, -1.0);
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_samePhi_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModuleSamePhi_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
 
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module, EB+,EB- separately), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
   if (all0_EB1_EE2 != 2) {
     divideEBmap(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, mapEB_IC, mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate, true, -1.0);
-    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, iphiOnXaxis, excludeMod2EBm16);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06);
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
     //mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->SaveAs((outDir+canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root").c_str());
     checkICnormalizedTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, true, true);
@@ -162,6 +163,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
   Double_t IC_error = 0.0; // stat. only for now
   Int_t bin = 0;
   TH2* map_IC_value = mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing;
+  //TH2* map_IC_value = mapEB_IC;
   TH2* map_IC_error = mapEB_IC_err;
   Int_t iz = 0; // 0 for EB
 
@@ -199,6 +201,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
   if (all0_EB1_EE2 != 1) {
 
     map_IC_value = mapEEp_IC_norm1etaRing;
+    //map_IC_value = mapEEp_IC;
     map_IC_error = mapEEp_IC_err;
     iz = 1; // 0 for EE+
 
@@ -228,6 +231,7 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 
     }
 
+    //map_IC_value = mapEEm_IC;
     map_IC_value = mapEEm_IC_norm1etaRing;
     map_IC_error = mapEEm_IC_err;
     iz = -1; // 0 for EE-

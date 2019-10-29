@@ -200,7 +200,8 @@ def printFillCfg1( outputfile ):
     outputfile.write("    fileNames = cms.untracked.vstring(\n")
 
 def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
-    outputfile.write("    )\n")
+    outputfile.write("    ),\n")
+    outputfile.write("    skipBadFiles = cms.untracked.bool(True)\n")
     outputfile.write(")\n")
 #    outputfile.write("\n")
 #    if(len(json_file)>0):
@@ -409,7 +410,27 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
     if not( L1Seed=='' ):
         outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
-    outputfile.write("process.p = cms.EndPath()\n")
+    # outputfile.write("process.p = cms.EndPath()\n")
+    # outputfile.write("if useHLTFilter:\n")
+    # outputfile.write("    process.p *= process.AlcaP0Filter\n")
+    # outputfile.write("if correctHits:\n")
+    # outputfile.write("    print 'ADDING RECALIB RECHIT MODULE WITH PARAMETERS'\n")
+    # outputfile.write("    print 'ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale)\n")
+    # outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
+    # outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
+    # outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
+    # if (FROMDIGI):
+    #     outputfile.write("process.p *= process.dummyHits\n")
+    #     if(FixGhostDigis):
+    #         outputfile.write("process.p *= process.cleanedEcalDigis\n")
+    #     if(MULTIFIT):
+    #        outputfile.write("process.p *= process.ecalMultiFitUncalibRecHit\n")
+    #     if (WEIGHTS):
+    #        outputfile.write("process.p *= process.ecalweight\n")
+    #     outputfile.write("process.p *= process.ecalLocalRecoSequence\n")
+    # outputfile.write("process.p *= process.analyzerFillEpsilon\n")
+
+    outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")
@@ -428,6 +449,8 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
            outputfile.write("process.p *= process.ecalweight\n")
         outputfile.write("process.p *= process.ecalLocalRecoSequence\n")
     outputfile.write("process.p *= process.analyzerFillEpsilon\n")
+    outputfile.write("process.endp = cms.EndPath()\n")
+
 
 def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, justDoHistogramFolding=False ):
     if isEoverEtrue and localFolderToWriteFits:

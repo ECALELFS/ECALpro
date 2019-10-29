@@ -3,6 +3,7 @@
 import subprocess, time, sys, os
 from ROOT import *
 from methods import *
+from datetime import datetime
 
 from optparse import OptionParser
 
@@ -66,6 +67,14 @@ request_memory = {mem}
 +JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
     if os.environ['USER'] in ['mciprian']:
+        # mydate = datetime.today()
+        # month = int(mydate.month)
+        # year  = int(mydate.year)
+        # if month == 10 and year == 2019:
+        #     pass
+        #     condor_file.write('+AccountingGroup = "group_u_CMS.u_zh.priority"\n\n')
+        # else:
+        #     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
         condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     else:
         condor_file.write('\n')
@@ -154,8 +163,11 @@ for iters in range(nIterations):
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_fill.condor'
         condor_file = open(condor_file_name,'w')
+        mymaxtimeFill = int(1. + ijobmax / 8.) * 12 * 3600
+        if mymaxtimeFill > 48 * 3600:
+            mymaxtimeFill = 48 * 3600
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", 
-                              memory=2500, maxtime=int(1. + ijobmax / 8.) * 43200) # this does not close the file
+                              memory=2500, maxtime=mymaxtimeFill) # this does not close the file
 
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         print "Submitting " + str(njobs) + " jobs"
@@ -290,8 +302,11 @@ for iters in range(nIterations):
                 if not os.path.exists(logdir): os.makedirs(logdir)
                 condor_file_name = condordir+'/condor_submit_fill_recovery_{nr}.condor'.format(nr=str(NtpRecoveryAttempt))
                 condor_file = open(condor_file_name,'w')
+                mymaxtimeFill = int(1. + ijobmax / 8.) * 12 * 3600
+                if mymaxtimeFill > 48 * 3600:
+                    mymaxtimeFill = 48 * 3600
                 writeCondorSubmitBase(condor_file, condordir+'/dummy_exec_fill.sh', logdir, "ecalpro_Fill_recovery", 
-                                      memory=2500, maxtime=int(1. + ijobmax / 8.) * 43200)  
+                                      memory=2500, maxtime=mymaxtimeFill)  
                 goodNtp = 0
                 for ih in range(njobs):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
@@ -313,10 +328,11 @@ for iters in range(nIterations):
                         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
                                             
                 condor_file.close()
-                print "Found {n}/{ntot} good EcalNtp files. Resubmitting the rest".format(n=goodNtp,ntot=njobs)
+                print "Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs)
                 nGoodOverTot = float(goodNtp)/float(njobs)
                 if nGoodOverTot < options.minEfficiencyToRecoverFill:
 
+                    print "Resubmitting failed fill jobs."
                     Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
                     # actually submitting recovery tasks
                     subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
@@ -335,7 +351,7 @@ for iters in range(nIterations):
                         sleeptime = 900
                         time.sleep(sleeptime)
                         nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                        print "I still see {n} jobs for Fill_recovery part".format(n=nFilljobs)
+                        print "I still see {n} jobs for Fill_recovery part ({nr})".format(n=nFilljobs,nr=NtpRecoveryAttempt)
                         checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
                         datalines2 = (checkJobs2.communicate()[0]).splitlines()
                         nCheck += 1

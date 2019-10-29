@@ -2,8 +2,10 @@
 
 import subprocess, time, sys, os
 from methods import *
+from datetime import datetime
 
-from optparse import OptionParser                                                                                                                   
+from optparse import OptionParser                                                                      
+                                       
                                                                                           
 parser = OptionParser(usage="%prog [options]")    
 parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=True, help="Do not submit a job to manage the daemon, do it locally")
@@ -57,7 +59,7 @@ if options.recoverFill: pycmd += " --recover-fill "
 if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
 if options.minEfficiencyToRecoverFill >= 0.0:
-        pycmd += " --min-efficiency-recover-fill "
+        pycmd += (" --min-efficiency-recover-fill " + str(options.minEfficiencyToRecoverFill))
 
 print pycmd
 env_script_f.write(pycmd + "\n")
@@ -86,6 +88,13 @@ request_memory = 4000
 +JobBatchName = "ecalpro_daemon"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
 if os.environ['USER'] in ['mciprian']:
+    # mydate = datetime.today()
+    # month = int(mydate.month)
+    # year  = int(mydate.year)
+    # if month == 10 and year == 2019:
+    #     condor_file.write('+AccountingGroup = "group_u_CMS.u_zh.priority"\n\n')
+    # else:
+    #     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
 else:
     condor_file.write('\n')
