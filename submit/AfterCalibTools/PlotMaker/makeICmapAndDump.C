@@ -292,9 +292,14 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
     cout << "*******************************" << endl;
     exit(EXIT_FAILURE);
   }
+  //normalized
   mapEEp_IC_norm1etaRing->Write("calibMap_EEp");  
   mapEEm_IC_norm1etaRing->Write("calibMap_EEm");  
   mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->Write("calibMap_EB");
+  // absolute
+  mapEEp_IC->Write("calibMap_EEp_absolute");  
+  mapEEm_IC->Write("calibMap_EEm_absolute");  
+  mapEB_IC->Write("calibMap_EB_absolute");
   f->Close();
   delete f;
 

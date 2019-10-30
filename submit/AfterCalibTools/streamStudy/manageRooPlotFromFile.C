@@ -423,8 +423,8 @@ void printSignificanceInFile(const string& calibMapFile = "",
 //===============================================
 
 
-void manageRooPlotFromFile(const string& dirName = "AlCaP0_2018_ULrereco_1every2", 
-			   const string& outDirName = "plot_approve_UL2018data", 
+void manageRooPlotFromFile(const string& dirName = "AlCaP0_2016_ULrereco_from0", 
+			   const string& outDirName = "plot_approve_UL2016data", 
 			   const bool usePi0 = true, 
 			   //const string& dirName = "AlCaP0_AllRun2017_condor_fixEBm16", 
 			   //const string& outDirName = "plot_approve_full2017data_Pi0_legacyReRecoCalib", 
@@ -433,10 +433,10 @@ void manageRooPlotFromFile(const string& dirName = "AlCaP0_2018_ULrereco_1every2
 			   // const string& outDirName = "plot_approve_2018D_pi0", 
 			   // const bool usePi0 = true, 
 			   const Int_t skip_EB1_EE2 = 0, 
-			   const double lumi = -1.0, 
+			   const double lumi = 35.9, 
 			   const int whichIteration = 0, 
 			   const string& subdirTag = "",
-			   const Int_t year = 2018,
+			   const Int_t year = 2016,
 			   const string& eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/" 
 			   ) {
 

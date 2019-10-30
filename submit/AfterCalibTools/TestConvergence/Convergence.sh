@@ -4,7 +4,7 @@ eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/"
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/emanuele/" 
 #eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/zhicaiz/" 
 dirName="AlCaP0_2016_ULrereco_from0"                            # dirname (see CalibCode/submit/parameters.py)  
-iter_number="7"                                                          # number n of iterations (iter_0 to iter_{n-1})
+iter_number="8"                                                          # number n of iterations (iter_0 to iter_{n-1})
 tagName="${dirName}_"                           # TagName (see CalibCode/submit/parameters.py)  
 
 # will copy output here, if directory exists
