@@ -183,7 +183,10 @@ void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
   profile->Draw("HE");
   c->SaveAs((name + ".pdf").c_str());
   c->SaveAs((name + ".png").c_str());
-
+  string nameprof = profile->GetName(); 
+  if (nameprof == "SigmaMeanOverMean_etaProfile") {
+    profile->SaveAs((name + ".root").c_str());
+  }
 
 }
 

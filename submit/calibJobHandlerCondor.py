@@ -54,7 +54,8 @@ def checkNjobsCondor(grepArg="ecalpro"):
 def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=4000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
 Executable = {de}
-use_x509userproxy = $ENV(X509_USER_PROXY)
+use_x509userproxy = True
+x509userproxy = $ENV(X509_USER_PROXY)
 Log        = {ld}/$(ProcId).log
 Output     = {ld}/$(ProcId).out
 Error      = {ld}/$(ProcId).error

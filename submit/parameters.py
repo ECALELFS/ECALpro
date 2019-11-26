@@ -41,23 +41,23 @@ MakeNtuple4optimization = False
 useCalibrationSelection = True # to use saem selection of calibration when making ntuples (so not to copy all the cuts)
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/purified_AlCaP0_Run2016_07_09_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaEta_2016_ULrereco_from0' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/purified_AlCaP0_Run2018_09_07_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
+dirname          = 'AlCaEta_2018_ULrereco_all2018data' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 #TAG, QUEUE and ITERS
 NameTag          = dirname+'_' #'AlcaP0_2017_v3_'                   # Tag to the names to avoid overlap
 queueForDaemon   = 'cmscaf1nw'          # Option suggested: 2nw/2nd, 1nw/1nd, cmscaf1nw/cmscaf1nd... even cmscaf2nw
 queue            = 'cmscaf1nd'
-nIterations      = 7 if isMC==False else 1 # 7
+nIterations      = 1 if isMC==False else 1 # 7
 #nThread          = 4 # if bigger than 1, enable multithreading, but I'm not sure if ECALpro supports it (see methods.py searching nThread)
 
 SubmitFurtherIterationsFromExisting = False
 # maybe I don't need the root://eoscms/ prefix if eos is mounted
-startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_2016_ULrereco_from0/iter_6/AlCaP0_2016_ULrereco_from0_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
+startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaEta_2016_ULrereco/iter_4/AlCaEta_2016_ULrereco_calibMap.root' # used  only if SubmitFurtherIterationsFromExisting is True
 SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It works only if you submit this new iteration from an existing one, therefore SubmitFurtherIterationsFromExisting must be set true. Tipically 0 is the default and has no real effect, it is like submitting usual iterations.  
 
 #N files
-ijobmax          = 30 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
+ijobmax          = 10 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
 useFit_RooMinuit = False if isEoverEtrue else True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. This happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
@@ -218,17 +218,17 @@ else:
    gPtCutEE_low = '0.95'
    Pi0IsoCutEE_low = '0.1'
    Pi0HLTIsoCutEE_low = '0.5'
-   nXtal_1_EE_low = '5'
-   nXtal_2_EE_low = '5'
-   S4S9_EE_low = '0.88'
+   nXtal_1_EE_low = '6'
+   nXtal_2_EE_low = '6'
+   S4S9_EE_low = '0.85'
    #high eta EE
    Pi0PtCutEE_high = '2.0'
    gPtCutEE_high = '0.65'
    Pi0IsoCutEE_high = '0.1'
    Pi0HLTIsoCutEE_high = '0.5'
-   nXtal_1_EE_high = '5'
-   nXtal_2_EE_high = '5'
-   S4S9_EE_high = '0.88'
+   nXtal_1_EE_high = '6'
+   nXtal_2_EE_high = '6'
+   S4S9_EE_high = '0.85'
    # #inner barrel
    # Pi0PtCutEB_low = '1'
    # gPtCutEB_low = '.4'
@@ -341,8 +341,8 @@ if ContainmentCorrection == 'EoverEtrue':  # in this case it is better to undefi
    useMVAContainmentCorrections = False
    new_pi0ContainmentCorrections = False
    useContainmentCorrectionsFromEoverEtrue = True
-   #fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root"
-   fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM_v4/iter_0/pi0Gun_MC_EoverEtrue_foldSM_v4_calibMap.root"
+   fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root"
+   #fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM_v4/iter_0/pi0Gun_MC_EoverEtrue_foldSM_v4_calibMap.root"
    #fileEoverEtrueContainmentCorrections = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/product_CC/pi0Gun_MC_EoverEtrue_foldSM_v4_iter1/ContainmentCorrections_EoverEtrue.root"
    #fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV2_EoverEtrue_foldSM/iter_0/pi0Gun_MCV2_EoverEtrue_foldSM_calibMap.root"
 if ContainmentCorrection == 'No':
@@ -398,16 +398,16 @@ useOnlyEEClusterMatchedWithES = 'True'
 # if you don't want to overwrite the global tag, set overWriteGlobalTag = False, otherwise, it will be customized based on the following tags  
 #####################
 overWriteGlobalTag = True if isMC==False else False                                     # Allow to overwrite AlphaTag, Laser correction etc
-PFRechitTagRecord='EcalPFRecHitThresholdsRcd';PFRechitTag='EcalPFRecHitThresholds_UL_2016_byxt_mixed';PFRechitDB='frontier://FrontierProd/CMS_CONDITIONS'
-laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_rereco2016_v2';laserDB='frontier://FrontierProd/CMS_CONDITIONS'            
+PFRechitTagRecord='EcalPFRecHitThresholdsRcd';PFRechitTag='EcalPFRecHitThresholds_UL_2018_2e3sig';PFRechitDB='frontier://FrontierProd/CMS_CONDITIONS'
+laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_rereco2018_v3';laserDB='frontier://FrontierProd/CMS_CONDITIONS'            
 alphaTagRecord='';alphaTag='';alphaDB=''
 GeVTagRecord='';GeVTag='';GeVDB=''
-pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_Ultimate2016_calib';pulseShapeDB='frontier://FrontierProd/CMS_CONDITIONS'
-pedestalTagRecord='EcalPedestalsRcd';pedestalTag='EcalPedestals_timestamp_UltraLegacy_2016_v1';pedestalDB='frontier://FrontierProd/CMS_CONDITIONS'
-laserAlphaTagRecord='EcalLaserAlphasRcd';laserAlphaTag='EcalLaserAlphas_EB152-150_EE_UL2016';laserAlphaDB='frontier://FrontierProd/CMS_CONDITIONS'
+pulseShapeTagRecord='EcalPulseShapesRcd';pulseShapeTag='EcalPulseShapes_UltraLegacy2018_calib';pulseShapeDB='frontier://FrontierProd/CMS_CONDITIONS'
+pedestalTagRecord='EcalPedestalsRcd';pedestalTag='EcalPedestals_timestamp_2018_18January2019_collisions_blue_laser';pedestalDB='frontier://FrontierProd/CMS_CONDITIONS'
+laserAlphaTagRecord='EcalLaserAlphasRcd';laserAlphaTag='EcalLaserAlphas_EB152-150_EEoptimized18';laserAlphaDB='frontier://FrontierProd/CMS_CONDITIONS'
 ESIntercalibTagRecord='';ESIntercalibTag='';ESIntercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
 ESEEIntercalibTagRecord='';ESEEIntercalibTag='';ESEEIntercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
-intercalibTagRecord='EcalIntercalibConstantsRcd';intercalibTag='EcalIntercalibConstants_Run2016_run297056_eopPNEB_v1';intercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
+intercalibTagRecord='EcalIntercalibConstantsRcd';intercalibTag='EcalIntercalibConstants_Run2018ABCD_run297056_eopPNEB_v1';intercalibDB='frontier://FrontierProd/CMS_CONDITIONS'
 linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='frontier://FrontierProd/CMS_CONDITIONS'
 
 
@@ -417,7 +417,7 @@ linearCorrectionsTagRecord='';linearCorrectionsTag='';linearCorrectionsDB='front
 
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True' if isMC==False else 'False'                                  # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_ReReco_07Aug2017_Collisions16_JSON.txt' if isMC==False else '' 
+json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt' if isMC==False else '' 
 #json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt' if isMC==False else '' 
 useJsonFilterInCpp = False  # True: use json filter in cfg python wrapper calling FillEpsilonPlots.cc; True: use json filter inside FillEpsilonPlots.cc
 doEnenerScale      = 'False'

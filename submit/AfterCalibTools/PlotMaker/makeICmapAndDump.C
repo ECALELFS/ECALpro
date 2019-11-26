@@ -118,17 +118,43 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
 
   TH2F *mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate = new TH2F("mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate",Form("EB map norm. to 1 in each module folded in SM, EB+,EB- separately"), 360, 0.5, 360.5, 171, -85.5, 85.5);
 
+  // TEST
+  // normalize original map to 1 in each module (TT pattern still here), prepare for folding
+  TH2F *mapEB_norm1etaRing_setSomeModTo1 = new TH2F("mapEB_norm1etaRing_setSomeModTo1",Form("EB map normalized to 1 in #eta-ring (set some module to 1)"), 360, 0.5, 360.5, 171, -85.5, 85.5);
+  if (all0_EB1_EE2 != 2) {
+    copyMapAllEB(mapEB_norm1etaRing_setSomeModTo1, mapEB_norm1etaRing, iphiOnXaxis);  
+    for (Int_t iphi = 1; iphi <= 360; iphi++) {
+      for (Int_t ieta = -85; ieta <= 85; ieta++) {
+	if (excludeMod2EBm16) {
+	  if (iphi > 300 && iphi <= 320 && ieta < -25 && ieta >= -45) 
+	    //cout << "Setting IC to 1 for Mod2 EB-16 in mapEB_norm1etaRing_setSomeModTo1" << endl;
+	    mapEB_norm1etaRing_setSomeModTo1->SetBinContent(iphi,ieta+86,1.);
+	}
+	if (excludeMod4EBm06) {
+	  if (((iphi > 40 && iphi <= 60) || (iphi > 100 && iphi <= 120)) && ieta < -65)
+	    //cout << "Setting IC to 1 for Mod4 EB-03,EB-06 in mapEB_norm1etaRing_setSomeModTo1" << endl;
+	    mapEB_norm1etaRing_setSomeModTo1->SetBinContent(iphi,ieta+86,1.);
+	}
+      }
+    }
+    drawMap(mapEB_norm1etaRing_setSomeModTo1, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1etaRing_setSomeModTo1" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
+  }
+
+  TH2F *mapEB_norm1etaRing_foldSM_allEB_plusMinusSeparate = new TH2F("mapEB_norm1etaRing_foldSM_allEB_plusMinusSeparate",Form("EB map norm. to 1 in #eta-ring folded in SM, EB+,EB- separately"), 360, 0.5, 360.5, 171, -85.5, 85.5);
+
   if (all0_EB1_EE2 != 2) {
     foldEBMapInSM(mapEB_norm1eachModule, mapEB_norm1eachModule_foldSM, mapEB_norm1eachModule_foldSM_allEB, iphiOnXaxis, iphiOnXaxisSM);
     foldEBMapInSM(mapEB_norm1eachModule, mapEB_norm1eachModule_foldSM_samePhi, mapEB_norm1eachModule_foldSM_allEB_samePhi, iphiOnXaxis, iphiOnXaxisSM, false);
     foldEBMapInSM_plusMinusSeparate(mapEB_norm1eachModule, mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate, iphiOnXaxis);
+    foldEBMapInSM_plusMinusSeparate(mapEB_norm1etaRing_setSomeModTo1, mapEB_norm1etaRing_foldSM_allEB_plusMinusSeparate, iphiOnXaxis);
 
     drawMap(mapEB_norm1eachModule_foldSM, xAxisName_foldSM, yAxisName_foldSM, canvasNamePrefix+"_norm1eachModule_foldSM", outDir, mapMin, mapMax, xsizeCanvas_SM, ysizeCanvas_SM);
     drawMap(mapEB_norm1eachModule_foldSM_samePhi, xAxisName_foldSM, yAxisName_foldSM, canvasNamePrefix+"_norm1eachModule_foldSM_samePhi", outDir, mapMin, mapMax, xsizeCanvas_SM, ysizeCanvas_SM);
     
     drawMap(mapEB_norm1eachModule_foldSM_allEB, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule_foldSM_allEB" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
     drawMap(mapEB_norm1eachModule_foldSM_allEB_samePhi, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule_foldSM_allEB_samePhi" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
-    drawMap(mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule_foldSM_allEB_plusMinusSeparate" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
+    drawMap(mapEB_norm1eachModule_foldSM_allEB_plusMinusSeparate, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1eachModule_foldSM_allEB_plusMinusSeparate" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);    
+    drawMap(mapEB_norm1etaRing_foldSM_allEB_plusMinusSeparate, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_norm1etaRing_foldSM_allEB_plusMinusSeparate" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
   }
 
   TH2F *mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing = new TH2F("mapEB_original_Over_norm1eachModuleFoldSMallEB_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in each module), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
@@ -152,6 +178,15 @@ void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www
     drawMap(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
     //mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->SaveAs((outDir+canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root").c_str());
     checkICnormalizedTo1_inEtaRing(mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing, true, true);
+  }
+
+  TH2F *mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing = new TH2F("mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing",Form("EB map divided by folded map (norm. to 1 in #eta-ring, EB+,EB- separately), norm. to 1 in #eta-ring"), 360, 0.5, 360.5, 171, -85.5, 85.5);
+  if (all0_EB1_EE2 != 2) {
+    divideEBmap(mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing, mapEB_IC, mapEB_norm1etaRing_foldSM_allEB_plusMinusSeparate, true, -1.0);
+    normalizeEBMapTo1_inEtaRing(mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing, iphiOnXaxis, excludeMod2EBm16, excludeMod4EBm06);
+    drawMap(mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing, xAxisName_allEB, yAxisName_allEB, canvasNamePrefix+"_divided_foldSMafterNorm1etaRingPlusMinusSeparate_norm1etaRing" , outDir, mapMin, mapMax, xsizeCanvas, ysizeCanvas);
+    //mapEB_original_Over_norm1eachModuleFoldSMallEB_plusMinusSeparate_norm1etaRing->SaveAs((outDir+canvasNamePrefix+"_divided_foldSMafterNorm1eachModulePlusMinusSeparate_norm1etaRing.root").c_str());
+    checkICnormalizedTo1_inEtaRing(mapEB_original_Over_norm1etaRingFoldSMallEB_plusMinusSeparate_norm1etaRing, true, true);
   }
 
 
