@@ -61,6 +61,7 @@ void calibAnaEcal::setHistograms() {
   mean = new TH2D("mean",Form("fit_mean in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
   sigma = new TH2D("sigma",Form("fit_sigma in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
   chisquare = new TH2D("chisquare",Form("#Chi^{2} in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
+  resolution = new TH2D("resolution",Form("Mass resolution in %s",EBorEE.c_str()),NbinsX_2Dmap,lowerX_2Dmap,upperX_2Dmap,NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap);
 
   if (EBorEE == "EB")
     chisquare_vs_etaring = new TH2D("chisquare_vs_etaring",Form("#Chi^{2} in %s vs #eta-ring",EBorEE.c_str()),NbinsY_2Dmap,lowerY_2Dmap,upperY_2Dmap,100,0,100);
@@ -76,6 +77,7 @@ void calibAnaEcal::setHistograms() {
   th2dVector.push_back(mean);
   th2dVector.push_back(sigma);
   th2dVector.push_back(chisquare);
+  th2dVector.push_back(resolution);
 
   hSignal_etaProfile = new TProfile("hSignal_etaProfile",Form("Signal profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   hBackground_etaProfile = new TProfile("hBackground_etaProfile",Form("Background profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
@@ -85,6 +87,7 @@ void calibAnaEcal::setHistograms() {
   mean_etaProfile = new TProfile("mean_etaProfile",Form("fit_mean profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   sigma_etaProfile = new TProfile("sigma_etaProfile",Form("fit_sigma profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
   chisquare_etaProfile = new TProfile("chisquare_etaProfile",Form("#Chi^{2} profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
+  resolution_etaProfile = new TProfile("resolution_etaProfile",Form("Mass resolution profile in %s",EBorEE.c_str()),NbinsX_etaProfile,lowerX_etaProfile,upperX_etaProfile);
 
   profileEtaVector.push_back(hSignal_etaProfile);
   profileEtaVector.push_back(hBackground_etaProfile);
@@ -94,6 +97,7 @@ void calibAnaEcal::setHistograms() {
   profileEtaVector.push_back(mean_etaProfile);
   profileEtaVector.push_back(sigma_etaProfile);
   profileEtaVector.push_back(chisquare_etaProfile);
+  profileEtaVector.push_back(resolution_etaProfile);
 
   profileYaxisTitle.push_back("events");
   profileYaxisTitle.push_back("events");
@@ -103,13 +107,14 @@ void calibAnaEcal::setHistograms() {
   profileYaxisTitle.push_back("mean [GeV]");
   profileYaxisTitle.push_back("#sigma [GeV]");
   profileYaxisTitle.push_back("#Chi^{2}");
+  profileYaxisTitle.push_back("Mass resolution");
 
 }
 
 
 //===============================================
 
-void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
+void calibAnaEcal::draw2Dmap(TH2D* hist2d, const Bool_t saveHistoAsRoot = false) {
 
   gStyle->SetPalette(55, 0);  // 55:raibow palette  ; 57: kBird (from blue to yellow) ; 107: kVisibleSpectrum
   gStyle->SetNumberContours(50); // default is 20
@@ -153,12 +158,13 @@ void calibAnaEcal::draw2Dmap(TH2D* hist2d) {
   // end of palette fixes                                                                                                                                             
   c->SaveAs((name + ".pdf").c_str());
   c->SaveAs((name + ".png").c_str());
+  if (saveHistoAsRoot) hist2d->SaveAs((name + ".root").c_str());
 
 }
 
 //===============================================
 
-void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
+void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName, const Bool_t saveHistoAsRoot = false) {
 
   string canvasName(profile->GetName());
   canvasName = "c_" + canvasName;
@@ -183,10 +189,7 @@ void calibAnaEcal::drawProfile(TProfile *profile, const string& yAxisName) {
   profile->Draw("HE");
   c->SaveAs((name + ".pdf").c_str());
   c->SaveAs((name + ".png").c_str());
-  string nameprof = profile->GetName(); 
-  if (nameprof == "SigmaMeanOverMean_etaProfile") {
-    profile->SaveAs((name + ".root").c_str());
-  }
+  if (saveHistoAsRoot) profile->SaveAs((name + ".root").c_str());
 
 }
 

@@ -77,6 +77,7 @@ void calibAnaEcalEE::setHistograms() {
   } else th2dMinZaxisVector.push_back(0.48);
   th2dMinZaxisVector.push_back(0.005);
   th2dMinZaxisVector.push_back(0.0);
+  th2dMinZaxisVector.push_back(0.02);
 
 }
 
@@ -98,22 +99,23 @@ void calibAnaEcalEE::set2DmapMaxZaxisVector() {
   } else th2dMaxZaxisVector.push_back(0.62);
   th2dMaxZaxisVector.push_back(0.020);
   th2dMaxZaxisVector.push_back(70);
+  th2dMaxZaxisVector.push_back(0.3);
 
 }
 
 //===============================================                                                                                                                      
 
-void calibAnaEcalEE::draw2Dmap(TH2D* hist2d) {
+void calibAnaEcalEE::draw2Dmap(TH2D* hist2d, const Bool_t saveHistoAsRoot = false) {
 
-  calibAnaEcal::draw2Dmap(hist2d);
+  calibAnaEcal::draw2Dmap(hist2d, saveHistoAsRoot);
 
 }
 
 //===============================================                                                                                                                      
 
-void calibAnaEcalEE::drawProfile(TProfile *profile, const string& yAxisName) {
+void calibAnaEcalEE::drawProfile(TProfile *profile, const string& yAxisName, const Bool_t saveHistoAsRoot = false) {
  
-  calibAnaEcal::drawProfile(profile, yAxisName);
+  calibAnaEcal::drawProfile(profile, yAxisName, saveHistoAsRoot);
    
 }
 
@@ -178,6 +180,7 @@ void calibAnaEcalEE::Loop()
 {  
 
   if (fChain == 0) return;
+  Double_t resolution_fromFit = 0.0;
 
   this->setHistograms();
 
@@ -229,6 +232,8 @@ void calibAnaEcalEE::Loop()
       etaRing = 0.5 + hEE->GetBinContent(ix,iy);
 
       // to avoid that in 2D maps points below lower threshold in z axis are drawn white (as if they are empty), fill with the maximum between threshold and value     
+      resolution_fromFit = ((Double_t)fit_mean > 0.0) ? ((Double_t)fit_sigma/(Double_t)fit_mean) : 0.0;
+
       hSignal->Fill((Double_t)ix,(Double_t)iy,max(th2dMinZaxisVector[0],(Double_t)normalizedS));
       hBackground->Fill((Double_t)ix,(Double_t)iy,max(th2dMinZaxisVector[1],(Double_t)normalizedB));
       SoverB->Fill((Double_t)ix,(Double_t)iy,max(th2dMinZaxisVector[2],(Double_t)normalizedS/normalizedB));
@@ -237,6 +242,7 @@ void calibAnaEcalEE::Loop()
       mean->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[5],(Double_t)fit_mean));
       sigma->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
       chisquare->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[7],(Double_t)Chisqu));
+      resolution->Fill((Double_t)ix,(Double_t)iy, max(th2dMinZaxisVector[8],resolution_fromFit));
 
       chisquare_vs_etaring->Fill(etaRing,(Double_t)Chisqu*(Double_t)Ndof);
 
@@ -248,6 +254,7 @@ void calibAnaEcalEE::Loop()
       mean_etaProfile->Fill((Double_t)etaRing, fit_mean);
       sigma_etaProfile->Fill((Double_t)etaRing, fit_sigma);
       chisquare_etaProfile->Fill((Double_t)etaRing, Chisqu);
+      resolution_etaProfile->Fill((Double_t)etaRing, resolution_fromFit);
 
     }
 
@@ -260,8 +267,11 @@ void calibAnaEcalEE::Loop()
 
   for ( UInt_t i = 0; i < th2dVector.size(); i++ ) {
 
-    draw2Dmap(th2dVector[i]);
-    drawProfile(profileEtaVector[i], profileYaxisTitle[i]);
+    Bool_t saveHistoAsRoot = false;
+    std::string hname = th2dVector[i]->GetName();
+    if (hname == "resolution") saveHistoAsRoot = true;
+    draw2Dmap(th2dVector[i], saveHistoAsRoot);
+    drawProfile(profileEtaVector[i], profileYaxisTitle[i], saveHistoAsRoot);
 
   }
 

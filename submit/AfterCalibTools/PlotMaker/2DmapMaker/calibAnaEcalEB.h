@@ -28,8 +28,8 @@ class calibAnaEcalEB : public calibAnaEcal {
   ///////////////////////////////////////
   // public member functions
   virtual void setHistograms();
-  virtual void draw2Dmap(TH2D*);
-  virtual void drawProfile(TProfile*, const std::string& );
+  virtual void draw2Dmap(TH2D*, const Bool_t);
+  virtual void drawProfile(TProfile*, const std::string&, const Bool_t);
   virtual void Init(TTree *);
   virtual void Loop();
   virtual void set2DmapMaxZaxisVector();

@@ -154,6 +154,11 @@ def printFillCfg1( outputfile ):
             outputfile.write("              tag = cms.string('" + linearCorrectionsTag + "'),\n")
             outputfile.write("              connect = cms.string('" + linearCorrectionsDB + "')\n")
             outputfile.write('     ),\n')
+        if not(EcalChannelStatusTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + EcalChannelStatusTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + EcalChannelStatusTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + EcalChannelStatusDB + "')\n")
+            outputfile.write('     ),\n')
         outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')

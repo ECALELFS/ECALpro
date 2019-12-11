@@ -67,7 +67,7 @@ void calibAnaEcalEB::setHistograms() {
   th2dMinZaxisVector.push_back(0.0);  // hBackground->GetBinContent(hBackground->GetMinimumBin())                                                           
   th2dMinZaxisVector.push_back(0.0);
   th2dMinZaxisVector.push_back(0.0);
-  th2dMinZaxisVector.push_back(0.0005);//0.0                                                                 
+  th2dMinZaxisVector.push_back(0.0);//0.0                                                                 
   if (Pi0orEta == "Pi0") {
     if (this->getIterNumber() == "iter_0" && this->getDirName().find("_ext") == string::npos) th2dMinZaxisVector.push_back(0.130);
     else {
@@ -85,6 +85,7 @@ void calibAnaEcalEB::setHistograms() {
     th2dMinZaxisVector.push_back(0.008);
   }
   th2dMinZaxisVector.push_back(0.0);//0.0
+  th2dMinZaxisVector.push_back(0.02);//0.0
 
 }
 
@@ -114,22 +115,23 @@ void calibAnaEcalEB::set2DmapMaxZaxisVector() {
     th2dMaxZaxisVector.push_back(0.025);
   }
   th2dMaxZaxisVector.push_back(70);
+  th2dMaxZaxisVector.push_back(0.2);
 
 }
 
 //===============================================                                                                                                          
 
-void calibAnaEcalEB::draw2Dmap(TH2D* hist2d) {
+void calibAnaEcalEB::draw2Dmap(TH2D* hist2d, const Bool_t saveHistoAsRoot = false) {
 
-  calibAnaEcal::draw2Dmap(hist2d);
+  calibAnaEcal::draw2Dmap(hist2d, saveHistoAsRoot);
 
 }
 
 //===============================================                                                                                                           
 
-void calibAnaEcalEB::drawProfile(TProfile *profile, const string& yAxisName) {
+void calibAnaEcalEB::drawProfile(TProfile *profile, const string& yAxisName, const Bool_t saveHistoAsRoot = false) {
  
-  calibAnaEcal::drawProfile(profile, yAxisName);
+  calibAnaEcal::drawProfile(profile, yAxisName, saveHistoAsRoot);
    
 }
 
@@ -158,6 +160,8 @@ void calibAnaEcalEB::Loop()
 
   if (fChain == 0) return;
 
+  Double_t resolution_fromFit = 0.0;
+
   this->setHistograms();
 
   Long64_t nentries = fChain->GetEntriesFast();
@@ -177,6 +181,9 @@ void calibAnaEcalEB::Loop()
       normalizedB = Backgr * fit_Bnorm;
 
       // to avoid that in 2D maps points below lower threshold in z axis are drawn white (as if they are empty), fill with the maximum between threshold and value  
+      resolution_fromFit = ((Double_t)fit_mean > 0.0) ? ((Double_t)fit_sigma/(Double_t)fit_mean) : 0.0;
+      cout << "Resolution =" << resolution_fromFit<< endl;
+
       hSignal->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[0],(Double_t)normalizedS));
       hBackground->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[1],(Double_t)normalizedB));
       SoverB->Fill((Double_t)iphi,(Double_t)ieta,max(th2dMinZaxisVector[2],(Double_t)normalizedS/normalizedB));
@@ -185,6 +192,7 @@ void calibAnaEcalEB::Loop()
       mean->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[5],(Double_t)fit_mean));
       sigma->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
       chisquare->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[7],(Double_t)Chisqu));
+      resolution->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[8],resolution_fromFit));
 
       chisquare_vs_etaring->Fill((Double_t)ieta,(Double_t)Chisqu * (Double_t)Ndof);
 
@@ -198,6 +206,7 @@ void calibAnaEcalEB::Loop()
       mean_etaProfile->Fill((Double_t)eta, fit_mean);
       sigma_etaProfile->Fill((Double_t)eta, fit_sigma);
       chisquare_etaProfile->Fill((Double_t)eta, Chisqu);
+      resolution_etaProfile->Fill((Double_t)eta, resolution_fromFit);
 
       mean_iphiProfile->Fill((Double_t)iphi, fit_mean);
 
@@ -212,8 +221,11 @@ void calibAnaEcalEB::Loop()
 
   for ( UInt_t i = 0; i < th2dVector.size(); i++ ) {
 
-    draw2Dmap(th2dVector[i]);
-    drawProfile(profileEtaVector[i], profileYaxisTitle[i]);
+    Bool_t saveHistoAsRoot = false;
+    std::string hname = th2dVector[i]->GetName(); 
+    if (hname == "resolution") saveHistoAsRoot = true;
+    draw2Dmap(th2dVector[i], saveHistoAsRoot);
+    drawProfile(profileEtaVector[i], profileYaxisTitle[i], saveHistoAsRoot);
 
   }
 

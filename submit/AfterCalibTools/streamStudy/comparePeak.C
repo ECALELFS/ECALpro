@@ -79,7 +79,8 @@ void createPlotDirAndCopyPhp(const string& outputDIR) {
 //====================================================
 
 void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/massComparison_Run2/",
-		     const Bool_t isEB = true		    
+		     const Bool_t isEB = true,		    
+		     const Bool_t isPi0 = true
 		     ) {
 
 
@@ -102,23 +103,44 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   // some configs
 
   Double_t lumi = -1.0; // if < 0, nothing is printed on top right
-
-  Bool_t isPi0 = true;
   
   string subdet = isEB ? "Barrel" : "Endcap";
   string detector = Form("ECAL %s", subdet.c_str());
   Double_t eta = isEB ? -0.03 : 1.83;  
-  Double_t sigmaOverM_2016 = isEB ? 8.74 : 8.64;
-  Double_t sigmaOverM_2017 = isEB ? 10.5 : 9.25;
-  Double_t sigmaOverM_2018 = isEB ? 10.97 : 8.91;
-
+  Double_t sigmaOverM_2016 = 0.0;
+  Double_t sigmaOverM_2017 = 0.0;
+  Double_t sigmaOverM_2018 = 0.0;
+  
   string id1 = isEB ? "30003" : "8155";
   string id2 = isEB ? "30003" : "8155";
   string id3 = isEB ? "30003" : "8155";
 
-  string input1 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2016data/AlCaP0_2016_ULrereco_from0/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id1.c_str());
-  string input2 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_full2017data_Pi0_legacyReRecoCalib/AlCaP0_AllRun2017_condor_fixEBm16/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
-  string input3 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2018data/AlCaP0_2018_ULrereco_1every2/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
+  string input1 = "";
+  string input2 = "";
+  string input3 = "";
+
+  if (isPi0) {
+
+    input1 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2016data/AlCaP0_2016_ULrereco_from0/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id1.c_str());
+    input2 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_full2017data_Pi0_legacyReRecoCalib/AlCaP0_AllRun2017_condor_fixEBm16/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
+    input3 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2018data/AlCaP0_2018_ULrereco_1every2/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
+
+    sigmaOverM_2016 = isEB ? 8.74 : 8.64;
+    sigmaOverM_2017 = isEB ? 10.5 : 9.25;
+    sigmaOverM_2018 = isEB ? 10.97 : 8.91;
+
+  } else {
+
+    input1 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2016data_Eta/AlCaEta_2016_ULrereco/iter_0/fitResPlots/%s/etaMass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id1.c_str());
+    input2 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2017data_Eta/AlCaEta_2017_ULrereco_all2017data/iter_0/fitResPlots/%s/etaMass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
+    input3 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2018data_Eta/AlCaEta_2018_ULrereco_all2018data/iter_0/fitResPlots/%s/etaMass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
+
+    sigmaOverM_2016 = isEB ? 4.15 : 6.34;
+    sigmaOverM_2017 = isEB ? 4.44 : 6.16;
+    sigmaOverM_2018 = isEB ? 4.70 : 5.79;
+
+  }
+
 
   string name1 = "Fit_n_" + id1 + "_attempt0_rp";
   string name2 = "Fit_n_" + id2 + "_attempt0_rp";
@@ -272,14 +294,23 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
     else leg = new TLegend(0.60,0.21,0.95,0.45);
     //else leg = new TLegend(0.60,0.68,0.95,0.9);
   } else {
-    leg = new TLegend(0.50,0.25,0.95,0.5);
+    //if (isEB) leg = new TLegend(0.50,0.16,0.95,0.41);
+    //else leg = new TLegend(0.50,0.25,0.95,0.5);
+    if (isEB) leg = new TLegend(0.20,0.16,0.95,0.36);
+    else leg = new TLegend(0.20,0.3,0.95,0.5);
   }
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
   leg->SetBorderSize(0);
-  leg->AddEntry(data1,"2016","PLE");
-  leg->AddEntry(data2,"2017","PLE");
-  leg->AddEntry(data3,"2018","PLE");
+  if (isPi0) {
+    leg->AddEntry(data1,"2016","PLE");
+    leg->AddEntry(data2,"2017","PLE");
+    leg->AddEntry(data3,"2018","PLE");
+  } else {
+    leg->AddEntry(data1,Form("2016:  #sigma/M = %.1f%%",sigmaOverM_2016),"PLE");
+    leg->AddEntry(data2,Form("2017:  #sigma/M = %.1f%%",sigmaOverM_2017),"PLE");
+    leg->AddEntry(data3,Form("2018:  #sigma/M = %.1f%%",sigmaOverM_2018),"PLE");    
+  }
   leg->Draw("same");
 
 
@@ -301,18 +332,19 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   lat2.SetTextSize(0.038);
   lat2.SetTextFont(42);
   lat2.SetTextColor(1);
-  float xmin2 = isEB ? 0.6 : 0.62;
-  float yhi2  = isEB ? 0.85 : 0.85;
   //line = "method: #sigma / #mu";
   //  line = Form("multifit: #sigma/M = %.3g%%",sigmaOverM_multifit);
   // lat2.DrawLatex(xmin2,yhi2, line.c_str());
-  line = Form("#sigma/M_{2016} = %.1f%%",sigmaOverM_2016);
-  lat2.DrawLatex(xmin2,yhi2, line.c_str());
-  line = Form("#sigma/M_{2017} = %.1f%%",sigmaOverM_2017);
-  lat2.DrawLatex(xmin2,yhi2-ypass, line.c_str());
-  line = Form("#sigma/M_{2018} = %.1f%%",sigmaOverM_2018);
-  lat2.DrawLatex(xmin2,yhi2-2.*ypass, line.c_str());
-
+  if (isPi0) {
+    float xmin2 = isEB ? 0.6 : 0.62;
+    float yhi2  = isEB ? 0.85 : 0.85;
+    line = Form("#sigma/M_{2016} = %.1f%%",sigmaOverM_2016);
+    lat2.DrawLatex(xmin2,yhi2, line.c_str());
+    line = Form("#sigma/M_{2017} = %.1f%%",sigmaOverM_2017);
+    lat2.DrawLatex(xmin2,yhi2-ypass, line.c_str());
+    line = Form("#sigma/M_{2018} = %.1f%%",sigmaOverM_2018);
+    lat2.DrawLatex(xmin2,yhi2-2.*ypass, line.c_str());
+  }
 
   canvas->RedrawAxis("sameaxis");
 
@@ -336,7 +368,13 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
 void comparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/massComparison_Run2/") 
 {
 
-  realComparePeak(outdir, true);
-  realComparePeak(outdir, false);
+  // pi0
+  string outdirPi0 = outdir + "pi0/";
+  realComparePeak(outdirPi0, true);
+  realComparePeak(outdirPi0, false);
+  // eta
+  string outdirEta = outdir + "eta/";
+  realComparePeak(outdirEta, true,  false);
+  realComparePeak(outdirEta, false, false);
 
 }
