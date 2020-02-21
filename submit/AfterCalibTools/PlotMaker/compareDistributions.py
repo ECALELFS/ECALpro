@@ -115,11 +115,11 @@ if __name__ == "__main__":
             #         if bc < miny: miny = bc
             maxy = max(maxy,histos[n].GetBinContent(histos[n].GetMaximumBin()))
 
-        leg = ROOT.TLegend(0.6,0.6,0.9,0.9)
+        leg = ROOT.TLegend(0.7,0.66,0.9,0.9)
         leg.SetFillColor(0)
         #leg.SetFillStyle(0)
         #leg.SetBorderSize(0)
-        leg.SetHeader(legTitles[jdet])
+        #leg.SetHeader(legTitles[jdet])
         for i,y in enumerate(years):
             n = dirs[y]
             if i == 0:
@@ -138,12 +138,18 @@ if __name__ == "__main__":
 
         canvas.RedrawAxis("sameaxis")
 
+        latDet = ROOT.TLatex()
+        latDet.SetNDC();
+        latDet.SetTextFont(42)
+        latDet.SetTextSize(0.05)
+        latDet.DrawLatex(0.2,0.85, legTitles[jdet])
+
         latCMS = ROOT.TLatex()
         latCMS.SetNDC();
         latCMS.SetTextFont(42)
         latCMS.SetTextSize(0.04)
         latCMS.DrawLatex(leftmargin, 0.95, '#bf{CMS} #it{Preliminary}')
-        latCMS.DrawLatex(0.82, 0.95, '(%s TeV)' % str(options.energy))
+        latCMS.DrawLatex(0.83, 0.95, '(%s TeV)' % str(options.energy))
 
         cname = hname + "_comparisonRun2_region" + detId + ("_pi0" if isPi0 else "_eta0")
         for ext in [".png", ".pdf"]:

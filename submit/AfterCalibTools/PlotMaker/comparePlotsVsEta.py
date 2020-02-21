@@ -57,7 +57,6 @@ if __name__ == "__main__":
         quit()
 
     for detId in detIds:
-
         print ""
         print "-"*30
         print detId
@@ -75,14 +74,26 @@ if __name__ == "__main__":
             tf = ROOT.TFile.Open(files[i])
             h = tf.Get(hname)
             h.SetDirectory(0)
-            histos[n] = h.Clone(n)
+            # for EB, remove 2 empty bin in the middle at eta = 0, was an artifact of ieta = 0, which does not exist
+            # so there are two bins from -0.017 to 0 and to +0.017
+            if detId == "EB":
+                histos[n] = ROOT.TH1D(n,"",h.GetNbinsX()-2,
+                                      h.GetXaxis().GetBinLowEdge(1),
+                                      h.GetXaxis().GetBinLowEdge(h.GetNbinsX()+1))
+                for ib in range(1,histos[n].GetNbinsX()+1):
+                    hbin = ib + (2 if ib > histos[n].GetNbinsX()/2 else 0)
+                    histos[n].SetBinContent(ib,h.GetBinContent(hbin))
+                    histos[n].SetBinContent(ib,h.GetBinContent(hbin))
+            else:
+                histos[n] = h.Clone(n)
             histos[n].SetDirectory(0)
+            histos[n].SetStats(0)
             tf.Close()
             print ">>> File: %s" % files[i]
 
         leftmargin = 0.16
         rightmargin = 0.06
-        topmargin = 0.06
+        topmargin = 0.07
         canvas = ROOT.TCanvas("canvas","",1000,800)
         canvas.SetTickx(1)
         canvas.SetTicky(1)
@@ -122,26 +133,37 @@ if __name__ == "__main__":
                 histos[n].Draw("HE")
                 histos[n].GetYaxis().SetRangeUser(0.9*miny,1.2*maxy)
                 histos[n].GetYaxis().SetTitle(yaxisTitle)
-                histos[n].GetYaxis().SetTitleOffset(1.3)
+                histos[n].GetYaxis().SetTitleSize(0.06)
+                histos[n].GetYaxis().SetLabelSize(0.05)
+                histos[n].GetYaxis().SetTitleOffset(1.35)
+                histos[n].GetXaxis().SetTitleSize(0.06)
+                histos[n].GetXaxis().SetLabelSize(0.05)
+                histos[n].GetXaxis().SetTitleOffset(0.95)
                 if detId == "EB":
                     histos[n].GetXaxis().SetTitle("#eta")
                 else:
                     histos[n].GetXaxis().SetTitle("#eta-ring number")
+                    histos[n].GetXaxis().SetRangeUser(0,25)
             else:
                 histos[n].Draw("HESAME")
             leg.AddEntry(histos[n],y,"LF")
         leg.Draw("same")
 
-
+        latDet = ROOT.TLatex()
+        latDet.SetNDC();
+        latDet.SetTextFont(42)
+        latDet.SetTextSize(0.05)
+        latDet.DrawLatex(0.2,0.85,"ECAL " + detector[detId] )
+        
         latCMS = ROOT.TLatex()
         latCMS.SetNDC();
         latCMS.SetTextFont(42)
-        latCMS.SetTextSize(0.04)
+        latCMS.SetTextSize(0.05)
         latCMS.DrawLatex(leftmargin, 0.95, '#bf{CMS} #it{Preliminary}')
-        latCMS.DrawLatex(0.82, 0.95, '(%s TeV)' % str(options.energy))
+        latCMS.DrawLatex(0.8, 0.95, '(%s TeV)' % str(options.energy))
 
         cname = hname + "_comparisonRun2_" + detId + ("_pi0" if isPi0 else "_eta0")
-        for ext in [".png", ".pdf"]:
+        for ext in [".png", ".pdf", ".C", ".root"]:
             canvas.SaveAs(outname + cname + ext)
 
         print "-"*30

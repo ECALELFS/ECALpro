@@ -423,16 +423,16 @@ void printSignificanceInFile(const string& calibMapFile = "",
 //===============================================
 
 
-void manageRooPlotFromFile(const string& dirName = "AlCaEta_2018_ULrereco_all2018data", 
-			   const string& outDirName = "plot_approve_UL2018data_Eta", 
-			   const bool usePi0 = false, 
+void manageRooPlotFromFile(const string& dirName = "AlCaP0_2018_ULrereco_1every2", 
+			   const string& outDirName = "plot_approve_UL2018data", 
+			   const bool usePi0 = true, 
 			   //const string& dirName = "AlCaP0_AllRun2017_condor_fixEBm16", 
 			   //const string& outDirName = "plot_approve_full2017data_Pi0_legacyReRecoCalib", 
 			   //const bool usePi0 = true, 
 			   // const string& dirName = "AlCaP0_Run2018D_goldenJson_13_09_2018", 
 			   // const string& outDirName = "plot_approve_2018D_pi0", 
 			   // const bool usePi0 = true, 
-			   const Int_t skip_EB1_EE2 = 0, 
+			   const Int_t skip_EB1_EE2 = 2, 
 			   const double lumi = 0.0, 
 			   const int whichIteration = 0, 
 			   const string& subdirTag = "",
@@ -450,9 +450,9 @@ void manageRooPlotFromFile(const string& dirName = "AlCaEta_2018_ULrereco_all201
   if (dirName.find("AlCaP0") != string::npos) isPi0 = true;
   if (dirName.find("AlCaEta") != string::npos) isPi0 = false;
 
-  int EBxtalIndex = 30003;
-  string EBfitFileIndex = "15"; // need to find a way to derive it from EBxtalIndex
-  double etaEB = -0.03; // would be negative but ok
+  int EBxtalIndex = 32429; //30003;
+  string EBfitFileIndex = "16";//"15"; // need to find a way to derive it from EBxtalIndex
+  double etaEB = 0.10;//-0.03; // would be negative but ok
   //int EExtalIndex = 12001; //12001;
   //string EEfitFileIndex = "6"; //"6"; // need to find a way to derive it from EExtalIndex
   //double etaEE = 2.5;

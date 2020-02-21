@@ -106,14 +106,16 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   
   string subdet = isEB ? "Barrel" : "Endcap";
   string detector = Form("ECAL %s", subdet.c_str());
-  Double_t eta = isEB ? -0.03 : 1.83;  
+  Double_t eta = isEB ? 0.10 : 1.83;  
   Double_t sigmaOverM_2016 = 0.0;
   Double_t sigmaOverM_2017 = 0.0;
   Double_t sigmaOverM_2018 = 0.0;
-  
-  string id1 = isEB ? "30003" : "8155";
-  string id2 = isEB ? "30003" : "8155";
-  string id3 = isEB ? "30003" : "8155";
+
+  // EB: 30003, eta = -0.03
+  // EB: 32429, eta = 0.10
+  string id1 = isEB ? "32429" : "8155";
+  string id2 = isEB ? "32429" : "8155";
+  string id3 = isEB ? "32429" : "8155";
 
   string input1 = "";
   string input2 = "";
@@ -125,9 +127,14 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
     input2 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_full2017data_Pi0_legacyReRecoCalib/AlCaP0_AllRun2017_condor_fixEBm16/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
     input3 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2018data/AlCaP0_2018_ULrereco_1every2/iter_0/fitResPlots/%s/pi0Mass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
 
+    // 30003
     sigmaOverM_2016 = isEB ? 8.74 : 8.64;
     sigmaOverM_2017 = isEB ? 10.5 : 9.25;
     sigmaOverM_2018 = isEB ? 10.97 : 8.91;
+    // 32429
+    sigmaOverM_2016 = isEB ? 7.72 : 8.64;
+    sigmaOverM_2017 = isEB ? 9.20 : 9.25;
+    sigmaOverM_2018 = isEB ? 9.85 : 8.91;
 
   } else {
 
@@ -135,9 +142,14 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
     input2 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2017data_Eta/AlCaEta_2017_ULrereco_all2017data/iter_0/fitResPlots/%s/etaMass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
     input3 = Form("/afs/cern.ch/user/m/mciprian/www/pi0calib/plot_approve_UL2018data_Eta/AlCaEta_2018_ULrereco_all2018data/iter_0/fitResPlots/%s/etaMass_singleXtal_index_%s_Rooplot.root",subdet.c_str(), id2.c_str());
 
+    // 30003
     sigmaOverM_2016 = isEB ? 4.15 : 6.34;
     sigmaOverM_2017 = isEB ? 4.44 : 6.16;
     sigmaOverM_2018 = isEB ? 4.70 : 5.79;
+    //32429
+    sigmaOverM_2016 = isEB ? 3.78 : 6.34;
+    sigmaOverM_2017 = isEB ? 4.07 : 6.16;
+    sigmaOverM_2018 = isEB ? 4.55 : 5.79;
 
   }
 
@@ -365,16 +377,21 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
 }
 
 
-void comparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/massComparison_Run2/") 
+void comparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/massComparison_Run2/",
+		 const int do_all0_pi0Only1_etaOnly2 = 1) 
 {
 
   // pi0
-  string outdirPi0 = outdir + "pi0/";
-  realComparePeak(outdirPi0, true);
-  realComparePeak(outdirPi0, false);
+  if (do_all0_pi0Only1_etaOnly2 != 2) {
+    string outdirPi0 = outdir + "pi0/";
+    realComparePeak(outdirPi0, true);
+    realComparePeak(outdirPi0, false);
+  }
   // eta
-  string outdirEta = outdir + "eta/";
-  realComparePeak(outdirEta, true,  false);
-  realComparePeak(outdirEta, false, false);
+  if (do_all0_pi0Only1_etaOnly2 != 1) {
+    string outdirEta = outdir + "eta/";
+    realComparePeak(outdirEta, true,  false);
+    realComparePeak(outdirEta, false, false);
+  }
 
 }
