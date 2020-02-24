@@ -435,21 +435,22 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       regionStreamPi0.push_back("region1EE");
       regionStreamPi0.push_back("region2EE");
       regionStreamPi0.push_back("region3EE");
+      int nRegStream = regionStreamPi0.size();
 
-      for (unsigned int iregEcal = 0; iregEcal < regionStreamPi0.size(); ++iregEcal) {
 
-	pi0pt_afterCuts.push_back( new TH1F(Form("pi0pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} p_{T} after cuts",60,0.0,15.0) );
-	g1pt_afterCuts.push_back( new TH1F(Form("g1pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma p_{T} after cuts",60,0.0,10.0) );
-	g2pt_afterCuts.push_back( new TH1F(Form("g2pt_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"trailing (seed) #gamma p_{T} after cuts",60,0.0,10.0) );
-	g1Nxtal_afterCuts.push_back( new TH1F(Form("g1Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"leading (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
-	g2Nxtal_afterCuts.push_back( new TH1F(Form("g2Nxtal_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"trailing (seed) #gamma number of crystals after cuts",9,0.5,9.5) );
-	pi0PhotonsNoverlappingXtals_afterCuts.push_back( new TH1F(Form("pi0PhotonsNoverlappingXtals_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",10,-0.5,9.5) );
-	g1g2DR_afterCuts.push_back( new TH1F(Form("gig2DR_afterCuts_%s",regionStreamPi0[iregEcal].c_str()),"#Delta R (#gamma_{1},#gamma_{2}) after cuts",40,0.0,0.4) );
-	if (isMC_) {
-	  pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[iregEcal].c_str()),"#pi^{0} mass vs PU",100,0.05,0.25,50,0.5,50.5) );
-	}
-
+      pi0pt_afterCuts = new TH2F("pi0pt_afterCuts","#pi^{0} p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,15.0);
+      g1pt_afterCuts = new TH2F("g1pt_afterCuts","leading (seed) #gamma p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,10.0);
+    g2pt_afterCuts = new TH2F("g2pt_afterCuts_%s","trailing (seed) #gamma p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,10.0);
+    g1Nxtal_afterCuts = new TH2F("g1Nxtal_afterCuts","leading (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
+    g2Nxtal_afterCuts =  new TH2F("g2Nxtal_afterCuts","trailing (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
+    pi0PhotonsNoverlappingXtals_afterCuts = new TH2F("pi0PhotonsNoverlappingXtals_afterCuts","number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",nRegStream,0,nRegStream,10,-0.5,9.5);
+    g1g2DR_afterCuts = new TH2F("gig2DR_afterCuts","#Delta R (#gamma_{1},#gamma_{2}) after cuts",nRegStream,0,nRegStream,40,0.0,0.4);
+    for (Int_t ireg = 0; ireg < nRegStream; ireg++) {
+      if (isMC_) {
+	pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[ireg].c_str()),"#pi^{0} mass vs PU",100,0.05,0.25,50,0.5,50.5) );
       }
+    }
+    
 
       regionStreamPi0.clear();
 
@@ -701,25 +702,19 @@ FillEpsilonPlot::~FillEpsilonPlot()
   // }
 
   if (fillKinematicVariables_) {
-    for (uint32_t i = 0; i < pi0pt_afterCuts.size(); ++i) {
-      delete pi0pt_afterCuts[i];
-      delete g1pt_afterCuts[i];
-      delete g2pt_afterCuts[i];
-      delete g1Nxtal_afterCuts[i];
-      delete g2Nxtal_afterCuts[i];
-      delete pi0PhotonsNoverlappingXtals_afterCuts[i];
-      delete g1g2DR_afterCuts[i];
-      if (isMC_) {
+    delete pi0pt_afterCuts;
+    delete g1pt_afterCuts;
+    delete g2pt_afterCuts;
+    delete g1Nxtal_afterCuts;
+    delete g2Nxtal_afterCuts;
+    delete pi0PhotonsNoverlappingXtals_afterCuts;
+    delete g1g2DR_afterCuts;
+    if (isMC_) {
+      for (uint32_t i = 0; i < pi0MassVsPU.size(); ++i) {
 	delete pi0MassVsPU[i];
-      }
+      }    
+      pi0MassVsPU.clear();
     }
-    pi0pt_afterCuts.clear();
-    g1pt_afterCuts.clear();
-    g2pt_afterCuts.clear();
-    g1Nxtal_afterCuts.clear();
-    g2Nxtal_afterCuts.clear();
-    pi0PhotonsNoverlappingXtals_afterCuts.clear();
-    g1g2DR_afterCuts.clear();
   }
 
   // delete entries_EEp;
@@ -3154,13 +3149,13 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	      else whichRegionEcalStreamPi0 = 4;	     
 	    }
 
-	    pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
-	    g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
-	    g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
-	    g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g1);
-	    g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_g2);
-	    pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
-	    g1g2DR_afterCuts[whichRegionEcalStreamPi0]->Fill(GetDeltaR(g1eta,g2eta,g1phi,g2phi));
+	    pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
+	    g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
+	    g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
+	    g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g1);
+	    g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g2);
+	    pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	    g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	    if (isMC_) {
 	      pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
 	    }	   
@@ -3942,13 +3937,13 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  else whichRegionEcalStreamPi0 = 4;	  
 	}
 
-	pi0pt_afterCuts[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_pt);
-	g1pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g1pt);
-	g2pt_afterCuts[whichRegionEcalStreamPi0]->Fill(g2pt);
-	g1Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma);
-	g2Nxtal_afterCuts[whichRegionEcalStreamPi0]->Fill(Nxtal_EnergGamma2);
-	pi0PhotonsNoverlappingXtals_afterCuts[whichRegionEcalStreamPi0]->Fill(getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));	
-	g1g2DR_afterCuts[whichRegionEcalStreamPi0]->Fill(GetDeltaR(g1eta,g2eta,g1phi,g2phi));
+	pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0,pi0P4_nocor_pt);
+	g1pt_afterCuts->Fill(whichRegionEcalStreamPi0,g1pt);
+	g2pt_afterCuts->Fill(whichRegionEcalStreamPi0,g2pt);
+	g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_EnergGamma);
+	g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_EnergGamma2);
+	pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));	
+	g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,GetDeltaR(g1eta,g2eta,g1phi,g2phi));
 	if (isMC_) {
 	  pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);	
 	}
@@ -4459,18 +4454,17 @@ void FillEpsilonPlot::endJob(){
 
   if (fillKinematicVariables_) {
 
-    for (uint32_t i = 0; i < pi0pt_afterCuts.size(); ++i) {
-      pi0pt_afterCuts[i]->Write();
-      g1pt_afterCuts[i]->Write();
-      g2pt_afterCuts[i]->Write();
-      g1Nxtal_afterCuts[i]->Write();
-      g2Nxtal_afterCuts[i]->Write();
-      pi0PhotonsNoverlappingXtals_afterCuts[i]->Write();
-      g1g2DR_afterCuts[i]->Write();
-      if (isMC_) {
+    pi0pt_afterCuts->Write();
+    g1pt_afterCuts->Write();
+    g2pt_afterCuts->Write();
+    g1Nxtal_afterCuts->Write();
+    g2Nxtal_afterCuts->Write();
+    pi0PhotonsNoverlappingXtals_afterCuts->Write();
+    g1g2DR_afterCuts->Write();
+    if (isMC_) {
+      for (uint32_t i = 0; i < pi0MassVsPU.size(); ++i) {
 	pi0MassVsPU[i]->Write();
-      }
-
+      }      
     }
 
   }
