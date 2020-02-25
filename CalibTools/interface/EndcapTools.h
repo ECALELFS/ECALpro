@@ -24,6 +24,7 @@ class EndcapTools
         //void setCaloGeometry(string & geometryName);
 
         static const int N_RING_ENDCAP = 78;
+        static const int N_RING_ENDCAP_SIDE = 39;
 
     private:
         static void initializeFromGeometry(); 

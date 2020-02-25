@@ -437,20 +437,20 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       regionStreamPi0.push_back("region3EE");
       int nRegStream = regionStreamPi0.size();
 
-
+      seedEnergyInCluster = new TH2F("seedEnergyInCluster","energy of seed crystal after single photon cuts",248,-124,124,48,0.0,12.0);
       pi0pt_afterCuts = new TH2F("pi0pt_afterCuts","#pi^{0} p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,15.0);
       g1pt_afterCuts = new TH2F("g1pt_afterCuts","leading (seed) #gamma p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,10.0);
-    g2pt_afterCuts = new TH2F("g2pt_afterCuts_%s","trailing (seed) #gamma p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,10.0);
-    g1Nxtal_afterCuts = new TH2F("g1Nxtal_afterCuts","leading (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
-    g2Nxtal_afterCuts =  new TH2F("g2Nxtal_afterCuts","trailing (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
-    pi0PhotonsNoverlappingXtals_afterCuts = new TH2F("pi0PhotonsNoverlappingXtals_afterCuts","number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",nRegStream,0,nRegStream,10,-0.5,9.5);
-    g1g2DR_afterCuts = new TH2F("gig2DR_afterCuts","#Delta R (#gamma_{1},#gamma_{2}) after cuts",nRegStream,0,nRegStream,40,0.0,0.4);
-    for (Int_t ireg = 0; ireg < nRegStream; ireg++) {
-      if (isMC_) {
-	pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[ireg].c_str()),"#pi^{0} mass vs PU",100,0.05,0.25,50,0.5,50.5) );
+      g2pt_afterCuts = new TH2F("g2pt_afterCuts_%s","trailing (seed) #gamma p_{T} after cuts",nRegStream,0,nRegStream,60,0.0,10.0);
+      g1Nxtal_afterCuts = new TH2F("g1Nxtal_afterCuts","leading (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
+      g2Nxtal_afterCuts =  new TH2F("g2Nxtal_afterCuts","trailing (seed) #gamma number of crystals after cuts",nRegStream,0,nRegStream,9,0.5,9.5);
+      pi0PhotonsNoverlappingXtals_afterCuts = new TH2F("pi0PhotonsNoverlappingXtals_afterCuts","number of overlapping crystals in #pi^{0}->#gamma#gamma after cuts",nRegStream,0,nRegStream,10,-0.5,9.5);
+      g1g2DR_afterCuts = new TH2F("gig2DR_afterCuts","#Delta R (#gamma_{1},#gamma_{2}) after cuts",nRegStream,0,nRegStream,40,0.0,0.4);
+      for (Int_t ireg = 0; ireg < nRegStream; ireg++) {
+	if (isMC_) {
+	  pi0MassVsPU.push_back( new TH2F(Form("pi0MassVsPU_%s",regionStreamPi0[ireg].c_str()),"#pi^{0} mass vs PU",100,0.05,0.25,50,0.5,50.5) );
+	}
       }
-    }
-    
+      
 
       regionStreamPi0.clear();
 
@@ -1621,6 +1621,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     vs2s9.push_back( (maxEne+maxEne2)/e3x3 );
     Ncristal_EB.push_back(RecHitsInWindow.size() );
     ebclusters.push_back( CaloCluster( e3x3, clusPos, CaloID(CaloID::DET_ECAL_BARREL), enFracs, CaloCluster::undefined, seed_id ) );
+    seedEnergyInCluster->Fill(seed_ieta,itseed->energy());
     vSeedTime.push_back( SeedTime ); 
   } //loop over seeds to make EB clusters
 
@@ -1872,6 +1873,13 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     for(int i=0; i<9; i++){ if( EnergyCristals[i]==maxEne ) EnergyCristals[i]=0.; }
     double maxEne2 = max_array( EnergyCristals, 9);
     eeclusterS2S9.push_back( (maxEne+maxEne2)/e3x3 );
+    int ietaRingSeed = EndcapTools::getRingIndex(eeseed_id); // from 0 to 77 (78 rings, 39 per side)
+    // now port ring number to be outside barrel index (which is from -85 to 85 included)
+    if (ietaRingSeed > 38) 
+      ietaRingSeed = -85 - ietaRingSeed -1; // -1 because otherwise ietaRingSeed=0 overwrite last ieta of EB
+    else
+      ietaRingSeed = 47 + ietaRingSeed; // 85 + ietaRingSeed - 39 + 1
+    seedEnergyInCluster->Fill(ietaRingSeed,eeitseed->energy());
 
   } //loop over seeds to make eeclusters
 

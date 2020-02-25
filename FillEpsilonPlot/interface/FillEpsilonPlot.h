@@ -19,6 +19,7 @@
 #include "CalibCode/CalibTools/interface/PosCalcParams.h"
 #include "CalibCode/CalibTools/interface/ECALGeometry.h"
 #include "CalibCode/CalibTools/interface/EcalEnerCorr.h"
+#include "CalibCode/CalibTools/interface/EndcapTools.h"
 #include "CalibCode/CalibTools/interface/EcalCalibTypes.h"
 #include "CalibCode/CalibTools/interface/EcalRegionalCalibration.h"
 #include "CalibCode/CalibTools/interface/EcalPreshowerHardcodedTopology.h"
@@ -139,7 +140,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       //bool getTriggerByName( std::string s ); not used anymore
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
-
+     
       float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
       void  EBPHI_Cont_Corr_load(std::string FileName );
       TFile* DeadMap;
@@ -309,6 +310,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // Some kinematic variables (use option in parameters.py to choose whether to fill and save them)
       bool fillKinematicVariables_;
       int whichRegionEcalStreamPi0; // will be used to say in which region we are based on eta of pi0
+      TH2F* seedEnergyInCluster;
       TH2F* pi0pt_afterCuts;  // 5 regions (2 in EB and 3 in EE, last 2 in EE could be merged)
       TH2F* g1pt_afterCuts;
       TH2F* g2pt_afterCuts;
