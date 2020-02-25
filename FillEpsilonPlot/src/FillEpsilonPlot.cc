@@ -321,12 +321,14 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 #endif
     /// subdetector topology
     ebtopology_ = new CaloTopology();
-    EcalBarrelHardcodedTopology* ebHTopology = new EcalBarrelHardcodedTopology();
-    ebtopology_->setSubdetTopology(DetId::Ecal,EcalBarrel,ebHTopology);
+    std::unique_ptr<const EcalBarrelHardcodedTopology> ebHTopology(new EcalBarrelHardcodedTopology());
+    // EcalBarrelHardcodedTopology* ebHTopology = new EcalBarrelHardcodedTopology();
+    ebtopology_->setSubdetTopology(DetId::Ecal,EcalBarrel,std::move(ebHTopology));
 
     eetopology_ = new CaloTopology();  
-    EcalEndcapHardcodedTopology* eeHTopology=new EcalEndcapHardcodedTopology();
-    eetopology_->setSubdetTopology(DetId::Ecal,EcalEndcap,eeHTopology);
+    // EcalEndcapHardcodedTopology* eeHTopology=new EcalEndcapHardcodedTopology();
+    std::unique_ptr<const EcalEndcapHardcodedTopology> eeHTopology(new EcalEndcapHardcodedTopology());
+    eetopology_->setSubdetTopology(DetId::Ecal,EcalEndcap,std::move(eeHTopology));
 
     /// retrieving calibration coefficients of the previous iteration
     // if currentIteration_ = 0, calibMapPath_ contains "iter_-1" unless the current set of ICs was started from another existing set (see parameters.py)
@@ -1213,7 +1215,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   edm::ESHandle<CaloGeometry> geoHandle;
   iSetup.get<CaloGeometryRecord>().get(geoHandle);
   geometry = geoHandle.product();
-  estopology_ = new EcalPreshowerTopology(geoHandle);
+  // estopology_ = new EcalPreshowerTopology(geoHandle);
+  estopology_ = new EcalPreshowerTopology();
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
 
   ///////////////////////
