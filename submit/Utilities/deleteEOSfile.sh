@@ -12,7 +12,7 @@ iter_ini=0
 iter_fin=0  # it is included in sequence below                                                                          
 
 eosPath="/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/"
-dirName="AlCaEta_2018_ULrereco_all2018data"
+dirName="AlCaP0_2018_ICfromUL"
 
 # you can use "epsilonPlots_" as pattern to delete all directory with the mass distributions. The ending underscore prevents the merged "*epsilonPlots.root" file
 # from being deleted as well (you might want to keep it)

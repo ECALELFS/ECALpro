@@ -476,7 +476,7 @@ void FitEpsilonPlot::loadEoverEtruePlot(const std::string& filename, const int w
   // hence, no need to use regionalCalibration_ or regionalCalibration_g2_
 
   std::string line = "";
-  std::string histoNamePattern = Form("%s/EoverEtrue_g%d",EEoEB_.c_str(),whichPhoton );
+  std::string histoNamePattern = Form("EoverEtrue_g%d",whichPhoton );
 
   // test the machinary fitting inclusive histogram (otherwise I have no statistics)
   // bool isTest = true;
@@ -654,7 +654,7 @@ void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
   if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
     for(int iR=inRangeFit_; iR <= finRangeFit_ && iR < regionalCalibration_->getCalibMap()->getNRegionsEB(); iR++)
       {
-	line = Form("Barrel/epsilon_EB_iR_%d",iR);
+	line = Form("epsilon_EB_iR_%d",iR);
 	epsilon_EB_h[iR] = (TH1F*)inputEpsilonFile_->Get(line.c_str());
 
 	if(!epsilon_EB_h[iR])
@@ -667,7 +667,7 @@ void FitEpsilonPlot::loadEpsilonPlot(const std::string& filename)
   else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
     for(int jR=inRangeFit_; jR <= finRangeFit_ && jR<EEDetId::kSizeForDenseIndexing; jR++)
       {
-	line = Form("Endcap/epsilon_EE_iR_%d",jR);
+	line = Form("epsilon_EE_iR_%d",jR);
 	epsilon_EE_h[jR] = (TH1F*)inputEpsilonFile_->Get(line.c_str());
 	if(!epsilon_EE_h[jR])
 	  throw cms::Exception("loadEpsilonPlot") << "Cannot load histogram " << line << "\n";
@@ -689,7 +689,7 @@ void FitEpsilonPlot::loadEpsilonPlot2D(const std::string& filename)
 
   if( EEoEB_ == "Barrel" && (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
 
-    line = "Barrel/epsilon_EB_iR";
+    line = "epsilon_EB_iR";
     TH2F* h2_tmp_epsilon = (TH2F*)inputEpsilonFile_->Get(line.c_str());
     if(!h2_tmp_epsilon)
       throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";    
@@ -714,7 +714,7 @@ void FitEpsilonPlot::loadEpsilonPlot2D(const std::string& filename)
   }
   else if( EEoEB_ == "Endcap" && (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ){
 
-    line = Form("Endcap/epsilon_EE_iR");
+    line = Form("epsilon_EE_iR");
     TH2F* h2_tmp_epsilon = (TH2F*)inputEpsilonFile_->Get(line.c_str());
     if(!h2_tmp_epsilon)
       throw cms::Exception("loadEpsilonPlot2D") << "Cannot load histogram " << line << "\n";

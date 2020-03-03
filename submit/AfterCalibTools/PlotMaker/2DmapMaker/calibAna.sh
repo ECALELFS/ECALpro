@@ -20,7 +20,8 @@ path="/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/"  # path to dir
 #dirName="AlCaP0_AllRun2017_condor_fixEBm16"
 #dirName="AlCaEta_2016_ULrereco"
 #dirName="AlCaEta_2017_ULrereco_all2017data"
-dirName="AlCaEta_2018_ULrereco_all2018data"
+#dirName="AlCaEta_2018_ULrereco_all2018data"
+dirName="AlCaP0_2016_ICfromUL"
 #tagName="AlCaP0_Run2017B_3July_upToRun297723_ext1_"                           # TagName (see CalibCode/submit/parameters.py) 
 tagName="${dirName}_"
 

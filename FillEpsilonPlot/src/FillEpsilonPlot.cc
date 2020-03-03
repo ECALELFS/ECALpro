@@ -704,6 +704,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   // }
 
   if (fillKinematicVariables_) {
+    delete seedEnergyInCluster;
     delete pi0pt_afterCuts;
     delete g1pt_afterCuts;
     delete g2pt_afterCuts;
@@ -1288,14 +1289,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
   ebclusters_used.clear(); eeclusters_used.clear();
-  // not used anymore, keep track of the whole gen photons through ebclusters_matchedGenPhoton and eeclusters_matchedGenPhoton 
-  // std::vector< float > ebclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
-  // std::vector< float > eeclusters_matchedGenPhotonEnergy;  // will store the energy of the gen photon corresponding to a given reco cluster
-  // ebclusters_matchedGenPhotonEnergy.clear();
-  // eeclusters_matchedGenPhotonEnergy.clear();
-  // moved in FillEpsilonPlot.h
-  // std::vector< TLorentzVector* > ebclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster
-  // std::vector< TLorentzVector* > eeclusters_matchedGenPhoton;  // will store the gen photon corresponding to a given reco cluster
   ebclusters_matchedGenPhoton.clear();
   eeclusters_matchedGenPhoton.clear();
 
@@ -1340,8 +1333,8 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   } else {
 
-    if(Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(ebclusters_used, ebclusters_matchedGenPhoton, EcalBarrel);
-    if(Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) computeEpsilon(eeclusters_used, ebclusters_matchedGenPhoton, EcalEndcap);
+    if((Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE") && ebclusters_used.size() > 1) computeEpsilon(ebclusters_used, ebclusters_matchedGenPhoton, EcalBarrel);
+    if((Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE") && eeclusters_used.size() > 1 ) computeEpsilon(eeclusters_used, ebclusters_matchedGenPhoton, EcalEndcap);
   
   }
 
@@ -1628,7 +1621,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     vSeedTime.push_back( SeedTime ); 
   } //loop over seeds to make EB clusters
 
-  //std::cout << "### FillEpsilonPlot::fillEBClusters():   dc = " << dc << "   ebclusters.size() = " << ebclusters.size() << std::endl;
+  // std::cout << "### FillEpsilonPlot::fillEBClusters():   evt = " << iEvent.id().event() << "   dc = " << dc << "   ebclusters.size() = " << ebclusters.size() << std::endl;
 
 
 }
@@ -1890,92 +1883,99 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
   /************************** ENDCAP-PRESHOWER MATCHING ************************/
 
   //loop over eecluster to find matches with preshower
+  // skip this part if there is only one cluster, because that means there will be no pi0
+  
   int ind=0;
   std::vector<int> Nxtal; Nxtal.clear();
   std::vector<int> Nxtal_tot; Nxtal_tot.clear();
 
-  for( std::vector<CaloCluster>::const_iterator eeclus_iter  = eeclusters.begin(); eeclus_iter != eeclusters.end(); ++eeclus_iter, ++ind)
-  {
+  if (eeclusters.size() > 1) {
 
-    if(fabs(eeclus_iter->position().Eta())>1.7 && fabs(eeclus_iter->position().Eta())<2.55){
-	double X = eeclus_iter->x();
-	double Y = eeclus_iter->y(); 
-	double Z = eeclus_iter->z();
-	const GlobalPoint point(X,Y,Z);
+      for( std::vector<CaloCluster>::const_iterator eeclus_iter  = eeclusters.begin(); eeclus_iter != eeclusters.end(); ++eeclus_iter, ++ind)
+      {
 
-	DetId tmp1 = esGeometry_->getClosestCellInPlane(point,1);
-	DetId tmp2 = esGeometry_->getClosestCellInPlane(point,2);
+	if(fabs(eeclus_iter->position().Eta())>1.7 && fabs(eeclus_iter->position().Eta())<2.55){
+	    double X = eeclus_iter->x();
+	    double Y = eeclus_iter->y(); 
+	    double Z = eeclus_iter->z();
+	    const GlobalPoint point(X,Y,Z);
 
-	if ((tmp1.rawId()!=0) && (tmp2.rawId()!=0)) 
-	{
+	    DetId tmp1 = esGeometry_->getClosestCellInPlane(point,1);
+	    DetId tmp2 = esGeometry_->getClosestCellInPlane(point,2);
 
-	  ESDetId tmp1_conversion (tmp1);
-	  ESDetId tmp2_conversion (tmp2);
+	    if ((tmp1.rawId()!=0) && (tmp2.rawId()!=0)) 
+	    {
 
-          // replace the std PreshowerTools::clusterwindowsize_ = 15 with 5, smaller for 3x3 clusters
-          float es_clusterwindowsize = 5;
-	  //cout << "I'm before 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
-	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion);
-	  ////cout << "I'm after 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
-	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion);
-	  ////cout << "I'm after 	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion); " << endl;
+	      ESDetId tmp1_conversion (tmp1);
+	      ESDetId tmp2_conversion (tmp2);
+
+	      // replace the std PreshowerTools::clusterwindowsize_ = 15 with 5, smaller for 3x3 clusters
+	      float es_clusterwindowsize = 5;
+	      //cout << "I'm before 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
+	      PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion);
+	      ////cout << "I'm after 	  PreshowerCluster preshowerclusterp1 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp1_conversion); " << endl;
+	      PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion);
+	      ////cout << "I'm after 	  PreshowerCluster preshowerclusterp2 = esClusteringAlgo.makeOnePreshowerCluster( es_clusterwindowsize, &tmp2_conversion); " << endl;
 
 
-	  double e1 = preshowerclusterp1.energy();
-	  double e2 = preshowerclusterp2.energy();
-	  // GeV to #MIPs
-	  e1 = e1 / PreshowerTools::mip_;
-	  e2 = e2 / PreshowerTools::mip_;
-	  double tempenergy = eeclus_iter->energy();
+	      double e1 = preshowerclusterp1.energy();
+	      double e2 = preshowerclusterp2.energy();
+	      // GeV to #MIPs
+	      e1 = e1 / PreshowerTools::mip_;
+	      e2 = e2 / PreshowerTools::mip_;
+	      double tempenergy = eeclus_iter->energy();
 
-	  //if(e1+e2 > 1.0e-10) 
-	  if(e1 > 2.0 && e2 > 2.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
-	  {
-	    double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
+	      //if(e1+e2 > 1.0e-10) 
+	      if(e1 > 2.0 && e2 > 2.0) /// cut @ 2 MIPs as suggested by Ming @ DPG/EGamma Joint Meeting 19.03.2012 
+	      {
+		double deltaE = PreshowerTools::gamma_*(PreshowerTools::calib_planeX_*e1 + PreshowerTools::calib_planeY_*e2);
 
-	    tempenergy = deltaE + eeclus_iter->energy();
+		tempenergy = deltaE + eeclus_iter->energy();
 #if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR) 
-	    if(useEEContainmentCorrections_) tempenergy *= containmentCorrections_.getContainmentPointCorrectionsEE( tempenergy , (eeclus_iter->position()).eta() );
+		if(useEEContainmentCorrections_) tempenergy *= containmentCorrections_.getContainmentPointCorrectionsEE( tempenergy , (eeclus_iter->position()).eta() );
 #endif
 
-	    eseeclusters.push_back( CaloCluster( tempenergy, eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
-	    Nxtal.push_back(Ncristal_EE[ind]);
+		eseeclusters.push_back( CaloCluster( tempenergy, eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
+		Nxtal.push_back(Ncristal_EE[ind]);
 
-	    double DZ2 = (preshowerclusterp2.z()-preshowerclusterp1.z() )/2.;
-	    GlobalPoint posClu(preshowerclusterp1.x()*(1.+DZ2/preshowerclusterp1.z() ),preshowerclusterp2.y()*(1.-DZ2/preshowerclusterp2.z()),(preshowerclusterp1.z()+preshowerclusterp2.z() )/2. );
+		double DZ2 = (preshowerclusterp2.z()-preshowerclusterp1.z() )/2.;
+		GlobalPoint posClu(preshowerclusterp1.x()*(1.+DZ2/preshowerclusterp1.z() ),preshowerclusterp2.y()*(1.-DZ2/preshowerclusterp2.z()),(preshowerclusterp1.z()+preshowerclusterp2.z() )/2. );
 
-	    if( fabs(preshowerclusterp1.z())>30  && fabs(preshowerclusterp2.z())>30){
+		if( fabs(preshowerclusterp1.z())>30  && fabs(preshowerclusterp2.z())>30){
 
-		math::XYZPoint posit(posClu.x(),posClu.y(),posClu.z());
-		eseeclusters_tot.push_back( CaloCluster( tempenergy, posit, CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
-		Nxtal_tot.push_back(Ncristal_EE[ind]);
-		vs4s9EE.push_back( eeclusterS4S9[ind] );
-		vSeedTimeEE.push_back( SeedTime_v[ind] );
-		Es_1.push_back( e1 ); Es_2.push_back( e2 );
+		    math::XYZPoint posit(posClu.x(),posClu.y(),posClu.z());
+		    eseeclusters_tot.push_back( CaloCluster( tempenergy, posit, CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
+		    Nxtal_tot.push_back(Ncristal_EE[ind]);
+		    vs4s9EE.push_back( eeclusterS4S9[ind] );
+		    vSeedTimeEE.push_back( SeedTime_v[ind] );
+		    Es_1.push_back( e1 ); Es_2.push_back( e2 );
 #ifdef MVA_REGRESSIO_EE
-		vs1s9EE.push_back( eeclusterS1S9[ind] );
-		vs2s9EE.push_back( eeclusterS2S9[ind] );
-		ESratio.push_back( deltaE/eeclus_iter->energy() );
+		    vs1s9EE.push_back( eeclusterS1S9[ind] );
+		    vs2s9EE.push_back( eeclusterS2S9[ind] );
+		    ESratio.push_back( deltaE/eeclus_iter->energy() );
 #endif
+		}
+	      }
 	    }
-	  }
 	}
-    }
-    else{
-	eseeclusters_tot.push_back( CaloCluster( eeclus_iter->energy(), eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
-	Nxtal_tot.push_back(Ncristal_EE[ind]);
-	vs4s9EE.push_back( eeclusterS4S9[ind] );
-	vSeedTimeEE.push_back( SeedTime_v[ind] );
-	Es_1.push_back( -999. ); Es_2.push_back( -999. );
-	vs1s9EE.push_back( eeclusterS1S9[ind] );
-	vs2s9EE.push_back( eeclusterS2S9[ind] );
-	ESratio.push_back( (-1998.)/eeclus_iter->energy() );
-    }
-  }//end of the matching loop
+	else{
+	    eseeclusters_tot.push_back( CaloCluster( eeclus_iter->energy(), eeclus_iter->position(), CaloID(CaloID::DET_ECAL_ENDCAP),  eeclus_iter->hitsAndFractions(), CaloCluster::undefined, eeclus_iter->seed() ) );
+	    Nxtal_tot.push_back(Ncristal_EE[ind]);
+	    vs4s9EE.push_back( eeclusterS4S9[ind] );
+	    vSeedTimeEE.push_back( SeedTime_v[ind] );
+	    Es_1.push_back( -999. ); Es_2.push_back( -999. );
+	    vs1s9EE.push_back( eeclusterS1S9[ind] );
+	    vs2s9EE.push_back( eeclusterS2S9[ind] );
+	    ESratio.push_back( (-1998.)/eeclus_iter->energy() );
+	}
+      }//end of the matching loop
 
-  Ncristal_EE.clear();
-  Ncristal_EE = Nxtal_tot; 
+      Ncristal_EE.clear();
+      Ncristal_EE = Nxtal_tot; 
+  } 
+
   Nxtal.clear();
+  //std::cout << "### FillEpsilonPlot::fillEEClusters():   evt = " << iEvent.id().event() << "   dc = " << dc << "   ind = " << ind << "   eseeclusters_tot.size() = " << eseeclusters_tot.size() << std::endl;
   //cout << "Exiting fillEEClusters(...) " << endl;
 
 
@@ -2100,10 +2100,10 @@ void  FillEpsilonPlot::writeEpsilonPlot(TH1F **h, const char *folder, int size)
     h[jR]->Write();
 }
 
-void  FillEpsilonPlot::writeEpsilonPlot2D(TH2F *h, const char *folder)
+void  FillEpsilonPlot::writeEpsilonPlot2D(TH2F *h) //, const char *folder)
 {
-  if (not outfile_->GetKey(folder)) outfile_->mkdir(folder);
-  outfile_->cd(folder);
+  //if (not outfile_->GetKey(folder)) outfile_->mkdir(folder);
+  //outfile_->cd(folder);
   h->Write();
 }
 
@@ -4465,6 +4465,7 @@ void FillEpsilonPlot::endJob(){
 
   if (fillKinematicVariables_) {
 
+    seedEnergyInCluster->Write();
     pi0pt_afterCuts->Write();
     g1pt_afterCuts->Write();
     g2pt_afterCuts->Write();
@@ -4485,11 +4486,11 @@ void FillEpsilonPlot::endJob(){
     if (isEoverEtrue_) {
       //writeEpsilonPlot(EoverEtrue_g1_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
       //writeEpsilonPlot(EoverEtrue_g2_EB_h, "Barrel" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
-      writeEpsilonPlot2D(EoverEtrue_g1_EB_h2D, "Barrel");
-      writeEpsilonPlot2D(EoverEtrue_g2_EB_h2D, "Barrel");
+      writeEpsilonPlot2D(EoverEtrue_g1_EB_h2D);
+      writeEpsilonPlot2D(EoverEtrue_g2_EB_h2D);
     } else {
       //writeEpsilonPlot(epsilon_EB_h, "Barrel" ,  regionalCalibration_->getCalibMap()->getNRegionsEB() );
-      writeEpsilonPlot2D(epsilon_EB_h2D, "Barrel");
+      writeEpsilonPlot2D(epsilon_EB_h2D);
     }
   }
 
@@ -4497,11 +4498,11 @@ void FillEpsilonPlot::endJob(){
     if (isEoverEtrue_) {
       // writeEpsilonPlot(EoverEtrue_g1_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
       // writeEpsilonPlot(EoverEtrue_g2_EE_h, "Endcap" ,  regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
-      writeEpsilonPlot2D(EoverEtrue_g1_EE_h2D, "Endcap" );
-      writeEpsilonPlot2D(EoverEtrue_g2_EE_h2D, "Endcap" );
+      writeEpsilonPlot2D(EoverEtrue_g1_EE_h2D);
+      writeEpsilonPlot2D(EoverEtrue_g2_EE_h2D);
     } else {
       // writeEpsilonPlot(epsilon_EE_h, "Endcap" ,  regionalCalibration_->getCalibMap()->getNRegionsEE() );
-      writeEpsilonPlot2D(epsilon_EE_h2D, "Endcap" );
+      writeEpsilonPlot2D(epsilon_EE_h2D);
     }
   }
 
