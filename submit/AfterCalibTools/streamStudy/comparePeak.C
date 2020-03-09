@@ -132,9 +132,9 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
     sigmaOverM_2017 = isEB ? 10.5 : 9.25;
     sigmaOverM_2018 = isEB ? 10.97 : 8.91;
     // 32429
-    sigmaOverM_2016 = isEB ? 7.72 : 8.64;
-    sigmaOverM_2017 = isEB ? 9.20 : 9.25;
-    sigmaOverM_2018 = isEB ? 9.85 : 8.91;
+    // sigmaOverM_2016 = isEB ? 7.72 : 8.64;
+    // sigmaOverM_2017 = isEB ? 9.20 : 9.25;
+    // sigmaOverM_2018 = isEB ? 9.85 : 8.91;
 
   } else {
 
@@ -338,6 +338,7 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
   lat.DrawLatex(xmin,yhi, line.c_str());
   line = Form("#eta = %.3g",eta);
   lat.DrawLatex(xmin,yhi-ypass, line.c_str());
+  lat.DrawLatex(xmin,yhi-2.0*ypass, Form("%s#rightarrow#gamma#gamma",isPi0 ? "#pi^{0}" : "#eta^{0}"));
 
   TLatex lat2;
   lat2.SetNDC();
@@ -378,7 +379,7 @@ void realComparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi
 
 
 void comparePeak(const string& outdir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/massComparison_Run2/",
-		 const int do_all0_pi0Only1_etaOnly2 = 1) 
+		 const int do_all0_pi0Only1_etaOnly2 = 2) 
 {
 
   // pi0
