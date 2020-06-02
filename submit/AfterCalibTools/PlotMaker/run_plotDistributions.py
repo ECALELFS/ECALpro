@@ -8,19 +8,22 @@ import time
 ROOT.gROOT.SetBatch(True)
 
 script = "plotDistributions.py"
-isPi0 = True
-folder = "AlCaP0_AllRun2018_1fileEvery5_testCC2018"
+isPi0 = False
+folder = "AlCaEta_2017_ULrereco_all2017data"
 itern = "0"
 inputfile = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/{fld}/iter_{it}/{fld}_epsilonPlots.root".format(fld=folder, it=itern)
 outdir="/afs/cern.ch/user/m/mciprian/www/pi0calib/test/plotDistributions/{fld}_iter{it}/".format(fld=folder, it=itern)
-otherOptions = " -l 41 -e 13 "
+#otherOptions = " -l 41 -e 13 "
+otherOptions = " -e 13 "
 
 
 regions = ["1EB", "2EB", "1EE", "2EE"]
 
-scaleH2 = {"1EB" : -4,   
-           "2EB" : -5, 
-           "1EE" : -3, 
+# for pi0 try -4 ,-5, -3, -2
+# for eta try -2 ,-3, -2, -3
+scaleH2 = {"1EB" : -2,   
+           "2EB" : -2, 
+           "1EE" : -2, 
            "2EE" : -3
            }
 # eta

@@ -51,7 +51,7 @@ def checkNjobsCondor(grepArg="ecalpro"):
 
 
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
-def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=4000, maxtime=86400):    
+def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
 Executable = {de}
 use_x509userproxy = True
@@ -168,7 +168,7 @@ for iters in range(nIterations):
         if mymaxtimeFill > 48 * 3600:
             mymaxtimeFill = 48 * 3600
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", 
-                              memory=2500, maxtime=mymaxtimeFill) # this does not close the file
+                              memory=2000, maxtime=mymaxtimeFill) # this does not close the file
 
         print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
         print "Submitting " + str(njobs) + " jobs"
@@ -237,7 +237,7 @@ for iters in range(nIterations):
         #         if not os.path.exists(logdir): os.makedirs(logdir)
         #         condor_file_name = condordir+'/condor_submit_fill_recovery_{nr}.condor'.format(nr=str(NtpRecoveryAttempt))
         #         condor_file = open(condor_file_name,'w')
-        #         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill_recovery", memory=2500, maxtime=43200)  
+        #         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill_recovery", memory=2000, maxtime=43200)  
         #         goodNtp = 0
         #         for ih in range(njobs):
         #             eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
@@ -307,7 +307,7 @@ for iters in range(nIterations):
                 if mymaxtimeFill > 48 * 3600:
                     mymaxtimeFill = 48 * 3600
                 writeCondorSubmitBase(condor_file, condordir+'/dummy_exec_fill.sh', logdir, "ecalpro_Fill_recovery", 
-                                      memory=2500, maxtime=mymaxtimeFill)  
+                                      memory=2000, maxtime=mymaxtimeFill)  
                 goodNtp = 0
                 for ih in range(njobs):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"

@@ -35,54 +35,10 @@
 
 #define NPI0MAX 30000
 #define NL1SEED GlobalAlgBlk::maxPhysicsTriggers  // was 128
-//#define SELECTION_TREE
 
-//=====================================
-// NOTES ON CONTAINMENT CORRECTIONS, PLEASE READ!
-//=====================================
-// 19/01/2018
-//
-// we developed containment corrections for both photons based on E/Etrue in MC
-// to have them working, you must set ContainmentCorrection == 'EoverEtrue' in parameters.py
-// this will enable useContainmentCorrectionsFromEoverEtrue = True and set the name of the file where the correction maps are stored (they are TH2F)
-// In principle these corrections are available for both EB and EE, but the MC statistics was limited, so we folded all the EB supermodules in one, while
-// for EE at the moment it is better not to use any corrections (which is what we have always been doing so far)
-// Its is better to undefine MVA_REGRESSIO below. It could stay defined because that correction is not applied, yet it is computed and this waste CPU time
-
-//#define NEW_CONTCORR    // to use Yong's parametric CC, act on both EE and EB
-#define MVA_REGRESSIO     // to use regression in EB
-//#define MVA_REGRESSIO_Tree  // when using regression (defined MVA_REGRESSIO), decide to store some variables in a tree. This is for EB
-//#define MVA_REGRESSIO_EE    // should be as MVA_REGRESSIO but actually it also act as MVA_REGRESSIO_Tree for EE (define it to use regression in EE)
-//#define MVA_REGRESSIO_EE_Tree  // not used anywere apparently
-
-// developing new feature to have Yong's parametric containment corrections in EE and MVA regression in EB
-//
-// We would use regression in 2012 (or 2016) for EB and parametric containment corrections in EE
-// To do it, you can uncomment the following directive and also uncomment MVA_REGRESSIO while keeping NEW_CONTCORR commented
-// the temporary implementation of this solution is done so that REGRESS_AND_PARAM_CONTCORR substitutes MVA_REGRESSIO and NEW_CONTCORR, but it is not harmful
-// to keep MVA_REGRESSIO uncommented
-
-//#define REGRESS_AND_PARAM_CONTCORR
-
-// then in parameters.py you'll have 
-//    if ContainmentCorrection == 'mixed':
-//       useEBContainmentCorrections = 'False'  // no parametric CC in EB
-//       useEEContainmentCorrections = 'True'   // parametric CC in EB
-//       useMVAContainmentCorrections = True    //  regression (eventually used only in EB)
-//       new_pi0ContainmentCorrections = False  // use new 2016 regression: True to use it, False to use old one (useMVAContainmentCorrections must be true anyway)
-
-
-//MVA Stuff
-#if not defined(__CINT__) || defined(__MAKECINT__)
-#include "TMVA/Tools.h"
-#include "TMVA/Factory.h"
-#include "TMVA/Reader.h"
-#endif
-#include "CalibCode/GBRTrain/interface/GBRApply.h"
-#include "CalibCode/EgammaObjects/interface/GBRForest.h"
-#include "CondFormats/EgammaObjects/interface/GBRForestD.h"
-
-//#include "Cintex/Cintex.h"
+//#include "CalibCode/GBRTrain/interface/GBRApply.h"
+//#include "CalibCode/EgammaObjects/interface/GBRForest.h"
+//#include "CondFormats/EgammaObjects/interface/GBRForestD.h"
 
 enum calibGranularity{ xtal, tt, etaring };
 //enum subdet{ thisIsEE, thisIsEB }; 
@@ -129,9 +85,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       double min( double a, double b);
       int getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, const bool isEB);
 
-      TH1F** initializeEpsilonHistograms(const char *name, const char *title, int size );
-      void deleteEpsilonPlot(TH1F **h, int size);
-      void writeEpsilonPlot(TH1F **h, const char *folder, int size);
 
       TH2F* initializeEpsilonHistograms2D(const char *name, const char *title, int size );
       void deleteEpsilonPlot2D(TH2F *h);
@@ -141,14 +94,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //bool getTriggerByName( std::string s ); not used anymore
       bool GetHLTResults(const edm::Event& iEvent, std::string s);
      
-      float EBPHI_Cont_Corr(float PT, int giPhi, int ieta);
-      void  EBPHI_Cont_Corr_load(std::string FileName );
       TFile* DeadMap;
       TH2F * EBMap_DeadXtal;
       TH2F * EEmMap_DeadXtal;
       TH2F * EEpMap_DeadXtal;
-      TH1F * EBPHI_ConCorr_p;
-      TH1F * EBPHI_ConCorr_m;
 
       // for containment corrections based on E/Etrue in MC
       TH2F* hCC_EoverEtrue_g1 = nullptr;
@@ -156,9 +105,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void loadEoverEtrueContainmentCorrections(const string& fileName);
       CaloCluster getClusterAfterContainmentCorrections(std::vector<CaloCluster>::const_iterator, const bool isSecondPhoton, const bool isEB);
 
-#if (defined(NEW_CONTCORR) && !defined(MVA_REGRESSIO)) || defined(REGRESS_AND_PARAM_CONTCORR)
-      EcalEnerCorr containmentCorrections_;
-#endif
       // ----------member data ---------------------------
       edm::Handle< EBRecHitCollection > ebHandle;
       edm::Handle< EBRecHitCollection > eeHandle;
@@ -373,58 +319,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F *photonDeltaRVsIetaEB;
       bool useMassInsteadOfEpsilon_;
 
-#ifdef SELECTION_TREE
-      Float_t NSeeds_EB, Xclus_EB, Yclus_EB, Zclus_EB, e3x3_EB, S4S9_EB, PTClus_EB;
-      void Fill_NSeeds_EB(float nSeed){ NSeeds_EB=nSeed; };
-      void Fill_xClus_EB(float x){ Xclus_EB=x; };
-      void Fill_yClus_EB(float y){ Xclus_EB=y; };
-      void Fill_zClus_EB(float z){ Xclus_EB=z; };
-      void Fill_e3x3_EB(float E3x3){ e3x3_EB=E3x3; };
-      void Fill_S4S9_EB(float s4s9){ S4S9_EB=s4s9; };
-      void Fill_PtClus_EB(float clus){ PTClus_EB=clus; };
-      TTree *CutVariables_EB; 
-      Float_t NSeeds_EE, Xclus_EE, Yclus_EE, Zclus_EE, e3x3_EE, S4S9_EE, PTClus_EE;
-      void Fill_NSeeds_EE(float nSeed){ NSeeds_EE=nSeed; };
-      void Fill_xClus_EE(float x){ Xclus_EE=x; };
-      void Fill_yClus_EE(float y){ Xclus_EE=y; };
-      void Fill_zClus_EE(float z){ Xclus_EE=z; };
-      void Fill_e3x3_EE(float E3x3){ e3x3_EE=E3x3; }; 
-      void Fill_S4S9_EE(float s4s9){ S4S9_EE=s4s9; };
-      void Fill_PtClus_EE(float clus){ PTClus_EE=clus; };
-      TTree *CutVariables_EE;
-
-      Float_t PtPi0_EB, mpi0_EB, Etapi0_EB, Phipi0_EB, Epsilon_EB;
-      //adding these variables
-      Float_t PtGamma1_EB, PtGamma2_EB, EtaGamma1_EB, EtaGamma2_EB, NxtalGamma1_EB, NxtalGamma2_EB, S4S9Gamma1_EB, S4S9Gamma2_EB;
-      void Fill_PtPi0_EB(float pt){ PtPi0_EB=pt; };
-      void Fill_mpi0_EB(float m){ mpi0_EB=m; };
-      void Fill_etapi0_EB( float eta){ Etapi0_EB =eta; };
-      void Fill_phipi0_EB( float phi){ Phipi0_EB =phi; };
-      //adding these method to fill variables
-      void Fill_PtGamma_EB(float pt1, float pt2){ PtGamma1_EB = pt1; PtGamma2_EB = pt2;};
-      void Fill_EtaGamma_EB(float eta1, float eta2){ EtaGamma1_EB = eta1; EtaGamma2_EB = eta2;};
-      void Fill_NcrystalUsedGamma_EB(float Nxtal1, float Nxtal2) { NxtalGamma1_EB = Nxtal1 ; NxtalGamma2_EB = Nxtal2;};
-      void Fill_S4S9Gamma_EB(float s4s9g1, float s4s9g2) { S4S9Gamma1_EB = s4s9g1; S4S9Gamma2_EB = s4s9g2;};
-      //
-      void Fill_Epsilon_EB(float eps ){ Epsilon_EB=eps; };
-      TTree *Pi0Info_EB;
-
-      Float_t PtPi0_EE, mpi0_EE,Etapi0_EE, Phipi0_EE, Epsilon_EE;
-      //adding these variables
-      Float_t PtGamma1_EE, PtGamma2_EE, EtaGamma1_EE, EtaGamma2_EE, NxtalGamma1_EE, NxtalGamma2_EE, S4S9Gamma1_EE, S4S9Gamma2_EE;
-      void Fill_PtPi0_EE(float pt){ PtPi0_EE=pt; };
-      void Fill_mpi0_EE(float m){ mpi0_EE=m; };
-      void Fill_etapi0_EE( float eta){ Etapi0_EE =eta; };
-      void Fill_phipi0_EE( float phi){ Phipi0_EE =phi; };
-      //adding these methods to fill variables
-      void Fill_PtGamma_EE(float pt1, float pt2){ PtGamma1_EE = pt1; PtGamma2_EE = pt2;};
-      void Fill_EtaGamma_EE(float eta1, float eta2){ EtaGamma1_EE = eta1; EtaGamma2_EE = eta2;};
-      void Fill_NcrystalUsedGamma_EE(float Nxtal1, float Nxtal2) { NxtalGamma1_EE = Nxtal1 ; NxtalGamma2_EE = Nxtal2;};
-      void Fill_S4S9Gamma_EE(float s4s9g1, float s4s9g2) { S4S9Gamma1_EE = s4s9g1; S4S9Gamma2_EE = s4s9g2;};
-      //
-      void Fill_Epsilon_EE(float eps ){ Epsilon_EE=eps; };
-      TTree *Pi0Info_EE;
-#endif
       TTree*  Tree_Optim;
       Int_t   nPi0;
       //Int_t   Op_L1Seed[NL1SEED];
@@ -480,58 +374,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<Int_t> Op_iEta_2on2520;
       std::vector<Int_t> Op_iPhi_1on20;
       std::vector<Int_t> Op_iPhi_2on20;
-
-      /* Int_t   Op_Pi0recIsEB[NPI0MAX]; */
-      /* Float_t Op_ClusIsoPi0[NPI0MAX]; */
-      /* Float_t Op_HLTIsoPi0[NPI0MAX]; */
-      /* Int_t   Op_nCrisG1[NPI0MAX]; */
-      /* Int_t   Op_nCrisG2[NPI0MAX]; */
-      /* Float_t Op_enG1_cor[NPI0MAX]; */
-      /* Float_t Op_enG2_cor[NPI0MAX]; */
-      /* Float_t Op_etaG1_cor[NPI0MAX]; */
-      /* Float_t Op_etaG2_cor[NPI0MAX]; */
-      /* Float_t Op_phiG1_cor[NPI0MAX]; */
-      /* Float_t Op_phiG2_cor[NPI0MAX]; */
-      /* Float_t Op_mPi0_cor[NPI0MAX]; */
-      /* Float_t Op_etaPi0_cor[NPI0MAX]; */
-      /* Float_t Op_ptPi0_cor[NPI0MAX]; */
-      /* Float_t Op_DeltaRG1G2[NPI0MAX]; */
-      /* Float_t Op_Es_e1_1[NPI0MAX]; */
-      /* Float_t Op_Es_e1_2[NPI0MAX]; */
-      /* Float_t Op_Es_e2_1[NPI0MAX]; */
-      /* Float_t Op_Es_e2_2[NPI0MAX]; */
-      /* Float_t Op_S4S9_1[NPI0MAX]; */
-      /* Float_t Op_S4S9_2[NPI0MAX]; */
-      /* Float_t Op_S1S9_1[NPI0MAX]; */
-      /* Float_t Op_S1S9_2[NPI0MAX]; */
-      /* Float_t Op_S2S9_1[NPI0MAX]; */
-      /* Float_t Op_S2S9_2[NPI0MAX]; */
-      /* Float_t Op_Time_1[NPI0MAX]; */
-      /* Float_t Op_Time_2[NPI0MAX]; */
-      /* Float_t Op_DeltaR_1[NPI0MAX]; */
-      /* Float_t Op_DeltaR_2[NPI0MAX]; */
-      /* Float_t Op_enG1_nocor[NPI0MAX]; */
-      /* Float_t Op_enG2_nocor[NPI0MAX]; */
-      /* Float_t Op_etaG1_nocor[NPI0MAX]; */
-      /* Float_t Op_etaG2_nocor[NPI0MAX]; */
-      /* Float_t Op_phiG1_nocor[NPI0MAX]; */
-      /* Float_t Op_phiG2_nocor[NPI0MAX]; */
-      /* Float_t Op_ptPi0_nocor[NPI0MAX]; */
-      /* Float_t Op_mPi0_nocor[NPI0MAX]; */
-      /* Float_t Op_enG1_true[NPI0MAX]; */
-      /* Float_t Op_enG2_true[NPI0MAX]; */
-      /* Int_t Op_iEtaiX_1[NPI0MAX]; */
-      /* Int_t Op_iEtaiX_2[NPI0MAX]; */
-      /* Int_t Op_iPhiiY_1[NPI0MAX]; */
-      /* Int_t Op_iPhiiY_2[NPI0MAX]; */
-      /* Int_t Op_iEta_1on5[NPI0MAX]; */
-      /* Int_t Op_iEta_2on5[NPI0MAX]; */
-      /* Int_t Op_iPhi_1on2[NPI0MAX]; */
-      /* Int_t Op_iPhi_2on2[NPI0MAX]; */
-      /* Int_t Op_iEta_1on2520[NPI0MAX]; */
-      /* Int_t Op_iEta_2on2520[NPI0MAX]; */
-      /* Int_t Op_iPhi_1on20[NPI0MAX]; */
-      /* Int_t Op_iPhi_2on20[NPI0MAX]; */
       // Optmization tree's variables
 
 
@@ -549,18 +391,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> vs4s9;
       vector<float> vs1s9;
       vector<float> vs2s9;
-      TFile *EBweight_file_1;
-      TFile *EBweight_file_2;
-      const GBRForest *forest_EB_1;
-      const GBRForestD *forestD_EB_1;
-      const GBRForest *forest_EB_2;
-      const GBRForestD *forestD_EB_2;
-      GBRApply *gbrapply;
-#if defined(MVA_REGRESSIO_Tree) && defined(MVA_REGRESSIO)
-      TTree *TTree_JoshMva;
-      Float_t Correction1_mva, Correction2_mva, Pt1_mva, Pt2_mva, Mass_mva, MassOr_mva, pi0Eta;
-      Int_t   iEta1_mva, iPhi1_mva, iEta2_mva, iPhi2_mva, iSM1_mva, iSM2_mva;
-#endif
       vector<iXiYtoRing> VectRing;
       std::map<int,vector<int>> ListEtaFix_xtalEB;
       std::map<int,vector<int>> ListSMFix_xtalEB;
@@ -576,18 +406,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       vector<float> vs1s9EE;
       vector<float> vs2s9EE;
       vector<float> ESratio;
-#ifdef MVA_REGRESSIO_EE
-      TFile *EEweight_file_pi01;
-      TFile *EEweight_file_pi02;
-      const GBRForest *forest_EE_pi01;
-      const GBRForestD *forestD_EE_pi01;
-      const GBRForest *forest_EE_pi02;
-      const GBRForestD *forestD_EE_pi02;
-
-      TTree *TTree_JoshMva_EE;
-      Float_t Correction1EE_mva, Correction2EE_mva, Pt1EE_mva, Pt2EE_mva, MassEE_mva, MassEEOr_mva;
-      Int_t   iX1_mva, iY1_mva, iX2_mva, iY2_mva, EtaRing1_mva, EtaRing2_mva;
-#endif
       //JSON
       std::string JSONfile_;
       JSON* myjson;
@@ -600,12 +418,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //bool FailPreselEE;
       //std::map<int,bool>  PassPreselection;
       
-      //Containment correction
-      /*constexpr*/ double meanlimlow  = 0.2;
-      /*constexpri*/ double meanlimhigh = 2.0;
-      /*constexpr*/ double meanoffset  = meanlimlow + 0.5*(meanlimhigh-meanlimlow);
-      /*constexpr*/ double meanscale   = 0.5*(meanlimhigh-meanlimlow);
-
       // for L1
       short *l1flag;
       TString* algoBitToName;

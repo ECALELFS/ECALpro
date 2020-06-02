@@ -170,5 +170,5 @@ if __name__ == "__main__":
     if lumi != None: latCMS.DrawLatex(0.68, 0.95, '%s fb^{-1} (%s TeV)' % (lumi, str(options.energy)))
     else:            latCMS.DrawLatex(0.75, 0.95, '(%s TeV)' % str(options.energy))
 
-    for ext in [".png", ".pdf", ".C"]:
+    for ext in [".png", ".pdf"]: # , ".C"]:
         canvas.SaveAs(outname + options.cname + ext)

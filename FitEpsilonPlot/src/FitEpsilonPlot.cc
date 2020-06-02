@@ -84,14 +84,14 @@ static double upper_bound_pi0mass_EE = 0.16;
 static double upper_bound_etamass_EB = 0.6;
 static double upper_bound_etamass_EE = 0.6;
 
-static float fitRange_low_pi0 = 0.08; // value used in the fit function to define the fit range
-static float fitRange_high_pi0 = 0.21; // value used in the fit function to define the fit range
+static float fitRange_low_pi0 = 0.080; // value used in the fit function to define the fit range
+static float fitRange_high_pi0 = 0.212; // value used in the fit function to define the fit range
 static float fitRange_high_pi0_ext = 0.222;
 
-static float fitRange_low_eta = 0.4; // value used in the fit function to define the fit range
-static float fitRange_low_etaEE = 0.38; // value used in the fit function to define the fit range
-static float fitRange_high_eta = 0.68; // value used in the fit function to define the fit range
-static float fitRange_high_eta_ext = 0.7;
+static float fitRange_low_eta = 0.400; // value used in the fit function to define the fit range
+static float fitRange_low_etaEE = 0.380; // value used in the fit function to define the fit range
+static float fitRange_high_eta = 0.680; // value used in the fit function to define the fit range
+static float fitRange_high_eta_ext = 0.700;
 
 static float EoverEtrue_integralMin = 25; // require that integral in a given range is > EoverEtrue_integralMin for E/Etrue distribution (used for MC only)
 
