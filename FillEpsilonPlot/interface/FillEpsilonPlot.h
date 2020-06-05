@@ -76,6 +76,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
       //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, std::vector<TLorentzVector*>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
+      // void computePairProperties(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
+      void computePairProperties(const CaloCluster* g1, const CaloCluster* g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
       void computeEpsilon(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
       void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
       bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
@@ -88,7 +90,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       TH2F* initializeEpsilonHistograms2D(const char *name, const char *title, int size );
       void deleteEpsilonPlot2D(TH2F *h);
-      void writeEpsilonPlot2D(TH2F *h, const char *folder);
+      void writeEpsilonPlot2D(TH2F *h);
 
       bool getTriggerResult(const edm::Event& iEvent, const edm::EventSetup& iSetup);
       //bool getTriggerByName( std::string s ); not used anymore
