@@ -105,7 +105,6 @@ using std::max;
 // #include "CondFormats/EgammaObjects/interface/GBRForestD.h"
 
 #include "TLorentzVector.h" // slow
-#include "DataFormats/Math/interface/LorentzVector.h"
 #include "DataFormats/Math/interface/Vector3D.h"  // to use math::XYZVector
 #include "DataFormats/Math/interface/deltaR.h"
 
@@ -114,7 +113,8 @@ using std::max;
 //using namespace TMVA;
 using namespace edm;
 
-static float mass_bin_width = 0.004; // set following numbers accordingly, please
+static float mass_pi0_bin_width = 0.004; // set following numbers accordingly, please
+static float mass_eta_bin_width = 0.004; // set following numbers accordingly, please
 static float mass_pi0_low  = 0.060;
 static float mass_pi0_high = 0.240;
 static float mass_eta_low  = 0.380;
@@ -122,7 +122,7 @@ static float mass_eta_high = 0.700;
 
 // we would cut on corrected mass, but uncorrected mass is available before
 // and can be used to cut events and speed up the algorithm
-// let them be looser than those with correction, although the fit will be in an even
+// let them be looser than those with correction, although the fit will be in an even narrower range
 // 
 static float mass_pi0_low_noCorrCut  = 0.050;
 static float mass_pi0_high_noCorrCut = 0.250;
@@ -281,6 +281,44 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 	<<", S4S9: "<<S4S9_cut_high_[EcalEndcap]<<endl;
     cout<<"The StatError option choose is: "<<SystOrNot_<<" [0= No error stat computation, 1 = yes only even events, 2 = yes only odd events]"<<endl;
 
+    // pi0 pt
+    pi0PtCut_.push_back(pi0PtCut_low_[EcalBarrel]);
+    pi0PtCut_.push_back(pi0PtCut_high_[EcalBarrel]);
+    pi0PtCut_.push_back(pi0PtCut_low_[EcalEndcap]);
+    pi0PtCut_.push_back(pi0PtCut_high_[EcalEndcap]);
+    // photon pt
+    gPtCut_.push_back(gPtCut_low_[EcalBarrel]);
+    gPtCut_.push_back(gPtCut_high_[EcalBarrel]);
+    gPtCut_.push_back(gPtCut_low_[EcalEndcap]);
+    gPtCut_.push_back(gPtCut_high_[EcalEndcap]);
+    // S4/S9
+    S4S9_cut_.push_back(S4S9_cut_low_[EcalBarrel]);
+    S4S9_cut_.push_back(S4S9_cut_high_[EcalBarrel]);
+    S4S9_cut_.push_back(S4S9_cut_low_[EcalEndcap]);
+    S4S9_cut_.push_back(S4S9_cut_high_[EcalEndcap]);
+    // HLT iso
+    pi0HLTIsoCut_.push_back(pi0HLTIsoCut_low_[EcalBarrel]);
+    pi0HLTIsoCut_.push_back(pi0HLTIsoCut_high_[EcalBarrel]);
+    pi0HLTIsoCut_.push_back(pi0HLTIsoCut_low_[EcalEndcap]);
+    pi0HLTIsoCut_.push_back(pi0HLTIsoCut_high_[EcalEndcap]);
+    // pi0 iso (tighter than HLT iso)
+    pi0IsoCut_.push_back(pi0IsoCut_low_[EcalBarrel]);
+    pi0IsoCut_.push_back(pi0IsoCut_high_[EcalBarrel]);
+    pi0IsoCut_.push_back(pi0IsoCut_low_[EcalEndcap]);
+    pi0IsoCut_.push_back(pi0IsoCut_high_[EcalEndcap]);
+    // Nxtal photon 1
+    nXtal_1_cut_.push_back(nXtal_1_cut_low_[EcalBarrel]);
+    nXtal_1_cut_.push_back(nXtal_1_cut_high_[EcalBarrel]);
+    nXtal_1_cut_.push_back(nXtal_1_cut_low_[EcalEndcap]);
+    nXtal_1_cut_.push_back(nXtal_1_cut_high_[EcalEndcap]);
+    // Nxtal photon 2
+    nXtal_2_cut_.push_back(nXtal_2_cut_low_[EcalBarrel]);
+    nXtal_2_cut_.push_back(nXtal_2_cut_high_[EcalBarrel]);
+    nXtal_2_cut_.push_back(nXtal_2_cut_low_[EcalEndcap]);
+    nXtal_2_cut_.push_back(nXtal_2_cut_high_[EcalEndcap]);
+
+
+
     useOnlyEEClusterMatchedWithES_ = iConfig.getUntrackedParameter<bool>("useOnlyEEClusterMatchedWithES"); 
     //JSON
     if( JSONfile_!="" ) {
@@ -388,27 +426,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     }
 
-    EventFlow_EB  = new TH1F("EventFlow_EB", "EventFlow EB", 6, -0.5, 5.5 );
-    EventFlow_EB->GetXaxis()->SetBinLabel(1,"All Events"); EventFlow_EB->GetXaxis()->SetBinLabel(2,"JSON"); EventFlow_EB->GetXaxis()->SetBinLabel(3,"Trigger Res");
-    EventFlow_EB->GetXaxis()->SetBinLabel(4,"HLT"); EventFlow_EB->GetXaxis()->SetBinLabel(5,"Initial Comb."); EventFlow_EB->GetXaxis()->SetBinLabel(6,"Final Comb.");
-    EventFlow_EE  = new TH1F("EventFlow_EE", "EventFlow EE", 6, -0.5, 5.5 );
-    EventFlow_EE->GetXaxis()->SetBinLabel(1,"All Events"); EventFlow_EE->GetXaxis()->SetBinLabel(2,"JSON"); EventFlow_EE->GetXaxis()->SetBinLabel(3,"Trigger Res");
-    EventFlow_EE->GetXaxis()->SetBinLabel(4,"HLT"); EventFlow_EE->GetXaxis()->SetBinLabel(5,"Initial Comb."); EventFlow_EE->GetXaxis()->SetBinLabel(6,"Final Comb.");
-    if (isDebug_) {
-      EventFlow_EB_debug  = new TH1F("EventFlow_EB_debug", "EventFlow EB", 5, -0.5, 4.5 );
-      EventFlow_EB_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
-      EventFlow_EB_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
-      EventFlow_EB_debug->GetXaxis()->SetBinLabel(3,"nxtal");
-      EventFlow_EB_debug->GetXaxis()->SetBinLabel(4,"isocut"); 
-      EventFlow_EB_debug->GetXaxis()->SetBinLabel(5,"hltiso");
-      EventFlow_EE_debug  = new TH1F("EventFlow_EE_debug", "EventFlow EE", 5, -0.5, 4.5 );
-      EventFlow_EE_debug->GetXaxis()->SetBinLabel(1,"Initial Comb.");
-      EventFlow_EE_debug->GetXaxis()->SetBinLabel(2,"pi0pt"); 
-      EventFlow_EE_debug->GetXaxis()->SetBinLabel(3,"nxtal");
-      EventFlow_EE_debug->GetXaxis()->SetBinLabel(4,"isocut"); 
-      EventFlow_EE_debug->GetXaxis()->SetBinLabel(5,"hltiso");
-    }
-
     if (fillKinematicVariables_) {
 
       // 4 regions: 2 in EB, 2 in EE
@@ -439,13 +456,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
       regionStreamPi0.clear();
 
     }
-
-    // entries_EEp   = new TH2F("entries_EEp","entries_EEp",101,-0.5,100.5,101,-0.5,100.5);
-    // entries_EEm   = new TH2F("entries_EEm","entries_EEm",101,-0.5,100.5,101,-0.5,100.5);
-    // entries_EB    = new TH2F("entries_EB","entries_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
-    // Occupancy_EEp = new TH2F("Occupancy_EEp","Occupancy_EEp",101,-0.5,100.5,101,-0.5,100.5);
-    // Occupancy_EEm = new TH2F("Occupancy_EEm","Occupancy_EEm",101,-0.5,100.5,101,-0.5,100.5);
-    // Occupancy_EB  = new TH2F("Occupancy_EB","Occupancy_EB",2*EBDetId::MAX_IETA+1,-EBDetId::MAX_IETA-0.5,EBDetId::MAX_IETA+0.5,EBDetId::MAX_IPHI, EBDetId::MIN_IPHI-0.5, EBDetId::MAX_IPHI+0.5 );
 
 
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
@@ -695,9 +705,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 {
   // std::cout<<"Event: "<<iEvent.id().event()<<" Run "<<iEvent.id().run()<<" LS "<<iEvent.id().luminosityBlock()<<endl;
   //JSON
-  EventFlow_EB->Fill(0.); EventFlow_EE->Fill(0.);
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
-  EventFlow_EB->Fill(1.); EventFlow_EE->Fill(1.);
 
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
@@ -1163,14 +1171,11 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   const EcalChannelStatus &channelStatus = *csHandle; 
   ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
 
-  EventFlow_EB->Fill(2.); EventFlow_EE->Fill(2.);
   if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
-    EventFlow_EB->Fill(3.); 
     fillEBClusters(ebclusters, iEvent, channelStatus);
   }
   ////cout << "I'm after fillEBClusters(ebclusters, iEvent, channelStatus) " << endl;
   if ( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) { 
-    EventFlow_EE->Fill(3.); 
     fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);
   }
   // std::cout << "ebclusters.size() = " << ebclusters.size() << std::endl;
@@ -1246,19 +1251,13 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
   int dc = 0;
 
   // sort by energy and find the seeds
-  //bool founded=false;
   for(EBRecHitCollection::const_iterator itb= ebHandle->begin(); itb != ebHandle->end(); ++itb, ++dc) 
   {
 
     //cout << "Check EBRecHitCollection in FillEpsilonPlot::fillEBClusters" << endl;
     EBDetId tmp_id(itb->id());
-    //Occupancy_EB->Fill(tmp_id.ieta(), tmp_id.iphi());
     if(itb->energy() > EB_Seed_E_)  ebseeds.push_back( *itb );
-    ////Preselection
-    //if(itb->energy() > 0.200-0.200*(28.3/100)) founded=true;
   }
-  //if(founded) FailPreselEB=false;
-  //else        FailPreselEB=true;
 
   sort(ebseeds.begin(), ebseeds.end(), ecalRecHitLess());
   int seed_c = 0;
@@ -1274,11 +1273,11 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     // find 3x3 matrix of xtals
     std::vector<DetId> clus_v = ebtopology_->getWindow(seed_id,3,3);       
     // needed for position calculator
-    std::vector<std::pair<DetId,float> > clus_used;
+    //std::vector<std::pair<DetId,float> > clus_used;
 
     // xtals actually used after removing those already used
     vector<const EcalRecHit*> RecHitsInWindow;
-    vector<const EcalRecHit*> RecHitsInWindow5x5;
+    //vector<const EcalRecHit*> RecHitsInWindow5x5;
 
     float simple_energy = 0; 
     float posTotalEnergy(0.); // need for position calculation
@@ -1296,7 +1295,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	if( ixtal == ebHandle->end() ) continue; // xtal not found
 
 	RecHitsInWindow.push_back( &(*ixtal) );
-	clus_used.push_back(std::make_pair(*det,1.));  // it seems it is not used anywhere
+	//clus_used.push_back(std::make_pair(*det,1.));  // it seems it is not used anywhere
 
 	simple_energy +=  ixtal->energy();
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
@@ -1540,11 +1539,11 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
     std::vector<DetId> clus_v = eetopology_->getWindow(eeseed_id,clusEtaSize_,clusPhiSize_); 
 
     // needed for position calculator
-    std::vector<std::pair<DetId,float> > clus_used;
+    //std::vector<std::pair<DetId,float> > clus_used;
 
     // xtals actually used after removing those already used
     vector<const EcalRecHit*> RecHitsInWindow;
-    vector<const EcalRecHit*> RecHitsInWindow5x5;
+    //vector<const EcalRecHit*> RecHitsInWindow5x5;
 
     float simple_energy = 0.; 
     float posTotalEnergy(0.); // need for position calculation
@@ -1566,7 +1565,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	if( ixtal == eeHandle->end() ) continue; // xtal not found
 
 	RecHitsInWindow.push_back( &(*ixtal) );
-	clus_used.push_back(std::make_pair(*det,1.)); // it seems it is not used anywhereisUsed
+	//clus_used.push_back(std::make_pair(*det,1.)); // it seems it is not used anywhereisUsed
 	simple_energy +=  ixtal->energy();
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
     }  // loop over xtals in the region
@@ -1575,10 +1574,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	continue;
     }
 
-    float s4s9_tmp[4];
-    for(int i=0;i<4;i++){ 
-	s4s9_tmp[i]= 0;
-    }
+    float s4s9_tmp[4] = {0, 0, 0, 0};
 
     int seed_ix = eeseed_id.ix(); 
     int seed_iy = eeseed_id.iy();   
@@ -1828,11 +1824,11 @@ TH2F* FillEpsilonPlot::initializeEpsilonHistograms2D(const char *name, const cha
     if(useMassInsteadOfEpsilon_) {
       // let's keep 0.004 GeV/bin
       if (Are_pi0_) {
-	nbins   = (mass_pi0_high-mass_pi0_low)/mass_bin_width;
+	nbins   = (mass_pi0_high-mass_pi0_low)/mass_pi0_bin_width;
 	lowEdge = mass_pi0_low;
 	upEdge  = mass_pi0_high;
       } else {
-	nbins   = (mass_eta_high-mass_eta_low)/mass_bin_width;
+	nbins   = (mass_eta_high-mass_eta_low)/mass_eta_bin_width;
 	lowEdge = mass_eta_low;
 	upEdge  = mass_eta_high;
       }
@@ -2341,7 +2337,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
   if(subDetId!=EcalBarrel && subDetId != EcalEndcap) 
     throw cms::Exception("FillEpsilonPlot::computeEpsilon") << "Subdetector Id not recognized\n";
 
-  if (isDebug_) cout << "[DEBUG] Beginning cluster loop.. subDetId = " << subDetId << "   clusters.size() = " << clusters.size() << endl;
+  //if (isDebug_) cout << "[DEBUG] Beginning cluster loop.. subDetId = " << subDetId << "   clusters.size() = " << clusters.size() << endl;
 
   float ptMinForIso = (subDetId == EcalBarrel) ? 1.0 : 0.5;
 
@@ -2373,10 +2369,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
     size_t j=i+1;
     for(std::vector<CaloCluster>::const_iterator g2 = g1+1; g2 != clusters.end(); ++g2, ++j ) {
 
-        if (isDebug_) cout << "\n[DEBUG] New Pair of Clusters"<< endl;
-
-	if( subDetId==EcalBarrel ) {EventFlow_EB->Fill(4.); if (isDebug_) EventFlow_EB_debug->Fill(0.);}
-	else                       {EventFlow_EE->Fill(4.); if (isDebug_) EventFlow_EE_debug->Fill(0.);}
 	//float Corr1 = 1., Corr2 = 1.;
 
 	// g1 and g2 are ordered with the energy of the seed, but their respective clusters don't necessarily follow the same order
@@ -2386,11 +2378,12 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	Double_t g2eta = g2->eta();
 	Double_t g1phi = g1->phi();
 	Double_t g2phi = g2->phi();
+	Double_t DeltaR_g1g2_nocor = GetDeltaR(g1eta, g2eta, g1phi, g2phi);
 	// since: end of Spring 2019
 	// get DR and immediately reject clusters that are too far from each other
 	// w/o this cut, selected pairs would probably be the same due to other cuts, but this should speed up
-	// Double_t preliminary_deltaR_clusters = GetDeltaR(g1eta, g2eta, g1phi, g2phi)
-	if (GetDeltaR(g1eta, g2eta, g1phi, g2phi) > 0.4) continue;
+	
+	if (DeltaR_g1g2_nocor > 0.4) continue;
 	if( g1eta == g2eta && g1phi == g2phi ) continue;
 
 	// // define photons as math::XYZVector, where the magnitude is scaled to match the energy 
@@ -2457,153 +2450,121 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 				pi0P4_mass, pi0P4_pt, pi0P4_eta, pi0P4_phi);
 	} 
 
-
 	if (pi0P4_mass < mass_low_withCorrCut || pi0P4_mass > mass_high_withCorrCut) continue;
 
-	//std::cout << "pio mass: w/o corr, w/ corr --> " << pi0P4_nocor_mass << "," << pi0P4_mass << endl;  
-	
-	if (isDebug_) cout << "[DEBUG] Apply kinematic selection cuts" << endl;
-
-	// pi0/eta pT cut
-	if (subDetId == EcalBarrel) {
-
-	  if (fabs(pi0P4_eta)<1.0)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
-	  else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	  if (isDebug_) EventFlow_EB_debug->Fill(1.);
-
-	} else {
-	  
-	  if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
-	  else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	  if (isDebug_) EventFlow_EE_debug->Fill(1.);
-
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	if (isDebug_) cout << "[DEBUG] N Cristal Cuts" << endl;
-
-
-	int Nxtal_EnergGamma = 0;
-	int Nxtal_EnergGamma2 = 0;
+	// define array inded based on eta region, to access the proper cut value
+	int etaRegionID = 0;
+	// for Nxtal cuts
 	int Nxtal_g1 = 0;
 	int Nxtal_g2 = 0;
-	// for the selection we use the more energetic photon, but in general we want to know how many crystals thw two clusters have.
-	// Now, the clusters are ordered based on the energy of their seed, so that the second photon (with less energetic seed) should tipically have less crystals
-	// index i refers to leading seed photon, j to the oher one
-	if(subDetId==EcalEndcap){
-
-	  Nxtal_g1 = Ncristal_EE_used[i];
-	  Nxtal_g2 = Ncristal_EE_used[j];
-	  if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EE_used[i]; Nxtal_EnergGamma2 = Ncristal_EE_used[j]; }
-	  else                           {  Nxtal_EnergGamma = Ncristal_EE_used[j]; Nxtal_EnergGamma2 = Ncristal_EE_used[i]; }
-
-	  if( fabs(pi0P4_eta)<1.8 ) { 
-	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
-	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
-	  } else {
-	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
-	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
-	  }
-	  if (isDebug_) EventFlow_EE_debug->Fill(2.);
-	  EventFlow_EE->Fill(5.);
-
-	}
-	else{
+	int Nxtal_EnergGamma = 0;
+	int Nxtal_EnergGamma2 = 0;
+	float fabs_pi0P4_eta = fabs(pi0P4_eta);
+	// set some stuff based on eta region
+	if (subDetId == EcalBarrel) {
 
 	  Nxtal_g1 = Ncristal_EB_used[i];
 	  Nxtal_g2 = Ncristal_EB_used[j];
-	  if( g1->energy()>g2->energy() ){  Nxtal_EnergGamma = Ncristal_EB_used[i]; Nxtal_EnergGamma2 = Ncristal_EB_used[j]; }
-	  else                           {  Nxtal_EnergGamma = Ncristal_EB_used[j]; Nxtal_EnergGamma2 = Ncristal_EB_used[i]; }
+	  if(g1->energy() > g2->energy()) {  
+	    Nxtal_EnergGamma = Ncristal_EB_used[i]; 
+	    Nxtal_EnergGamma2 = Ncristal_EB_used[j]; 
+	  } else {  
+	    Nxtal_EnergGamma = Ncristal_EB_used[j]; 
+	    Nxtal_EnergGamma2 = Ncristal_EB_used[i]; 
+	  }
 
-	  if( fabs(pi0P4_eta)<1.0 ) { 
-	    if( Nxtal_EnergGamma < nXtal_1_cut_low_[subDetId] ) continue; 
-	    if( Nxtal_EnergGamma2 < nXtal_2_cut_low_[subDetId] ) continue;
-	  } else if( fabs(pi0P4_eta)<1.479 )  { 
-	    if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
-	    if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
-	  } 
+	  if (fabs_pi0P4_eta < 1.0) 
+	    etaRegionID = 0;
+	  else if (fabs_pi0P4_eta < 1.479) 
+	    etaRegionID = 1;
+	  whichRegionEcalStreamPi0 = etaRegionID;
 
-	  double pi0_ieta = fabs(pi0P4_eta)/0.0174;
-	  pi0MassVsIetaEB->Fill( pi0_ieta, pi0P4_mass);
-	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
-	  photonDeltaRVsIetaEB->Fill( pi0_ieta, GetDeltaR(g1eta,g2eta,g1phi,g2phi));
-	  if (isDebug_) EventFlow_EB_debug->Fill(2.);
-	  EventFlow_EB->Fill(5.);
+	} else {
+
+	  Nxtal_g1 = Ncristal_EE_used[i];
+	  Nxtal_g2 = Ncristal_EE_used[j];
+	  if(g1->energy() > g2->energy()) {  
+	    Nxtal_EnergGamma = Ncristal_EE_used[i]; 
+	    Nxtal_EnergGamma2 = Ncristal_EE_used[j]; 
+	  } else {  
+	    Nxtal_EnergGamma = Ncristal_EE_used[j]; 
+	    Nxtal_EnergGamma2 = Ncristal_EE_used[i]; 
+	  }
+
+	  if (fabs_pi0P4_eta < 1.8) {
+	    etaRegionID = 2;
+	    whichRegionEcalStreamPi0 = etaRegionID;
+	  } else if (fabs_pi0P4_eta < 2.0) {                       
+	    etaRegionID = 3;
+	    whichRegionEcalStreamPi0 = etaRegionID;
+	  } else {
+	    etaRegionID = 3; // same as above for calibration cuts
+	    whichRegionEcalStreamPi0 = 4; // this is a different region for the stream
+	  }
 
 	}
 
+	//std::cout << "pio mass: w/o corr, w/ corr --> " << pi0P4_nocor_mass << "," << pi0P4_mass << endl;  
+	
+	// pi0/eta pT cut
+	//if (pi0P4_nocor_pt < pi0PtCut_[etaRegionID]) continue;
+	if (pi0P4_pt < pi0PtCut_[etaRegionID]) continue;
+	if(Nxtal_EnergGamma  < nXtal_1_cut_[etaRegionID] ) continue; 
+	if(Nxtal_EnergGamma2 < nXtal_2_cut_[etaRegionID] ) continue;
+
+
+	if (subDetId == EcalBarrel) {
+	  double pi0_ieta = fabs(pi0P4_eta)/0.0174;
+	  pi0MassVsIetaEB->Fill( pi0_ieta, pi0P4_mass);
+	  pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
+	  photonDeltaRVsIetaEB->Fill( pi0_ieta, DeltaR_g1g2_nocor);
+	}
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+
 	//////////////////
 	// pi0/eta isolation cut (distance to other clusters)
-	// might be merged with the HLT isolation
+	// computed with the HLT isolation in one go
+	//////////////////
+	// Implementation of HLT Filter Isolation - Eta Band Isolation 
+	// implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
+	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
 	//////////////////
 	float nextClu = 999., Drtmp = 999.;
-	for(size_t ind=0; ind<clusters.size(); ++ind){
-	  if( ind !=i && ind != j) {
-	    const CaloCluster* Gtmp = &(clusters[ind]);
-	    double deltaR1 = GetDeltaR(Gtmp->eta(),g1eta,Gtmp->phi(),g1phi);
-	    double deltaR2 = GetDeltaR(Gtmp->eta(),g2eta,Gtmp->phi(),g2phi);
-	    if( deltaR1<Drtmp || deltaR2<Drtmp ) {
-	      nextClu = min(deltaR1,deltaR2);
+	double deltaR1 = 0.0, deltaR2 = 0.0;
+	for (std::vector<CaloCluster>::const_iterator Gtmp  = clusters.begin(); Gtmp != clusters.end(); ++Gtmp) {
+	  if (Gtmp != g1 and Gtmp != g2) {
+	    // pi0 iso
+	    deltaR1 = GetDeltaR(Gtmp->eta(),g1eta,Gtmp->phi(),g1phi);
+	    deltaR2 = GetDeltaR(Gtmp->eta(),g2eta,Gtmp->phi(),g2phi);
+	    if(deltaR1 < Drtmp || deltaR2 < Drtmp) {
+	      nextClu = min(deltaR1, deltaR2);
 	      Drtmp = nextClu;
 	    }
 	  }
 	}
+	if (nextClu < pi0IsoCut_[etaRegionID]) continue;
 
-	if (subDetId == EcalBarrel) {
-
-	  if (fabs(pi0P4_eta)<1.0)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
-	  else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	  if (isDebug_) EventFlow_EB_debug->Fill(3.);
-
-	} else {
-	  
-	  if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
-	  else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	  if (isDebug_) EventFlow_EE_debug->Fill(3.);
-
+	double deltaR0 = 0.0, deta = 0.0, gPtTmp = 0.0;
+	float hlt_iso = 0.0;
+	for (std::vector<CaloCluster>::const_iterator Gtmp  = clusters.begin(); Gtmp != clusters.end(); ++Gtmp) {
+	  if (Gtmp != g1 and Gtmp != g2) {
+	    // HLT iso part
+	    // cluster must be inside of an eta strip 
+	    deta = fabs(Gtmp->eta() - pi0P4_eta); 
+	    if (deta > hlt_iso_deta) continue;
+	    // now dR
+	    deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
+	    if (deltaR0  > hlt_iso_dr) continue;
+	    // now pt
+	    gPtTmp = Gtmp->energy()/cosh(Gtmp->eta());
+	    if (gPtTmp < ptMinForIso) continue; 
+	    hlt_iso += gPtTmp;
+	  }
 	}
-	// Implementation of HLT Filter Isolation - Eta Band Isolation 
-	// implemented in HLT: CMSSW_7_1_0/src/HLTrigger/special/src/HLTEcalResonanceFilter.cc
-	// see Yong Yang's  Thesis: http://thesis.library.caltech.edu/7345/
-
-	if (isDebug_) cout << "[DEBUG] Running HLT Isolation" << endl;
-
-	float hlt_iso = 0;
-	for(size_t ind=0; ind < clusters.size(); ++ind){
-	  if( clusters[ind].seed() == clusters[i].seed() || clusters[ind].seed() == clusters[j].seed()) continue;
-	  const CaloCluster* Gtmp = &(clusters[ind]);
-	  // delta R from the pi0 candidates
-	  double deltaR0 = GetDeltaR(Gtmp->eta(), pi0P4_eta, Gtmp->phi(), pi0P4_phi);
-	  if (deltaR0  > hlt_iso_dr) continue;
-	  // cluster must be inside of an eta strip 
-	  double deta = fabs(Gtmp->eta() - pi0P4_eta); 
-	  if (deta > hlt_iso_deta) continue;
-	  double gPtTmp = Gtmp->energy()/cosh(Gtmp->eta());
-	  if (gPtTmp < ptMinForIso) continue; 
-	  hlt_iso += gPtTmp;
-	}
-	// the cut is taken relative to the pi0 pt
 	hlt_iso /= pi0P4_pt;
-	//category break down of cuts
-	// pi0/eta isolation cut
-	if (subDetId == EcalBarrel) {
 
-	  if (fabs(pi0P4_eta)<1.0)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
-	  else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	  if (isDebug_) EventFlow_EB_debug->Fill(4.);
+	if (hlt_iso > pi0HLTIsoCut_[etaRegionID]) continue;
 
-	} else {
-	  
-	  if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
-	  else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	  if (isDebug_) EventFlow_EE_debug->Fill(4.);
-
-	}
-
-
-	if (isDebug_) cout << "[DEBUG] Fill Optimization Variables..." << endl;
 
 	if (fillKinematicVariables_) {
 
@@ -2613,35 +2574,22 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  // also, I should add the mass cut
 	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
-	  if (pi0P4_mass > mass_low_withCorrCut && pi0P4_mass < mass_high_withCorrCut) {
-
-	    if (subDetId == EcalBarrel) {
-	      if (fabs(pi0P4_eta)<1.0) whichRegionEcalStreamPi0 = 0;
-	      else if (fabs(pi0P4_eta)<1.479) whichRegionEcalStreamPi0 = 1;
-	    } else {
-	      if (fabs(pi0P4_eta)<1.8) whichRegionEcalStreamPi0 = 2;
-	      else if (fabs(pi0P4_eta)<2.0) whichRegionEcalStreamPi0 = 3;
-	      else whichRegionEcalStreamPi0 = 4;	     
-	    }
-
-	    pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
-	    g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
-	    g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
-	    g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g1);
-	    g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g2);
-	    pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
-	    g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,GetDeltaR(g1eta,g2eta,g1phi,g2phi));
-	    if (isMC_) {
-	      pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
-	    }	   
-
-	  }
+	  pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
+	  g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
+	  g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
+	  g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g1);
+	  g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g2);
+	  pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
+	  g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,DeltaR_g1g2_nocor);
+	  if (isMC_) {
+	    pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+	  }	   
 
 	}
 
 
 	//Fill Optimization
-	if( MakeNtuple4optimization_ && pi0P4_mass > mass_low_withCorrCut && pi0P4_mass < mass_high_withCorrCut) {
+	if( MakeNtuple4optimization_) {
 
 	  //FIXME: check how the tree is filled when using E/Etrue corrections (evaluate to save both corrected and uncorrected photons, because also position is changed)
 	  // add in case a flag saying which corrections are used
@@ -2662,7 +2610,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    Op_mPi0_cor.push_back(    pi0P4_mass);
 	    Op_etaPi0_cor.push_back(  pi0P4_eta);
 	    Op_ptPi0_cor.push_back(   pi0P4_pt);
-	    Op_DeltaRG1G2.push_back(  GetDeltaR( g1eta, g2eta, g1phi, g2phi ));
+	    Op_DeltaRG1G2.push_back(  DeltaR_g1g2_nocor);
 	    Op_ptPi0_nocor.push_back( pi0P4_nocor_pt);
 	    Op_mPi0_nocor.push_back(  pi0P4_nocor_mass);
 	    Op_Es_e1_1.push_back(     (subDetId==EcalBarrel) ? 0. : Es_1[i]);
@@ -2745,11 +2693,11 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 
 	}
 	
-	if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
+	//if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
 
 	if (!MakeNtuple4optimization_) {
 
-	  if (isDebug_) cout << "[DEBUG] computing region weights" << endl; 
+	  //if (isDebug_) cout << "[DEBUG] computing region weights" << endl; 
 
 	  // compute region weights
 	  RegionWeightVector w1 = regionalCalibration_->getWeights( &(*g1), subDetId ); // region weights W_j^k for clu1
@@ -2768,92 +2716,86 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    const float& w = (*it).value;
 
 	    if(subDetId==EcalBarrel){
-		if( pi0P4_mass > mass_low_withCorrCut && pi0P4_mass < mass_high_withCorrCut){
-		  if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
-		    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
-		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
-		  std::map<int,vector<int>>::iterator it; 
-		  int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
-		  int iSM = List_IR_EtaPhi.find(iR)->second[2];
-		  //If Low Statistic fill all the Eta Ring
-		  if( EtaRingCalibEB_ ){
-		    for(auto const &iterator : ListEtaFix_xtalEB){
-			if( iterator.first == iEta ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
-			  }
-			}
-		    }
-		  }
-		  if( SMCalibEB_ ){
-		    for(auto const &iterator : ListSMFix_xtalEB){
-			if( iterator.first == iSM ){ 
-			  for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			    epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
-			  }
-			}
+	      if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
+		epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
+	      std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
+	      std::map<int,vector<int>>::iterator it; 
+	      int iEta = List_IR_EtaPhi.find(iR)->second[0]; 
+	      int iSM = List_IR_EtaPhi.find(iR)->second[2];
+	      //If Low Statistic fill all the Eta Ring
+	      if( EtaRingCalibEB_ ){
+		for(auto const &iterator : ListEtaFix_xtalEB){
+		  if( iterator.first == iEta ){ 
+		    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+		      epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
 		    }
 		  }
 		}
+	      }
+	      if( SMCalibEB_ ){
+		for(auto const &iterator : ListSMFix_xtalEB){
+		  if( iterator.first == iSM ){ 
+		    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+		      epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w); 
+		    }
+		  }
+		}		
+	      }
 	    }
 	    else {
-		if(pi0P4_mass > mass_low_withCorrCut && pi0P4_mass < mass_high_withCorrCut){
-		  if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
-		  std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
-		  std::map<int,vector<int>>::iterator it; 
-		  int iX = List_IR_XYZ.find(iR)->second[0]; 
-		  int iY = List_IR_XYZ.find(iR)->second[1]; 
-		  int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
-		  if( iZ==-1 ){
-		    //If Low Statistic fill all the Eta Ring
-		    if( EtaRingCalibEE_ ){
-			for(auto const &iterator : ListEtaFix_xtalEEm){
-			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
-			    }
-			  }
-			}
-		    }
-		    if( SMCalibEE_ ){
-			for(auto const &iterator : ListQuadFix_xtalEEm){
-			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
-			    }
-			  }
-			}
-		    }
-		  }
-		  else{
-		    //If Low Statistic fill all the Eta Ring
-		    if( EtaRingCalibEE_ ){
-			for(auto const &iterator : ListEtaFix_xtalEEp){
-			  if( iterator.first == GetRing( iX, iY, VectRing,false) ){
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
-			    }
-			  }
-			}
-		    }
-		    if( SMCalibEE_ ){
-			for(auto const &iterator : ListQuadFix_xtalEEp){
-			  if( iterator.first == Quad ){ 
-			    for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
-			      epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
-			    }
-			  }
-			}
+	      if( !EtaRingCalibEE_ && !SMCalibEE_ ) epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
+	      std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
+	      std::map<int,vector<int>>::iterator it; 
+	      int iX = List_IR_XYZ.find(iR)->second[0]; 
+	      int iY = List_IR_XYZ.find(iR)->second[1]; 
+	      int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
+	      if( iZ==-1 ){
+		//If Low Statistic fill all the Eta Ring
+		if( EtaRingCalibEE_ ){
+		  for(auto const &iterator : ListEtaFix_xtalEEm){
+		    if( iterator.first == GetRing( iX, iY, VectRing,false) ){ 
+		      for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+		      }
 		    }
 		  }
 		}
+		if( SMCalibEE_ ){
+		  for(auto const &iterator : ListQuadFix_xtalEEm){
+		    if( iterator.first == Quad ){ 
+		      for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+		      }
+		    }
+		  }
+		}
+	      }
+	      else{
+		//If Low Statistic fill all the Eta Ring
+		if( EtaRingCalibEE_ ){
+		  for(auto const &iterator : ListEtaFix_xtalEEp){
+		    if( iterator.first == GetRing( iX, iY, VectRing,false) ){
+		      for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+		      }
+		    }
+		  }
+		}
+		if( SMCalibEE_ ){
+		  for(auto const &iterator : ListQuadFix_xtalEEp){
+		    if( iterator.first == Quad ){ 
+		      for(unsigned int iRtmp=0; iRtmp<iterator.second.size(); iRtmp++){ 
+			epsilon_EE_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iterator.second[iRtmp], w ); 
+		      }
+		    }
+		  }
+		}
+	      }
 	    }
-	  }  
+	  }
 	} // end filling histograms with mass
 
-	if (isDebug_) cout << "[DEBUG] End of Cluster Loop" << endl;
-
-
+	// if (isDebug_) cout << "[DEBUG] End of Cluster Loop" << endl;
     } // loop over clusters (g2)
   } // loop over clusters to make pi0 
 
@@ -2892,10 +2834,8 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
     std::vector<CaloCluster>::const_iterator g2 = g1 + 1;
     size_t j= i + 1;
 
-    if (isDebug_) cout << "\n[DEBUG] New Pair of Clusters"<< endl;
+    //if (isDebug_) cout << "\n[DEBUG] New Pair of Clusters"<< endl;
 
-    if( subDetId==EcalBarrel ) {EventFlow_EB->Fill(4.); if (isDebug_) EventFlow_EB_debug->Fill(0.);}
-    else                       {EventFlow_EE->Fill(4.); if (isDebug_) EventFlow_EE_debug->Fill(0.);}
 
     // the following correction parameters are actually useless for MC. They would be a correction coming from a regression when using data
     // but this method is meant to be used with MC exactly to compute the containment corrections
@@ -3018,13 +2958,11 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	if (fabs(pi0P4_eta)<1.0)       { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	if (isDebug_) EventFlow_EB_debug->Fill(1.);
 
       } else {
 	  
 	if (fabs(pi0P4_eta)<1.8 )     { if( pi0P4_nocor_pt < pi0PtCut_low_[subDetId]) continue; }	  
 	else                          { if( pi0P4_nocor_pt < pi0PtCut_high_[subDetId]) continue; }
-	if (isDebug_) EventFlow_EE_debug->Fill(1.);
 
       }
 
@@ -3044,13 +2982,11 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	if (fabs(pi0P4_eta)<1.0)       { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	if (isDebug_) EventFlow_EB_debug->Fill(2.);
 
       } else {
 	  
 	if (fabs(pi0P4_eta)<1.8 )     { if( nextClu<pi0IsoCut_low_[subDetId] ) continue; }	  
 	else                          { if( nextClu<pi0IsoCut_high_[subDetId] ) continue; }
-	if (isDebug_) EventFlow_EE_debug->Fill(2.);
 
       }
 
@@ -3083,13 +3019,11 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 
 	if (fabs(pi0P4_eta)<1.0)       { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }
 	else if (fabs(pi0P4_eta)<1.479) { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	if (isDebug_) EventFlow_EB_debug->Fill(3.);
 
       } else {
 	  
 	if (fabs(pi0P4_eta)<1.8 )     { if( hlt_iso > pi0HLTIsoCut_low_[subDetId]  && CutOnHLTIso_ ) continue; }	  
 	else                          { if( hlt_iso > pi0HLTIsoCut_high_[subDetId] && CutOnHLTIso_ ) continue; }
-	if (isDebug_) EventFlow_EE_debug->Fill(3.);
 
       }
       //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3110,8 +3044,6 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	pi0MassVsIetaEB->Fill( pi0_ieta, pi0P4_mass);
 	pi0MassVsETEB->Fill(pi0P4_pt, pi0P4_mass);
 	photonDeltaRVsIetaEB->Fill( pi0_ieta, GetDeltaR(g1eta,g2eta,g1phi,g2phi));
-	if (isDebug_) EventFlow_EB_debug->Fill(4.);
-	EventFlow_EB->Fill(5.);
 
       } else {
 
@@ -3122,8 +3054,6 @@ void FillEpsilonPlot::computeEoverEtrue(std::vector< CaloCluster > & clusters, s
 	  if( Nxtal_EnergGamma < nXtal_1_cut_high_[subDetId] ) continue; 
 	  if( Nxtal_EnergGamma2 < nXtal_2_cut_high_[subDetId] ) continue;
 	}
-	if (isDebug_) EventFlow_EE_debug->Fill(4.);
-	EventFlow_EE->Fill(5.);
 
       }
 
@@ -3528,30 +3458,7 @@ void FillEpsilonPlot::endJob(){
   if(MakeNtuple4optimization_){
     Tree_Optim->Write();
   }
-  EventFlow_EB->Write();  if (isDebug_) EventFlow_EB_debug->Write();
-  EventFlow_EE->Write();  if (isDebug_) EventFlow_EE_debug->Write();
 
-  // if (isEoverEtrue_) {
-  //   allEoverEtrue_g1_EB->Write();
-  //   allEoverEtrue_g1_EBnw->Write();
-  //   allEoverEtrue_g1_EE->Write();
-  //   allEoverEtrue_g1_EEnw->Write();
-  //   allEoverEtrue_g2_EB->Write();
-  //   allEoverEtrue_g2_EBnw->Write();
-  //   allEoverEtrue_g2_EE->Write();
-  //   allEoverEtrue_g2_EEnw->Write();
-  // } else {
-  //   allEpsilon_EB->Write();
-  //   allEpsilon_EBnw->Write();
-  //   allEpsilon_EE->Write();
-  //   allEpsilon_EEnw->Write();
-  // }
-  // entries_EEp->Write();
-  // entries_EEm->Write();
-  // entries_EB->Write();
-  // Occupancy_EEp->Write();
-  // Occupancy_EEm->Write();
-  // Occupancy_EB->Write();
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
   photonDeltaRVsIetaEB->Write();

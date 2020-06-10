@@ -192,21 +192,28 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       // selection criteria
       double gPtCut_low_[3];
       double gPtCut_high_[3];
+      std::vector<double> gPtCut_;
       double pi0PtCut_low_[3];
       double pi0PtCut_high_[3];
+      std::vector<double> pi0PtCut_;
 
       double pi0IsoCut_low_[3];
       double pi0IsoCut_high_[3];
+      std::vector<double> pi0IsoCut_;
       bool   CutOnHLTIso_;
       double pi0HLTIsoCut_low_[3];
       double pi0HLTIsoCut_high_[3];
+      std::vector<double> pi0HLTIsoCut_;
 
-      double nXtal_1_cut_low_[3];
-      double nXtal_1_cut_high_[3];
-      double nXtal_2_cut_low_[3];
-      double nXtal_2_cut_high_[3];
+      int nXtal_1_cut_low_[3];
+      int nXtal_1_cut_high_[3];
+      int nXtal_2_cut_low_[3];
+      int nXtal_2_cut_high_[3];
+      std::vector<int> nXtal_1_cut_;
+      std::vector<int> nXtal_2_cut_;
       double S4S9_cut_low_[3];
       double S4S9_cut_high_[3];
+      std::vector<double> S4S9_cut_;
       int SystOrNot_;
 
       // MC stuff
@@ -298,24 +305,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<int> Ncristal_EE, Ncristal_EE_used;
       std::vector<int> Ncristal_EB, Ncristal_EB_used;
 
-      TH1F *EventFlow_EB;
-      TH1F *EventFlow_EE;
-      TH1F *EventFlow_EB_debug;
-      TH1F *EventFlow_EE_debug;
       TH1F **epsilon_EB_h;  // epsilon distribution by region
       TH1F **epsilon_EE_h;  // epsilon distribution in EE
       TH2F *epsilon_EB_h2D;  // epsilon distribution by region
       TH2F *epsilon_EE_h2D;  // epsilon distribution by region
-      /* TH1F *allEpsilon_EE;  */
-      /* TH1F *allEpsilon_EEnw;  */
-      /* TH1F *allEpsilon_EB; */
-      /* TH1F *allEpsilon_EBnw; */
-      /* TH2F *entries_EEp; */
-      /* TH2F *entries_EEm; */
-      /* TH2F *entries_EB; */
-      /* TH2F *Occupancy_EEp; */
-      /* TH2F *Occupancy_EEm; */
-      /* TH2F *Occupancy_EB; */
       TH2F *pi0MassVsIetaEB;
       TH2F *pi0MassVsETEB;
       TH2F *photonDeltaRVsIetaEB;
