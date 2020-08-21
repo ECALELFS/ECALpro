@@ -61,7 +61,7 @@ Output     = {ld}/$(ProcId).out
 Error      = {ld}/$(ProcId).error
 getenv      = True
 environment = "LS_SUBCWD={here}"
-next_job_start_delay = 1
+#next_job_start_delay = 1 # apparently no longer supported
 request_memory = {mem}
 #requirements = (OpSysAndVer =?= "SLCern6")
 +MaxRuntime = {time}
@@ -219,76 +219,6 @@ for iters in range(nIterations):
 
         print 'Done with the Fill part'
 
-        # print "="*30
-        # print "This is a test: execution will end here"
-        # print "="*30
-        # quit()
-
-        ##########
-        # only for ntuples, resubmit failed *EcalNtp*.root jobs (max number of resubmission is hardcoded, currently it is only 2 in order not to waste too much time)
-        ##########
-        # if MakeNtuple4optimization:
-
-        #     NtpRecoveryAttempt = 0
-        #     goodNtp = 0
-        #     while goodNtp < njobs and NtpRecoveryAttempt < 2:
-                
-        #         logdir    = logPath    + '/Fill/iter_{it}_recovery_{nr}'.format(it=str(iters), nr=str(NtpRecoveryAttempt))
-        #         if not os.path.exists(logdir): os.makedirs(logdir)
-        #         condor_file_name = condordir+'/condor_submit_fill_recovery_{nr}.condor'.format(nr=str(NtpRecoveryAttempt))
-        #         condor_file = open(condor_file_name,'w')
-        #         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill_recovery", memory=2000, maxtime=43200)  
-        #         goodNtp = 0
-        #         for ih in range(njobs):
-        #             eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
-        #             testNtpFile_s = 'ls -l ' + eosFile   # eos is now mounted on lxplus
-        #             print "checking the presence and the sanity of EcalNtp file: " + eosFile
-        #             testNtpFile = subprocess.Popen([testNtpFile_s], stdout=subprocess.PIPE, shell=True);
-        #             output = testNtpFile.communicate()[0]
-        #             fsize = 0
-        #             if len(output)>0:
-        #                 print "output = ",output
-        #                 fsize = int(output.split()[4])
-        #             # I expect about some MB, so ask at least 100kB
-        #             if len(output)==0 or fsize<100000:
-        #                 print "The file " + eosFile + " is not present, or empty. Resubmitting ..."
-        #                 Ntp_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_" + str(iters) + "_job_" + str(ijob) + ".sh"
-        #                 condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-        #             else: goodNtp += 1
-                    
-        #         condor_file.close()
-        #         Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        #         # actually submitting recovery tasks
-        #         subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
-        #         outJobs = subJobs.communicate()
-        #         print outJobs
-
-        #         time.sleep(15)
-        #         nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-        #         print "There are {n} jobs for Fill_recovery part".format(n=nFilljobs)
-
-        #         print 'Waiting for filling jobs to be finished...'
-        #         # Daemon cheking running jobs
-        #         print "Checking recovery of Ntp ..."
-        #         while nFilljobs > 0 :
-        #             time.sleep(900)
-        #             nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-        #             print "I still see {n} jobs for Fill_recovery part".format(n=nFilljobs)
-        #             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
-        #             datalines2 = (checkJobs2.communicate()[0]).splitlines()
-
-        #         NtpRecoveryAttempt += 1
-        #         print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
-
-#     if MakeNtuple4optimization:
-#         print """MakeNtuple4optimization is set to True in parameters.py
-# Code will stop know before adding the *EcalNtp*.root files.
-# It is better that you run on all the output files using a TChain. Indeed, these are big files, and the hadd part is slow and the jobs can fail in producing the output. 
-# """
-#         print "Done with iteration " + str(iters)
-#         quit()
-
-    #HADD for batch and CRAB, if you do not want just the finalHADD or the FIT
     if ( not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
         
         #if MakeNtuple4optimization:
@@ -310,24 +240,40 @@ for iters in range(nIterations):
                                       memory=2000, maxtime=mymaxtimeFill)  
                 goodNtp = 0
                 for ih in range(njobs):
+                    
+                    #######
+                    # performing a check on root files on eos here is slow, it is better that each job performs its own check, and possibly delete bad files,
+                    # then one only check for the presence of the file
+                    #
+                    # one could also save some information locally to assess in a faster way how many and which jobs failed
+                    #######
+                 
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
                     Ntp_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     print "checking the presence and the sanity of EcalNtp file: " + eosFile
-                    filesize=0
-                    if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
-                    if filesize>100000:
-                        tf = TFile.Open("root://eoscms/"+eosFile)
-                        if not tf or tf.IsZombie(): 
-                            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                        elif tf.TestBit(TFile.kRecovered):                    
-                            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                            tf.Close()
-                        else:
-                            goodNtp += 1
-                            tf.Close()
-                    else:
-                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                                            
+                    ######
+                    ### old code
+                    # filesize=0
+                    # if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
+                    # if filesize>100000:
+                    #     tf = TFile.Open("root://eoscms/"+eosFile)
+                    #     if not tf or tf.IsZombie(): 
+                    #         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
+                    #     elif tf.TestBit(TFile.kRecovered):                    
+                    #         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
+                    #         tf.Close()
+                    #     else:
+                    #         goodNtp += 1
+                    #         tf.Close()
+                    # else:
+                    #     condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
+                    ### end of old code
+                    ####
+                    ### new code
+                    if not os.path.exists(eosFile):
+                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))                   
+                    ### end of new code
+                    ####
                 condor_file.close()
                 print "Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs)
                 nGoodOverTot = float(goodNtp)/float(njobs)

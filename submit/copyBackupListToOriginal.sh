@@ -8,7 +8,7 @@
 # note that some files are removed, so be careful!
 
 folder="AlCaEta_2016_ULrereco_ext1_fromIter4"
-iter="3"
+iter="3"  # usually starts from 0
 
 path="${folder}/src/hadd/"
 fullpath="$PWD/${folder}/src/hadd/"

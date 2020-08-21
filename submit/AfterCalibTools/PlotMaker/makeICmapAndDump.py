@@ -3,8 +3,8 @@ import time
 
 ROOT.gROOT.SetBatch(True)
 
-foldername = "AlCaEta_2016_ULrereco"
-niter = 7       # generally it starts from 0
+foldername = "AlCaEta_2018_tagAsPi0ForULcalibration_v2_ext1_fromIter4"
+niter = 4       # generally it starts from 0
 eosPi0Folder = "piZero_Run2"
 excludeMod2EBm16 = True
 excludeMod4EBm06 = True if "2016" in foldername else False # might also have iphi in 41-60

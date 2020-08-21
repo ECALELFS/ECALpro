@@ -6,16 +6,15 @@ ROOT.gROOT.SetBatch(True)
 absoluteIC = 0
 outpath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/ratioIC/"
 #outdir = "AlCaP0_AllRun2017_condor_iter1__Over__AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6_iter6/"
-outdir = "AlCaP0_2016_ULrereco_from0_iter9__Over_AlCaEta_2016_ULrereco_iter7/"
+outdir = "AlCaEta_UL2018__Over_AlCaP0_UL2018/"
 canvasSuffix = "ratioIC"
 #label1 = "2018 UL (half 2018, ~30 fb^{-1 })"
 #label2 = "2018 test (other half, ~30 fb^{-1 })"
-label1 = "UL 2016 #pi^{0}, iter 10"
-label2 = "UL 2016 #eta, iter 8"
+label1 = "UL 2016 #eta"
+label2 = "UL 2016 #pi^{0}"
     
-
-f1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_2016_ULrereco_from0/iter_9/2DMaps/ICmaps/IC_work/calibrationMaps.root"
-f2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaEta_2016_ULrereco/iter_7/2DMaps/ICmaps/IC_work/calibrationMaps.root"
+f1 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaEta_2018_tagAsPi0ForULcalibration_v2_ext1_fromIter4/iter_0/2DMaps/ICmaps/IC_work/calibrationMaps.root"
+f2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_2018_ULrereco_1every2_ext1_fromIter6/iter_3/2DMaps/ICmaps/IC_work/calibrationMaps.root"
 
 n1 = { "EB"  : "calibMap_EB",
        "EEp" : "calibMap_EEp",

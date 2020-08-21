@@ -650,6 +650,7 @@ void draw_nTH1(const vector<TH1*>& vecHist1d_orig = {},
 	       ) 
 {
 
+  
   TH1::SetDefaultSumw2(); //all the following histograms will automatically call TH1::Sumw2() 
 
   // assume the "nominal histogram is the first one
@@ -657,9 +658,15 @@ void draw_nTH1(const vector<TH1*>& vecHist1d_orig = {},
   // this is needed if we rebin and use again the histogram outside the function (we would be modifying the histogram passed to the function)
   vector<TH1*> vecHist1d;
   vector<Double_t> integral_orig;
+  double sumIntegrals = 0.0;
   for (UInt_t i = 0; i < vecHist1d_orig.size(); i++) {
     vecHist1d.push_back(new TH1F(*((TH1F*) vecHist1d_orig[i]->Clone()) ) );
     integral_orig.push_back(vecHist1d_orig[i]->Integral());
+    sumIntegrals += vecHist1d_orig[i]->Integral();
+  }
+  if (sumIntegrals < 0.00001) {
+    cout << "Error: all histograms are empty" << endl;
+    exit(0);
   }
 
   double legLowY = 0.75;

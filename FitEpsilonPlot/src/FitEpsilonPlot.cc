@@ -88,8 +88,8 @@ static float fitRange_low_pi0 = 0.080; // value used in the fit function to defi
 static float fitRange_high_pi0 = 0.212; // value used in the fit function to define the fit range
 static float fitRange_high_pi0_ext = 0.222;
 
-static float fitRange_low_eta = 0.400; // value used in the fit function to define the fit range
-static float fitRange_low_etaEE = 0.380; // value used in the fit function to define the fit range
+static float fitRange_low_eta = 0.380; // value used in the fit function to define the fit range
+static float fitRange_low_etaEE = 0.360; // value used in the fit function to define the fit range
 static float fitRange_high_eta = 0.680; // value used in the fit function to define the fit range
 static float fitRange_high_eta_ext = 0.700;
 
@@ -2082,17 +2082,17 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     //RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
     RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.45, maxMassForGaussianMean,"GeV/c^{2}");
-    RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,Are_pi0_ ? 0.015 : 0.025,"GeV/c^{2}");
+    RooRealVar sigma("sigma","#pi^{0} core #sigma",Are_pi0_ ? 0.011 : 0.02, Are_pi0_ ? 0.005 : 0.01,Are_pi0_ ? 0.015 : 0.035,"GeV/c^{2}");
 
 
     if(mode==Pi0EE)  {
-      mean.setRange( Are_pi0_? 0.1:0.45, maxMassForGaussianMean);
-      mean.setVal(Are_pi0_? 0.13:0.55);
-      sigma.setRange(0.005, Are_pi0_ ? 0.020 : 0.035);
+      mean.setRange( Are_pi0_? 0.1:0.42, maxMassForGaussianMean);
+      mean.setVal(Are_pi0_? 0.13:0.52);
+      sigma.setRange(Are_pi0_ ? 0.005 : 0.01, Are_pi0_ ? 0.020 : 0.05);
     }
     if(mode==Pi0EB && niter==1){
       mean.setRange(Are_pi0_? 0.105:0.47, maxMassForGaussianMean);
-      sigma.setRange(0.003, 0.030);	  
+      sigma.setRange(Are_pi0_ ? 0.003 : 0.016, Are_pi0_ ? 0.030 : 0.03);	  
     }
 
     //RooRealVar Nsig("Nsig","#pi^{0} yield",1000.,0.,1.e7);
@@ -2137,7 +2137,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     // 2nd order means a curve with no change of concavity
     
     if(niter==1){
-      cbpars.add( cb3);
+      cbpars.add(cb3);
     }
     if(niter==2){
       cb3.setRange(-1,1.);

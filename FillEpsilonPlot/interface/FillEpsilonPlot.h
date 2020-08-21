@@ -124,25 +124,14 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::string fileEoverEtrueContainmentCorrections_;
       double scalingEoverEtrueCC_g1_;
       double scalingEoverEtrueCC_g2_;
-      std::string ebContainmentCorrections_;
-      std::string MVAEBContainmentCorrections_01_;
-      std::string MVAEBContainmentCorrections_02_;
-      std::string MVAEEContainmentCorrections_01_;
-      std::string MVAEEContainmentCorrections_02_;
-      std::string MVAEBContainmentCorrections_eta01_;
-      std::string MVAEBContainmentCorrections_eta02_;
       std::string Endc_x_y_;
       bool        EtaRingCalibEB_;
       bool        SMCalibEB_;
       bool        EtaRingCalibEE_;
       bool        SMCalibEE_;
       std::string CalibMapEtaRing_;
-      std::string ebPHIContainmentCorrections_;
-      std::string eeContainmentCorrections_;
       std::string Barrel_orEndcap_;
       bool useContainmentCorrectionsFromEoverEtrue_;
-      bool useEBContainmentCorrections_;
-      bool useEEContainmentCorrections_;
       bool useOnlyEEClusterMatchedWithES_;
       bool HLTResults_;
       std::string HLTResultsNameEB_;
@@ -154,8 +143,6 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       //float L1BitCollection_[NL1SEED];
 
       bool Are_pi0_;
-      bool useMVAContainmentCorrections_;
-      bool new_pi0ContainmentCorrections_;
 
       bool L1TriggerInfo_;
       edm::EDGetTokenT<EBRecHitCollection> EBRecHitCollectionToken_;
@@ -332,6 +319,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<Float_t> Op_mPi0_cor;
       std::vector<Float_t> Op_etaPi0_cor;
       std::vector<Float_t> Op_ptPi0_cor;
+      std::vector<Float_t> Op_phiPi0_cor;
       std::vector<Float_t> Op_DeltaRG1G2;
       std::vector<Float_t> Op_Es_e1_1;
       std::vector<Float_t> Op_Es_e1_2;
@@ -354,6 +342,8 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       std::vector<Float_t> Op_phiG1_nocor;
       std::vector<Float_t> Op_phiG2_nocor;
       std::vector<Float_t> Op_ptPi0_nocor;
+      std::vector<Float_t> Op_etaPi0_nocor;
+      std::vector<Float_t> Op_phiPi0_nocor;
       std::vector<Float_t> Op_mPi0_nocor;
       std::vector<Float_t> Op_enG1_true;
       std::vector<Float_t> Op_enG2_true;
