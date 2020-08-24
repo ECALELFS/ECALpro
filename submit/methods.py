@@ -454,7 +454,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 
 def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, justDoHistogramFolding=False ):
     if isEoverEtrue and localFolderToWriteFits:
-        outputDir = outputDir.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
+        outputDir = outputDir.replace("/tmp",localFolderToWriteFits)
     outputfile.write("import FWCore.ParameterSet.Config as cms\n")
     outputfile.write("process = cms.Process('FitEpsilonPlot')\n")
     outputfile.write("process.load('FWCore.MessageService.MessageLogger_cfi')\n")
@@ -514,7 +514,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, just
 
 def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, justDoHistogramFolding=False):
     if isEoverEtrue and localFolderToWriteFits:        
-        source = source.replace("/tmp","/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits")
+        source = source.replace("/tmp",localFolderToWriteFits)
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
@@ -558,18 +558,29 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         iterJob = iterJob.replace("fillEps_","").replace(".py","")
         copiedCCfile = str(fileEoverEtrueContainmentCorrections.split('/')[-1])
         copiedCCfile = "/tmp/" + copiedCCfile.replace(".root","_{itj}.root".format(itj=iterJob))
-        # copy file to tmp
-        cpcmd = "xrdcp -f {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections, rfcopy=copiedCCfile)    
-        cpcmd = "xrdcp {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections,rfcopy=copiedCCfile)    
+        # copy file to tmp (recreate if already exists using -f)
+        cpcmd = "xrdcp -f {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections, rfcopy=copiedCCfile)
+        #cpcmd = "xrdcp {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections,rfcopy=copiedCCfile) 
         outputfile.write("echo '" + cpcmd + "'\n")
         outputfile.write(cpcmd + "\n")
-    if not(Silent):
+    if not Silent:
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
-        outputfile.write("echo 'cp " + source + " " + destination + "'\n")
-        outputfile.write("cp " + source + " " + destination + "\n")
-        outputfile.write("echo 'rm -f " + source + "'\n")
-        outputfile.write("rm -f " + source + "\n")
+
+        outputfile.write("if test -f " + source + "; then\n")
+        outputfile.write("    echo 'file exists in %s and is good, now copying to eos'\n" % source)
+        outputfile.write("    echo 'cp " + source + " " + destination + "'\n")
+        outputfile.write("    cp " + source + " " + destination + "\n")
+        outputfile.write("    echo 'rm -f " + source + "'\n")
+        outputfile.write("    rm -f " + source + "\n")
+        outputfile.write("    echo 'now checking goodness of file on eos'\n")
+        outputfile.write("    cmdpy='python " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
+        outputfile.write("    echo \"${cmdpy}\"\n") # note: need " and not '  here !!
+        outputfile.write("    echo \"${cmdpy}\" | bash\n") # here as well
+        outputfile.write("    echo ''\n")
+        outputfile.write("else\n")
+        outputfile.write("    echo 'file did not exist in /tmp/ (probably it was bad and deleted already'\n")
+        outputfile.write("fi\n")
     else:
         outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FILL_COUT:/{quote}' > " + logpath  + "\n")
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")

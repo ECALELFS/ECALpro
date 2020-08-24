@@ -7,7 +7,7 @@ ExternalGeometry   = 'caloGeometry.root'
 CalibType          = 'xtal'              # Calibrating single xtals. I never try but you could calibrate EtaRing ot Trigger Towers
 
 #Are Pi0
-Are_pi0            = False               # True = using Pi0, False = using Eta
+Are_pi0            = True               # True = using Pi0, False = using Eta
 #Fold per Eta Ring
 EtaRingCalibEB     = False
 SMCalibEB          = False
@@ -35,7 +35,7 @@ isMCV1 = False  # use V1 MC, otherwise V2 (some options are changed automaticall
 useMassInsteadOfEpsilon = True # when doing calibration with mass, use the mass instead of its ratio with the nominal one (can stay True even if isEoverEtrue is True)
 isEoverEtrue = False if isMC==False else True # automatically set to False if isMC is False, otherwise it runs the E/Etrue study to get the containment corrections
 #localFolderToWriteFits = "/afs/cern.ch/work/m/mciprian/ecalpro_stuff/fits" if isEoverEtrue else ""  # no ending / needed
-localFolderToWriteFits = ""
+localFolderToWriteFits = ""  # keep empty if not used, but in any case it only works if isEoverEtrue=True
 # if isEoverEtrue is set to False for MC, it runs the usual pi0 intercalibration using the mass
 MakeNtuple4optimization = False
 useCalibrationSelection = False # to use same selection of calibration when making ntuples (so not to copy all the cuts)
@@ -44,12 +44,12 @@ useStreamSelection = False   # for now it only work with MakeNtuple4optimization
 #inputlist_n      = 'InputList/test_AlCaP0_Run2018_09_07_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list' 
 inputlist_n      = 'InputList/test_AlCaP0_Run2018_09_07_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'
 #inputlist_n      = 'InputList/purified_AlCaP0_Run2018_09_07_2019_1every50.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaEta_2018_testFromRecHits_createRecHits' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_adirname          = 'AlCaEta_2018_tagAsPi0ForULcalibration_ntuplesOptim' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'AlCaPi0_2018_TestDeleteBadFiles' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_adirname          = 'AlCaEta_2018_tagAsPi0ForULcalibration_ntuplesOptim' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 NameTag          = dirname+'_' # Tag to the names to avoid overlap
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 
 # to manage storing of rechits on eos, to avoid running unpacker and local reconstruction (multifit) for each iteration
-justCreateRecHits = True # if True, will run one iteration to produce and store RecHits from Digis
+justCreateRecHits = False # if True, will run one iteration to produce and store RecHits from Digis
 runCalibrationFromRecHits = False # run calibration from rechits (it disables FROMDIGI below), it works if you have already run with justCreateRecHits = True
 eosOutputPathForRecHits = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian" # the path on eos where RecHits are stored (a subfolder named as 'AlCaP0_RecHitsFromDigis_dirname' is created
 filterEventsByAlCaTrigger = True # filter away pi0 or eta depending on what we will use (modest gain in speed for pi0, but huge for eta since number of events is much less). 
@@ -63,7 +63,7 @@ queue            = 'cmscaf1nd'
 #############
 
 #ITERS
-nIterations      = 5 if isMC==False else 1 # 7
+nIterations      = 1 if isMC==False else 1 # 7
 if justCreateRecHits:
    nIterations = 1
 if MakeNtuple4optimization:
@@ -76,7 +76,7 @@ startingCalibMap = 'root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/p
 SystOrNot = 0 # can be 0, 1 or 2 to run on all (default), even or odd events. It works only if you submit this new iteration from an existing one, therefore SubmitFurtherIterationsFromExisting must be set true. Tipically 0 is the default and has no real effect, it is like submitting usual iterations.  
 
 #N files
-ijobmax          = 20 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
+ijobmax          = 2 if isMC==False else 1  # 5 number of files per job, 1 for MC to avoid loosing too many events due to problematic files
 if justCreateRecHits:
    ijobmax = 1 # when recreating rechits from digis, keep same correspondance of files 
 nHadd            = 35 #35                    # 35 number of files per hadd
@@ -366,6 +366,7 @@ if ContainmentCorrection == 'EoverEtrue':  # in this case it is better to undefi
    #fileEoverEtrueContainmentCorrections = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/product_CC/pi0Gun_MC_EoverEtrue_foldSM_v4_iter1/ContainmentCorrections_EoverEtrue.root"
    #fileEoverEtrueContainmentCorrections = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV2_EoverEtrue_foldSM/iter_0/pi0Gun_MCV2_EoverEtrue_foldSM_calibMap.root"
 
+Endc_x_y = 'Endc_x_y_ring.txt' # stored in CalibCode/FillEpsilonPlot/data/
 # preshower
 useOnlyEEClusterMatchedWithES = 'True'
 
