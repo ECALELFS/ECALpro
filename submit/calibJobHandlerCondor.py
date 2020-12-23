@@ -55,103 +55,80 @@ def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatc
     condor_file.write('''Universe = vanilla
 Executable = {de}
 use_x509userproxy = True
-x509userproxy = $ENV(X509_USER_PROXY)
 Log        = {ld}/$(ProcId).log
 Output     = {ld}/$(ProcId).out
 Error      = {ld}/$(ProcId).error
 getenv      = True
 environment = "LS_SUBCWD={here}"
-#next_job_start_delay = 1 # apparently no longer supported
 request_memory = {mem}
-#requirements = (OpSysAndVer =?= "SLCern6")
+periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600) # remove jobs running for more than 48 hours
 +MaxRuntime = {time}
 +JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
     if os.environ['USER'] in ['mciprian']:
-        # mydate = datetime.today()
-        # month = int(mydate.month)
-        # year  = int(mydate.year)
-        # if month == 10 and year == 2019:
-        #     pass
-        #     condor_file.write('+AccountingGroup = "group_u_CMS.u_zh.priority"\n\n')
-        # else:
-        #     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
         condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     else:
         condor_file.write('\n')
 
 parser = OptionParser(usage="%prog [options]")
-parser.add_option(  "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
-parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=False, help="Tells this script if the daemon is running locally (needed to renew the AFS token)")
+parser.add_option("--recover-fill", dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
+parser.add_option("-l", "--daemon-local", dest="daemonLocal", action="store_true", default=False, help="Tells this script if the daemon is running locally (needed to renew the AFS token)")
 parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
-parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp abive this number to skip recover");
+parser.add_option("--min-efficiency-recover-fill", dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp abive this number to skip recover");
+parser.add_option("-i", "--iteration", dest="iteration",  type="int",     default=0,   help="Iteration to start from, usually 0 unless resubmitting jobs")
+parser.add_option("-n", "--njobs", dest="njobs",  type="int",     default=0,   help="Number of jobs")
+#parser.add_option("-q", "--queue", dest="queue",  type="string",     default="",   help="Queue for running jobs")
+parser.add_option("--resubmit", dest="resubmit", action="store_true", default=False, help="Must be set to true when resubmitting jobs")
+parser.add_option("-r", "--run", dest="run",  type="string",     default="",   help="Specify where to start from when resubmitting jobs [hadd,finalhadd,fit,mergefit]")
+parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   help="Can be set to 1 or 2 to run on odd or even events to compute stat uncertainty on intercalibration constants. Default is 0 (run on all events)")
 (options, args) = parser.parse_args()
 
-mode = str(args[0])
 pwd         = os.getcwd()
-num         = 2
 
-print "sys.argv = " + "  ".join(str(x) for x in sys.argv)
-print "args = " + "  ".join(str(x) for x in args)
-#print "mode = ", mode
-print "Nargv = %d   Nargs = %d" % (len(sys.argv), len(args))
+if not options.njobs
+        print "Must specify number of jobs with option -n. Abort"
+        sys.exit(1)
 
-if ( mode.find('BATCH_RESU')==-1 ): # Batch system
-   if len(args) != 2:
-       print "usage thisPyton.py nITER queue"
-       sys.exit(1)
-elif ( mode.find('BATCH_RESU') != -1 ):                                   # Batch Resubmission
-    if len(args) != 4:
-       print "usage thisPyton.py BATCH_RESU nITER queue nJobs"
-       sys.exit(1)
+if options.resubmit: # Batch system
+    if not options.run:
+        print "Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort"
+        sys.exit(1)
+    if options.run not in ["hadd","finalhadd","fit","mergefit"]:
+        print "Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run
+
 #Selec what mode you are running
-RunCRAB = False; RunBatch = True; RunResub = True;
-if ( mode.find('BATCH_RESU') != -1 ):
-     RunBatch = False; RunResub = True;
-else:
-     RunBatch = True; RunResub = False;
 ONLYHADD = False; ONLYFINHADD = False; ONLYFIT = False; ONLYMERGEFIT = False
-if ( mode.find('ONLYHADD') != -1 ):
-     ONLYHADD = True;
-if ( mode.find('ONLYFINALHADD') != -1 ):
-     ONLYFINHADD = True;
-if ( mode.find('ONLYFIT') != -1 ):
-     ONLYFIT = True;
-if ( mode.find('ONLYMERGEFIT') != -1 ):
-     ONLYMERGEFIT = True;
+if options.resubmit:
+    if options.run == "hadd":
+        ONLYHADD = True;
+    elif options.run == "finalhadd":
+        ONLYFINHADD = True;
+    elif options.run == "fit":
+        ONLYFIT = True;
+    if options.run == "mergefit":
+        ONLYMERGEFIT = True;
 
-Add_path = ''
-Add_pathOLDIter = ''
-ListPaths = []
-if ( RunResub ):
-    njobs = int(sys.argv[4])
-    queue = sys.argv[3]
-    nIterations = nIterations - int(sys.argv[2])
-else:
-    njobs = int(sys.argv[1])
-    queue = sys.argv[2]
+Add_path = '' # can add additional path after iter_XXX/
+njobs = options.njobs
 
 outputdir = pwd+'/'+dirname
-condorPath = outputdir + '/condor_files/'
-logPath = outputdir + '/log'
-srcPath  = outputdir + '/src'
-cfgHaddPath  = outputdir + '/src/hadd'
+condorPath  = outputdir + '/condor_files/'
+logPath     = outputdir + '/log'
+srcPath     = outputdir + '/src'
+cfgHaddPath = outputdir + '/src/hadd'
 
 # To compute the num of hadd
 inputlist_f = open( inputlist_n )
 # read the list containing all the input files
 inputlistbase_v = inputlist_f.readlines()
 
-for iters in range(nIterations):
-
-    if ( RunResub ):
-        iters = iters + int(sys.argv[2])
+for iters in range(options.iteration,nIterations):
 
     condordir = condorPath + '/iter_' + str(iters) 
     if not os.path.exists(condordir): os.makedirs(condordir)
     if not os.path.exists(logPath): os.makedirs(logPath)
 
-    if ( not ONLYHADD and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
+    if (not ONLYHADD and not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
 
         renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
         # PREPARE CONDOR FILES FOR FILL AT ITER iters
@@ -174,12 +151,12 @@ for iters in range(nIterations):
         print "Submitting " + str(njobs) + " jobs"
         for ijob in range(njobs):
             #In case you want the stat. syst
-            if ( mode.find('BATCH_RESU_SYST_1') != -1 ):
+            if ( options.syst == 1 ):
                  env_script_n = open(outputdir + "/cfgFile/Fill/iter_" + str(iters) + "/fillEps_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
                  SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(1)\n'
                  env_script_n.write(SystParamLine)
                  env_script_n.close()
-            if ( mode.find('BATCH_RESU_SYST_2') != -1 ):
+            elif ( options.syst == 1 ):
                  env_script_n = open(outputdir + "/cfgFile/Fill/iter_" + str(iters) + "/fillEps_iter_" + str(iters) + "_job_" + str(ijob) + ".py", 'a')
                  SystParamLine = 'process.analyzerFillEpsilon.SystOrNot = cms.untracked.double(2)\n'
                  env_script_n.write(SystParamLine)
@@ -331,76 +308,77 @@ for iters in range(nIterations):
 
         print 'Now adding files...'
         Nlist = 0
-        if not( RunCRAB ):
-           inputlist_v = inputlistbase_v[:]
-           NrelJob = float(len(inputlist_v)) / float(ijobmax)
-           if( float(int(NrelJob) - NrelJob) < 0. ):
-               NrelJob = int(NrelJob) + 1
-           Nlist_flo = float(NrelJob/nHadd) + 1.
-           Nlist = int(Nlist_flo)
+        inputlist_v = inputlistbase_v[:]
+        NrelJob = float(len(inputlist_v)) / float(ijobmax)
+        if( float(int(NrelJob) - NrelJob) < 0. ):
+            NrelJob = int(NrelJob) + 1
+        Nlist_flo = float(NrelJob/nHadd) + 1.
+        Nlist = int(Nlist_flo)
         print "Number of Hadd in parallel: " + str(Nlist)
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
             #Before each HADD we need to check if the all the files in the list are present
             #BUT we do that only if you are working on batch
-            if not( RunCRAB ):
-               Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
-               myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
-               FoutGrep = myGrep.communicate()
-               # FoutGrep is something like the following
-               # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
-               # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
-               # removing (' and `\n', None)
-               FoutGrep_2 = str(FoutGrep)[2:]
-               FoutGrep_2 = str(FoutGrep_2)[:-11]
-               #print 'Checking ' + str(FoutGrep_2)
-               #Chech The size for each line
-               f = open( str(FoutGrep_2) )
-               lines = f.readlines()
-               f.close()
-               # create backup of original list of files
-               fbckp = open( FoutGrep_2.replace(".list","_backup.list"), "w")
-               for l in lines:
-                   fbckp.write(l)
-               fbckp.close()
+            Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
+            myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
+            FoutGrep = myGrep.communicate()
+            # FoutGrep is something like the following
+            # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
+            # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
+            # removing (' and `\n', None)
+            FoutGrep_2 = str(FoutGrep)[2:]
+            FoutGrep_2 = str(FoutGrep_2)[:-11]
+            #print 'Checking ' + str(FoutGrep_2)
+            #Chech The size for each line
+            f = open( str(FoutGrep_2) )
+            lines = f.readlines()
+            f.close()
+            # create backup of original list of files
+            fbckp = open( FoutGrep_2.replace(".list","_backup.list"), "w")
+            for l in lines:
+                fbckp.write(l)
+            fbckp.close()
 
-               # creating a list of EcalNtp files that are actually present on eos. The new list will be overwritten on the original one (which was backuped)
-               newlines = []
-               for filetoCheck in lines:
-                   if not os.path.exists(filetoCheck.strip()):
-                       #print 'HADD::MISSING: {f}'.format(f=os.path.basename(filetoCheck))
-                       continue
-                   else:
-                       filesize = os.path.getsize(filetoCheck.strip())
-                       #If is corrupted (size too small), remove it from the list
-                       if( filesize<100000 ):
-                           #print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
-                           continue
-                       else:
-                           # at this point the file should be good, but let's check if there are no recovered keys
-                           #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
-                           tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
-                           if not tf or tf.IsZombie(): continue
-                           if tf.TestBit(TFile.kRecovered):
-                               #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
-                               tf.Close()
-                               continue
-                           tf.Close()
-                   newlines.append(filetoCheck)
+            # creating a list of EcalNtp files that are actually present on eos. The new list will be overwritten on the original one (which was backuped)
+            newlines = []
+            for filetoCheck in lines:
+                if not os.path.exists(filetoCheck.strip()):
+                #if ROOT.gSystem.AccessPathName(filetoCheck.strip()):
+                    # Returns FALSE if file exists, so we are here when file does not exist
+                    #print 'HADD::MISSING: {f}'.format(f=os.path.basename(filetoCheck))
+                    continue
+                else:
+                    filesize = os.path.getsize(filetoCheck.strip())
+                    #If is corrupted (size too small), remove it from the list
+                    if( filesize<100000 ):
+                        #print 'HADD::Bad size {size} for: {f}'.format(size=filesize, f=os.path.basename(filetoCheck))
+                        continue
+                    else:
+                        # at this point the file should be good, but let's check if there are no recovered keys
+                        #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
+                        tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
+                        if not tf or tf.IsZombie(): continue
+                        if tf.TestBit(TFile.kRecovered):
+                            #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
+                            tf.Close()
+                            continue
+                        tf.Close()
+                newlines.append(filetoCheck)
 
-               #moving the .list to the correct one
-               if( len(newlines) ):
-                   prunedfile = FoutGrep_2.replace(".list","_pruned.list")
-                   fprun = open(prunedfile,"w")
-                   for l in newlines:
-                       fprun.write(l)
-                   fprun.close()
-                   MoveComm = "cp " + prunedfile + " " + str(FoutGrep_2)
-                   MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
-                   mvOut = MoveC.communicate()
-                   #print "Some files were removed in " + str(FoutGrep_2)
-                   #print "Copied " + prunedfile + " into " + str(FoutGrep_2)
+            #moving the .list to the correct one
+            if( len(newlines) ):
+                prunedfile = FoutGrep_2.replace(".list","_pruned.list")
+                fprun = open(prunedfile,"w")
+                for l in newlines:
+                    fprun.write(l)
+                fprun.close()
+                MoveComm = "cp " + prunedfile + " " + str(FoutGrep_2)
+                MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
+                mvOut = MoveC.communicate()
+                #print "Some files were removed in " + str(FoutGrep_2)
+                #print "Copied " + prunedfile + " into " + str(FoutGrep_2)
+
             #End of the check, sending the job
             print "Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
 
@@ -1141,7 +1119,6 @@ If this is not the case, modify FillEpsilonPlot.cc
 
     print "Done with iteration " + str(iters)
     if( ONLYHADD or ONLYFINHADD or ONLYFIT or ONLYMERGEFIT):
-       mode = "BATCH_RESU"
        ONLYHADD = False; ONLYFINHADD = False; ONLYFIT=False; ONLYMERGEFIT=False
 
 print "---THE END---"

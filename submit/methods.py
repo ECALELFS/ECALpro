@@ -547,6 +547,7 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, ju
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
+    outputfile.write("export XRD_NETWORKSTACK=IPv4\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n") this line produces problem when running in CMSSW_8_0_3, anyway we don't use crab

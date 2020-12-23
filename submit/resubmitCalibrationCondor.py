@@ -12,40 +12,21 @@ parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_
 parser.add_option(      "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="When resubmitting calibration from hadd, first try to recover failed fills")
 parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
 parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp abive this number to skip recover");
+parser.add_option("-i", "--iteration", dest="iteration",  type="int",     default=0,   help="Iteration to start from, usually 0 unless resubmitting jobs")
+parser.add_option("-n", "--njobs", dest="njobs",  type="int",     default=0,   help="Number of jobs")
+#parser.add_option("-q", "--queue", dest="queue",  type="string",     default="",   help="Queue for running jobs")
+parser.add_option("-r", "--run", dest="run",  type="string",     default="",   help="Specify where to start from when resubmitting jobs [hadd,finalhadd,fit,mergefit]")
 (options, args) = parser.parse_args()
 
-if len(args) != 7:
-    print str(len(args)) + "is a wrong number of arguments (" + str(len(args)) +" given, while it should be 7)."
-    print "./resubmitCalibrationCondor.py iteration_to_resume isSystematicError(0,1,2) JustHADD(True,False) JustFINALHADD(True,False) JustFIT(True,False) JustMergeFIT(True,False) nJobs+1(goes from j=0 to n<YOUR_Number)"
-    print "   where 0=no syst, just normal calib, 1 only even events, 2 odd events(just for last iter)"
+if not options.run:
+    print "Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort"
     sys.exit(1)
+if options.run not in ["hadd","finalhadd","fit","mergefit"]:
+    print "Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run
 
-iteration_to_resume = int(args[0])
-SystParam           = int(args[1])
-onlyHadd            = str(args[2])
-onlyFinalHadd       = str(args[3]) 
-OnlyFIT             = str(args[4])
-OnlyMergeFIT        = str(args[5])
-nJobs               = str(args[6])
 pwd                 = os.getcwd()
-
-#print str(args[6])
-#quit()
-
 workdir = pwd+'/'+dirname
 condordir = workdir + "/condor_files/"
-
-Mode = "BATCH_RESU"
-if SystParam != 0 :
-    Mode = Mode + "_SYST_" + str(SystParam)
-if onlyHadd=="True" :
-    Mode = Mode + "_ONLYHADD"
-if onlyFinalHadd=="True" :
-    Mode = Mode + "_ONLYFINALHADD"
-if OnlyFIT=="True" :
-    Mode = Mode + "_ONLYFIT"
-if OnlyMergeFIT=="True" :
-    Mode = Mode + "_ONLYMERGEFIT"
 
 ### setting environment
 env_script_n = workdir + "/resubmit.sh"
@@ -54,7 +35,7 @@ env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("ulimit -c 0\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-pycmd =  "python " + pwd + "/calibJobHandlerCondor.py " + Mode + " " + str(iteration_to_resume) + " " + queue + " " + str(nJobs)
+pycmd =  "python " + pwd + "/calibJobHandlerCondor.py --resubmit -i {i} -r {r} -n {n} -s {s} ".format(i=options.iteration,n=options.njobs,r=options.run,s=options.syst)
 if options.recoverFill: pycmd += " --recover-fill "
 if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
@@ -74,11 +55,9 @@ dummy_exec_name = condordir+'/dummy_exec_daemon.sh'
 
 condor_file_name = condordir+'/condor_resubmit_daemon.condor'
 condor_file = open(condor_file_name,'w')
-# line 'next_job_start_delay = 1' not needed here
 condor_file.write('''Universe = vanilla
 Executable = {de}
 use_x509userproxy = True
-x509userproxy = $ENV(X509_USER_PROXY)
 Log        = {ld}/$(ProcId).log
 Output     = {ld}/$(ProcId).out
 Error      = {ld}/$(ProcId).error
@@ -89,13 +68,6 @@ request_memory = 4000
 +JobBatchName = "ecalpro_daemon"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
 if os.environ['USER'] in ['mciprian']:
-    # mydate = datetime.today()
-    # month = int(mydate.month)
-    # year  = int(mydate.year)
-    # if month == 10 and year == 2019:
-    #     condor_file.write('+AccountingGroup = "group_u_CMS.u_zh.priority"\n\n')
-    # else:
-    #     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
 else:
     condor_file.write('\n')
