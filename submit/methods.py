@@ -550,7 +550,6 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("export XRD_NETWORKSTACK=IPv4\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n") this line produces problem when running in CMSSW_8_0_3, anyway we don't use crab
     copiedCCfile = ""
     if useContainmentCorrectionsFromEoverEtrue and copyCCfileToTMP:
         # get iter and job numbers
@@ -570,8 +569,8 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
 
         outputfile.write("if test -f " + source + "; then\n")
         outputfile.write("    echo 'file exists in %s and is good, now copying to eos'\n" % source)
-        outputfile.write("    echo 'cp " + source + " " + destination + "'\n")
-        outputfile.write("    cp " + source + " " + destination + "\n")
+        outputfile.write("    echo 'eos cp " + source + " " + destination + "'\n")
+        outputfile.write("    eos cp " + source + " " + destination + "\n")
         outputfile.write("    echo 'rm -f " + source + "'\n")
         outputfile.write("    rm -f " + source + "\n")
         outputfile.write("    echo 'now checking goodness of file on eos'\n")
@@ -587,8 +586,8 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")
-        outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
+        outputfile.write("eos cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
     if len(copiedCCfile):

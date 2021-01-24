@@ -16,6 +16,7 @@ parser.add_option("-i", "--iteration", dest="iteration",  type="int",     defaul
 parser.add_option("-n", "--njobs", dest="njobs",  type="int",     default=0,   help="Number of jobs")
 #parser.add_option("-q", "--queue", dest="queue",  type="string",     default="",   help="Queue for running jobs")
 parser.add_option("-r", "--run", dest="run",  type="string",     default="",   help="Specify where to start from when resubmitting jobs [hadd,finalhadd,fit,mergefit]")
+parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   help="To run on all events (0, default), only even (1) or odd (2) events ")
 (options, args) = parser.parse_args()
 
 if not options.run:

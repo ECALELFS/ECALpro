@@ -51,7 +51,7 @@ Silent           = False                 # True->Fill modules is silent; False->
 # to manage storing of rechits on eos, to avoid running unpacker and local reconstruction (multifit) for each iteration
 justCreateRecHits = False # if True, will run one iteration to produce and store RecHits from Digis
 runCalibrationFromRecHits = False # run calibration from rechits (it disables FROMDIGI below), it works if you have already run with justCreateRecHits = True
-eosOutputPathForRecHits = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian" # the path on eos where RecHits are stored (a subfolder named as 'AlCaP0_RecHitsFromDigis_dirname' is created
+eosOutputPathForRecHits = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian" # the path on eos where RecHits are stored (a subfolder named as 'AlCaP0_RecHitsFromDigis_dirname' is created)
 filterEventsByAlCaTrigger = True # filter away pi0 or eta depending on what we will use (modest gain in speed for pi0, but huge for eta since number of events is much less). 
 # Might also filter by EB or EE (useful if one wants to run only on one of them) according to 'Barrel_or_Endcap' below, but not yet implemented since barrel is more important and has almost all the statistics
 
