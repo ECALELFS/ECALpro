@@ -50,11 +50,18 @@ When calibration is finished you can work in your IC, and print teh IC.txt used 
 4) Statistical Error
 TO combine your IC with other IC, you need to provide a systematic and statistic error. The second one os computed re-running the last iter of a calibration twice.
 Once only on even events, the others on odd events.Then from the difference/4 of a single IC, you can have the stat. error on it.
-To do that you have to resubmit the calibration twice, but before remember to make news directories on EOS to store the IC running on all events, the odd and even one.
+To do that you have to resubmit the calibration twice, but before remember to make news directories on EOS to store the IC running on all events, the odd and even one. In other words, create a new eos folder to temporary store files created running on all events, and use the original directory to store the output of the new ICs with even events; then copy these last ones in a new folder (you can call il iter_n_even) and repeat the same ruuning on odd events. When yo have finished you can copy again the original files (those with all events) in their original location.
 The command is
-./resubmitCalibration.py iteration_to_resume 1 False False (for even events) and when it is finished
-./resubmitCalibration.py iteration_to_resume 2 False False (for odd events)
+./resubmitCalibration.py iteration_to_resume 1 False False False njobs 
+(for even events) and when it is finished
+./resubmitCalibration.py iteration_to_resume 2 False False False njobs 
+(for odd events)
+
+njobs is the number of original jobs for each iteration (basically is the number passed to calibJobHandler.py as you see inside the submit.sh script created in each local folder when you run ECALpro)
+
 Once you have the 2 sets of IC you can use: "python ComputeStatErr.py File_even.root File_odd.root Output.root"
+
+
 
 5-extra) RESUME a calibration
 Could happen that a calibration dies. Because some internal error, because of EOS, because you kill a job for error.
@@ -78,3 +85,21 @@ LP
 /CalibCode/
 /CondFormats/EcalObjects/
 /RecoLocalCalo/EcalRecProducers/
+
+---------------------Choose Containment Corrections---------------------
+1. set the variable ContainmentCorrection properly in parameters.py
+
+2. if you set ContainmentCorrection = 'Yong', in the file '../FillEpsilonPlot/interface/FillEpsilonPlot.h', you need to keep:
+#define NEW_CONTCORR
+and comment/delete:
+#define MVA_REGRESSIO
+#define MVA_REGRESSIO_EE
+
+3. if you set ContainmentCorrection = '2012reg' or '2017reg', in the file '../FillEpsilonPlot/interface/FillEpsilonPlot.h', you need to keep:
+#define MVA_REGRESSIO
+(#define MVA_REGRESSIO_EE) (optional)
+and comment/delete:
+#define NEW_CONTCORR
+
+
+

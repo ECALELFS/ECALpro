@@ -38,6 +38,7 @@ class EcalRegionalCalibrationBase{
         virtual std::string printType() =0;
         virtual std::vector<DetId> allDetIdsInEBRegion(uint32_t iR) =0;
         virtual std::vector<DetId> allDetIdsInEERegion(uint32_t iR) =0;
+	virtual ~EcalRegionalCalibrationBase(){}
 };
 
 template<class Type> class EcalRegionalCalibration : public EcalRegionalCalibrationBase {

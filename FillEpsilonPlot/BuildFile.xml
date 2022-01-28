@@ -4,6 +4,7 @@
 
 <use name="CalibCode/CalibTools"/>
 
+<use name="DataFormats/L1TGlobal"/>
 <use name="CalibCode/GBRTrain"/>
 <use name="CalibCode/EgammaObjects"/>
 <use name="Geometry/EcalAlgo"/>

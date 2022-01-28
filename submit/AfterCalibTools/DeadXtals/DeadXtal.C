@@ -41,7 +41,11 @@ void DeadXtal( TString Path, TString OutDir ){
   cout<<"Starting with: DeadXtal.C"<<endl;
   TFile* fin = TFile::Open( Path.Data() );
   if(!fin) { cout << "Invalid file: " << Path.Data() << " .. try again" << endl; return; }
-  TFile* MapFile = TFile::Open( "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2012C_pi0_NewTag_01/iter_0/2012C_calibMap.root" );
+  std::string calibMapFileName = string(Path.Data());
+  std::string strToReplace = "epsilonPlots";
+  calibMapFileName.replace(calibMapFileName.find(strToReplace.c_str()),strToReplace.size(),"calibMap");
+
+  TFile* MapFile = TFile::Open( calibMapFileName.c_str() );
   TTree *calibEB = (TTree*) MapFile->Get("calibEB");
   TTree *calibEE = (TTree*) MapFile->Get("calibEE");
   if(!MapFile) { cout << "Invalid file: MapFile .. try again" << endl; return; }
@@ -57,7 +61,7 @@ void DeadXtal( TString Path, TString OutDir ){
   //EB
   cout<<"Now EB..."<<endl;
   std::vector<int> Xtal_EB; Xtal_EB.clear();
-  for(int nEB=0; nEB<61199; nEB++){
+  for(int nEB=0; nEB<61200; nEB++){
     //ostringstream convert; convert << nEB;
     string convert = std::to_string(nEB);
     TString name = "Barrel/epsilon_EB_iR_" + convert;
@@ -69,7 +73,7 @@ void DeadXtal( TString Path, TString OutDir ){
   //EE
   cout<<"Now EE..."<<endl;
   std::vector<int> Xtal_EE; Xtal_EE.clear();
-  for(int nEE=0; nEE<14647; nEE++){
+  for(int nEE=0; nEE<14648; nEE++){
     //ostringstream convert; convert << nEE;
     string convert = std::to_string(nEE);
     TString name = "Endcap/epsilon_EE_iR_" + convert;
