@@ -11,10 +11,8 @@ using std::pair;
 using std::stringstream;
 using std::runtime_error;
 
-//#include "CalibCode/json/reader.h"
-#include "CalibCode/FillEpsilonPlot/interface/reader.h"
-#include "CalibCode/FillEpsilonPlot/interface/elements.h"
-//#include "CalibCode/json/elements.h"
+#include "CalibCode/json/reader.h"
+#include "CalibCode/json/elements.h"
 
 JSON::JSON(const char* json) {
 

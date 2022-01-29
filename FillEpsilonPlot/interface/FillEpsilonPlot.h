@@ -299,6 +299,12 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       TH2F *pi0MassVsIetaEB;
       TH2F *pi0MassVsETEB;
       TH2F *photonDeltaRVsIetaEB;
+
+    ///SJ
+    TH1F *pi0_mass_EB;
+    TH1F *pi0_mass_EEP;
+    TH1F *pi0_mass_EEM;
+
       bool useMassInsteadOfEpsilon_;
 
       TTree*  Tree_Optim;

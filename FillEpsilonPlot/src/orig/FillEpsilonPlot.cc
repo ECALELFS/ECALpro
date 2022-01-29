@@ -388,15 +388,9 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
       } else {
 
-          ///SJ
-          /*pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
-          pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
-          pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
-          */
-              
 	if(useMassInsteadOfEpsilon_ ) {
 
-            if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
 	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","#pi^{0} Mass distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
 	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","#pi^{0} Mass distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
@@ -445,11 +439,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     }
 
-    pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
-    pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
-    pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
-    
-    
+
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsIetaEB->GetXaxis()->SetTitle("i#eta");
     pi0MassVsIetaEB->GetYaxis()->SetTitle("#pi^{0} mass");
@@ -910,7 +900,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
     // vecGamma1MC.clear();
     // vecGamma2MC.clear();
-  
+
     vecGamma1MC_EB.clear();
     vecGamma2MC_EB.clear();
 
@@ -954,7 +944,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       }
 
       if(!isDiphoton) continue;
-    
+
       //fill GEN pi0
       Int_t mesonPdgId = Are_pi0_ ? 111 : 221;
       if ((*genParticles)[iG].pdgId() == mesonPdgId) {
@@ -2465,7 +2455,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	float g1pt = tmp_photon1.Rho(); 
 	float g2pt = tmp_photon2.Rho();
 	///////
-    
+
 	// initialize as uncorrected variables
 	math::XYZVector g1_contCorr_tlv(tmp_photon1);
 	math::XYZVector g2_contCorr_tlv(tmp_photon2);
@@ -2580,7 +2570,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  }
 	  if (nextClu < pi0IsoCut_[etaRegionID]) continue;
 	}
-    
+
 	double deltaR0 = 0.0, deta = 0.0, gPtTmp = 0.0;
 	float hlt_iso = 0.0;
 	for (std::vector<CaloCluster>::const_iterator Gtmp  = clusters.begin(); Gtmp != clusters.end(); ++Gtmp) {
@@ -2611,26 +2601,15 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  // also, I should add the mass cut
 	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
-        ////SJ - just try to fill an inclusive pi0 histogram
-        if(subDetId==EcalBarrel) pi0_mass_EB->Fill(pi0P4_mass);
-        if(subDetId == EcalEndcap){
-            if(g1eta < 0 || g2eta < 0)
-                pi0_mass_EEM->Fill(pi0P4_mass);
-            if(g1eta > 0 && g2eta > 0)
-                pi0_mass_EEP->Fill(pi0P4_mass);
-        }
-
-        ////END of SJ
-
 	  pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
 	  g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
-          g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
+	  g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
 	  g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g1);
 	  g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g2);
 	  pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
 	  g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,DeltaR_g1g2_nocor);
 	  if (isMC_) {
-              pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+	    pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
 	  }	   
 
 	}
@@ -2746,8 +2725,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	
 	//if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
 
-    
-
 	if (!MakeNtuple4optimization_) {
 
 	  //if (isDebug_) cout << "[DEBUG] computing region weights" << endl; 
@@ -2758,7 +2735,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 
 	  // append w2 to w1
 	  w1.insert( w1.end(), w2.begin(), w2.end() );
-          
+
 	  float r2 = pi0P4_mass/PI0MASS;
 	  r2 = r2*r2;
 	  //average <eps> for cand k
@@ -2769,7 +2746,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    const float& w = (*it).value;
 
 	    if(subDetId==EcalBarrel){
-                
 	      if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
 		epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
 	      std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
@@ -2803,9 +2779,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	      int iX = List_IR_XYZ.find(iR)->second[0]; 
 	      int iY = List_IR_XYZ.find(iR)->second[1]; 
 	      int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
-
-              
-              
 	      if( iZ==-1 ){
 		//If Low Statistic fill all the Eta Ring
 		if( EtaRingCalibEE_ ){
@@ -2828,7 +2801,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		}
 	      }
 	      else{
- 		//If Low Statistic fill all the Eta Ring
+		//If Low Statistic fill all the Eta Ring
 		if( EtaRingCalibEE_ ){
 		  for(auto const &iterator : ListEtaFix_xtalEEp){
 		    if( iterator.first == GetRing( iX, iY, VectRing,false) ){
@@ -3516,11 +3489,6 @@ void FillEpsilonPlot::endJob(){
     Tree_Optim->Write();
   }
 
-  pi0_mass_EB->Write();
-  pi0_mass_EEP->Write();
-  pi0_mass_EEM->Write();
-
-  
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
   photonDeltaRVsIetaEB->Write();
