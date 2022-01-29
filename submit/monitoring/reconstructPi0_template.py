@@ -92,6 +92,9 @@ process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added t
 #UNCALIB to CALIB
 from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *
 process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()
+process.ecalDetIdToBeRecovered.ebSrFlagCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis")
+process.ecalDetIdToBeRecovered.eeSrFlagCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis")
+
 ecalRecHit.killDeadChannels = cms.bool( False )
 ecalRecHit.recoverEBVFE = cms.bool( False )
 ecalRecHit.recoverEEVFE = cms.bool( False )
