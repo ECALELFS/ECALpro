@@ -128,8 +128,7 @@ if useHLTFilter:
     process.AlcaP0Filter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
     process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*"]
 
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 process.options = cms.untracked.PSet(
    wantSummary = cms.untracked.bool(True),
