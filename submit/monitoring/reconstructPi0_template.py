@@ -57,7 +57,8 @@ options.parseArguments()
 
 
 process.load("Configuration.Geometry.GeometryIdeal_cff")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = options.globaltag
 
 ###config with the conditions we want
@@ -91,14 +92,14 @@ process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added t
 #UNCALIB to CALIB
 from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *
 process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()
-process.ecalRecHit.killDeadChannels = cms.bool( False )
-process.ecalRecHit.recoverEBVFE = cms.bool( False )
-process.ecalRecHit.recoverEEVFE = cms.bool( False )
-process.ecalRecHit.recoverEBFE = cms.bool( False )
-process.ecalRecHit.recoverEEFE = cms.bool( False )
-process.ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
-process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
-process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)
+ecalRecHit.killDeadChannels = cms.bool( False )
+ecalRecHit.recoverEBVFE = cms.bool( False )
+ecalRecHit.recoverEEVFE = cms.bool( False )
+ecalRecHit.recoverEBFE = cms.bool( False )
+ecalRecHit.recoverEEFE = cms.bool( False )
+ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
+ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
+ecalLocalRecoSequence = cms.Sequence(ecalRecHit)
 
 process.GlobalTag.toGet = process.GTconditions
 
@@ -227,10 +228,10 @@ process.p = cms.Path()
 if useHLTFilter:
     process.p *= process.AlcaP0Filter
 if correctHits:
-    print 'ADDING RECALIB RECHIT MODULE WITH PARAMETERS'
-    print 'ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale)
-    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)
-    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)
+    print('ADDING RECALIB RECHIT MODULE WITH PARAMETERS')
+    print('ENERGY SCALE %s'%(str(process.ecalPi0ReCorrected.doEnergyScale)))
+    print('INTERCALIBRATION %s'%(str(process.ecalPi0ReCorrected.doIntercalib)))
+    print('LASER %s'%(str(process.ecalPi0ReCorrected.doLaserCorrections)))
     process.p *= process.ecalPi0ReCorrected
 process.p *= process.dummyHits
 process.p *= process.ecalMultiFitUncalibRecHit
