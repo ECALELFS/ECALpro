@@ -90,19 +90,20 @@ process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','d
 process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')
 process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added this line to make code run
 #UNCALIB to CALIB
+#############PROBLEM
 from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *
 process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()
-process.ecalDetIdToBeRecovered.ebSrFlagCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis")
-process.ecalDetIdToBeRecovered.eeSrFlagCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis")
-
-ecalRecHit.killDeadChannels = cms.bool( False )
-ecalRecHit.recoverEBVFE = cms.bool( False )
-ecalRecHit.recoverEEVFE = cms.bool( False )
-ecalRecHit.recoverEBFE = cms.bool( False )
-ecalRecHit.recoverEEFE = cms.bool( False )
-ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
-ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
-ecalLocalRecoSequence = cms.Sequence(ecalRecHit)
+#process.ecalDetIdToBeRecovered.ebSrFlagCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis","pi0EBSrFlags")
+#process.ecalDetIdToBeRecovered.eeSrFlagCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis","pi0EESrFlags")
+#############PROBLEM
+process.ecalRecHit.cpu.killDeadChannels = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBVFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEVFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEIsolatedChannels = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBIsolatedChannels = cms.bool( False )
+process.ecalLocalRecoSequence = cms.Sequence(process.ecalRecHit)
 
 process.GlobalTag.toGet = process.GTconditions
 
@@ -127,7 +128,8 @@ if useHLTFilter:
     process.AlcaP0Filter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
     process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*"]
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 process.options = cms.untracked.PSet(
    wantSummary = cms.untracked.bool(True),
@@ -240,6 +242,19 @@ process.p *= process.dummyHits
 process.p *= process.ecalMultiFitUncalibRecHit
 process.p *= process.ecalLocalRecoSequence
 process.p *= process.analyzerFillEpsilon
+
+'''
+process.out = cms.OutputModule("PoolOutputModule",
+                               fileName = cms.untracked.string('myOutputFile.root'),
+                               SelectEvents = cms.untracked.PSet( 
+                                   SelectEvents = cms.vstring("p") 
+                               ),
+                               outputCommands = cms.untracked.vstring('keep *')
+)             
+
+process.endp = cms.EndPath(process.out)
+'''
+
 process.endp = cms.EndPath()
 
 #print(process.dumpPython())
