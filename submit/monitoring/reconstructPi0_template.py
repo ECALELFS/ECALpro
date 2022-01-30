@@ -44,13 +44,12 @@ options.register ('outputFile',
                   VarParsing.varType.string, 
                   "Output file")
 
-'''
-options.inputFiles = [""]
-options.jsonFile = "json.json"
-options.globaltag = "108_dataRunX"
-options.outputDir = './'
-options.outputFile = 'AlCaP0.root'
-'''
+options.register ('conditionsFileName', 
+                  '', 
+                  VarParsing.multiplicity.singleton, 
+                  VarParsing.varType.string, 
+                  "Conditions file name")
+
 
 options.parseArguments()
 
@@ -62,7 +61,8 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = options.globaltag
 
 ###config with the conditions we want
-process.load("CalibCode.FillEpsilonPlot.GTconditions_cff")
+#process.load("CalibCode.FillEpsilonPlot.GTconditions_cff")
+process.load("CalibCode.FillEpsilonPlot.%s"%options.conditionsFileName) 
 
 #DUMMY RECHIT
 process.dummyHits = cms.EDProducer('DummyRechitDigis',
@@ -90,12 +90,9 @@ process.ecalMultiFitUncalibRecHit.EBdigiCollection = cms.InputTag('dummyHits','d
 process.ecalMultiFitUncalibRecHit.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')
 process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added this line to make code run
 #UNCALIB to CALIB
-#############PROBLEM
+
 from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *
 process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()
-#process.ecalDetIdToBeRecovered.ebSrFlagCollection = cms.InputTag("hltAlCaPi0EBRechitsToDigis","pi0EBSrFlags")
-#process.ecalDetIdToBeRecovered.eeSrFlagCollection = cms.InputTag("hltAlCaPi0EERechitsToDigis","pi0EESrFlags")
-#############PROBLEM
 process.ecalRecHit.cpu.killDeadChannels = cms.bool( False )
 process.ecalRecHit.cpu.recoverEBVFE = cms.bool( False )
 process.ecalRecHit.cpu.recoverEEVFE = cms.bool( False )
@@ -129,6 +126,7 @@ if useHLTFilter:
     process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*"]
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 process.options = cms.untracked.PSet(
    wantSummary = cms.untracked.bool(True),
