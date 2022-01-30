@@ -9,8 +9,12 @@ void fitMass(string fName){
     static double upper_bound_pi0mass_EE = 0.16;
     
     static float fitRange_low_pi0 = 0.080; // value used in the fit function to define the fit range
-    static float fitRange_high_pi0 = 0.212; // value used in the fit function to define the fit range
-    static float fitRange_high_pi0_ext = 0.222;
+    //original from Rome's code but had to reduce since the drop in 12X is before 0.212 or 0.222
+    //static float fitRange_high_pi0 = 0.212; // value used in the fit function to define the fit range
+    //static float fitRange_high_pi0_ext = 0.222;
+
+    static float fitRange_high_pi0 = 0.2; // value used in the fit function to define the fit range
+    static float fitRange_high_pi0_ext = 0.2;
     
 
     TFile *fin = TFile::Open(fName.c_str());
