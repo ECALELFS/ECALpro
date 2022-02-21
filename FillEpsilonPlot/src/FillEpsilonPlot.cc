@@ -32,8 +32,10 @@ Implementation:
 //#include "TStopwatch.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
@@ -3431,8 +3433,8 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
     // here we redo the association bit number <--> bit name
     // the reason is that this is not a constant 
     //e.g. during data taking in 2017 I noticed the number associated to a name changed, for instance SingleJet16 was 130 and then it became 131)
-    edm::ESHandle<L1TUtmTriggerMenu> menu;
-    iSetup.get<L1TUtmTriggerMenuRcd>().get(menu);
+    edm::ESHandle<L1TUtmTriggerMenu> menu = iSetup.getHandle(L1MenuToken_);
+
     // get the bit/name association         
     for (auto const & keyval: menu->getAlgorithmMap()) { 
       std::string const & trigName  = keyval.second.getName(); 
