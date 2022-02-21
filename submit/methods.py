@@ -24,8 +24,8 @@ def printFillCfg1( outputfile ):
     #     outputfile.write(")\n\n")
 
 
-    outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
-    #outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
+    #outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
+    outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
     #From DIGI
     if (FROMDIGI):
@@ -85,6 +85,7 @@ def printFillCfg1( outputfile ):
                outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
         outputfile.write("#UNCALIB to CALIB\n")
         outputfile.write("from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *\n")
+        outputfile.write("process.ecalRecHit = RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi.ecalRecHit.clone()\n")
         outputfile.write("process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()\n")
         outputfile.write("process.ecalRecHit.killDeadChannels = cms.bool( False )\n")
         outputfile.write("process.ecalRecHit.recoverEBVFE = cms.bool( False )\n")
@@ -96,7 +97,7 @@ def printFillCfg1( outputfile ):
         if(WEIGHTS):
            outputfile.write("process.ecalRecHit.EEuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEE')\n")
            outputfile.write("process.ecalRecHit.EBuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEB')\n")
-        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)\n")
+        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(process.ecalRecHit)\n")
 
     if (overWriteGlobalTag):        
         outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
@@ -431,10 +432,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")
-    outputfile.write("    print 'ADDING RECALIB RECHIT MODULE WITH PARAMETERS'\n")
-    outputfile.write("    print 'ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale)\n")
-    outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
-    outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
+    outputfile.write("    print('ADDING RECALIB RECHIT MODULE WITH PARAMETERS')\n")
+    outputfile.write("    print('ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale))\n")
+    outputfile.write("    print('INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib))\n")
+    outputfile.write("    print('LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections))\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
     if (FROMDIGI):
         outputfile.write("process.p *= process.dummyHits\n")

@@ -15,17 +15,6 @@ parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecove
 (options, args) = parser.parse_args()
 pwd = os.getcwd()
 
-# if not options.create:
-#     #-------- check if you have right access to queues --------#
-#     checkAccessToQueues = subprocess.Popen(['bjobs'], stderr=subprocess.PIPE, shell=True);
-#     output = checkAccessToQueues.communicate()[1]
-#     if(output.find('command not found')==-1):
-#         print "[calib] Correct setup for batch submission"
-#     else:
-#         print "[calib] Missing access to queues"
-#         if not( isCRAB and storageSite=="T2_BE_IIHE" ):
-#             sys.exit(1)
-#-------- copy regression files -------#
 if ContainmentCorrection == '2017reg':
 	os.system("cp /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/zhicaiz/GBRForest_2017/* ../FillEpsilonPlot/data/")
 

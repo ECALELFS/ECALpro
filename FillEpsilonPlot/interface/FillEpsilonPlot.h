@@ -7,12 +7,12 @@
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
 
@@ -32,6 +32,9 @@
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
 //L1                                                                                                                                         
 #include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
+#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmAlgorithm.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
 #define NPI0MAX 30000
 #define NL1SEED GlobalAlgBlk::maxPhysicsTriggers  // was 128
@@ -72,15 +75,15 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
       // ---------- user defined ------------------------
-      void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
-      void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
+      void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent);
+      void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent);
       //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
       std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, std::vector<TLorentzVector*>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
       // void computePairProperties(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
       void computePairProperties(const CaloCluster* g1, const CaloCluster* g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
       void computeEpsilon(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
       void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
-      bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
+      bool checkStatusOfEcalRecHit(const EcalRecHit &rh);
       bool isInDeadMap( bool isEB, const EcalRecHit &rh );
       float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
       float DeltaPhi(float phi1, float phi2);
@@ -112,6 +115,7 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
       edm::Handle< EBRecHitCollection > eeHandle;
       edm::Handle< ESRecHitCollection > esHandle;
       // edm::Handle< edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esHandle;
+      edm::ESHandle<EcalChannelStatus> chStatus;
 
       const EcalPreshowerGeometry *esGeometry_;     
       const CaloGeometry* geometry;
@@ -159,6 +163,10 @@ class FillEpsilonPlot : public edm::EDAnalyzer {
 
       edm::EDGetTokenT<edm::SimTrackContainer>  g4_simTk_Token_;
       edm::EDGetTokenT<edm::SimVertexContainer> g4_simVtx_Token_;      
+
+      edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeometryToken_;
+      edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_;
+      edm::ESGetToken<L1TUtmTriggerMenu, L1TUtmTriggerMenuRcd> L1MenuToken_;
 
       PosCalcParams PCparams_;
       //const double preshowerStartEta_ =  1.653;
