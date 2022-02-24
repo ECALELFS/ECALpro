@@ -148,7 +148,7 @@ for it in range(nIterations):
 
         # create cfg file
         fill_cfg_n = cfgFillPath + "/iter_" + str(it) + "/fillEps_iter_" + str(it) + "_job_" + str(ijob) + ".py"
-        #print "writing " + fill_cfg_n + " ..."
+        print "\tWriting " + fill_cfg_n + " ..."
         fill_cfg_f = open( fill_cfg_n, 'w' )
 
         # print first part of the cfg file
@@ -292,7 +292,7 @@ for it in range(nIterations):
         debugout = changePermission.communicate()
 
 #build command with options and arguments
-calibCMD = "python " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
+calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
 if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)

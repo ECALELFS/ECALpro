@@ -20,7 +20,7 @@ from optparse import OptionParser
 
 def renewTokenAFS(daemonLocal=False, infile=""):
     if daemonLocal and len(infile):
-        print "Renewing AFS token"
+        print("Renewing AFS token")
         os.system("cat {infile} | kinit".format(infile=infile))
         os.system("kinit -R")
 
@@ -42,11 +42,11 @@ def checkNjobsCondor(grepArg="ecalpro"):
         if len(nRetjobs) and nRetjobs != "\n" and nRetjobs.replace('\n','').isdigit():
             return int(nRetjobs)
         else:
-            print "Error 1: output = " + str(nRetjobs)
+            print("Error 1: output = " + str(nRetjobs))
             return 9999
     else:
         # something wrong with condor, return a dummy positive number to tell the code to keep checking
-        print "Error 2: output = " + tmp
+        print("Error 2: output = " + tmp)
         return 9999 
 
 
@@ -61,7 +61,7 @@ Error      = {ld}/$(ProcId).error
 getenv      = True
 environment = "LS_SUBCWD={here}"
 request_memory = {mem}
-periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600) # remove jobs running for more than 48 hours
+periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600)
 +MaxRuntime = {time}
 +JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
@@ -85,16 +85,16 @@ parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   hel
 
 pwd         = os.getcwd()
 
-if not options.njobs
-        print "Must specify number of jobs with option -n. Abort"
+if not options.njobs:
+        print("Must specify number of jobs with option -n. Abort")
         sys.exit(1)
 
 if options.resubmit: # Batch system
     if not options.run:
-        print "Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort"
+        print("Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort")
         sys.exit(1)
     if options.run not in ["hadd","finalhadd","fit","mergefit"]:
-        print "Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run
+        print("Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run)
 
 #Selec what mode you are running
 ONLYHADD = False; ONLYFINHADD = False; ONLYFIT = False; ONLYMERGEFIT = False
@@ -122,6 +122,7 @@ inputlist_f = open( inputlist_n )
 # read the list containing all the input files
 inputlistbase_v = inputlist_f.readlines()
 
+
 for iters in range(options.iteration,nIterations):
 
     condordir = condorPath + '/iter_' + str(iters) 
@@ -147,8 +148,8 @@ for iters in range(options.iteration,nIterations):
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", 
                               memory=2000, maxtime=mymaxtimeFill) # this does not close the file
 
-        print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
-        print "Submitting " + str(njobs) + " jobs"
+        print("\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******")
+        print("Submitting " + str(njobs) + " jobs")
         for ijob in range(njobs):
             #In case you want the stat. syst
             if ( options.syst == 1 ):
@@ -169,24 +170,24 @@ for iters in range(options.iteration,nIterations):
         condor_file.close()
 
         submit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + submit_s
+        print(">>> Running --> " + submit_s)
         # actually submitting filling tasks
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
         output = submitJobs.communicate()
-        print "Out: " + str(output)
+        print("Out: " + str(output))
 
         time.sleep(15)    
         nFilljobs = checkNjobsCondor("ecalpro_Fill")
-        print "There are {n} jobs for Fill part".format(n=nFilljobs)
+        print("There are {n} jobs for Fill part".format(n=nFilljobs))
         
-        print 'Waiting for filling jobs to be finished...'
+        print('Waiting for filling jobs to be finished...')
         # Daemon cheking running jobs
         nCheck = 0
         while nFilljobs > 0 :
             sleeptime = 900
             time.sleep(sleeptime)
             nFilljobs = checkNjobsCondor("ecalpro_Fill")
-            print "I still see {n} jobs for Fill part".format(n=nFilljobs)
+            print("I still see {n} jobs for Fill part".format(n=nFilljobs))
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
             datalines2 = (checkJobs2.communicate()[0]).splitlines()
             nCheck += 1
@@ -194,7 +195,7 @@ for iters in range(options.iteration,nIterations):
                 renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
                 nCheck = 0
 
-        print 'Done with the Fill part'
+        print('Done with the Fill part')
 
     if ( not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
         
@@ -227,7 +228,7 @@ for iters in range(options.iteration,nIterations):
                  
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
                     Ntp_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
-                    print "checking the presence and the sanity of EcalNtp file: " + eosFile
+                    print("checking the presence and the sanity of EcalNtp file: " + eosFile)
                     ######
                     ### old code
                     # filesize=0
@@ -252,30 +253,30 @@ for iters in range(options.iteration,nIterations):
                     ### end of new code
                     ####
                 condor_file.close()
-                print "Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs)
+                print("Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs))
                 nGoodOverTot = float(goodNtp)/float(njobs)
                 if nGoodOverTot < options.minEfficiencyToRecoverFill:
 
-                    print "Resubmitting failed fill jobs."
+                    print("Resubmitting failed fill jobs.")
                     Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
                     # actually submitting recovery tasks
                     subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
                     outJobs = subJobs.communicate()
-                    print outJobs
+                    print(outJobs)
 
                     time.sleep(30)
                     nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                    print "There are {n} jobs for Fill_recovery part".format(n=nFilljobs)
+                    print("There are {n} jobs for Fill_recovery part".format(n=nFilljobs))
 
-                    print 'Waiting for filling jobs to be finished...'
+                    print('Waiting for filling jobs to be finished...')
                     # Daemon cheking running jobs
-                    print "Checking recovery of Ntp ..."
+                    print("Checking recovery of Ntp ...")
                     nCheck = 0
                     while nFilljobs > 0 :
                         sleeptime = 900
                         time.sleep(sleeptime)
                         nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                        print "I still see {n} jobs for Fill_recovery part ({nr})".format(n=nFilljobs,nr=NtpRecoveryAttempt)
+                        print("I still see {n} jobs for Fill_recovery part ({nr})".format(n=nFilljobs,nr=NtpRecoveryAttempt))
                         checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
                         datalines2 = (checkJobs2.communicate()[0]).splitlines()
                         nCheck += 1
@@ -284,10 +285,10 @@ for iters in range(options.iteration,nIterations):
                             nCheck = 0
 
 
-                    print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
+                    print('Done with Ntp recovery n.' + str(NtpRecoveryAttempt))
                 else:
-                    print "Fraction of EcalNtp root file was {perc:.1%} (tolerance was set to {tol:.1%}".format(perc=nGoodOverTot, tol=options.minEfficiencyToRecoverFill)
-                    print "Fill recovery was not attempted."
+                    print("Fraction of EcalNtp root file was {perc:.1%} (tolerance was set to {tol:.1%}".format(perc=nGoodOverTot, tol=options.minEfficiencyToRecoverFill))
+                    print("Fill recovery was not attempted.")
 
                 NtpRecoveryAttempt += 1
         #  END OF FILL RECOVERY
@@ -306,7 +307,7 @@ for iters in range(options.iteration,nIterations):
         condor_file = open(condor_file_name,'w')
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000, maxtime=5000) # this does not close the file
 
-        print 'Now adding files...'
+        print('Now adding files...')
         Nlist = 0
         inputlist_v = inputlistbase_v[:]
         NrelJob = float(len(inputlist_v)) / float(ijobmax)
@@ -314,7 +315,7 @@ for iters in range(options.iteration,nIterations):
             NrelJob = int(NrelJob) + 1
         Nlist_flo = float(NrelJob/nHadd) + 1.
         Nlist = int(Nlist_flo)
-        print "Number of Hadd in parallel: " + str(Nlist)
+        print("Number of Hadd in parallel: " + str(Nlist))
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
@@ -327,9 +328,9 @@ for iters in range(options.iteration,nIterations):
             # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
             # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
             # removing (' and `\n', None)
-            FoutGrep_2 = str(FoutGrep)[2:]
+            FoutGrep_2 = str(FoutGrep)[3:]
             FoutGrep_2 = str(FoutGrep_2)[:-11]
-            #print 'Checking ' + str(FoutGrep_2)
+            #print('Checking ' + str(FoutGrep_2))
             #Chech The size for each line
             f = open( str(FoutGrep_2) )
             lines = f.readlines()
@@ -380,28 +381,28 @@ for iters in range(options.iteration,nIterations):
                 #print "Copied " + prunedfile + " into " + str(FoutGrep_2)
 
             #End of the check, sending the job
-            print "Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
+            print("Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1))  #nHadds goes from 0 to Nlist -1
 
         condor_file.close()
         Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Hsubmit_s
+        print(">>> Running --> " + Hsubmit_s)
         subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
         outJobs = subJobs.communicate()
 
-        print str(outJobs)
+        print(str(outJobs))
         time.sleep(15)
         nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
-        print "There are {n} jobs for Hadd part".format(n=nHaddjobs)
+        print("There are {n} jobs for Hadd part".format(n=nHaddjobs))
 
-        print 'Waiting for all the hadd...'
+        print('Waiting for all the hadd...')
         # Daemon cheking running jobs
         while nHaddjobs > 0 :
             time.sleep(300)
             nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
-            print "I still see {n} jobs for Hadd part".format(n=nHaddjobs)
+            print("I still see {n} jobs for Hadd part".format(n=nHaddjobs))
             #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
             #datalines2 = (checkJobs2.communicate()[0]).splitlines()
-        print 'Done with various hadd'
+        print('Done with various hadd')
 
         # Check if all the hadds are there and files are not empty
         goodHadds = 0
@@ -417,9 +418,9 @@ for iters in range(options.iteration,nIterations):
                 tf.Close()
 
         if goodHadds == Nlist:
-            print "All files are present: going to hadd them"
+            print("All files are present: going to hadd them")
         else:
-            print "Some files are missing or empty or some keys were recovered: going to recover them"
+            print("Some files are missing or empty or some keys were recovered: going to recover them")
 
         HaddRecoveryAttempt = 0
         # this recovery is often unsuccessful: if it failed the first time, there is a high chance that the problem is persistent
@@ -432,7 +433,7 @@ for iters in range(options.iteration,nIterations):
             condor_file = open(condor_file_name,'w')
             writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000, maxtime=5000)  
 
-            print "Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt)
+            print("Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt))
             goodHadds = 0
             for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
@@ -457,34 +458,34 @@ for iters in range(options.iteration,nIterations):
                     tf.Close()
                         
 
-            print "Good files: {num}/{den}".format(num=goodHadds,den=Nlist)
+            print("Good files: {num}/{den}".format(num=goodHadds,den=Nlist))
             if goodHadds == Nlist: 
-                print "All files recovered successfully!"
+                print("All files recovered successfully!")
                 break   
             # inside this loop, it can be that goodHadds == Nlist, because when we enter we resubmit some jobs for sure, and at the next attempt 
             # we still don't know if they were all successful: if so, we exit the loop
 
             condor_file.close()
             Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-            print ">>> Running --> " + Hsubmit_s
+            print(">>> Running --> " + Hsubmit_s)
             # actually submitting recovery tasks
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
             outJobs = subJobs.communicate()
-            print outJobs
+            print(outJobs)
 
             time.sleep(15)
             nHaddjobs = checkNjobsCondor("ecalpro_Hadd_recovery")
-            print "There are {n} jobs for Hadd_recovery part".format(n=nHaddjobs)
+            print("There are {n} jobs for Hadd_recovery part".format(n=nHaddjobs))
 
-            print 'Waiting for Hadd recovery jobs to be finished...'
+            print('Waiting for Hadd recovery jobs to be finished...')
             # Daemon cheking running jobs
-            print "Checking recovery of Hadd ..."
+            print("Checking recovery of Hadd ...")
             nCheck = 0
             while nHaddjobs > 0 :
                 sleeptime = 300
                 time.sleep(sleeptime)
                 nHaddjobs = checkNjobsCondor("ecalpro_Hadd_recovery")
-                print "I still see {n} jobs for Hadd_recovery part".format(n=nHaddjobs)
+                print("I still see {n} jobs for Hadd_recovery part".format(n=nHaddjobs))
                 #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
                 #datalines2 = (checkJobs2.communicate()[0]).splitlines()
                 nCheck += 1
@@ -494,12 +495,12 @@ for iters in range(options.iteration,nIterations):
 
             HaddRecoveryAttempt += 1
      
-            print 'Done with hadd recovery'
+            print('Done with hadd recovery')
 
 
     if ( not ONLYFIT and not ONLYMERGEFIT):
         renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
-        print 'Now The Final One...'
+        print('Now The Final One...')
         
         # PREPARE CONDOR FILES FOR FINAL HADD AT ITER iters
         dummy_exec = open(condordir+'/dummy_exec_finalHadd.sh','w')
@@ -518,32 +519,32 @@ for iters in range(options.iteration,nIterations):
         condor_file.close()
         
         FHsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + FHsubmit_s
+        print(">>> Running --> " + FHsubmit_s)
         FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
         FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        print(FoutJobs)
         time.sleep(5)
 
         nFinHaddjobs = checkNjobsCondor("ecalpro_FinalHadd")     
-        print "There are {n} jobs for FinalHadd part".format(n=nFinHaddjobs)
-        print 'Waiting for the Final hadd...'
+        print("There are {n} jobs for FinalHadd part".format(n=nFinHaddjobs))
+        print('Waiting for the Final hadd...')
         # Daemon cheking running jobs
         while nFinHaddjobs > 0 :
             time.sleep(120)
             nFinHaddjobs = checkNjobsCondor("ecalpro_FinalHadd")
-            print "I still see {n} jobs for FinalHadd part".format(n=nFinHaddjobs)
-        print 'Done with final hadd'
+            print("I still see {n} jobs for FinalHadd part".format(n=nFinHaddjobs))
+        print('Done with final hadd')
 
 
     if MakeNtuple4optimization:
         # it actually stopped already before hadding files
-        print """MakeNtuple4optimization is set to True in parameters.py
+        print("""MakeNtuple4optimization is set to True in parameters.py
 From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
 each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
 Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
 If this is not the case, modify FillEpsilonPlot.cc
-"""
-        print "Done with iteration " + str(iters)
+""")
+        print("Done with iteration " + str(iters))
         quit()
 
     # if running with flag to fold SM, first do that part. It is not needed to run a job, can be done locally in few minutes
@@ -556,10 +557,10 @@ If this is not the case, modify FillEpsilonPlot.cc
         if not os.path.isfile(hFoldFile):
             srcFold_n = srcPath + "/Fit/submit_justFoldSM_iter_" + str(iters) + ".sh"
             Fitsubmit_s = "{src}".format(src=srcFold_n)
-            print ">>> Running --> " + Fitsubmit_s      
+            print(">>> Running --> " + Fitsubmit_s)      
             FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
             FoutJobs = FsubJobs.communicate()  # do I really need to communicate to stdout?
-            print FoutJobs        
+            print(FoutJobs)        
             #os.system(Fitsubmit_s)    
 
     # N of Fit to send
@@ -591,23 +592,23 @@ If this is not the case, modify FillEpsilonPlot.cc
     writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400) # this does not close the file
 
     # preparing submission of fit tasks (EB)
-    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
+    if (not ONLYMERGEFIT): print('Submitting ' + str(nEB) + ' jobs to fit the Barrel')
     for inteb in range(nEB):
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         if (not ONLYMERGEFIT):
-            print 'About to EB fit:'
-            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName            
+            print('About to EB fit:')
+            print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName)            
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
 
     # preparing submission of fit tasks (EE)
-    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
+    if (not ONLYMERGEFIT): print('Submitting ' + str(nEE) + ' jobs to fit the Endcap')
     for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         if (not ONLYMERGEFIT):
-            print 'About to EE fit:'
-            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+            print('About to EE fit:')
+            print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
 
     condor_file.close()
@@ -616,21 +617,21 @@ If this is not the case, modify FillEpsilonPlot.cc
 
         renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
         Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Fitsubmit_s
+        print(">>> Running --> " + Fitsubmit_s)
         FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
         FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        print(FoutJobs)
         time.sleep(5)
 
         nFitjobs = checkNjobsCondor("ecalpro_Fit")     
-        print "There are {n} jobs for Fit part".format(n=nFitjobs)
-        print 'Waiting for fit jobs to be finished...'
+        print("There are {n} jobs for Fit part".format(n=nFitjobs))
+        print('Waiting for fit jobs to be finished...')
         # Daemon cheking running jobs
         while nFitjobs > 0 :
             time.sleep(300)
             nFitjobs = checkNjobsCondor("ecalpro_Fit")
-            print "I still see {n} jobs for Fit part".format(n=nFitjobs)
-        print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
+            print("I still see {n} jobs for Fit part".format(n=nFitjobs))
+        print("Done with fitting! Now we have to merge all fits in one Calibmap.root")
 
     # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
     # this check should be made until all fits are present, otherwise the code crashes, butif it keeps happening there might be something serious to solve
@@ -645,7 +646,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         #thisfile_f = TFile.Open(thisfile)
         if not os.path.isfile(thisfile):
-            print "Will resubmit missing file {f}".format(f=thisfile)
+            print("Will resubmit missing file {f}".format(f=thisfile))
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
     for inte in range(nEE):        
@@ -654,7 +655,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         #thisfile_f = TFile.Open(thisfile)
         #if not thisfile_f:
         if not os.path.isfile(thisfile):
-            print "Will resubmit missing file {f}".format(f=thisfile)
+            print("Will resubmit missing file {f}".format(f=thisfile))
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
 
@@ -669,21 +670,21 @@ If this is not the case, modify FillEpsilonPlot.cc
         condor_file.close()
 
         Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Fitsubmit_s
+        print(">>> Running --> " + Fitsubmit_s)
         FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
         FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        print(FoutJobs)
         time.sleep(5)
 
         nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")     
-        print "There are {n} jobs for Fit recovery part".format(n=nFitjobs)
-        print 'Waiting for fit jobs to be finished...'
+        print("There are {n} jobs for Fit recovery part".format(n=nFitjobs))
+        print('Waiting for fit jobs to be finished...')
         # Daemon cheking running jobs
         while nFitjobs > 0 :
             time.sleep(60)
             nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")
-            print "I still see {n} jobs for Fit recovery part".format(n=nFitjobs)
-        print "Done with fitting recovery! Now we have to merge all fits in one Calibmap.root"
+            print("I still see {n} jobs for Fit recovery part".format(n=nFitjobs))
+        print("Done with fitting recovery! Now we have to merge all fits in one Calibmap.root")
 
     # Merge Final CalibMap
 
@@ -704,7 +705,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     f = TFile.Open(finalCalibMapFileName, 'recreate')
     if not f:
-        print "WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ..."
+        print("WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ...")
         quit()
     else:
         f.cd()
@@ -848,7 +849,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         if f.IsOpen():
             f.cd()
         else:
-            print "ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat
+            print("ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat)
             quit()
 
         if isEoverEtrue and n_repeat == 1:
@@ -925,13 +926,13 @@ If this is not the case, modify FillEpsilonPlot.cc
         # print eosFileList.communicate()
         # print "############################"
 
-        print "Going to merge the following files ..."
+        print("Going to merge the following files ...")
         for thisfile_s in ListFinalHadd:
             thisfile_s = thisfile_s.rstrip()
-            print "file --> " + str(thisfile_s)
+            print("file --> " + str(thisfile_s))
             thisfile_f = TFile.Open(thisfile_s)
             if not thisfile_f: 
-                print "Error in calibJobHandlerCondor.py --> file not found" 
+                print("Error in calibJobHandlerCondor.py --> file not found") 
                 quit()
             #Taking Interval and EB or EE
             h_Int = thisfile_f.Get("hint")
@@ -1117,8 +1118,8 @@ If this is not the case, modify FillEpsilonPlot.cc
     # f.Write()
     f.Close()
 
-    print "Done with iteration " + str(iters)
+    print("Done with iteration " + str(iters))
     if( ONLYHADD or ONLYFINHADD or ONLYFIT or ONLYMERGEFIT):
        ONLYHADD = False; ONLYFINHADD = False; ONLYFIT=False; ONLYMERGEFIT=False
 
-print "---THE END---"
+print("---THE END---")

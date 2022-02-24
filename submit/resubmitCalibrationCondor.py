@@ -20,10 +20,10 @@ parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   hel
 (options, args) = parser.parse_args()
 
 if not options.run:
-    print "Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort"
+    print("Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort")
     sys.exit(1)
 if options.run not in ["hadd","finalhadd","fit","mergefit"]:
-    print "Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run
+    print("Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run)
 
 pwd                 = os.getcwd()
 workdir = pwd+'/'+dirname
@@ -36,14 +36,14 @@ env_script_f.write("#!/bin/bash\n")
 env_script_f.write("cd " + pwd + "\n")
 env_script_f.write("ulimit -c 0\n")
 env_script_f.write("eval `scramv1 runtime -sh`\n")
-pycmd =  "python " + pwd + "/calibJobHandlerCondor.py --resubmit -i {i} -r {r} -n {n} -s {s} ".format(i=options.iteration,n=options.njobs,r=options.run,s=options.syst)
+pycmd =  "python3 " + pwd + "/calibJobHandlerCondor.py --resubmit -i {i} -r {r} -n {n} -s {s} ".format(i=options.iteration,n=options.njobs,r=options.run,s=options.syst)
 if options.recoverFill: pycmd += " --recover-fill "
 if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
 if options.minEfficiencyToRecoverFill >= 0.0:
         pycmd += (" --min-efficiency-recover-fill " + str(options.minEfficiencyToRecoverFill))
 
-print pycmd
+print(pycmd)
 env_script_f.write(pycmd + "\n")
 env_script_f.write("rm -rf " + pwd + "/core.*\n")
 env_script_f.close()
@@ -82,14 +82,14 @@ condor_file.close()
 submit_s = 'condor_submit {cdf} '.format(cdf=condor_file_name)
 
 if  options.daemonLocal:
-    print "[resubmit]  '-- source " + os.path.abspath(env_script_n)
+    print("[resubmit]  '-- source " + os.path.abspath(env_script_n))
     os.system("source " + os.path.abspath(env_script_n))
 else:        
-    print "[resubmit] Resubmitting calibration handler"
-    print "[resubmit]  '-- " + submit_s
+    print("[resubmit] Resubmitting calibration handler")
+    print("[resubmit]  '-- " + submit_s)
     submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
     output = (submitJobs.communicate()[0]).splitlines()
-    print "[resubmit]  '-- " + output[0]
+    print("[resubmit]  '-- " + output[0])
 
 
 # for interactive debugging
