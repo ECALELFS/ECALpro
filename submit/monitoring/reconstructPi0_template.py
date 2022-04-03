@@ -126,6 +126,7 @@ if useHLTFilter:
     process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*"]
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = 100000
 process.options = cms.untracked.PSet(
@@ -143,6 +144,8 @@ process.source = cms.Source('PoolSource',
 
 
 process.source.fileNames = options.inputFiles 
+###SJ - use the present available file to store the monitoring tree
+#process.TFileService = cms.Service("TFileService", fileName = cms.string('monitoringTree.root'))
 
 
 import FWCore.PythonUtilities.LumiList as LumiList

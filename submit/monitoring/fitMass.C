@@ -1,4 +1,4 @@
-void fitMass(string fName){
+void fitMass(string fName, bool isLaserCalib, bool isAppend){
     
     ///extracted from FitEpsilonPlot.cc
     bool useFit_RooMinuit_ = true;
@@ -15,9 +15,22 @@ void fitMass(string fName){
 
     static float fitRange_high_pi0 = 0.2; // value used in the fit function to define the fit range
     static float fitRange_high_pi0_ext = 0.2;
+
+    ofstream  outfile;
+    if(isAppend){
+        
+        if(isLaserCalib) outfile.open(Form("pi0_fitMassInfo_withCalib.txt"),std::ofstream::app);
+        else outfile.open(Form("pi0_fitMassInfo_withoutCalib.txt"),std::ofstream::app);
+    }
+    else{
+        outfile.open(Form("pi0_fitMassInfo_%s.txt",fName.c_str()));
+        outfile << "Year \t Month \t Day \t Time \t Region \t MeanMass \t MeanUnc\n";
+    }
+    
+    
     
 
-    TFile *fin = TFile::Open(fName.c_str());
+    TFile *fin = TFile::Open(Form("%s.root",fName.c_str()));
     TIter next(fin->GetListOfKeys());
     TKey *key;
     vector<string> var_vec;
@@ -34,11 +47,33 @@ void fitMass(string fName){
         var_vec.push_back(htmp->GetName());
     }
 
+
     for(int ivar=0; ivar<var_vec.size(); ivar++){
 
         bool isEB = true;
         string var = var_vec[ivar];
         
+        ////get the year, month, day, time and region ///name has to be like this: pi0_mass_2018_8_17_8.716667_EE.png
+        size_t pos = 0;
+        vector<std::string> token;
+        
+        string clone_var = var;
+        string delimiter = "_";
+        while ((pos = clone_var.find(delimiter)) != std::string::npos) {
+            token.push_back(clone_var.substr(0, pos));
+            clone_var.erase(0, pos + delimiter.length());
+        }
+        token.push_back(clone_var);
+
+        /////// needed for writing a txt file
+        string year = token[2];
+        string month = token[3];
+        string day = token[4];
+        string time = token[5];
+        string region = token[6];
+        cout<<"Year : month : day : time : region "<<year<<" "<<month<<" "<<day<<" "<<time<<" "<<region<<endl;
+
+
         ///Canvas
         TCanvas* canvas = new TCanvas(Form("%s_c",var.c_str()),"",700,700);
         canvas->cd();
@@ -322,6 +357,10 @@ void fitMass(string fName){
         
         canvas->RedrawAxis("sameaxis");
         canvas->Print(Form("%s.png",var.c_str()));
+
+        
+        outfile << year <<" \t "<< month <<" \t "<< day <<" \t "<< time <<" \t "<< region <<" \t "<< mean.getVal()*1000.  <<" \t "<<  mean.getError()*1000.  <<" \n ";
     }//for(int ivar=0; ivar<var_vec.size(); ivar++)
     
+    outfile.close();
 }
