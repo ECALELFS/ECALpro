@@ -2,6 +2,7 @@
 
 import subprocess, time, sys, os
 from ROOT import *
+from cppyy.ll import cast
 from methods import *
 from datetime import datetime
 
@@ -858,58 +859,58 @@ If this is not the case, modify FillEpsilonPlot.cc
             TreeEE = TTree("calibEE", "Tree of EE Inter-calibration constants")
 
         if(Barrel_or_Endcap=='ONLY_BARREL' or Barrel_or_Endcap=='ALL_PLEASE'):
-           TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
-           TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
-           TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
-           TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
-           TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
-           TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
-           TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
-           TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
-           TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
-           TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
-           TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
-           TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
-           TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
-           TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
-           TreeEB.Branch('fit_mean_err_'   , AddressOf(s,'fit_mean_err_'),'fit_mean_err_/F')
-           TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
+           TreeEB.Branch('rawId_'      , addressof(s,'rawId_'),'rawId_/I')
+           TreeEB.Branch('hashedIndex_', addressof(s,'hashedIndex_'),'hashedIndex_/I')
+           TreeEB.Branch('ieta_'       , addressof(s,'ieta_'),'ieta_/I')
+           TreeEB.Branch('iphi_'       , addressof(s,'iphi_'),'iphi_/I')
+           TreeEB.Branch('iSM_'        , addressof(s,'iSM_'),'iSM_/I')
+           TreeEB.Branch('iMod_'       , addressof(s,'iMod_'),'iMod_/I')
+           TreeEB.Branch('iTT_'        , addressof(s,'iTT_'),'iTT_/I')
+           TreeEB.Branch('iTTeta_'     , addressof(s,'iTTeta_'),'iTTeta_/I')
+           TreeEB.Branch('iTTphi_'     , addressof(s,'iTTphi_'),'iTTphi_/I')
+           TreeEB.Branch('iter_'       , addressof(s,'iter_'),'iter_/I')
+           TreeEB.Branch('coeff_'      , addressof(s,'coeff_'),'coeff_/F')
+           TreeEB.Branch('Chisqu_'     , addressof(s,'Chisqu_'),'Chisqu_/F')
+           TreeEB.Branch('Ndof_'       , addressof(s,'Ndof_'),'Ndof_/F')
+           TreeEB.Branch('fit_mean_'   , addressof(s,'fit_mean_'),'fit_mean_/F')
+           TreeEB.Branch('fit_mean_err_'   , addressof(s,'fit_mean_err_'),'fit_mean_err_/F')
+           TreeEB.Branch('fit_sigma_'  , addressof(s,'fit_sigma_'),'fit_sigma_/F')
            if not isEoverEtrue:
-               TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
-               TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
-               TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
-               TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
-               TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
-               TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
-               TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
-               TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
+               TreeEB.Branch('Signal_'     , addressof(s,'Signal_'),'Signal_/F')
+               TreeEB.Branch('Backgr_'     , addressof(s,'Backgr_'),'Backgr_/F')
+               TreeEB.Branch('fit_Snorm_'  , addressof(s,'fit_Snorm_'),'fit_Snorm_/F')
+               TreeEB.Branch('fit_b0_'     , addressof(s,'fit_b0_'),'fit_b0_/F')
+               TreeEB.Branch('fit_b1_'     , addressof(s,'fit_b1_'),'fit_b1_/F')
+               TreeEB.Branch('fit_b2_'     , addressof(s,'fit_b2_'),'fit_b2_/F')
+               TreeEB.Branch('fit_b3_'     , addressof(s,'fit_b3_'),'fit_b3_/F')
+               TreeEB.Branch('fit_Bnorm_'  , addressof(s,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     
         if(Barrel_or_Endcap=='ONLY_ENDCAP' or Barrel_or_Endcap=='ALL_PLEASE'):
-           TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
-           TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
-           TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
-           TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
-           TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
-           TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
-           TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
-           TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
-           TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
-           TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
-           TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
-           TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
-           TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
-           TreeEE.Branch('fit_mean_err_'   , AddressOf(t,'fit_mean_err_'),'fit_mean_err_/F')
-           TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
+           TreeEE.Branch('ix_'         , addressof(t,'ix_'),'ix_/I')
+           TreeEE.Branch('iy_'         , addressof(t,'iy_'),'iy_/I')
+           TreeEE.Branch('zside_'      , addressof(t,'zside_'),'zside_/I')
+           TreeEE.Branch('sc_'         , addressof(t,'sc_'),'sc_/I')
+           TreeEE.Branch('isc_'        , addressof(t,'isc_'),'isc_/I')
+           TreeEE.Branch('ic_'         , addressof(t,'ic_'),'ic_/I')
+           TreeEE.Branch('iquadrant_'  , addressof(t,'iquadrant_'),'iquadrant_/I')
+           TreeEE.Branch('hashedIndex_', addressof(t,'hashedIndex_'),'hashedIndex_/I')
+           TreeEE.Branch('iter_'       , addressof(t,'iter_'),'iter_/I')
+           TreeEE.Branch('coeff_'      , addressof(t,'coeff_'),'coeff_/F')
+           TreeEE.Branch('Chisqu_'     , addressof(t,'Chisqu_'),'Chisqu_/F')
+           TreeEE.Branch('Ndof_'       , addressof(t,'Ndof_'),'Ndof_/F')
+           TreeEE.Branch('fit_mean_'   , addressof(t,'fit_mean_'),'fit_mean_/F')
+           TreeEE.Branch('fit_mean_err_'   , addressof(t,'fit_mean_err_'),'fit_mean_err_/F')
+           TreeEE.Branch('fit_sigma_'  , addressof(t,'fit_sigma_'),'fit_sigma_/F')
            if not isEoverEtrue:
-               TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
-               TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
-               TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
-               TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
-               TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
-               TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
-               TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
-               TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
+               TreeEE.Branch('Signal_'     , addressof(t,'Signal_'),'Signal_/F')
+               TreeEE.Branch('Backgr_'     , addressof(t,'Backgr_'),'Backgr_/F')
+               TreeEE.Branch('fit_Snorm_'  , addressof(t,'fit_Snorm_'),'fit_Snorm_/F')
+               TreeEE.Branch('fit_b0_'     , addressof(t,'fit_b0_'),'fit_b0_/F')
+               TreeEE.Branch('fit_b1_'     , addressof(t,'fit_b1_'),'fit_b1_/F')
+               TreeEE.Branch('fit_b2_'     , addressof(t,'fit_b2_'),'fit_b2_/F')
+               TreeEE.Branch('fit_b3_'     , addressof(t,'fit_b3_'),'fit_b3_/F')
+               TreeEE.Branch('fit_Bnorm_'  , addressof(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
         # print "Printing list of files on eos ..."
         # print "############################"
@@ -940,31 +941,31 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEB_g2")
                else:
                    thisTree = thisfile_f.Get("calibEB")
-               thisTree.SetBranchAddress( 'rawId',AddressOf(s1,'rawId'));
-               thisTree.SetBranchAddress( 'hashedIndex',AddressOf(s1,'hashedIndex'));
-               thisTree.SetBranchAddress( 'ieta',AddressOf(s1,'ieta'));
-               thisTree.SetBranchAddress( 'iphi',AddressOf(s1,'iphi'));
-               thisTree.SetBranchAddress( 'iSM',AddressOf(s1,'iSM'));
-               thisTree.SetBranchAddress( 'iMod',AddressOf(s1,'iMod'));
-               thisTree.SetBranchAddress( 'iTT',AddressOf(s1,'iTT'));
-               thisTree.SetBranchAddress( 'iTTeta',AddressOf(s1,'iTTeta'));
-               thisTree.SetBranchAddress( 'iTTphi',AddressOf(s1,'iTTphi'));
-               thisTree.SetBranchAddress( 'iter',AddressOf(s1,'iter'));
-               thisTree.SetBranchAddress( 'coeff',AddressOf(s1,'coeff'));
-               thisTree.SetBranchAddress( 'Chisqu',AddressOf(s1,'Chisqu'));
-               thisTree.SetBranchAddress( 'Ndof',AddressOf(s1,'Ndof'));
-               thisTree.SetBranchAddress( 'fit_mean',AddressOf(s1,'fit_mean'));
-               thisTree.SetBranchAddress( 'fit_mean_err',AddressOf(s1,'fit_mean_err'));
-               thisTree.SetBranchAddress( 'fit_sigma',AddressOf(s1,'fit_sigma'));
+               thisTree.SetBranchAddress( 'rawId',cast['void*'](addressof(s1,'rawId')));
+               thisTree.SetBranchAddress( 'hashedIndex',cast['void*'](addressof(s1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'ieta',cast['void*'](addressof(s1,'ieta')));
+               thisTree.SetBranchAddress( 'iphi',cast['void*'](addressof(s1,'iphi')));
+               thisTree.SetBranchAddress( 'iSM',cast['void*'](addressof(s1,'iSM')));
+               thisTree.SetBranchAddress( 'iMod',cast['void*'](addressof(s1,'iMod')));
+               thisTree.SetBranchAddress( 'iTT',cast['void*'](addressof(s1,'iTT')));
+               thisTree.SetBranchAddress( 'iTTeta',cast['void*'](addressof(s1,'iTTeta')));
+               thisTree.SetBranchAddress( 'iTTphi',cast['void*'](addressof(s1,'iTTphi')));
+               thisTree.SetBranchAddress( 'iter',cast['void*'](addressof(s1,'iter')));
+               thisTree.SetBranchAddress( 'coeff',cast['void*'](addressof(s1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu',cast['void*'](addressof(s1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof',cast['void*'](addressof(s1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean',cast['void*'](addressof(s1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err',cast['void*'](addressof(s1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma',cast['void*'](addressof(s1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',AddressOf(s1,'Signal'));
-                   thisTree.SetBranchAddress( 'Backgr',AddressOf(s1,'Backgr'));
-                   thisTree.SetBranchAddress( 'fit_Snorm',AddressOf(s1,'fit_Snorm'));
-                   thisTree.SetBranchAddress( 'fit_b0',AddressOf(s1,'fit_b0'));
-                   thisTree.SetBranchAddress( 'fit_b1',AddressOf(s1,'fit_b1'));
-                   thisTree.SetBranchAddress( 'fit_b2',AddressOf(s1,'fit_b2'));
-                   thisTree.SetBranchAddress( 'fit_b3',AddressOf(s1,'fit_b3'));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',AddressOf(s1,'fit_Bnorm'));
+                   thisTree.SetBranchAddress( 'Signal',cast['void*'](addressof(s1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr',cast['void*'](addressof(s1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm',cast['void*'](addressof(s1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0',cast['void*'](addressof(s1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1',cast['void*'](addressof(s1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2',cast['void*'](addressof(s1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3',cast['void*'](addressof(s1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm',cast['void*'](addressof(s1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
@@ -999,30 +1000,30 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEE_g2")
                else:
                    thisTree = thisfile_f.Get("calibEE")
-               thisTree.SetBranchAddress( 'ix',AddressOf(t1,'ix'));
-               thisTree.SetBranchAddress( 'iy',AddressOf(t1,'iy'));
-               thisTree.SetBranchAddress( 'zside',AddressOf(t1,'zside'));
-               thisTree.SetBranchAddress( 'sc',AddressOf(t1,'sc'));
-               thisTree.SetBranchAddress( 'isc',AddressOf(t1,'isc'));
-               thisTree.SetBranchAddress( 'ic',AddressOf(t1,'ic'));
-               thisTree.SetBranchAddress( 'iquadrant',AddressOf(t1,'iquadrant'));
-               thisTree.SetBranchAddress( 'hashedIndex',AddressOf(t1,'hashedIndex'));
-               thisTree.SetBranchAddress( 'iter',AddressOf(t1,'iter'));
-               thisTree.SetBranchAddress( 'coeff',AddressOf(t1,'coeff'));
-               thisTree.SetBranchAddress( 'Chisqu',AddressOf(t1,'Chisqu'));
-               thisTree.SetBranchAddress( 'Ndof',AddressOf(t1,'Ndof'));
-               thisTree.SetBranchAddress( 'fit_mean',AddressOf(t1,'fit_mean'));
-               thisTree.SetBranchAddress( 'fit_mean_err',AddressOf(t1,'fit_mean_err'));
-               thisTree.SetBranchAddress( 'fit_sigma',AddressOf(t1,'fit_sigma'));
+               thisTree.SetBranchAddress( 'ix',cast['void*'](addressof(t1,'ix')));
+               thisTree.SetBranchAddress( 'iy',cast['void*'](addressof(t1,'iy')));
+               thisTree.SetBranchAddress( 'zside',cast['void*'](addressof(t1,'zside')));
+               thisTree.SetBranchAddress( 'sc',cast['void*'](addressof(t1,'sc')));
+               thisTree.SetBranchAddress( 'isc',cast['void*'](addressof(t1,'isc')));
+               thisTree.SetBranchAddress( 'ic',cast['void*'](addressof(t1,'ic')));
+               thisTree.SetBranchAddress( 'iquadrant',cast['void*'](addressof(t1,'iquadrant')));
+               thisTree.SetBranchAddress( 'hashedIndex',cast['void*'](addressof(t1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'iter',cast['void*'](addressof(t1,'iter')));
+               thisTree.SetBranchAddress( 'coeff',cast['void*'](addressof(t1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu',cast['void*'](addressof(t1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof',cast['void*'](addressof(t1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean',cast['void*'](addressof(t1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err',cast['void*'](addressof(t1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma',cast['void*'](addressof(t1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',AddressOf(t1,'Signal'));
-                   thisTree.SetBranchAddress( 'Backgr',AddressOf(t1,'Backgr'));
-                   thisTree.SetBranchAddress( 'fit_Snorm',AddressOf(t1,'fit_Snorm'));
-                   thisTree.SetBranchAddress( 'fit_b0',AddressOf(t1,'fit_b0'));
-                   thisTree.SetBranchAddress( 'fit_b1',AddressOf(t1,'fit_b1'));
-                   thisTree.SetBranchAddress( 'fit_b2',AddressOf(t1,'fit_b2'));
-                   thisTree.SetBranchAddress( 'fit_b3',AddressOf(t1,'fit_b3'));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',AddressOf(t1,'fit_Bnorm'));
+                   thisTree.SetBranchAddress( 'Signal',cast['void*'](addressof(t1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr',cast['void*'](addressof(t1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm',cast['void*'](addressof(t1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0',cast['void*'](addressof(t1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1',cast['void*'](addressof(t1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2',cast['void*'](addressof(t1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3',cast['void*'](addressof(t1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm',cast['void*'](addressof(t1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
