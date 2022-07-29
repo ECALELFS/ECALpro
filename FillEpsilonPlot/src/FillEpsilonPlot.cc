@@ -109,6 +109,11 @@ using std::max;
 #include "DataFormats/Math/interface/Vector3D.h"  // to use math::XYZVector
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "CoralBase/TimeStamp.h"
+#include "CondFormats/Common/interface/Time.h"
+#include "CondFormats/Common/interface/TimeConversions.h"
+
+
 #define DR_FOR_UNMERGED_GEN_PHOTONS 0.025 // if two gen photons are closer than this value, they will not be used for the gen-reco matching, because they are too close to be distinguished by the reco clustering algorithm (0.0175 in Dphi or Deta is ~1 ECAL cystal and the seeds must be farther than 1 crystal also on the diagonal)
 
 //using namespace TMVA;
@@ -136,7 +141,9 @@ double max(double x, double y);
 int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
 
-FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
+FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
+    geoToken_(esConsumes()),
+    chStatusToken_(esConsumes())
 {
 
     /// parameters from python
@@ -144,7 +151,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     useContainmentCorrectionsFromEoverEtrue_ = iConfig.getUntrackedParameter<bool>("useContainmentCorrectionsFromEoverEtrue",true);
     scalingEoverEtrueCC_g1_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g1",1.0);
     scalingEoverEtrueCC_g2_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g2",1.0);
-
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
@@ -473,6 +479,21 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     outfile_ = TFile::Open(fileName.c_str(),"RECREATE");
     if(!outfile_ or not outfile_->IsOpen()) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
 
+    ///TTree needed for monitoring having time, day, year info
+    tree_mon = new TTree("monitoring","TTree for monitoring");
+    tree_mon->Branch( "Event",     &myEvent,     "Event/l"); // l is for ULong64_t
+    tree_mon->Branch( "LumiBlock", &myLumiBlock, "LumiBlock/I");
+    tree_mon->Branch( "Run",       &myRun,       "Run/I");
+    tree_mon->Branch( "BunchCrossing",       &myBunchCrossing,       "BunchCrossing/I");
+    tree_mon->Branch("event_year",&event_year);
+    tree_mon->Branch("event_month",&event_month);
+    tree_mon->Branch("event_day",&event_day);
+    tree_mon->Branch("event_time",&event_time);
+    tree_mon->Branch("pi0_mass",&pi0_mass);
+    tree_mon->Branch("pho1_eta",&pho1_eta);
+    tree_mon->Branch("pho2_eta",&pho2_eta);
+    tree_mon->Branch("isPi0EB",&isPi0EB);
+
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
 	// event info for data
@@ -594,7 +615,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   if (not fcheck or fcheck->IsZombie()) {
     isGood = false;
   } else {
-    if (fcheck->GetSize() < 1048576) isGood = false; // set limit at 1 MB, file is actually larger
+    if (fcheck->GetSize() < 1) isGood = false; // set limit at 1 MB, file is actually larger
     //if (fcheck->GetSize() < 500000) isGood = false; // set limit at 500 kB, file is actually larger
     else if (fcheck->TestBit(TFile::kRecovered)) isGood = false;
     fcheck->Close();    
@@ -728,12 +749,35 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //JSON
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
 
+
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
   myRun = iEvent.id().run();
   myBunchCrossing = iEvent.bunchCrossing();
+  
+  ///set everything to -999 for monitoring tree
+  event_year = -999; event_month = -999; event_day = -999, isPi0EB = -999;
+  event_time = -999.; pi0_mass = -999.; pho1_eta = -999.; pho2_eta = -999.;
+  ///SJ - taken from here: https://cmssdt.cern.ch/lxr/source/CalibTracker/SiStripDCS/test/Synchronization/SyncDCSO2O.cc#0100
+  //cout<<"Event time "<<iEvent.time().value()<<endl;
+  coral::TimeStamp coralTime(cond::time::to_boost(iEvent.time().value()));
 
-  // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
+  /*std::cout << "year = " << coralTime.year() << ", month = " << coralTime.month() << ", day = " << coralTime.day();
+// N.B. we add 1 hour to the coralTime because it is the conversion from posix_time which is non-adjusted.
+// The shift of +1 gives the CERN time zone.
+    std::cout << ", hour = " << coralTime.hour() + 1 << ", minute = " << coralTime.minute()
+              << ", second = " << coralTime.second();
+    std::cout << ", nanosecond = " << coralTime.nanosecond() << std::endl;
+  */
+
+  ///SJ
+  event_year = coralTime.year();
+  event_month = coralTime.month();
+  event_day = coralTime.day();
+  event_time = (coralTime.hour() + 1) + (coralTime.minute())/60. + (coralTime.second())/3600; ///we dont need ns
+
+  
+        // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
 
   if (MakeNtuple4optimization_) {
 
@@ -1135,9 +1179,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 
   //Internal Geometry
-  edm::ESHandle<CaloGeometry> geoHandle;
-  iSetup.get<CaloGeometryRecord>().get(geoHandle);
-  geometry = geoHandle.product();
+  geometry = &iSetup.getData(geoToken_);
   // estopology_ = new EcalPreshowerTopology(geoHandle);
   estopology_ = new EcalPreshowerTopology();
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
@@ -1196,9 +1238,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
   //get status from DB
-  edm::ESHandle<EcalChannelStatus> csHandle; 
-  iSetup.get<EcalChannelStatusRcd>().get(csHandle);
-  const EcalChannelStatus &channelStatus = *csHandle; 
+  const EcalChannelStatus &channelStatus = iSetup.getData(chStatusToken_);; 
   ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
 
   if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
@@ -2612,7 +2652,10 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
         ////SJ - just try to fill an inclusive pi0 histogram
-        if(subDetId==EcalBarrel) pi0_mass_EB->Fill(pi0P4_mass);
+            if(subDetId==EcalBarrel){
+                pi0_mass_EB->Fill(pi0P4_mass);
+            }
+            
         if(subDetId == EcalEndcap){
             if(g1eta < 0 || g2eta < 0)
                 pi0_mass_EEM->Fill(pi0P4_mass);
@@ -2620,6 +2663,11 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
                 pi0_mass_EEP->Fill(pi0P4_mass);
         }
 
+        pi0_mass = pi0P4_mass;
+        pho1_eta = g1eta;
+        pho2_eta = g2eta;
+        isPi0EB = subDetId==EcalBarrel;
+        tree_mon->Fill();
         ////END of SJ
 
 	  pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
@@ -3519,7 +3567,7 @@ void FillEpsilonPlot::endJob(){
   pi0_mass_EB->Write();
   pi0_mass_EEP->Write();
   pi0_mass_EEM->Write();
-
+  tree_mon->Write();
   
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();

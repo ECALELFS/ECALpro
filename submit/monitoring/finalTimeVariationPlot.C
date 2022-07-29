@@ -1,11 +1,25 @@
 #include <stdlib.h>     /* atoi */
+#include <algorithm>
+#include <functional> 
 
-void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float> meanMass, vector<float> time, vector<float> xErr, vector<float> meanUnc, TH1F *h, int color, string label){
+void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float>& meanMass, vector<float>& time, vector<float>& xErr, vector<float>& meanUnc, TH1F *h, int color, string label, bool normalize=true){
     
+    // normalize to first point
+    if(normalize)
+    {
+        // make sure we use the first point in time
+        auto ref = meanMass[std::distance(time.begin(), std::min_element(time.begin(), time.end()))];
+        // scale all mass values by the first point        
+        for(auto& m : meanMass)
+            m /= ref;
+    }
+
     p1->cd();
     TGraphErrors *g = new TGraphErrors(meanMass.size(), &time[0], &meanMass[0], &xErr[0], &meanUnc[0]);
+
     g->SetMaximum(1.05);
     g->SetMinimum(0.80);
+    g->SetMarkerSize(0.7);
     g->SetMarkerColor(color);
     g->SetLineColor(color);
     g->GetXaxis()->SetTitle("Time");
@@ -14,7 +28,6 @@ void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float> meanMass, vector<fl
     g->SetTitle("");
     if(ifile==0) g->Draw("AP");    
     else g->Draw("Psame");
-
         
     p2->cd();
     h->GetXaxis()->SetRangeUser(0.80,1.05);
@@ -25,15 +38,16 @@ void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float> meanMass, vector<fl
     double mean = h->GetMean();
     double rms = h->GetRMS();
         
-    TLatex *tex = new TLatex(0.2,mean-0.01,Form("Mean = %0.2f",mean));
+    TLatex *tex = new TLatex(0.2,mean-0.1,Form("Mean = %0.2f",mean));
     tex->SetTextColor(color);
     tex->Draw();
     p2->Modified();
     p2->Update();
 
-    tex = new TLatex(0.2,mean-0.015,Form("RMS = %0.2f",rms));
+    tex = new TLatex(0.2,mean-0.15,Form("RMS = %0.2f",rms));
     tex->SetTextColor(color);
     tex->Draw();
+    p2->SetGrid();
     p2->Modified();
     p2->Update();
 
@@ -43,6 +57,7 @@ void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float> meanMass, vector<fl
     tex->SetTextSize(0.025);
     tex->SetTextColor(color);
     tex->Draw();
+    p1->SetGrid();
     p1->Modified();
     p1->Update();
 
@@ -50,7 +65,7 @@ void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float> meanMass, vector<fl
 }
 
 
-void finalTimeVariationPlot(string fName){
+void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=false){
 
     double pdg_pi0Mass = 134.9770;
     
@@ -58,7 +73,7 @@ void finalTimeVariationPlot(string fName){
     vector<string> inputTextFiles, labels;
     vector<int> color;
     ifstream infile;
-    infile.open(Form("%s.txt",fName.c_str())); 
+    infile.open(fName.c_str()); 
     string line;
     
     if(!infile.is_open()){
@@ -139,7 +154,7 @@ void finalTimeVariationPlot(string fName){
                 string tmp_region;
                 float tmp_meanMass, tmp_meanUnc;
                 infile >> tmp_year >> tmp_month >> tmp_day >> tmp_time >> tmp_region >> tmp_meanMass >> tmp_meanUnc;
-                
+                                
                 tmp_meanMass = tmp_meanMass/pdg_pi0Mass;
                 tmp_meanUnc = tmp_meanUnc/pdg_pi0Mass;
                 
@@ -179,20 +194,20 @@ void finalTimeVariationPlot(string fName){
         }//if(infile.is_open())
         
         if(meanMassEB.size()>0){
-            drawCanvas(ifile, pad1EB, pad2EB, meanMassEB, timeEB, xErrEB, meanUncEB, hEB, color[ifile], labels[ifile]);
+            drawCanvas(ifile, pad1EB, pad2EB, meanMassEB, timeEB, xErrEB, meanUncEB, hEB, color[ifile], labels[ifile], !usePDGmass);
         }
 
         if(meanMassEE.size()>0){
-            drawCanvas(ifile,  pad1EE, pad2EE, meanMassEE, timeEE, xErrEE, meanUncEE, hEE, color[ifile], labels[ifile]);
+            drawCanvas(ifile,  pad1EE, pad2EE, meanMassEE, timeEE, xErrEE, meanUncEE, hEE, color[ifile], labels[ifile], !usePDGmass);
         }
 
 
     }//for(int ifile=0; ifile<inputTextFiles.size(); ifile++)
     
-    cEB->Print(Form("%s_EB.png",fName.c_str()));
-    cEE->Print(Form("%s_EE.png",fName.c_str()));
-    cEB->Print(Form("%s_EB.C",fName.c_str()));
-    cEE->Print(Form("%s_EE.C",fName.c_str()));
+    cEB->Print(Form("%spi0stability_EB.png",prefix.c_str()));
+    cEE->Print(Form("%spi0stability_EE.png",prefix.c_str()));
+    cEB->Print(Form("%spi0stability_EB.root",prefix.c_str()));
+    cEE->Print(Form("%spi0stability_EE.root",prefix.c_str()));
 
 }
 

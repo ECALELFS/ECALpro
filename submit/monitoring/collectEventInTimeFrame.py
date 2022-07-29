@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import ROOT
 from ROOT import gStyle
@@ -25,7 +27,7 @@ def collectEvents(inputFileNameList, inputTreeName, outputFileName, nPi0EB, nPi0
     fout = ROOT.TFile("%s"%outputFileName,"RECREATE")
 
     #print(pd.__version__)
-    df_Init = uproot.iterate("%s:%s"%(inputFileNameList,inputTreeName), library="pd")
+    df_Init = uproot.iterate({inputFile : inputTreeName for inputFile in inputFileNameList}, library="pd")
     df_list = [data for data in df_Init]
     dfFull = pd.concat(df_list)
 
@@ -124,7 +126,7 @@ def main():
 
     (options, args) = parser.parse_args()
     
-    collectEvents(options.inputFileNameList, options.inputTreeName, options.outputFileName, options.nPi0EB, options.nPi0EE)
+    collectEvents(options.inputFileNameList.split(','), options.inputTreeName, options.outputFileName, options.nPi0EB, options.nPi0EE)
     
 
     

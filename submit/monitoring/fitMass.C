@@ -1,4 +1,4 @@
-void fitMass(string fName, bool isLaserCalib, bool isAppend){
+void fitMass(string fName, bool isLaserCalib, bool isAppend, string prefix=""){
     
     ///extracted from FitEpsilonPlot.cc
     bool useFit_RooMinuit_ = true;
@@ -356,7 +356,8 @@ void fitMass(string fName, bool isLaserCalib, bool isAppend){
         lat.DrawLatex(xmin,yhi-5.*ypass, line.c_str());
         
         canvas->RedrawAxis("sameaxis");
-        canvas->Print(Form("%s.png",var.c_str()));
+        canvas->Print(Form("%s/%s.png", prefix.c_str(), var.c_str()));
+        canvas->Print(Form("%s/%s.root", prefix.c_str(), var.c_str()));
 
         
         outfile << year <<" \t "<< month <<" \t "<< day <<" \t "<< time <<" \t "<< region <<" \t "<< mean.getVal()*1000.  <<" \t "<<  mean.getError()*1000.  <<" \n ";

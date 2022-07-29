@@ -33,7 +33,7 @@ options.register ('globaltag',
                   "Input global tag")
 
 options.register ('outputDir', 
-                  './', 
+                  './output', 
                   VarParsing.multiplicity.singleton, 
                   VarParsing.varType.string, 
                   "Output directory")
@@ -56,16 +56,19 @@ options.parseArguments()
 
 
 process.load("Configuration.Geometry.GeometryIdeal_cff")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-process.GlobalTag.globaltag = options.globaltag
+if options.globaltag != '':
+    process.GlobalTag.globaltag = options.globaltag
+else:
+    from Configuration.AlCa.GlobalTag import GlobalTag
+    process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '')
 
 ###config with the conditions we want
 #process.load("CalibCode.FillEpsilonPlot.GTconditions_cff")
 process.load("CalibCode.FillEpsilonPlot.%s"%options.conditionsFileName) 
 
 #DUMMY RECHIT
-process.dummyHits = cms.EDProducer('DummyRechitDigis',
+process.dummyHits = cms.EDProducer('DummyRechitDigisPi0',
                                      doDigi = cms.untracked.bool(True),
                                      # rechits
                                      barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB'),
@@ -243,18 +246,19 @@ process.p *= process.ecalMultiFitUncalibRecHit
 process.p *= process.ecalLocalRecoSequence
 process.p *= process.analyzerFillEpsilon
 
-'''
-process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string('myOutputFile.root'),
-                               SelectEvents = cms.untracked.PSet( 
-                                   SelectEvents = cms.vstring("p") 
-                               ),
-                               outputCommands = cms.untracked.vstring('keep *')
-)             
 
-process.endp = cms.EndPath(process.out)
-'''
+# process.out = cms.OutputModule("PoolOutputModule",
+#                                fileName = cms.untracked.string('myOutputFile.root'),
+#                                SelectEvents = cms.untracked.PSet( 
+#                                    SelectEvents = cms.vstring("p") 
+#                                ),
+#                                outputCommands = cms.untracked.vstring('keep *')
+# )
 
-process.endp = cms.EndPath()
+
+#process.endp = cms.EndPath(process.out)
+
+
+# process.s = cms.Schedule(process.p, process.endp)
 
 #print(process.dumpPython())

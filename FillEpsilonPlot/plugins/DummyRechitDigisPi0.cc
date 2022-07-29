@@ -1,9 +1,9 @@
 // -*- C++ -*-
 //
-// Package:    ECALlite/DummyRechitDigis
-// Class:      DummyRechitDigis
+// Package:    ECALlite/DummyRechitDigisPi0
+// Class:      DummyRechitDigisPi0
 // 
-/**\class DummyRechitDigis DummyRechitDigis.cc ECALlite/DummyRechitDigis/plugins/DummyRechitDigis.cc
+/**\class DummyRechitDigisPi0 DummyRechitDigisPi0.cc ECALlite/DummyRechitDigisPi0/plugins/DummyRechitDigisPi0.cc
 
  Description: [one line class summary]
 
@@ -37,10 +37,10 @@
 // class declaration
 //
 
-class DummyRechitDigis : public edm::EDProducer {
+class DummyRechitDigisPi0 : public edm::EDProducer {
 public:
-  explicit DummyRechitDigis(const edm::ParameterSet&);
-  ~DummyRechitDigis();
+  explicit DummyRechitDigisPi0(const edm::ParameterSet&);
+  ~DummyRechitDigisPi0();
 
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
@@ -66,7 +66,7 @@ private:
 
 };
 
-DummyRechitDigis::DummyRechitDigis(const edm::ParameterSet& iConfig):
+DummyRechitDigisPi0::DummyRechitDigisPi0(const edm::ParameterSet& iConfig):
   tag_barrelHitProducer_       (iConfig.getParameter< edm::InputTag > ("barrelHitProducer")),
   tag_endcapHitProducer_       (iConfig.getParameter< edm::InputTag > ("endcapHitProducer")),
   barrelRecHitCollection_  (iConfig.getUntrackedParameter<std::string>("barrelRecHitCollection")),
@@ -91,9 +91,9 @@ DummyRechitDigis::DummyRechitDigis(const edm::ParameterSet& iConfig):
    }
 }
 
-DummyRechitDigis::~DummyRechitDigis(){ }
+DummyRechitDigisPi0::~DummyRechitDigisPi0(){ }
 
-void DummyRechitDigis::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
+void DummyRechitDigisPi0::produce(edm::Event& iEvent, const edm::EventSetup& iSetup){
   //std::cout << "\n-----------New Event ----------------\n " << std::endl;
    using namespace edm;   
    // build an empty collection
@@ -188,9 +188,9 @@ void DummyRechitDigis::produce(edm::Event& iEvent, const edm::EventSetup& iSetup
    //std::cout << "-----------End Dummy Rechits ---------- " << std::endl;
 }
 
-void DummyRechitDigis::beginJob(){ }
-void DummyRechitDigis::endJob(){ }
-void DummyRechitDigis::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void DummyRechitDigisPi0::beginJob(){ }
+void DummyRechitDigisPi0::endJob(){ }
+void DummyRechitDigisPi0::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
@@ -199,4 +199,4 @@ void DummyRechitDigis::fillDescriptions(edm::ConfigurationDescriptions& descript
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(DummyRechitDigis);
+DEFINE_FWK_MODULE(DummyRechitDigisPi0);
