@@ -435,7 +435,8 @@ private:
 
     //variables for monitoring tree
     TTree*  tree_mon;
-    int event_year, event_month, event_day, isPi0EB;
-    double event_time, pi0_mass, pho1_eta, pho2_eta;
+    int isPi0EB;
+    uint64_t event_time;
+    double pi0_mass, pho1_eta, pho2_eta;
 
 };

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <functional> 
 
-void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float>& meanMass, vector<float>& time, vector<float>& xErr, vector<float>& meanUnc, TH1F *h, int color, string label, bool normalize=true){
+void drawCanvas(int ifile, TCanvas *canv, vector<double>& meanMass, vector<double>& time, vector<double>& xErr, vector<double>& meanUnc, TH1F *h, int color, string label, bool normalize=true, vector<string> iovs={}, vector<string> iov_times={}){
     
     // normalize to first point
     if(normalize)
@@ -11,61 +11,94 @@ void drawCanvas(int ifile, TPad *p1, TPad *p2, vector<float>& meanMass, vector<f
         auto ref = meanMass[std::distance(time.begin(), std::min_element(time.begin(), time.end()))];
         // scale all mass values by the first point        
         for(auto& m : meanMass)
+        {
             m /= ref;
+            h->Fill(m);  
+        }
+    }
+    else
+    {
+        for(auto& m : meanMass)
+            h->Fill(m);  
     }
 
-    p1->cd();
+    canv->cd();
     TGraphErrors *g = new TGraphErrors(meanMass.size(), &time[0], &meanMass[0], &xErr[0], &meanUnc[0]);
-
+        
     g->SetMaximum(1.05);
     g->SetMinimum(0.80);
     g->SetMarkerSize(0.7);
-    g->SetMarkerColor(color);
-    g->SetLineColor(color);
-    g->GetXaxis()->SetTitle("Time");
+    g->SetMarkerColor(color+1);
+    g->SetLineColor(color+1);
+    g->GetXaxis()->SetTimeOffset(0);
+    g->GetXaxis()->SetTimeDisplay(1);
+    g->GetXaxis()->SetTimeFormat("#splitline{%d/%m}{%H:%M}");
+    g->GetXaxis()->SetTitle("Time(day/month-h:m)");
+    g->GetXaxis()->SetTitleOffset(1.5);
+    g->GetXaxis()->SetLabelOffset(0.02);
+    g->GetXaxis()->SetNdivisions(507);
     g->GetYaxis()->SetTitle("Normalized #pi^{0} mass");
     g->SetName("");
     g->SetTitle("");
     if(ifile==0) g->Draw("AP");    
     else g->Draw("Psame");
-        
-    p2->cd();
-    h->GetXaxis()->SetRangeUser(0.80,1.05);
-    //h->SetMinimum(0.85);
-    if(ifile==0) h->Draw("HBAR");
-    else h->Draw("HBARsame");
 
     double mean = h->GetMean();
     double rms = h->GetRMS();
-        
-    TLatex *tex = new TLatex(0.2,mean-0.1,Form("Mean = %0.2f",mean));
+     
+    // rescale summary histogram to be displayed in the same pad as the graph   
+    h->Rebin(5);
+    h->Scale(1./h->GetMaximum());
+    auto xwidth = g->GetXaxis()->GetXmax()-g->GetXaxis()->GetXmin();
+    for(int i=1; i<=h->GetNbinsX(); ++i)
+        h->SetBinContent(i, h->GetBinContent(i)*(xwidth-1e5)+g->GetXaxis()->GetXmin());
+
+    h->SetFillStyle(3015);
+    h->SetLineWidth(0);
+    h->SetLineColor(color);
+    h->SetFillColor(color);
+
+    h->Draw("HBARsame");
+
+    TLatex *tex = new TLatex(0.1*xwidth+g->GetXaxis()->GetXmin(),0.88,Form("Mean = %0.2f",mean));
     tex->SetTextColor(color);
     tex->Draw();
-    p2->Modified();
-    p2->Update();
+    canv->Modified();
+    canv->Update();
 
-    tex = new TLatex(0.2,mean-0.15,Form("RMS = %0.2f",rms));
+    tex = new TLatex(0.1*xwidth+g->GetXaxis()->GetXmin(),0.86,Form("RMS = %0.2f",rms));
     tex->SetTextColor(color);
     tex->Draw();
-    p2->SetGrid();
-    p2->Modified();
-    p2->Update();
+    canv->SetGrid();
+    canv->Modified();
+    canv->Update();
 
-    ///on pad1
-    p1->cd();
-    tex = new TLatex(time[0],mean-0.03,Form("%s",label.c_str()));
+    tex = new TLatex(0.1*xwidth+g->GetXaxis()->GetXmin(),0.9,Form("%s",label.c_str()));
     tex->SetTextSize(0.025);
     tex->SetTextColor(color);
     tex->Draw();
-    p1->SetGrid();
-    p1->Modified();
-    p1->Update();
+    canv->SetGrid();
+    canv->Modified();
+    canv->Update();
+
+    TLine liov;
+    liov.SetLineStyle(7);
+    liov.SetLineWidth(2);
+    TText tiov;
+    tiov.SetTextAngle(90);
+    tiov.SetTextSize(0.03);
+    for(unsigned int i=0; i<iovs.size(); ++i)
+    {
+        TDatime dt(iov_times[i].c_str());
+        liov.DrawLine(dt.Convert(), 0.8, dt.Convert(), 1.05);        
+        tiov.DrawText(dt.Convert(), 0.8, ("PS-"+iovs[i]).c_str());
+    }        
 
     //c->Print(Form("%s.png",plotName.c_str()));
 }
 
 
-void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=false){
+void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=false, vector<string> iovs={}, vector<string> iov_times={}){
 
     double pdg_pi0Mass = 134.9770;
     
@@ -101,45 +134,20 @@ void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=fals
     ///to be plotted on the same canva
     gStyle->SetOptStat(0);
     TCanvas *cEB = new TCanvas("cEB","",700,700);
-    cEB->Divide(2);
-    TPad *pad1EB = new TPad("pad1", "Mean VS time",0.0,0.0,0.7,1.0,21);
-    TPad *pad2EB = new TPad("pad2", "Projection",0.65,0.0,1.0,1.0,22);
-
-    pad1EB->SetFillColor(0);
-    pad2EB->SetFillColor(0);
-
-
-    pad1EB->Draw();
-    pad2EB->Draw();
-
-    ///EE
     TCanvas *cEE = new TCanvas("cEE","",700,700);
-    cEE->Divide(2);
-    TPad *pad1EE = new TPad("pad1", "Mean VS time",0.0,0.0,0.7,1.0,21);
-    TPad *pad2EE = new TPad("pad2", "Projection",0.65,0.0,1.0,1.0,22);
-
-    pad1EE->SetFillColor(0);
-    pad2EE->SetFillColor(0);
-
-
-    pad1EE->Draw();
-    pad2EE->Draw();
-
-
 
     for(int ifile=0; ifile<inputTextFiles.size(); ifile++){
-        vector<float> yearEB, monthEB, dayEB, timeEB;
-        vector<float> yearEE, monthEE, dayEE, timeEE;
+        vector<double> timeEB, timeEE;
         vector<string> regionEB, regionEE;
-        vector<float> meanMassEB, meanUncEB, meanMassEE, meanUncEE;
-        vector<float> xErrEB, xErrEE;
+        vector<double> meanMassEB, meanUncEB, meanMassEE, meanUncEE;
+        vector<double> xErrEB, xErrEE;
         ifstream infile;
         
-        TH1F *hEB = new TH1F("hEB","",120,0,1.1);
-        hEB->SetFillColor(color[ifile]);
+        TH1F *hEB = new TH1F("hEB","",500,0.8,1.05);
+        hEB->SetLineColor(color[ifile]);
         
-        TH1F *hEE = new TH1F("hEE","",120,0,1.1);
-        hEE->SetFillColor(color[ifile]);
+        TH1F *hEE = new TH1F("hEE","",500,0.8,1.05);
+        hEE->SetLineColor(color[ifile]);
 
         infile.open(Form("%s",inputTextFiles[ifile].c_str())); 
         string line;
@@ -149,11 +157,11 @@ void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=fals
         }
         
         if(infile.is_open()){
-            while ( getline (infile,line) ){
-                float tmp_year, tmp_month, tmp_day, tmp_time;
+            while ( getline (infile,line) ){                
+                double tmp_time;
                 string tmp_region;
-                float tmp_meanMass, tmp_meanUnc;
-                infile >> tmp_year >> tmp_month >> tmp_day >> tmp_time >> tmp_region >> tmp_meanMass >> tmp_meanUnc;
+                double tmp_meanMass, tmp_meanUnc;
+                infile >> tmp_time >> tmp_region >> tmp_meanMass >> tmp_meanUnc;
                                 
                 tmp_meanMass = tmp_meanMass/pdg_pi0Mass;
                 tmp_meanUnc = tmp_meanUnc/pdg_pi0Mass;
@@ -164,28 +172,20 @@ void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=fals
                 }
 
                 if(tmp_region.compare("EB")==0){
-                    yearEB.push_back(tmp_year); 
-                    monthEB.push_back(tmp_month); 
-                    dayEB.push_back(tmp_day); 
                     timeEB.push_back(tmp_time); 
                     regionEB.push_back(tmp_region); 
                     meanMassEB.push_back(tmp_meanMass);
                     meanUncEB.push_back(tmp_meanUnc);
                     xErrEB.push_back(0);
-                    hEB->Fill(tmp_meanMass);
                 }
                 
                 
                 if(tmp_region.compare("EE")==0){
-                    yearEE.push_back(tmp_year); 
-                    monthEE.push_back(tmp_month); 
-                    dayEE.push_back(tmp_day); 
                     timeEE.push_back(tmp_time); 
                     regionEE.push_back(tmp_region); 
                     meanMassEE.push_back(tmp_meanMass);
                     meanUncEE.push_back(tmp_meanUnc);
                     xErrEE.push_back(0);
-                    hEE->Fill(tmp_meanMass);
                 }
                 
                 
@@ -194,11 +194,11 @@ void finalTimeVariationPlot(string fName, string prefix="", bool usePDGmass=fals
         }//if(infile.is_open())
         
         if(meanMassEB.size()>0){
-            drawCanvas(ifile, pad1EB, pad2EB, meanMassEB, timeEB, xErrEB, meanUncEB, hEB, color[ifile], labels[ifile], !usePDGmass);
+            drawCanvas(ifile, cEB, meanMassEB, timeEB, xErrEB, meanUncEB, hEB, color[ifile], labels[ifile], !usePDGmass, iovs, iov_times);
         }
 
         if(meanMassEE.size()>0){
-            drawCanvas(ifile,  pad1EE, pad2EE, meanMassEE, timeEE, xErrEE, meanUncEE, hEE, color[ifile], labels[ifile], !usePDGmass);
+            drawCanvas(ifile,  cEE, meanMassEE, timeEE, xErrEE, meanUncEE, hEE, color[ifile], labels[ifile], !usePDGmass, iovs, iov_times);
         }
 
 

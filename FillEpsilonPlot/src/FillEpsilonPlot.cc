@@ -485,14 +485,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     tree_mon->Branch( "LumiBlock", &myLumiBlock, "LumiBlock/I");
     tree_mon->Branch( "Run",       &myRun,       "Run/I");
     tree_mon->Branch( "BunchCrossing",       &myBunchCrossing,       "BunchCrossing/I");
-    tree_mon->Branch("event_year",&event_year);
-    tree_mon->Branch("event_month",&event_month);
-    tree_mon->Branch("event_day",&event_day);
-    tree_mon->Branch("event_time",&event_time);
-    tree_mon->Branch("pi0_mass",&pi0_mass);
-    tree_mon->Branch("pho1_eta",&pho1_eta);
-    tree_mon->Branch("pho2_eta",&pho2_eta);
-    tree_mon->Branch("isPi0EB",&isPi0EB);
+    tree_mon->Branch( "event_time", &event_time, "even_time/i");
+    tree_mon->Branch( "pi0_mass", &pi0_mass);
+    tree_mon->Branch( "pho1_eta", &pho1_eta);
+    tree_mon->Branch( "pho2_eta", &pho2_eta);
+    tree_mon->Branch( "isPi0EB", &isPi0EB);
 
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
@@ -756,11 +753,14 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   myBunchCrossing = iEvent.bunchCrossing();
   
   ///set everything to -999 for monitoring tree
-  event_year = -999; event_month = -999; event_day = -999, isPi0EB = -999;
-  event_time = -999.; pi0_mass = -999.; pho1_eta = -999.; pho2_eta = -999.;
+  isPi0EB = -999;
+  event_time = iEvent.time().unixTime(); 
+  pi0_mass = -999.; 
+  pho1_eta = -999.; 
+  pho2_eta = -999.;
   ///SJ - taken from here: https://cmssdt.cern.ch/lxr/source/CalibTracker/SiStripDCS/test/Synchronization/SyncDCSO2O.cc#0100
   //cout<<"Event time "<<iEvent.time().value()<<endl;
-  coral::TimeStamp coralTime(cond::time::to_boost(iEvent.time().value()));
+  //coral::TimeStamp coralTime(cond::time::to_boost(iEvent.time().value()));
 
   /*std::cout << "year = " << coralTime.year() << ", month = " << coralTime.month() << ", day = " << coralTime.day();
 // N.B. we add 1 hour to the coralTime because it is the conversion from posix_time which is non-adjusted.
@@ -771,10 +771,10 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   */
 
   ///SJ
-  event_year = coralTime.year();
-  event_month = coralTime.month();
-  event_day = coralTime.day();
-  event_time = (coralTime.hour() + 1) + (coralTime.minute())/60. + (coralTime.second())/3600; ///we dont need ns
+  // event_year = coralTime.year();
+  // event_month = coralTime.month();
+  // event_day = coralTime.day();
+  // event_time = (coralTime.hour() + 1) + (coralTime.minute())/60. + (coralTime.second())/3600; ///we dont need ns
 
   
         // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;

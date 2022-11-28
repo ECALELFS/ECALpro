@@ -26,7 +26,7 @@ options.register ('jsonFile',
                   VarParsing.varType.string, 
                   "Input JSON")
 
-options.register ('globaltag', 
+options.register ('globalTag', 
                   '', 
                   VarParsing.multiplicity.singleton, 
                   VarParsing.varType.string, 
@@ -57,15 +57,16 @@ options.parseArguments()
 
 process.load("Configuration.Geometry.GeometryIdeal_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-if options.globaltag != '':
-    process.GlobalTag.globaltag = options.globaltag
+if options.globalTag != '':
+    process.GlobalTag.globaltag = options.globalTag
 else:
     from Configuration.AlCa.GlobalTag import GlobalTag
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run3_data_prompt', '')
 
-###config with the conditions we want
+###config with the conditions we want (REVISE LATER, for now run on prompt GT)
 #process.load("CalibCode.FillEpsilonPlot.GTconditions_cff")
-process.load("CalibCode.FillEpsilonPlot.%s"%options.conditionsFileName) 
+#process.load("CalibCode.FillEpsilonPlot.%s"%options.conditionsFileName) 
+# process.GlobalTag.toGet = process.GTconditions
 
 #DUMMY RECHIT
 process.dummyHits = cms.EDProducer('DummyRechitDigisPi0',
@@ -105,8 +106,6 @@ process.ecalRecHit.cpu.recoverEEIsolatedChannels = cms.bool( False )
 process.ecalRecHit.cpu.recoverEBIsolatedChannels = cms.bool( False )
 process.ecalLocalRecoSequence = cms.Sequence(process.ecalRecHit)
 
-process.GlobalTag.toGet = process.GTconditions
-
 ### Recalibration Module to apply laser corrections on the fly
 if correctHits:
     process.ecalPi0ReCorrected =  RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi.ecalRecHit.clone(
@@ -142,7 +141,7 @@ process.source = cms.Source('PoolSource',
                             
                         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/AlCaP0/RAW/v1/000/321/396/00000/248ADA80-FBA1-E811-8742-FA163E7B2F96.root'
                         ),
-                            skipBadFiles = cms.untracked.bool(True)
+                            skipBadFiles = cms.untracked.bool(False)
 )
 
 
