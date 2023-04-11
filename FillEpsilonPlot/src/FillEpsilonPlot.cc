@@ -32,7 +32,6 @@ Implementation:
 //#include "TStopwatch.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
@@ -143,7 +142,8 @@ int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
 FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     geoToken_(esConsumes()),
-    chStatusToken_(esConsumes())
+    chStatusToken_(esConsumes()),
+    l1tMenuToken_{esConsumes<edm::Transition::BeginRun>()}
 {
 
     /// parameters from python
@@ -848,13 +848,10 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
       const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
       if (l1results->size() == 0) std::cout << "%L1Results -- No trigger name given in TriggerResults of the input " << std::endl;
-
  	
-      edm::ESHandle<L1TUtmTriggerMenu> menu;
-      iSetup.get<L1TUtmTriggerMenuRcd>().get(menu);
-
       // get the bit/name association         
-      for (auto const & keyval: menu->getAlgorithmMap()) { 
+      auto const& menu = iSetup.getData(l1tMenuToken_);
+      for (auto const & keyval: menu.getAlgorithmMap()) { 
 	std::string const & trigName  = keyval.second.getName(); 
 	unsigned int iTrigIndex = keyval.second.getIndex(); 
 	std::cerr << "bit: " << iTrigIndex << "\tname: " << trigName << std::endl;                                                         
@@ -3514,10 +3511,10 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
     // here we redo the association bit number <--> bit name
     // the reason is that this is not a constant 
     //e.g. during data taking in 2017 I noticed the number associated to a name changed, for instance SingleJet16 was 130 and then it became 131)
-    edm::ESHandle<L1TUtmTriggerMenu> menu;
-    iSetup.get<L1TUtmTriggerMenuRcd>().get(menu);
+
     // get the bit/name association         
-    for (auto const & keyval: menu->getAlgorithmMap()) { 
+    auto const& menu = iSetup.getData(l1tMenuToken_);
+    for (auto const & keyval: menu.getAlgorithmMap()) { 
       std::string const & trigName  = keyval.second.getName(); 
       unsigned int iTrigIndex = keyval.second.getIndex(); 
       algoBitToName[iTrigIndex] = TString( trigName );  

@@ -33,6 +33,11 @@
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
 //L1                                                                                                                                         
 #include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
+#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmAlgorithm.h"
+#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
 #define NPI0MAX 30000
 #define NL1SEED GlobalAlgBlk::maxPhysicsTriggers  // was 128
@@ -111,6 +116,7 @@ private:
     // ----------member data ---------------------------
     edm::ESGetToken<CaloGeometry, CaloGeometryRecord> geoToken_;
     edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_;    
+    edm::ESGetToken<L1TUtmTriggerMenu, L1TUtmTriggerMenuRcd> l1tMenuToken_;
     edm::Handle< EBRecHitCollection > ebHandle;
     edm::Handle< EBRecHitCollection > eeHandle;
     edm::Handle< ESRecHitCollection > esHandle;
