@@ -39,7 +39,7 @@ Implementation:
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -63,10 +63,11 @@ Implementation:
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
+#include "RooFitLegacy/RooMinuit.h"
 #include "RooMinimizer.h"
 #include "RooAbsReal.h" 
 #include "RooAbsCategory.h" 
+#include "RooAbsTestStatistic.h" 
 
 #include "CalibCode/FitEpsilonPlot/interface/FitEpsilonPlot.h"
 
@@ -2215,7 +2216,13 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
 
     }
 
-    RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
+    // cbasile [CMSSW_13_3_0_pre3] : with ROOT v6.24 and earlyer 
+    //                                 RooChi2Var (const char *name, const char *title, RooAbsPdf &pdf, RooDataHist &data, Bool_t extended=kFALSE, ...)
+    //                               with ROOT v6.26 
+    //                                 RooChi2Var (const char *name, const char *title, RooAbsPdf &pdf, RooDataHist &data, RooAbsTestStatistic::Configuration const &cfg=RooAbsTestStatistic::Configuration{}, bool extended=false, RooDataHist::ErrorType=RooDataHist::SumW2) 
+    //                                 > include RooAbsTestStatistic with deafult parameters (check https://root.cern/doc/v626/RooAbsTestStatistic_8h_source.html)
+   
+    RooChi2Var chi2("chi2","chi2 var",*model,dh, RooAbsTestStatistic::Configuration{}, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
     int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) +1 - res->floatParsFinal().getSize(); 
@@ -3077,7 +3084,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //x.setRange("sobRange",mean.getVal() - 2.0*sigma.getVal(), mean.getVal() + 2.*sigma.getVal());
   x.setRange("sobRange",xlo,xhi);
   //RooChi2Var chi2("chi2","chi2 var",*model,dh, true,"sobRange");
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, false,"sobRange");
+  RooChi2Var chi2("chi2","chi2 var",*model,dh, RooAbsTestStatistic::Configuration{"sobRange"}, false);
   // cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
   RooAbsReal* integralSig = gaus.createIntegral(x,NormSet(x),Range("sobRange"));
   // cout << "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY" << endl;

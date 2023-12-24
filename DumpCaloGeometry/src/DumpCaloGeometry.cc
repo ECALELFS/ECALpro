@@ -49,7 +49,8 @@ using namespace reco;
 // constructors
 // *****************************************
 
-DumpCaloGeometry::DumpCaloGeometry( const edm::ParameterSet& ps ) 
+DumpCaloGeometry::DumpCaloGeometry( const edm::ParameterSet& ps ):
+geoToken_(esConsumes()) 
 {
  
   /// Ttree
@@ -101,11 +102,17 @@ void DumpCaloGeometry::beginLuminosityBlock(const LuminosityBlock& lumiSeg,
 void DumpCaloGeometry::analyze(const Event& iEvent, 
 			       const EventSetup& iSetup ){  
 
-  edm::ESHandle<CaloGeometry> geoHandle;
-  iSetup.get<CaloGeometryRecord>().get(geoHandle);     
-  const CaloSubdetectorGeometry *geoEB = geoHandle->getSubdetectorGeometry(DetId::Ecal,EcalBarrel);
-  const CaloSubdetectorGeometry *geoEE = geoHandle->getSubdetectorGeometry(DetId::Ecal,EcalEndcap);
-  const CaloSubdetectorGeometry *geoES = geoHandle->getSubdetectorGeometry(DetId::Ecal, EcalPreshower);
+  //cbasile : in CMSSW_13_3_0_pre3 migration to register EveentSetup products in ED modules 
+  // --> until CMSS_12_4_X the access was
+  //        edm::ESHandle<CaloGeometry> geoHandle;
+  //        iSetup.get<CaloGeometryRecord>().get(geoHandle);     
+  // <-- migration in CMSSW_13_3_0_pre3 : use edm::ESGetToken (https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideHowToGetDataFromES)
+  //        check https://cmssdt.cern.ch/lxr/source/Calibration/EcalCalibAlgos/src/Pi0FixedMassWindowCalibration.cc
+  
+  const auto& geometry = iSetup.getData(geoToken_);
+  const CaloSubdetectorGeometry *geoEB = geometry.getSubdetectorGeometry(DetId::Ecal,EcalBarrel);
+  const CaloSubdetectorGeometry *geoEE = geometry.getSubdetectorGeometry(DetId::Ecal,EcalEndcap);
+  const CaloSubdetectorGeometry *geoES = geometry.getSubdetectorGeometry(DetId::Ecal, EcalPreshower);
 
   int n=0;
   std::vector<DetId> eb_ids = geoEB->getValidDetIds(DetId::Ecal,EcalBarrel);
