@@ -691,12 +691,6 @@ If this is not the case, modify FillEpsilonPlot.cc
        ListFinalHadd = ListFinalHaddEB
        ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
-    print(type(eosPath))
-    print(type(dirname))
-    print(type(iters))
-    print(type(Add_path))
-    print(type(NameTag))
-    print(type(calibMapName))
     finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + calibMapName
     f = TFile.Open(finalCalibMapFileName, 'recreate')
     if not f:
