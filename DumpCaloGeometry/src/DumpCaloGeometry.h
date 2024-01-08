@@ -6,15 +6,17 @@
 #define DumpCaloGeometry_H
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/InputTag.h"
 
+#include "Geometry/CaloGeometry/interface/CaloGeometry.h"
+#include "Geometry/Records/interface/CaloGeometryRecord.h"
 
 class TFile;
 class TTree;
 
-class DumpCaloGeometry : public edm::EDAnalyzer {
+class DumpCaloGeometry : public edm::one::EDAnalyzer <>{ 
 
 public:
 
@@ -45,7 +47,9 @@ private:
   TFile* m_file;
   TTree* m_tree;
   std::string m_outfilename;
-
+  
+  // cbasile [CMSSW_13_3_X]: declare the token here to access calo geometry via esConsumes() in the costructor
+  const edm::ESGetToken<CaloGeometry, CaloGeometryRecord> geoToken_;
 };
 
 #endif

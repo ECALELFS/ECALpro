@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess, time, sys, os
 from ROOT import *
@@ -691,18 +691,21 @@ If this is not the case, modify FillEpsilonPlot.cc
        ListFinalHadd = ListFinalHaddEB
        ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
-    from PhysicsTools.PythonAnalysis import *
-    gSystem.Load("libFWCoreFWLite.so")
-    #AutoLibraryLoader.enable()
-    FWLiteEnabler.enable()
-    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
+    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + calibMapName
     f = TFile.Open(finalCalibMapFileName, 'recreate')
     if not f:
         print("WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ...")
         quit()
     else:
         f.cd()
-
+    # cbasile [CMSSW_13_3_0_pre3]: 
+    #       solve the error >'TypeError: can only concatenate str (not "function") to str'
+    #       when declaring finalCalibMapFileName
+    #       move the libFWCoreFWLite lib. import here since it contains a function called dirname() apparently
+    from PhysicsTools.PythonAnalysis import *
+    gSystem.Load("libFWCoreFWLite.so")
+    #AutoLibraryLoader.enable()
+    FWLiteEnabler.enable()
     for n_repeat in range(2):
 
         # when isEoverEtrue is True we have two maps for the two photons (for each detector), otherwise we only have one 
