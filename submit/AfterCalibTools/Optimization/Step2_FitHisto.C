@@ -192,7 +192,7 @@ vector<float> FitFit(TH1D* h, double xmin, double xmax, int events, int Name, FI
   model = &model1;
 
   RooNLLVar nll("nll","log likelihood var",*model,dh,Extended());
-  RooMinuit m(nll);
+  RooMinimizer m(nll);
   m.migrad();
 
   RooFitResult* res = m.save() ;

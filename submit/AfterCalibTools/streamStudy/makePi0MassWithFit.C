@@ -49,7 +49,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 #include "RooMinimizer.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
@@ -214,15 +213,6 @@ bool noDeadXtalIn3x3matrixSeededByThisXtal(const TH2F* hDeadXtals = NULL, const 
 
 //   RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
 //   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                      
-
-//   // FIT 1
-//   // copied from ECALpro
-//   // RooMinuit m(nll);
-//   // m.setVerbose(kFALSE);
-//   // //m.setVerbose(kTRUE);                                                                                                       
-//   // m.migrad();
-//   // //m.hesse();                                                                                                                          
-//   // RooFitResult* res = m.save() ;
 
 //   // FIT2
 //   // copied from Raffaele Gerosa

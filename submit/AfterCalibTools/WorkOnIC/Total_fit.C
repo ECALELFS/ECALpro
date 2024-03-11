@@ -5,7 +5,7 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
+#include "RooMinimizer.h"
 #include "RooDataHist.h"
 #include "RooAbsPdf.h"
 #include "RooAddPdf.h"
@@ -160,7 +160,7 @@ void Total_fit( TString File, TString folder, TString Hname, bool RunOnAll, bool
 
     RooNLLVar nll("nll","log likelihood var",*model,dh,RooFit::Extended(true));//RooFit::Extended(true) fundamental for right ormalization
     //RooAbsReal * nll = model->createNLL(dh); Suggested way
-    RooMinuit m(nll);
+    RooMinimizer m(nll);
     m.setVerbose(kFALSE);
     m.migrad();
     //RooFitResult* res = m.save() ;
