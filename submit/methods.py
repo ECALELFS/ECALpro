@@ -495,8 +495,6 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, just
         outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(False)\n")
-    if useFit_RooMinuit:
-        outputfile.write("process.fitEpsilon.useFit_RooMinuit = cms.untracked.bool( True )\n")        
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -518,16 +516,9 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, ju
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    # if using RooMinuit fo the fit (obsolete according too RooFit guide), then save some pieces from stdout to check status of fit
-    # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
-    # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
     # we keep only the output containing 'FIT_EPSILON:'
-    if useFit_RooMinuit:
-        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
-    else:
-        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
-        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
+    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
+    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
     # if only folding there won't be any actual output in /tmp
     if not justDoHistogramFolding:
         sourcerooplot = source.replace("calibMap","fitRes")

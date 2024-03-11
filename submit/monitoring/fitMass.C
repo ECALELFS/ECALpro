@@ -2,7 +2,6 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
 {
     
     ///extracted from FitEpsilonPlot.cc
-    bool useFit_RooMinuit_ = true;
     const int ngaus = 1;
     int niter = 1;
 
@@ -169,44 +168,28 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
     //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
         
     RooFitResult* res = nullptr;
-    RooMinuit m(nll);
     RooMinimizer mfit(nll);
         
-    if (useFit_RooMinuit_) {
-            
-        // // original fit
-        // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
-        // // better to use RooMinimizer, but please read caveat below
-        m.setVerbose(kFALSE);
-        //m.setVerbose(kTRUE);
-        m.migrad();
-        m.hesse();  // sometimes it fails, caution
-        res = m.save() ;
-            
-    } else {
-            
-        // alternative fit (results are pretty much the same)
-        // IMPORTANT, READ CAREFULLY: sometimes this method fails.
-        // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
-        // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
-        // the job crashes, and this seems to be a feature of cmssw, not of RooFit
-        // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
-        // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
-        // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
-        // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
-        // The previous method using RooMinuit seems to be more robust, so I suggest we should use that one even though it is said to be obsolete
-        mfit.setVerbose(kFALSE);
-        mfit.setPrintLevel(-1);
-        mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
-        //cout << "FIT_EPSILON: Minimize" << endl;
-        mfit.minimize("Minuit2","minimize");
-        //cout << "FIT_EPSILON: Minimize hesse " << endl;
-        mfit.minimize("Minuit2","hesse");
-        //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
-        mfit.minos(RooArgSet(Nsig,Nbkg,mean));
-        res = mfit.save() ;
-            
-    }
+    // IMPORTANT, READ CAREFULLY: sometimes this method fails.
+    // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
+    // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
+    // the job crashes, and this seems to be a feature of cmssw, not of RooFit
+    // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
+    // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
+    // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
+    // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
+    mfit.setVerbose(kFALSE);
+    mfit.setPrintLevel(-1);
+    mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
+    //cout << "FIT_EPSILON: Minimize" << endl;
+    mfit.minimize("Minuit2","minimize");
+    //cout << "FIT_EPSILON: Minimize hesse " << endl;
+    mfit.minimize("Minuit2","hesse");
+    m.migrad();
+    m.hesse();  // sometimes it fails, caution
+    //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
+    mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+    res = mfit.save() ;
 
     // RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)

@@ -49,7 +49,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 #include "RooMinimizer.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
@@ -217,7 +216,7 @@ bool noDeadXtalIn3x3matrixSeededByThisXtal(const TH2F* hDeadXtals = NULL, const 
 
 //   // FIT 1
 //   // copied from ECALpro
-//   // RooMinuit m(nll);
+//   // RooMinimizer m(nll);
 //   // m.setVerbose(kFALSE);
 //   // //m.setVerbose(kTRUE);                                                                                                       
 //   // m.migrad();
