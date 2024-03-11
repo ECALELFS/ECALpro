@@ -185,8 +185,8 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
     mfit.minimize("Minuit2","minimize");
     //cout << "FIT_EPSILON: Minimize hesse " << endl;
     mfit.minimize("Minuit2","hesse");
-    m.migrad();
-    m.hesse();  // sometimes it fails, caution
+    mfit.migrad();
+    mfit.hesse();  // sometimes it fails, caution
     //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
     mfit.minos(RooArgSet(Nsig,Nbkg,mean));
     res = mfit.save() ;
