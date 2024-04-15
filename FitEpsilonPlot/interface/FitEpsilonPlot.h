@@ -137,7 +137,6 @@ class FitEpsilonPlot : public edm::one::EDAnalyzer<> {
       std::string calibMapPath_; 
       std::string Barrel_orEndcap_; 
       std::string fitFileName_;
-      bool useFit_RooMinuit_;
 
       std::string EEoEB_; 
       bool isNot_2010_; 

@@ -5,7 +5,7 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
+#include "RooMinimizer.h"
 #include "RooDataHist.h"
 #include "RooAbsPdf.h"
 #include "RooAddPdf.h"
@@ -99,7 +99,7 @@ void Gaussian_fit( string Dir, string File ){
 	  RooAddPdf model2("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
 	  RooAbsPdf* model=0; model = &model2;
 	  RooNLLVar nll("nll","log likelihood var",*model,dh);//,Extended());
-	  RooMinuit m(nll);
+	  RooMinimizer m(nll);
 	  m.setVerbose(kFALSE);
 	  m.migrad();
 	  //RooFitResult* res = m.save();
