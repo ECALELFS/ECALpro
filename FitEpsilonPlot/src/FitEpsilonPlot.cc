@@ -2979,9 +2979,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   // cout << "===============================================" << endl;
   // cout << "===============================================" << endl;
 
-  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(kTRUE), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-  //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
+  //std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true), RooFit::Range(xlo, xhi)};
+  //std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(false), RooFit::Range(xlo, xhi)};
 
   RooFitResult* res = nullptr;
 

@@ -211,12 +211,11 @@ bool noDeadXtalIn3x3matrixSeededByThisXtal(const TH2F* hDeadXtals = NULL, const 
 //   // modelXXX ...
 //   model = &model1;
 
-//   RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
-//   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                      
+//   std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
 
 //   // FIT2
 //   // copied from Raffaele Gerosa
-//   RooMinimizer mfit(nll);
+//   RooMinimizer mfit(*nll);
 //   mfit.setVerbose(kFALSE);
 //   mfit.setPrintLevel(-1);
 //   cout << "######### Minimize" << endl;
