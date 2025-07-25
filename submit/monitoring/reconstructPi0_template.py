@@ -146,9 +146,8 @@ process.source = cms.Source('PoolSource',
 
 
 process.source.fileNames = options.inputFiles 
-###SJ - use the present available file to store the monitoring tree
+# use the present available file to store the monitoring tree
 #process.TFileService = cms.Service("TFileService", fileName = cms.string('monitoringTree.root'))
-
 
 import FWCore.PythonUtilities.LumiList as LumiList
 #json_file = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'

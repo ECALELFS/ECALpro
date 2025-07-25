@@ -111,7 +111,7 @@ private:
 
     // ----------member data ---------------------------
     edm::ESGetToken<CaloGeometry, CaloGeometryRecord> geoToken_;
-    edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_r
+    edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_;
     edm::ESGetToken<L1TUtmTriggerMenu, L1TUtmTriggerMenuRcd> l1tMenuToken_;
     edm::Handle< EBRecHitCollection > ebHandle;
     edm::Handle< EBRecHitCollection > eeHandle;
@@ -305,7 +305,6 @@ private:
     TH2F *pi0MassVsETEB;
     TH2F *photonDeltaRVsIetaEB;
 
-    ///SJ
     TH1F *pi0_mass_EB;
     TH1F *pi0_mass_EEP;
     TH1F *pi0_mass_EEM;
