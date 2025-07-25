@@ -45,7 +45,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 
 #include "./CMS_lumi.h"
 

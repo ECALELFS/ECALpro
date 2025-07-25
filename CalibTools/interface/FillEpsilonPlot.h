@@ -27,7 +27,7 @@ enum calibGranularity{ xtal, tt, etaring };
 
 using namespace reco;
 
-class FillEpsilonPlot : public edm::EDAnalyzer {
+class FillEpsilonPlot : public edm::one::EDAnalyzer<> {
    public:
       explicit FillEpsilonPlot(const edm::ParameterSet&);
       ~FillEpsilonPlot();

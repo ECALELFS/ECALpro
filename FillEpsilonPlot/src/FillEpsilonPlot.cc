@@ -106,6 +106,11 @@ using std::max;
 #include "DataFormats/Math/interface/Vector3D.h"  // to use math::XYZVector
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "CoralBase/TimeStamp.h"
+#include "CondFormats/Common/interface/Time.h"
+#include "CondFormats/Common/interface/TimeConversions.h"
+
+
 #define DR_FOR_UNMERGED_GEN_PHOTONS 0.025 // if two gen photons are closer than this value, they will not be used for the gen-reco matching, because they are too close to be distinguished by the reco clustering algorithm (0.0175 in Dphi or Deta is ~1 ECAL cystal and the seeds must be farther than 1 crystal also on the diagonal)
 
 //using namespace TMVA;
@@ -133,7 +138,10 @@ double max(double x, double y);
 int GetRing(int x, int y, vector<iXiYtoRing> VectRing, bool debug3);
 
 
-FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
+FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
+    geoToken_(esConsumes()),
+    chStatusToken_(esConsumes()),
+    l1tMenuToken_{esConsumes<edm::Transition::BeginRun>()}
 {
 
     /// parameters from python
@@ -141,7 +149,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     useContainmentCorrectionsFromEoverEtrue_ = iConfig.getUntrackedParameter<bool>("useContainmentCorrectionsFromEoverEtrue",true);
     scalingEoverEtrueCC_g1_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g1",1.0);
     scalingEoverEtrueCC_g2_            = iConfig.getUntrackedParameter<double>("scalingEoverEtrueCC_g2",1.0);
-
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
@@ -336,12 +343,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
 
-    caloGeometryToken_ = esConsumes<CaloGeometry, CaloGeometryRecord>();
-    chStatusToken_ = esConsumes<EcalChannelStatus, EcalChannelStatusRcd>();
-    L1MenuToken_ = esConsumes<L1TUtmTriggerMenu, L1TUtmTriggerMenuRcd>();
-
     /// external hardcoded geometry
-
     externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
     if(!externalGeometryFile_ or not externalGeometryFile_->IsOpen()) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
@@ -390,9 +392,15 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
       } else {
 
+          ///SJ
+          /*pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
+          pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
+          pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
+          */
+              
 	if(useMassInsteadOfEpsilon_ ) {
 
-	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+            if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
 	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","#pi^{0} Mass distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
 	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","#pi^{0} Mass distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
@@ -441,7 +449,11 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
 
     }
 
-
+    pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
+    pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
+    pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
+    
+    
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsIetaEB->GetXaxis()->SetTitle("i#eta");
     pi0MassVsIetaEB->GetYaxis()->SetTitle("#pi^{0} mass");
@@ -464,6 +476,18 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig)
     fileName = outputDir_ + outfilename_;
     outfile_ = TFile::Open(fileName.c_str(),"RECREATE");
     if(!outfile_ or not outfile_->IsOpen()) throw cms::Exception("WritingOutputFile") << "It was no possible to create output file " << fileName << "\n";
+
+    ///TTree needed for monitoring having time, day, year info
+    tree_mon = new TTree("monitoring","TTree for monitoring");
+    tree_mon->Branch( "Event",     &myEvent,     "Event/l"); // l is for ULong64_t
+    tree_mon->Branch( "LumiBlock", &myLumiBlock, "LumiBlock/I");
+    tree_mon->Branch( "Run",       &myRun,       "Run/I");
+    tree_mon->Branch( "BunchCrossing",       &myBunchCrossing,       "BunchCrossing/I");
+    tree_mon->Branch( "event_time", &event_time, "even_time/i");
+    tree_mon->Branch( "pi0_mass", &pi0_mass);
+    tree_mon->Branch( "pho1_eta", &pho1_eta);
+    tree_mon->Branch( "pho2_eta", &pho2_eta);
+    tree_mon->Branch( "isPi0EB", &isPi0EB);
 
     if(MakeNtuple4optimization_){
 	Tree_Optim = new TTree("Tree_Optim","Output TTree");
@@ -586,7 +610,7 @@ FillEpsilonPlot::~FillEpsilonPlot()
   if (not fcheck or fcheck->IsZombie()) {
     isGood = false;
   } else {
-    if (fcheck->GetSize() < 1048576) isGood = false; // set limit at 1 MB, file is actually larger
+    if (fcheck->GetSize() < 1) isGood = false; // set limit at 1 MB, file is actually larger
     //if (fcheck->GetSize() < 500000) isGood = false; // set limit at 500 kB, file is actually larger
     else if (fcheck->TestBit(TFile::kRecovered)) isGood = false;
     fcheck->Close();    
@@ -720,12 +744,38 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //JSON
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
 
+
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
   myRun = iEvent.id().run();
   myBunchCrossing = iEvent.bunchCrossing();
+  
+  ///set everything to -999 for monitoring tree
+  isPi0EB = -999;
+  event_time = iEvent.time().unixTime(); 
+  pi0_mass = -999.; 
+  pho1_eta = -999.; 
+  pho2_eta = -999.;
+  ///SJ - taken from here: https://cmssdt.cern.ch/lxr/source/CalibTracker/SiStripDCS/test/Synchronization/SyncDCSO2O.cc#0100
+  //cout<<"Event time "<<iEvent.time().value()<<endl;
+  //coral::TimeStamp coralTime(cond::time::to_boost(iEvent.time().value()));
 
-  // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
+  /*std::cout << "year = " << coralTime.year() << ", month = " << coralTime.month() << ", day = " << coralTime.day();
+// N.B. we add 1 hour to the coralTime because it is the conversion from posix_time which is non-adjusted.
+// The shift of +1 gives the CERN time zone.
+    std::cout << ", hour = " << coralTime.hour() + 1 << ", minute = " << coralTime.minute()
+              << ", second = " << coralTime.second();
+    std::cout << ", nanosecond = " << coralTime.nanosecond() << std::endl;
+  */
+
+  ///SJ
+  // event_year = coralTime.year();
+  // event_month = coralTime.month();
+  // event_day = coralTime.day();
+  // event_time = (coralTime.hour() + 1) + (coralTime.minute())/60. + (coralTime.second())/3600; ///we dont need ns
+
+  
+        // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
 
   if (MakeNtuple4optimization_) {
 
@@ -797,15 +847,13 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       const GlobalAlgBlkBxCollection *l1results = gtReadoutRecord.product(); 
       if (l1results->size() == 0) std::cout << "%L1Results -- No trigger name given in TriggerResults of the input " << std::endl;
  	
-      edm::ESHandle<L1TUtmTriggerMenu> menu = iSetup.getHandle(L1MenuToken_);
-
       // get the bit/name association         
-      for (auto const & keyval: menu->getAlgorithmMap()) { 
+      auto const& menu = iSetup.getData(l1tMenuToken_);
+      for (auto const & keyval: menu.getAlgorithmMap()) { 
 	std::string const & trigName  = keyval.second.getName(); 
 	unsigned int iTrigIndex = keyval.second.getIndex(); 
 	std::cerr << "bit: " << iTrigIndex << "\tname: " << trigName << std::endl;                                                         
 	algoBitToName[iTrigIndex] = TString( trigName );
-
       } // end algo Map
  
       int trigCompBin = 1;
@@ -900,7 +948,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
     // vecGamma1MC.clear();
     // vecGamma2MC.clear();
-
+  
     vecGamma1MC_EB.clear();
     vecGamma2MC_EB.clear();
 
@@ -944,7 +992,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       }
 
       if(!isDiphoton) continue;
-
+    
       //fill GEN pi0
       Int_t mesonPdgId = Are_pi0_ ? 111 : 221;
       if ((*genParticles)[iG].pdgId() == mesonPdgId) {
@@ -1124,11 +1172,9 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken ( ESRecHitCollectionToken_, esHandle);
 
   //Internal Geometry
-  edm::ESHandle<CaloGeometry> geoHandle = iSetup.getHandle(caloGeometryToken_);
-  geometry = geoHandle.product();
-  // estopology_ = new EcalPreshowerTopology(geoHandle);
+  geometry = &iSetup.getData(geoToken_);
   estopology_ = new EcalPreshowerTopology();
-  esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geoHandle->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
+  esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry.getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
 
   ///////////////////////
   // I moved the evaluation of HLT before that of the L1 seeds because the triggerComposition histogram is filled inside getTriggerResult() method
@@ -1184,19 +1230,19 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
   //get status from DB
-  chStatus = iSetup.getHandle(chStatusToken_);
-  ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
+  chStatus_ = iSetup.getHandle(chStatusToken_);
+  //cout << "I'm after chStatus_ = iSetup.getHandle(chStatusToken_); " << endl;
 
   if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
     fillEBClusters(ebclusters, iEvent);
   }
-  ////cout << "I'm after fillEBClusters(ebclusters, iEvent, channelStatus) " << endl;
+  //cout << "I'm after fillEBClusters(ebclusters, iEvent) " << endl;
   if ( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) { 
     fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
   }
   // std::cout << "ebclusters.size() = " << ebclusters.size() << std::endl;
   // std::cout << "eseeclusters.size() = " << eseeclusters.size() << std::endl;
-  ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
+  //cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
   ebclusters_used.clear(); eeclusters_used.clear();
@@ -2449,7 +2495,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	float g1pt = tmp_photon1.Rho(); 
 	float g2pt = tmp_photon2.Rho();
 	///////
-
+    
 	// initialize as uncorrected variables
 	math::XYZVector g1_contCorr_tlv(tmp_photon1);
 	math::XYZVector g2_contCorr_tlv(tmp_photon2);
@@ -2564,7 +2610,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  }
 	  if (nextClu < pi0IsoCut_[etaRegionID]) continue;
 	}
-
+    
 	double deltaR0 = 0.0, deta = 0.0, gPtTmp = 0.0;
 	float hlt_iso = 0.0;
 	for (std::vector<CaloCluster>::const_iterator Gtmp  = clusters.begin(); Gtmp != clusters.end(); ++Gtmp) {
@@ -2595,15 +2641,34 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  // also, I should add the mass cut
 	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
+        ////SJ - just try to fill an inclusive pi0 histogram
+            if(subDetId==EcalBarrel){
+                pi0_mass_EB->Fill(pi0P4_mass);
+            }
+            
+        if(subDetId == EcalEndcap){
+            if(g1eta < 0 || g2eta < 0)
+                pi0_mass_EEM->Fill(pi0P4_mass);
+            if(g1eta > 0 && g2eta > 0)
+                pi0_mass_EEP->Fill(pi0P4_mass);
+        }
+
+        pi0_mass = pi0P4_mass;
+        pho1_eta = g1eta;
+        pho2_eta = g2eta;
+        isPi0EB = subDetId==EcalBarrel;
+        tree_mon->Fill();
+        ////END of SJ
+
 	  pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
 	  g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
-	  g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
+          g2pt_afterCuts->Fill(whichRegionEcalStreamPi0, g2pt);
 	  g1Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g1);
 	  g2Nxtal_afterCuts->Fill(whichRegionEcalStreamPi0,Nxtal_g2);
 	  pi0PhotonsNoverlappingXtals_afterCuts->Fill(whichRegionEcalStreamPi0,getNumberOverlappingCrystals(g1,g2,subDetId==EcalBarrel));
 	  g1g2DR_afterCuts->Fill(whichRegionEcalStreamPi0,DeltaR_g1g2_nocor);
 	  if (isMC_) {
-	    pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
+              pi0MassVsPU[whichRegionEcalStreamPi0]->Fill(pi0P4_nocor_mass,nPUobs_BX0_);
 	  }	   
 
 	}
@@ -2719,6 +2784,8 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	
 	//if (isDebug_) cout << "[DEBUG] End Accessing Optmization Variables..." << endl;
 
+    
+
 	if (!MakeNtuple4optimization_) {
 
 	  //if (isDebug_) cout << "[DEBUG] computing region weights" << endl; 
@@ -2729,7 +2796,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 
 	  // append w2 to w1
 	  w1.insert( w1.end(), w2.begin(), w2.end() );
-
+          
 	  float r2 = pi0P4_mass/PI0MASS;
 	  r2 = r2*r2;
 	  //average <eps> for cand k
@@ -2740,6 +2807,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	    const float& w = (*it).value;
 
 	    if(subDetId==EcalBarrel){
+                
 	      if( !EtaRingCalibEB_ && !SMCalibEB_ ) 
 		epsilon_EB_h2D->Fill( useMassInsteadOfEpsilon_? pi0P4_mass : eps_k, (double) iR, w );
 	      std::vector<DetId> mioId(regionalCalibration_->allDetIdsInEERegion(iR));
@@ -2773,6 +2841,9 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	      int iX = List_IR_XYZ.find(iR)->second[0]; 
 	      int iY = List_IR_XYZ.find(iR)->second[1]; 
 	      int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
+
+              
+              
 	      if( iZ==-1 ){
 		//If Low Statistic fill all the Eta Ring
 		if( EtaRingCalibEE_ ){
@@ -2795,7 +2866,7 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 		}
 	      }
 	      else{
-		//If Low Statistic fill all the Eta Ring
+ 		//If Low Statistic fill all the Eta Ring
 		if( EtaRingCalibEE_ ){
 		  for(auto const &iterator : ListEtaFix_xtalEEp){
 		    if( iterator.first == GetRing( iX, iY, VectRing,false) ){
@@ -3433,10 +3504,9 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
     // here we redo the association bit number <--> bit name
     // the reason is that this is not a constant 
     //e.g. during data taking in 2017 I noticed the number associated to a name changed, for instance SingleJet16 was 130 and then it became 131)
-    edm::ESHandle<L1TUtmTriggerMenu> menu = iSetup.getHandle(L1MenuToken_);
-
     // get the bit/name association         
-    for (auto const & keyval: menu->getAlgorithmMap()) { 
+    auto const& menu = iSetup.getData(l1tMenuToken_);
+    for (auto const & keyval: menu.getAlgorithmMap()) { 
       std::string const & trigName  = keyval.second.getName(); 
       unsigned int iTrigIndex = keyval.second.getIndex(); 
       algoBitToName[iTrigIndex] = TString( trigName );  
@@ -3483,6 +3553,11 @@ void FillEpsilonPlot::endJob(){
     Tree_Optim->Write();
   }
 
+  pi0_mass_EB->Write();
+  pi0_mass_EEP->Write();
+  pi0_mass_EEM->Write();
+  tree_mon->Write();
+  
   pi0MassVsIetaEB->Write();
   pi0MassVsETEB->Write();
   photonDeltaRVsIetaEB->Write();
@@ -3635,7 +3710,7 @@ void FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
 
 bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalRecHit &rh){
   DetId detid(rh.id());
-  EcalChannelStatusMap::const_iterator chit = chStatus->find(detid);
+  EcalChannelStatusMap::const_iterator chit = chStatus_->find(detid);
   int status = int(chit->getStatusCode());
   if ( status > 0/*statusLevelRecHitsToUsea_*/ ) return false; 
   return true; 

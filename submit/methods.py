@@ -23,14 +23,12 @@ def printFillCfg1( outputfile ):
     #     outputfile.write("    sizeOfStackForThreadsInKB = cms.untracked.uint32( 10*1024 )\n")
     #     outputfile.write(")\n\n")
 
-
-    #outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
     outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
     #From DIGI
     if (FROMDIGI):
         outputfile.write("#DUMMY RECHIT\n")
-        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigis',\n")
+        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigisPi0',\n")
         outputfile.write("                                     doDigi = cms.untracked.bool(True),\n")
         outputfile.write("                                     # rechits\n")                                                                                                
         outputfile.write("                                     barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB'),\n")
@@ -226,7 +224,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 #           outputfile.write("   myLumis = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
 #       outputfile.write("   process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
 #       outputfile.write("   process.source.lumisToProcess.extend(myLumis)\n")
-    if(not useJsonFilterInCpp and len(json_file)>0):
+    if(useJsonFilterInCpp and len(json_file)>0):
         outputfile.write("import FWCore.PythonUtilities.LumiList as LumiList\n")
         outputfile.write("json_file = '" + json_file + "'\n")
         if json_file.startswith('/afs/cern.ch/'):
@@ -496,8 +494,6 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, just
         outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(True)\n")
     else:
         outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(False)\n")
-    if useFit_RooMinuit:
-        outputfile.write("process.fitEpsilon.useFit_RooMinuit = cms.untracked.bool( True )\n")        
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -519,16 +515,9 @@ def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, ju
     outputfile.write("#!/bin/bash\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    # if using RooMinuit fo the fit (obsolete according too RooFit guide), then save some pieces from stdout to check status of fit
-    # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
-    # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
     # we keep only the output containing 'FIT_EPSILON:'
-    if useFit_RooMinuit:
-        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
-    else:
-        outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
-        outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
+    outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
+    outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
     # if only folding there won't be any actual output in /tmp
     if not justDoHistogramFolding:
         sourcerooplot = source.replace("calibMap","fitRes")
@@ -564,18 +553,20 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         #cpcmd = "xrdcp {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections,rfcopy=copiedCCfile) 
         outputfile.write("echo '" + cpcmd + "'\n")
         outputfile.write(cpcmd + "\n")
+        outputfile.write("export EOSCMS_MGM_URL=root://eoscms.cern.ch\n\n")
     if not Silent:
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
 
         outputfile.write("if test -f " + source + "; then\n")
         outputfile.write("    echo 'file exists in %s and is good, now copying to eos'\n" % source)
-        outputfile.write("    echo 'eos cp " + source + " " + destination + "'\n")
-        outputfile.write("    eos cp " + source + " " + destination + "\n")
+        outputfile.write("    ls -l " + source + "\n")
+        outputfile.write("    echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "'\n")
+        outputfile.write("    xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "\n")
         outputfile.write("    echo 'rm -f " + source + "'\n")
         outputfile.write("    rm -f " + source + "\n")
         outputfile.write("    echo 'now checking goodness of file on eos'\n")
-        outputfile.write("    cmdpy='python " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
+        outputfile.write("    cmdpy='python3 " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
         outputfile.write("    echo \"${cmdpy}\"\n") # note: need " and not '  here !!
         outputfile.write("    echo \"${cmdpy}\" | bash\n") # here as well
         outputfile.write("    echo ''\n")
@@ -587,8 +578,8 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
-        outputfile.write("eos cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "' >> " + logpath  + "\n")
+        outputfile.write("xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
     if len(copiedCCfile):
@@ -661,3 +652,5 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     outputfile.write("hadd -f -k " + destinationWithFinalSlash +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
     outputfile.write("rm " + destinationWithFinalSlash + "hadded_epsilon*\n")
 
+
+#fill_cfg_n = cfgFillPath + "/iter_" + str(it) + "/fillEps_iter_" + str(it) + "_job_" + str(ijob) + ".py"

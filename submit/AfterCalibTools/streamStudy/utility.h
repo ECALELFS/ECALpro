@@ -69,7 +69,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 #include "RooMinimizer.h"
 
 using namespace RooFit;
@@ -252,21 +251,11 @@ Pi0FitResult drawHisto(TH1* hist = NULL,
   // modelXXX ...
   model = &model1;
 
-  RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
-  //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                      
+  std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
 
-  // FIT 1
-  // copied from ECALpro
-  // RooMinuit m(nll);
-  // m.setVerbose(kFALSE);
-  // //m.setVerbose(kTRUE);                                                                                                       
-  // m.migrad();
-  // //m.hesse();                                                                                                                          
-  // RooFitResult* res = m.save() ;
-
-  // FIT2
+  // FIT
   // copied from Raffaele Gerosa
-  RooMinimizer mfit(nll);
+  RooMinimizer mfit(*nll);
   mfit.setVerbose(kFALSE);
   mfit.setPrintLevel(-1);
   cout << "######### Minimize" << endl;
@@ -450,21 +439,11 @@ Pi0FitResult fitMassSingleHisto(TH1* hist) {
   // modelXXX ...
   model = &model1;
 
-  RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
-  //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                     
+  std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
 
-
-  // FIT 1
-  // copied from ECALpro
-  // RooMinuit m(nll);
-  // m.setVerbose(kFALSE);
-  // //m.setVerbose(kTRUE);                                                    
-  // m.migrad();
-  // //m.hesse();                                                                 
-  // RooFitResult* res = m.save() ;
-  // FIT2
+  // FIT
   // copied from Raffaele Gerosa
-  RooMinimizer mfit(nll);
+  RooMinimizer mfit(*nll);
   mfit.setVerbose(kFALSE);
   mfit.setPrintLevel(-1);
   cout << "######### Minimize" << endl;
