@@ -17,7 +17,7 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 
 #PATH
-eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian'
+eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run3/treis'
 #
 prefixSourceFile = 'root://cms-xrd-global.cern.ch/'  # last / is left on purpose; tipically it can be '', but if source files are not on eos you need this prefix in PoolSource
 #  
@@ -42,16 +42,16 @@ useCalibrationSelection = False # to use same selection of calibration when maki
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
 #inputlist_n      = 'InputList/test_AlCaP0_Run2018_09_07_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list' 
-inputlist_n      = 'InputList/test_AlCaP0_Run2018_09_07_2019.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'
+inputlist_n      = 'InputList/2025BC_partial.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'
 #inputlist_n      = 'InputList/purified_AlCaP0_Run2018_09_07_2019_1every50.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'  #'InputList/Gun_FlatPt1to15_MultiPion_withPhotonPtFilter_pythia8.list' # 'InputList/purified_AlCaP0_Run2017_B.list' # 'InputList/testMC.list'
-dirname          = 'AlCaP0_2018_TestDeleteBadFiles' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_adirname          = 'AlCaEta_2018_tagAsPi0ForULcalibration_ntuplesOptim' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+dirname          = 'AlCaP0_2025BC_partial' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'
 NameTag          = dirname+'_' # Tag to the names to avoid overlap
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 
 # to manage storing of rechits on eos, to avoid running unpacker and local reconstruction (multifit) for each iteration
 justCreateRecHits = False # if True, will run one iteration to produce and store RecHits from Digis
 runCalibrationFromRecHits = False # run calibration from rechits (it disables FROMDIGI below), it works if you have already run with justCreateRecHits = True
-eosOutputPathForRecHits = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian" # the path on eos where RecHits are stored (a subfolder named as 'AlCaP0_RecHitsFromDigis_dirname' is created)
+eosOutputPathForRecHits = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run3/treis" # the path on eos where RecHits are stored (a subfolder named as 'AlCaP0_RecHitsFromDigis_dirname' is created)
 filterEventsByAlCaTrigger = True # filter away pi0 or eta depending on what we will use (modest gain in speed for pi0, but huge for eta since number of events is much less). 
 # Might also filter by EB or EE (useful if one wants to run only on one of them) according to 'Barrel_or_Endcap' below, but not yet implemented since barrel is more important and has almost all the statistics
 
@@ -82,8 +82,8 @@ if justCreateRecHits:
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
-ContainmentCorrection = 'EoverEtrue' if isMC==False else 'No' # Option: 'EoverEtrue' , 'No'
-copyCCfileToTMP = True  # copy file from eos to /tmp/, should make jobs faster
+ContainmentCorrection = 'EoverEtrue' # Option: 'EoverEtrue' , 'No'
+copyCCfileToTMP = False  # copy file from eos to /tmp/, should make jobs faster
 foldInSuperModule = False if isMC==False else True
 fillKinematicVariables = True # fill some histograms with kinematic variables in FillEpsilonPlot.cc, you can disable this option to save storage space, but it is really a small fraction of the total size
 
@@ -349,7 +349,7 @@ else:
          S4S9_EE_high = '0.9'
 
 #containment corrections (these are set below)
-useContainmentCorrectionsFromEoverEtrue = False
+useContainmentCorrectionsFromEoverEtrue = True
 fileEoverEtrueContainmentCorrections = ""
 # choose a scaling factor, if any, for E/Etrue CC (was needed for 2017 CC: 1.006 (1.01) for photon 2 (1))
 #scalingEoverEtrueCC_g1 = '1.01' # for 2017
@@ -373,7 +373,7 @@ useOnlyEEClusterMatchedWithES = 'True'
 #####################
 # if you don't want to overwrite the global tag, set overWriteGlobalTag = False, otherwise, it will be customized based on the following tags  
 #####################
-overWriteGlobalTag = True if isMC==False else False                                     # Allow to overwrite AlphaTag, Laser correction etc
+overWriteGlobalTag = False if isMC==False else False                                     # Allow to overwrite AlphaTag, Laser correction etc
 PFRechitTagRecord='EcalPFRecHitThresholdsRcd';PFRechitTag='EcalPFRecHitThresholds_UL_2018_2e3sig';PFRechitDB='frontier://FrontierProd/CMS_CONDITIONS'
 laserTagRecord='EcalLaserAPDPNRatiosRcd';laserTag='EcalLaserAPDPNRatios_rereco2018_v3';laserDB='frontier://FrontierProd/CMS_CONDITIONS'            
 alphaTagRecord='';alphaTag='';alphaDB=''
@@ -394,7 +394,7 @@ EcalChannelStatusTagRecord='EcalChannelStatusRcd';EcalChannelStatusTag='EcalChan
 
 isNot_2010         = 'True'                                    # Fit Parameter Range
 HLTResults         = 'True' if isMC==False else 'False'                                  # Fill the EB(EE) histos only is Eb()ee is fired: it uses GetHLTResults(iEvent, HLTResultsNameEB.Data() );
-json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt' if isMC==False else '' 
+json_file          = ''
 #json_file          = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions17/13TeV/ReReco/Cert_294927-306462_13TeV_EOY2017ReReco_Collisions17_JSON.txt' if isMC==False else '' 
 useJsonFilterInCpp = False  # True: use json filter in cfg python wrapper calling FillEpsilonPlots.cc; True: use json filter inside FillEpsilonPlots.cc
 doEnenerScale      = 'False'
@@ -406,7 +406,7 @@ triggerTag         = 'InputTag("TriggerResults","","HLT")' if isMC==False else '
 L1GTobjmapTag      = 'InputTag("hltGtStage2Digis")' if isMC==False else 'InputTag("gtStage2Digis","","RECO")' # this takes the BXVector<GlobalAlgBlk> for L1 trigger info
 useHLTFilter       = "True" if isMC==False else "False"  # Add to the path the request of a HLT path:  process.AlcaP0Filter.HLTPaths = 
 correctHits        = 'False' # this seems to add obsolete code, keep False
-globaltag          = '105X_dataRun2_v8' if isMC==False else '102X_upgrade2018_realistic_v15' # old '93X_mc2017_realistic_v3' 
+globaltag          = '150X_dataRun3_Prompt_v1' if isMC==False else '102X_upgrade2018_realistic_v15'
 FROMDIGI           = True if isMC==False else False
 if runCalibrationFromRecHits:
    FROMDIGI = False

@@ -24,13 +24,12 @@ def printFillCfg1( outputfile ):
     #     outputfile.write(")\n\n")
 
 
-    outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
-    #outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
+    outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
     #From DIGI
     if (FROMDIGI):
         outputfile.write("#DUMMY RECHIT\n")
-        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigis',\n")
+        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigisPi0',\n")
         outputfile.write("                                     doDigi = cms.untracked.bool(True),\n")
         outputfile.write("                                     # rechits\n")                                                                                                
         outputfile.write("                                     barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB'),\n")
@@ -85,6 +84,7 @@ def printFillCfg1( outputfile ):
                outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
         outputfile.write("#UNCALIB to CALIB\n")
         outputfile.write("from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *\n")
+        outputfile.write("process.ecalRecHit = RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi.ecalRecHit.clone()\n")
         outputfile.write("process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()\n")
         outputfile.write("process.ecalRecHit.killDeadChannels = cms.bool( False )\n")
         outputfile.write("process.ecalRecHit.recoverEBVFE = cms.bool( False )\n")
@@ -96,7 +96,7 @@ def printFillCfg1( outputfile ):
         if(WEIGHTS):
            outputfile.write("process.ecalRecHit.EEuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEE')\n")
            outputfile.write("process.ecalRecHit.EBuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEB')\n")
-        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)\n")
+        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(process.ecalRecHit)\n")
 
     if (overWriteGlobalTag):        
         outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
@@ -225,7 +225,7 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 #           outputfile.write("   myLumis = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
 #       outputfile.write("   process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
 #       outputfile.write("   process.source.lumisToProcess.extend(myLumis)\n")
-    if(not useJsonFilterInCpp and len(json_file)>0):
+    if(useJsonFilterInCpp and len(json_file)>0):
         outputfile.write("import FWCore.PythonUtilities.LumiList as LumiList\n")
         outputfile.write("json_file = '" + json_file + "'\n")
         if json_file.startswith('/afs/cern.ch/'):
@@ -431,10 +431,10 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")
-    outputfile.write("    print 'ADDING RECALIB RECHIT MODULE WITH PARAMETERS'\n")
-    outputfile.write("    print 'ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale)\n")
-    outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
-    outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
+    outputfile.write("    print('ADDING RECALIB RECHIT MODULE WITH PARAMETERS')\n")
+    outputfile.write("    print('ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale))\n")
+    outputfile.write("    print('INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib))\n")
+    outputfile.write("    print('LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections))\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
     if (FROMDIGI):
         outputfile.write("process.p *= process.dummyHits\n")
@@ -554,18 +554,20 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         #cpcmd = "xrdcp {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections,rfcopy=copiedCCfile) 
         outputfile.write("echo '" + cpcmd + "'\n")
         outputfile.write(cpcmd + "\n")
+        outputfile.write("export EOSCMS_MGM_URL=root://eoscms.cern.ch\n\n")
     if not Silent:
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
 
         outputfile.write("if test -f " + source + "; then\n")
         outputfile.write("    echo 'file exists in %s and is good, now copying to eos'\n" % source)
-        outputfile.write("    echo 'eos cp " + source + " " + destination + "'\n")
-        outputfile.write("    eos cp " + source + " " + destination + "\n")
+        outputfile.write("    ls -l " + source + "\n")
+        outputfile.write("    echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "'\n")
+        outputfile.write("    xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "\n")
         outputfile.write("    echo 'rm -f " + source + "'\n")
         outputfile.write("    rm -f " + source + "\n")
         outputfile.write("    echo 'now checking goodness of file on eos'\n")
-        outputfile.write("    cmdpy='python " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
+        outputfile.write("    cmdpy='python3 " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
         outputfile.write("    echo \"${cmdpy}\"\n") # note: need " and not '  here !!
         outputfile.write("    echo \"${cmdpy}\" | bash\n") # here as well
         outputfile.write("    echo ''\n")
@@ -577,8 +579,8 @@ def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        outputfile.write("echo 'eos cp " + source + " " + destination + "' >> " + logpath  + "\n")
-        outputfile.write("eos cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "' >> " + logpath  + "\n")
+        outputfile.write("xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
     if len(copiedCCfile):

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess, time, sys, os
 from methods import *
@@ -38,7 +38,7 @@ cfgFitPath  = workdir + '/cfgFile/Fit'
 cfgHaddPath  = workdir + '/src/hadd'
 srcPath  = workdir + '/src'
 
-print "[calib] Creating local folders (" + dirname + ")"
+print("[calib] Creating local folders (" + dirname + ")")
 folderCreation = subprocess.Popen(['mkdir -p ' + workdir], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + condordir], stdout=subprocess.PIPE, shell=True);
@@ -70,44 +70,44 @@ folderCreation.communicate()
 folderCreation = subprocess.Popen(['mkdir -p ' + srcPath + '/hadd'], stdout=subprocess.PIPE, shell=True);
 folderCreation.communicate()
 
-print "[calib] Storing parameter.py for future reference"
+print("[calib] Storing parameter.py for future reference")
 CopyParam = subprocess.Popen(['cp  parameters.py ' + workdir], stdout=subprocess.PIPE, shell=True);
 CopyParam.communicate()
 
 if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-   print "[calib] Creating folders on PNFS"
+   print("[calib] Creating folders on PNFS")
    folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
    folderCreation.communicate()
 else:
-   print "[calib] Creating folders on EOS"
+   print("[calib] Creating folders on EOS")
    folderCreation = subprocess.Popen(['mkdir -p ' + eosPath + '/' + dirname ], stdout=subprocess.PIPE, shell=True);
    folderCreation.communicate()
 
 for it in range(nIterations):
     if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-       print "[calib]  ---  srmmkdir " + eosPath + '/' + dirname + '/iter_' + str(it)
+       print("[calib]  ---  srmmkdir " + eosPath + '/' + dirname + '/iter_' + str(it))
        folderCreation = subprocess.Popen(['srmmkdir srm://maite.iihe.ac.be:8443' + eosPath + '/' + dirname + '/iter_' + str(it)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
     else:
-       print "[calib]  ---  mkdir " + eosPath + '/' + dirname + '/iter_' + str(it)
+       print("[calib]  ---  mkdir " + eosPath + '/' + dirname + '/iter_' + str(it))
        folderCreation = subprocess.Popen(['mkdir ' + eosPath + '/' + dirname + '/iter_' + str(it)], stdout=subprocess.PIPE, shell=True);
        folderCreation.communicate()
 
 #-------- fill cfg files --------#
 if( isCRAB ):
-    print "--------------This inter-calibration will use CRAB: Good Luck!------------------------"
+    print("--------------This inter-calibration will use CRAB: Good Luck!------------------------")
 
 # open list of input files
 inputlist_f = open( inputlist_n )
 # read the list containing all the input files
 inputlistbase_v = [x for x in inputlist_f.readlines() if not x.lstrip().startswith('#')]  # do not consider commented line
 
-print "[calib] Total number of files to be processed: " , len(inputlistbase_v)
-print "[calib] Creating cfg Files"
+print("[calib] Total number of files to be processed: " , len(inputlistbase_v))
+print("[calib] Creating cfg Files")
 
 ijob = 0
 for it in range(nIterations):
-    print "[calib]  '-- Fill::Iteration " + str(it)
+    print("[calib]  '-- Fill::Iteration " + str(it))
     # copy by value and not by reference
     inputlist_v = inputlistbase_v[:]
     ijob=0
@@ -122,7 +122,7 @@ for it in range(nIterations):
     haddSrc_n_s = list()
     haddSrc_f_s = list()
 
-    print "[calib]  '-- Hadd::Number of hadd tasks: " + str(Nlist) + "  (" + str(nHadd) + " files per task)"
+    print("[calib]  '-- Hadd::Number of hadd tasks: " + str(Nlist) + "  (" + str(nHadd) + " files per task)")
 
     haddSrc_final_n_s = srcPath + "/hadd/hadd_iter_" + str(it) + "_final.list"
     haddSrc_final_f_s = open(  haddSrc_final_n_s, 'w')
@@ -215,10 +215,10 @@ if (14647%nFit != 0) :
 if Barrel_or_Endcap == "ONLY_ENDCAP": nEB = 0
 if Barrel_or_Endcap == "ONLY_BARREL": nEE = 0
 
-print '[calib] Splitting Fit Task: ' + str(nEB) + ' jobs on EB, ' + str(nEE) + ' jobs on EE'
+print('[calib] Splitting Fit Task: ' + str(nEB) + ' jobs on EB, ' + str(nEE) + ' jobs on EE')
 #print 'I will submit ' + str(nEB) + ' jobs to fit the Barrel'
 #print 'I will submit ' + str(nEE) + ' jobs to fit the Endcap'
-print '[calib] Creating Fit cfg files'
+print('[calib] Creating Fit cfg files')
 inListB = list()
 finListB = list()
 inListE = list()
@@ -231,7 +231,7 @@ for tmp in range(nEE):
     finListE.append( nFit*tmp+(nFit-1) )
     # cfg
 for it in range(nIterations):
-    print "[calib]  '-- Fit::Iteration " + str(it)
+    print("[calib]  '-- Fit::Iteration " + str(it))
     
     if foldInSuperModule:
         # create cfg file for folding (done in the fit analyzer)
@@ -303,7 +303,7 @@ for it in range(nIterations):
         debugout = changePermission.communicate()
 
 #build command with options and arguments
-calibCMD = "python " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
+calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
 if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)
@@ -335,6 +335,8 @@ condor_file_name = condordir+'/condor_submit_daemon.condor'
 condor_file = open(condor_file_name,'w')
 # line 'next_job_start_delay = 1' not needed here
 condor_file.write('''Universe = vanilla
+MY.XRDCP_CREATE_DIR     = True
+MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
 use_x509userproxy = True
 x509userproxy = $ENV(X509_USER_PROXY)
@@ -368,22 +370,22 @@ condor_file.close()
 
 submit_s = 'condor_submit {cdf} '.format(cdf=condor_file_name)
 if not options.create:
-    print "[calib] Number of jobs created = " + str(njobs)
-    print "[calib] Submitting calibration handler"
+    print("[calib] Number of jobs created = " + str(njobs))
+    print("[calib] Submitting calibration handler")
     # submitting calibration handler
     if options.daemonLocal:
-        print "[calib]  '-- source " + os.path.abspath(env_script_n)
+        print("[calib]  '-- source " + os.path.abspath(env_script_n))
         os.system("source " + os.path.abspath(env_script_n))
     else:        
-        print "[calib]  '-- " + submit_s
+        print("[calib]  '-- " + submit_s)
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = (submitJobs.communicate()[0]).splitlines()
-        print "[calib]  '-- " + output[0]
+        output = (submitJobs.communicate()[0].decode()).splitlines()
+        print("[calib]  '-- " + output[0])
 
     #    print "usage thisPyton.py pwd njobs queue"
 else:
-    print "options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests."
-    print "To run the whole code use the following command."
-    print submit_s
+    print("options -c was given: jobs are not submitted, but all folders and files were created normally. You can still do local tests.")
+    print("To run the whole code use the following command.")
+    print(submit_s)
 
 

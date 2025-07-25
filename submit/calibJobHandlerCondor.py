@@ -1,7 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess, time, sys, os
-from ROOT import *
+import ROOT
+from ROOT import gSystem, gROOT, TTree, TH2F, TFile, FWLiteEnabler, addressof
+from cppyy.ll import cast
 from methods import *
 from datetime import datetime
 
@@ -20,7 +22,7 @@ from optparse import OptionParser
 
 def renewTokenAFS(daemonLocal=False, infile=""):
     if daemonLocal and len(infile):
-        print "Renewing AFS token"
+        print("Renewing AFS token")
         os.system("cat {infile} | kinit".format(infile=infile))
         os.system("kinit -R")
 
@@ -34,25 +36,27 @@ def checkNjobsCondor(grepArg="ecalpro"):
     # 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended
 
     checkJobs = subprocess.Popen(['condor_q'], stdout=subprocess.PIPE, shell=True);
-    tmp = str(checkJobs.communicate()[0])
+    tmp = checkJobs.communicate()[0].decode()
     if all(x in tmp for x in ["OWNER", "BATCH_NAME", "SUBMITTED", "jobs", "completed", "removed"]):   # a very dumb check, I know
         checkJobs = subprocess.Popen(['condor_q -af JobBatchName| grep {gr} | wc -l'.format(gr=grepArg)], stdout=subprocess.PIPE, shell=True);
-        nRetjobs = checkJobs.communicate()[0]
+        nRetjobs = checkJobs.communicate()[0].decode()
         # check nRetjobs is not a null string, but a number (either 0 or something else)
         if len(nRetjobs) and nRetjobs != "\n" and nRetjobs.replace('\n','').isdigit():
             return int(nRetjobs)
         else:
-            print "Error 1: output = " + str(nRetjobs)
+            print("Error 1: output = " + str(nRetjobs))
             return 9999
     else:
         # something wrong with condor, return a dummy positive number to tell the code to keep checking
-        print "Error 2: output = " + tmp
+        print("Error 2: output = " + tmp)
         return 9999 
 
 
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
 def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
+MY.XRDCP_CREATE_DIR     = True
+MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
 use_x509userproxy = True
 Log        = {ld}/$(ProcId).log
@@ -61,7 +65,7 @@ Error      = {ld}/$(ProcId).error
 getenv      = True
 environment = "LS_SUBCWD={here}"
 request_memory = {mem}
-periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600) # remove jobs running for more than 48 hours
+periodic_remove = ((JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600))
 +MaxRuntime = {time}
 +JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
@@ -85,16 +89,16 @@ parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   hel
 
 pwd         = os.getcwd()
 
-if not options.njobs
-        print "Must specify number of jobs with option -n. Abort"
-        sys.exit(1)
+if not options.njobs:
+    print("Must specify number of jobs with option -n. Abort")
+    sys.exit(1)
 
 if options.resubmit: # Batch system
     if not options.run:
-        print "Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort"
+        print("Must specify option -r [hadd,finalhadd,fit,mergefit] when using --resubmit. Abort")
         sys.exit(1)
     if options.run not in ["hadd","finalhadd","fit","mergefit"]:
-        print "Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run
+        print("Option -r requires one of [hadd,finalhadd,fit,mergefit], while '%s' was given. Abort" % options.run)
 
 #Selec what mode you are running
 ONLYHADD = False; ONLYFINHADD = False; ONLYFIT = False; ONLYMERGEFIT = False
@@ -147,8 +151,8 @@ for iters in range(options.iteration,nIterations):
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", 
                               memory=2000, maxtime=mymaxtimeFill) # this does not close the file
 
-        print "\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******"
-        print "Submitting " + str(njobs) + " jobs"
+        print("\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******")
+        print("Submitting " + str(njobs) + " jobs")
         for ijob in range(njobs):
             #In case you want the stat. syst
             if ( options.syst == 1 ):
@@ -169,32 +173,32 @@ for iters in range(options.iteration,nIterations):
         condor_file.close()
 
         submit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + submit_s
+        print(">>> Running --> " + submit_s)
         # actually submitting filling tasks
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
-        output = submitJobs.communicate()
-        print "Out: " + str(output)
+        output = submitJobs.communicate()[0].decode()
+        print("Out: " + output)
 
         time.sleep(15)    
         nFilljobs = checkNjobsCondor("ecalpro_Fill")
-        print "There are {n} jobs for Fill part".format(n=nFilljobs)
+        print("There are {n} jobs for Fill part".format(n=nFilljobs))
         
-        print 'Waiting for filling jobs to be finished...'
+        print('Waiting for filling jobs to be finished...')
         # Daemon cheking running jobs
         nCheck = 0
         while nFilljobs > 0 :
             sleeptime = 900
             time.sleep(sleeptime)
             nFilljobs = checkNjobsCondor("ecalpro_Fill")
-            print "I still see {n} jobs for Fill part".format(n=nFilljobs)
+            print("I still see {n} jobs for Fill part".format(n=nFilljobs))
             checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
-            datalines2 = (checkJobs2.communicate()[0]).splitlines()
+            datalines2 = (checkJobs2.communicate()[0].decode()).splitlines()
             nCheck += 1
             if nCheck * sleeptime > 43200: 
                 renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
                 nCheck = 0
 
-        print 'Done with the Fill part'
+        print('Done with the Fill part')
 
     if ( not ONLYFIT and not ONLYFINHADD and not ONLYMERGEFIT):
         
@@ -227,7 +231,7 @@ for iters in range(options.iteration,nIterations):
                  
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
                     Ntp_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
-                    print "checking the presence and the sanity of EcalNtp file: " + eosFile
+                    print("checking the presence and the sanity of EcalNtp file: " + eosFile)
                     ######
                     ### old code
                     # filesize=0
@@ -252,42 +256,42 @@ for iters in range(options.iteration,nIterations):
                     ### end of new code
                     ####
                 condor_file.close()
-                print "Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs)
+                print("Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs))
                 nGoodOverTot = float(goodNtp)/float(njobs)
                 if nGoodOverTot < options.minEfficiencyToRecoverFill:
 
-                    print "Resubmitting failed fill jobs."
+                    print("Resubmitting failed fill jobs.")
                     Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
                     # actually submitting recovery tasks
                     subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
-                    outJobs = subJobs.communicate()
-                    print outJobs
+                    outJobs = subJobs.communicate()[0].decode()
+                    print(outJobs)
 
                     time.sleep(30)
                     nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                    print "There are {n} jobs for Fill_recovery part".format(n=nFilljobs)
+                    print("There are {n} jobs for Fill_recovery part".format(n=nFilljobs))
 
-                    print 'Waiting for filling jobs to be finished...'
+                    print('Waiting for filling jobs to be finished...')
                     # Daemon cheking running jobs
-                    print "Checking recovery of Ntp ..."
+                    print("Checking recovery of Ntp ...")
                     nCheck = 0
                     while nFilljobs > 0 :
                         sleeptime = 900
                         time.sleep(sleeptime)
                         nFilljobs = checkNjobsCondor("ecalpro_Fill_recovery")
-                        print "I still see {n} jobs for Fill_recovery part ({nr})".format(n=nFilljobs,nr=NtpRecoveryAttempt)
+                        print("I still see {n} jobs for Fill_recovery part ({nr})".format(n=nFilljobs,nr=NtpRecoveryAttempt))
                         checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
-                        datalines2 = (checkJobs2.communicate()[0]).splitlines()
+                        datalines2 = (checkJobs2.communicate()[0].decode()).splitlines()
                         nCheck += 1
                         if nCheck * sleeptime > 43200: 
                             renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
                             nCheck = 0
 
 
-                    print 'Done with Ntp recovery n.' + str(NtpRecoveryAttempt)
+                    print('Done with Ntp recovery n.' + str(NtpRecoveryAttempt))
                 else:
-                    print "Fraction of EcalNtp root file was {perc:.1%} (tolerance was set to {tol:.1%}".format(perc=nGoodOverTot, tol=options.minEfficiencyToRecoverFill)
-                    print "Fill recovery was not attempted."
+                    print("Fraction of EcalNtp root file was {perc:.1%} (tolerance was set to {tol:.1%}".format(perc=nGoodOverTot, tol=options.minEfficiencyToRecoverFill))
+                    print("Fill recovery was not attempted.")
 
                 NtpRecoveryAttempt += 1
         #  END OF FILL RECOVERY
@@ -306,7 +310,7 @@ for iters in range(options.iteration,nIterations):
         condor_file = open(condor_file_name,'w')
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000, maxtime=5000) # this does not close the file
 
-        print 'Now adding files...'
+        print('Now adding files...')
         Nlist = 0
         inputlist_v = inputlistbase_v[:]
         NrelJob = float(len(inputlist_v)) / float(ijobmax)
@@ -314,7 +318,7 @@ for iters in range(options.iteration,nIterations):
             NrelJob = int(NrelJob) + 1
         Nlist_flo = float(NrelJob/nHadd) + 1.
         Nlist = int(Nlist_flo)
-        print "Number of Hadd in parallel: " + str(Nlist)
+        print("Number of Hadd in parallel: " + str(Nlist))
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
@@ -322,16 +326,13 @@ for iters in range(options.iteration,nIterations):
             #BUT we do that only if you are working on batch
             Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
             myGrep = subprocess.Popen([Grepcommand], stdout=subprocess.PIPE, shell=True )
-            FoutGrep = myGrep.communicate()
+            FoutGrep = myGrep.communicate()[0].decode()
             # FoutGrep is something like the following
             # ('/afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list`\n', None)
             # we want to keep /afs_path_to_dirName/src/hadd/hadd_iter_XXX_step_YYY.list
             # removing (' and `\n', None)
-            FoutGrep_2 = str(FoutGrep)[2:]
-            FoutGrep_2 = str(FoutGrep_2)[:-11]
-            #print 'Checking ' + str(FoutGrep_2)
-            #Chech The size for each line
-            f = open( str(FoutGrep_2) )
+            FoutGrep_2 = FoutGrep[:-2]
+            f = open( FoutGrep_2 )
             lines = f.readlines()
             f.close()
             # create backup of original list of files
@@ -373,35 +374,35 @@ for iters in range(options.iteration,nIterations):
                 for l in newlines:
                     fprun.write(l)
                 fprun.close()
-                MoveComm = "cp " + prunedfile + " " + str(FoutGrep_2)
+                MoveComm = "cp " + prunedfile + " " + FoutGrep_2
                 MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                 mvOut = MoveC.communicate()
-                #print "Some files were removed in " + str(FoutGrep_2)
-                #print "Copied " + prunedfile + " into " + str(FoutGrep_2)
+                #print "Some files were removed in " + FoutGrep_2
+                #print "Copied " + prunedfile + " into " + FoutGrep_2
 
             #End of the check, sending the job
-            print "Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1)  #nHadds goes from 0 to Nlist -1
+            print("Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1))  #nHadds goes from 0 to Nlist -1
 
         condor_file.close()
         Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Hsubmit_s
+        print(">>> Running --> " + Hsubmit_s)
         subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
-        outJobs = subJobs.communicate()
+        outJobs = subJobs.communicate()[0].decode()
 
-        print str(outJobs)
+        print(outJobs)
         time.sleep(15)
         nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
-        print "There are {n} jobs for Hadd part".format(n=nHaddjobs)
+        print("There are {n} jobs for Hadd part".format(n=nHaddjobs))
 
-        print 'Waiting for all the hadd...'
+        print('Waiting for all the hadd...')
         # Daemon cheking running jobs
         while nHaddjobs > 0 :
             time.sleep(300)
             nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
-            print "I still see {n} jobs for Hadd part".format(n=nHaddjobs)
+            print("I still see {n} jobs for Hadd part".format(n=nHaddjobs))
             #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
             #datalines2 = (checkJobs2.communicate()[0]).splitlines()
-        print 'Done with various hadd'
+        print('Done with various hadd')
 
         # Check if all the hadds are there and files are not empty
         goodHadds = 0
@@ -417,9 +418,9 @@ for iters in range(options.iteration,nIterations):
                 tf.Close()
 
         if goodHadds == Nlist:
-            print "All files are present: going to hadd them"
+            print("All files are present: going to hadd them")
         else:
-            print "Some files are missing or empty or some keys were recovered: going to recover them"
+            print("Some files are missing or empty or some keys were recovered: going to recover them")
 
         HaddRecoveryAttempt = 0
         # this recovery is often unsuccessful: if it failed the first time, there is a high chance that the problem is persistent
@@ -432,7 +433,7 @@ for iters in range(options.iteration,nIterations):
             condor_file = open(condor_file_name,'w')
             writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000, maxtime=5000)  
 
-            print "Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt)
+            print("Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt))
             goodHadds = 0
             for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
@@ -457,34 +458,34 @@ for iters in range(options.iteration,nIterations):
                     tf.Close()
                         
 
-            print "Good files: {num}/{den}".format(num=goodHadds,den=Nlist)
+            print("Good files: {num}/{den}".format(num=goodHadds,den=Nlist))
             if goodHadds == Nlist: 
-                print "All files recovered successfully!"
+                print("All files recovered successfully!")
                 break   
             # inside this loop, it can be that goodHadds == Nlist, because when we enter we resubmit some jobs for sure, and at the next attempt 
             # we still don't know if they were all successful: if so, we exit the loop
 
             condor_file.close()
             Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-            print ">>> Running --> " + Hsubmit_s
+            print(">>> Running --> " + Hsubmit_s)
             # actually submitting recovery tasks
             subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
-            outJobs = subJobs.communicate()
-            print outJobs
+            outJobs = subJobs.communicate()[0].decode()
+            print(outJobs)
 
             time.sleep(15)
             nHaddjobs = checkNjobsCondor("ecalpro_Hadd_recovery")
-            print "There are {n} jobs for Hadd_recovery part".format(n=nHaddjobs)
+            print("There are {n} jobs for Hadd_recovery part".format(n=nHaddjobs))
 
-            print 'Waiting for Hadd recovery jobs to be finished...'
+            print('Waiting for Hadd recovery jobs to be finished...')
             # Daemon cheking running jobs
-            print "Checking recovery of Hadd ..."
+            print("Checking recovery of Hadd ...")
             nCheck = 0
             while nHaddjobs > 0 :
                 sleeptime = 300
                 time.sleep(sleeptime)
                 nHaddjobs = checkNjobsCondor("ecalpro_Hadd_recovery")
-                print "I still see {n} jobs for Hadd_recovery part".format(n=nHaddjobs)
+                print("I still see {n} jobs for Hadd_recovery part".format(n=nHaddjobs))
                 #checkJobs2 = subprocess.Popen(['rm -rf ' + pwd + '/core.*'], stdout=subprocess.PIPE, shell=True);
                 #datalines2 = (checkJobs2.communicate()[0]).splitlines()
                 nCheck += 1
@@ -494,12 +495,12 @@ for iters in range(options.iteration,nIterations):
 
             HaddRecoveryAttempt += 1
      
-            print 'Done with hadd recovery'
+            print('Done with hadd recovery')
 
 
     if ( not ONLYFIT and not ONLYMERGEFIT):
         renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
-        print 'Now The Final One...'
+        print('Now The Final One...')
         
         # PREPARE CONDOR FILES FOR FINAL HADD AT ITER iters
         dummy_exec = open(condordir+'/dummy_exec_finalHadd.sh','w')
@@ -518,32 +519,32 @@ for iters in range(options.iteration,nIterations):
         condor_file.close()
         
         FHsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + FHsubmit_s
+        print(">>> Running --> " + FHsubmit_s)
         FsubJobs = subprocess.Popen([FHsubmit_s], stdout=subprocess.PIPE, shell=True);
-        FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        FoutJobs = FsubJobs.communicate()[0].decode()
+        print(FoutJobs)
         time.sleep(5)
 
         nFinHaddjobs = checkNjobsCondor("ecalpro_FinalHadd")     
-        print "There are {n} jobs for FinalHadd part".format(n=nFinHaddjobs)
-        print 'Waiting for the Final hadd...'
+        print("There are {n} jobs for FinalHadd part".format(n=nFinHaddjobs))
+        print('Waiting for the Final hadd...')
         # Daemon cheking running jobs
         while nFinHaddjobs > 0 :
             time.sleep(120)
             nFinHaddjobs = checkNjobsCondor("ecalpro_FinalHadd")
-            print "I still see {n} jobs for FinalHadd part".format(n=nFinHaddjobs)
-        print 'Done with final hadd'
+            print("I still see {n} jobs for FinalHadd part".format(n=nFinHaddjobs))
+        print('Done with final hadd')
 
 
     if MakeNtuple4optimization:
         # it actually stopped already before hadding files
-        print """MakeNtuple4optimization is set to True in parameters.py
+        print("""MakeNtuple4optimization is set to True in parameters.py
 From the current behaviour of FillEpsilonPlot.cc code (version 11/06/2017), it means the histogram used to do the fit for 
 each crystal are not saved and therefore the Fit part will crash because these histograms will not be found in '*epsilonPlots.root' file.
 Code will stop know, since it is assumed that if you are optimizing selection then the Fit part is not needed (and you don't need further iterations)
 If this is not the case, modify FillEpsilonPlot.cc
-"""
-        print "Done with iteration " + str(iters)
+""")
+        print("Done with iteration " + str(iters))
         quit()
 
     # if running with flag to fold SM, first do that part. It is not needed to run a job, can be done locally in few minutes
@@ -556,10 +557,10 @@ If this is not the case, modify FillEpsilonPlot.cc
         if not os.path.isfile(hFoldFile):
             srcFold_n = srcPath + "/Fit/submit_justFoldSM_iter_" + str(iters) + ".sh"
             Fitsubmit_s = "{src}".format(src=srcFold_n)
-            print ">>> Running --> " + Fitsubmit_s      
+            print(">>> Running --> " + Fitsubmit_s)
             FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
-            FoutJobs = FsubJobs.communicate()  # do I really need to communicate to stdout?
-            print FoutJobs        
+            FoutJobs = FsubJobs.communicate()[0].decode()  # do I really need to communicate to stdout?
+            print(FoutJobs)
             #os.system(Fitsubmit_s)    
 
     # N of Fit to send
@@ -591,23 +592,23 @@ If this is not the case, modify FillEpsilonPlot.cc
     writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400) # this does not close the file
 
     # preparing submission of fit tasks (EB)
-    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEB) + ' jobs to fit the Barrel'
+    if (not ONLYMERGEFIT): print('Submitting ' + str(nEB) + ' jobs to fit the Barrel')
     for inteb in range(nEB):
         fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEB.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
         if (not ONLYMERGEFIT):
-            print 'About to EB fit:'
-            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName            
+            print('About to EB fit:')
+            print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName)
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
 
     # preparing submission of fit tasks (EE)
-    if (not ONLYMERGEFIT): print 'Submitting ' + str(nEE) + ' jobs to fit the Endcap'
+    if (not ONLYMERGEFIT): print('Submitting ' + str(nEE) + ' jobs to fit the Endcap')
     for inte in range(nEE):        
         fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
         ListFinalHaddEE.append(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
         if (not ONLYMERGEFIT):
-            print 'About to EE fit:'
-            print eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+            print('About to EE fit:')
+            print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
             condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
 
     condor_file.close()
@@ -616,21 +617,21 @@ If this is not the case, modify FillEpsilonPlot.cc
 
         renewTokenAFS(daemonLocal=options.daemonLocal, infile=options.tokenFile) 
         Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Fitsubmit_s
+        print(">>> Running --> " + Fitsubmit_s)
         FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
-        FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        FoutJobs = FsubJobs.communicate()[0].decode()
+        print(FoutJobs)
         time.sleep(5)
 
         nFitjobs = checkNjobsCondor("ecalpro_Fit")     
-        print "There are {n} jobs for Fit part".format(n=nFitjobs)
-        print 'Waiting for fit jobs to be finished...'
+        print("There are {n} jobs for Fit part".format(n=nFitjobs))
+        print('Waiting for fit jobs to be finished...')
         # Daemon cheking running jobs
         while nFitjobs > 0 :
             time.sleep(300)
             nFitjobs = checkNjobsCondor("ecalpro_Fit")
-            print "I still see {n} jobs for Fit part".format(n=nFitjobs)
-        print "Done with fitting! Now we have to merge all fits in one Calibmap.root"
+            print("I still see {n} jobs for Fit part".format(n=nFitjobs))
+        print("Done with fitting! Now we have to merge all fits in one Calibmap.root")
 
     # check all fits are there (this check is made only once at the moment, if the file is still missing the code will exit later)
     # this check should be made until all fits are present, otherwise the code crashes, butif it keeps happening there might be something serious to solve
@@ -645,7 +646,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         thisfile = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
         #thisfile_f = TFile.Open(thisfile)
         if not os.path.isfile(thisfile):
-            print "Will resubmit missing file {f}".format(f=thisfile)
+            print("Will resubmit missing file {f}".format(f=thisfile))
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
     for inte in range(nEE):        
@@ -654,7 +655,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         #thisfile_f = TFile.Open(thisfile)
         #if not thisfile_f:
         if not os.path.isfile(thisfile):
-            print "Will resubmit missing file {f}".format(f=thisfile)
+            print("Will resubmit missing file {f}".format(f=thisfile))
             allFitsGood = False
             fit_src_toResub.append(fit_src_n)
 
@@ -669,21 +670,21 @@ If this is not the case, modify FillEpsilonPlot.cc
         condor_file.close()
 
         Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
-        print ">>> Running --> " + Fitsubmit_s
+        print(">>> Running --> " + Fitsubmit_s)
         FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
-        FoutJobs = FsubJobs.communicate()
-        print FoutJobs
+        FoutJobs = FsubJobs.communicate()[0].decode()
+        print(FoutJobs)
         time.sleep(5)
 
         nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")     
-        print "There are {n} jobs for Fit recovery part".format(n=nFitjobs)
-        print 'Waiting for fit jobs to be finished...'
+        print("There are {n} jobs for Fit recovery part".format(n=nFitjobs))
+        print('Waiting for fit jobs to be finished...')
         # Daemon cheking running jobs
         while nFitjobs > 0 :
             time.sleep(60)
             nFitjobs = checkNjobsCondor("ecalpro_Fit_recovery")
-            print "I still see {n} jobs for Fit recovery part".format(n=nFitjobs)
-        print "Done with fitting recovery! Now we have to merge all fits in one Calibmap.root"
+            print("I still see {n} jobs for Fit recovery part".format(n=nFitjobs))
+        print("Done with fitting recovery! Now we have to merge all fits in one Calibmap.root")
 
     # Merge Final CalibMap
 
@@ -697,14 +698,13 @@ If this is not the case, modify FillEpsilonPlot.cc
        ListFinalHadd = ListFinalHaddEB
        ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
-    from PhysicsTools.PythonAnalysis import *
+    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     gSystem.Load("libFWCoreFWLite.so")
     #AutoLibraryLoader.enable()
     FWLiteEnabler.enable()
-    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
     f = TFile.Open(finalCalibMapFileName, 'recreate')
     if not f:
-        print "WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ..."
+        print("WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ...")
         quit()
     else:
         f.cd()
@@ -839,16 +839,16 @@ If this is not the case, modify FillEpsilonPlot.cc
                  };")
                
         if(Barrel_or_Endcap=='ONLY_BARREL' or Barrel_or_Endcap=='ALL_PLEASE'):
-            s = EBStruct()
-            s1 = EB1Struct()
+            s = ROOT.EBStruct()
+            s1 = ROOT.EB1Struct()
         if(Barrel_or_Endcap=='ONLY_ENDCAP' or Barrel_or_Endcap=='ALL_PLEASE'):
-            t = EEStruct()
-            t1 = EE1Struct()
+            t = ROOT.EEStruct()
+            t1 = ROOT.EE1Struct()
 
         if f.IsOpen():
             f.cd()
         else:
-            print "ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat
+            print("ERROR: it seems the output file '" + finalCalibMapFileName + "' is no longer opened! n_repeat = %d" % n_repeat)
             quit()
 
         if isEoverEtrue and n_repeat == 1:
@@ -865,58 +865,58 @@ If this is not the case, modify FillEpsilonPlot.cc
             TreeEE = TTree("calibEE", "Tree of EE Inter-calibration constants")
 
         if(Barrel_or_Endcap=='ONLY_BARREL' or Barrel_or_Endcap=='ALL_PLEASE'):
-           TreeEB.Branch('rawId_'      , AddressOf(s,'rawId_'),'rawId_/I')
-           TreeEB.Branch('hashedIndex_', AddressOf(s,'hashedIndex_'),'hashedIndex_/I')
-           TreeEB.Branch('ieta_'       , AddressOf(s,'ieta_'),'ieta_/I')
-           TreeEB.Branch('iphi_'       , AddressOf(s,'iphi_'),'iphi_/I')
-           TreeEB.Branch('iSM_'        , AddressOf(s,'iSM_'),'iSM_/I')
-           TreeEB.Branch('iMod_'       , AddressOf(s,'iMod_'),'iMod_/I')
-           TreeEB.Branch('iTT_'        , AddressOf(s,'iTT_'),'iTT_/I')
-           TreeEB.Branch('iTTeta_'     , AddressOf(s,'iTTeta_'),'iTTeta_/I')
-           TreeEB.Branch('iTTphi_'     , AddressOf(s,'iTTphi_'),'iTTphi_/I')
-           TreeEB.Branch('iter_'       , AddressOf(s,'iter_'),'iter_/I')
-           TreeEB.Branch('coeff_'      , AddressOf(s,'coeff_'),'coeff_/F')
-           TreeEB.Branch('Chisqu_'     , AddressOf(s,'Chisqu_'),'Chisqu_/F')
-           TreeEB.Branch('Ndof_'       , AddressOf(s,'Ndof_'),'Ndof_/F')
-           TreeEB.Branch('fit_mean_'   , AddressOf(s,'fit_mean_'),'fit_mean_/F')
-           TreeEB.Branch('fit_mean_err_'   , AddressOf(s,'fit_mean_err_'),'fit_mean_err_/F')
-           TreeEB.Branch('fit_sigma_'  , AddressOf(s,'fit_sigma_'),'fit_sigma_/F')
+           TreeEB.Branch('rawId_'      , addressof(s,'rawId_'),'rawId_/I')
+           TreeEB.Branch('hashedIndex_', addressof(s,'hashedIndex_'),'hashedIndex_/I')
+           TreeEB.Branch('ieta_'       , addressof(s,'ieta_'),'ieta_/I')
+           TreeEB.Branch('iphi_'       , addressof(s,'iphi_'),'iphi_/I')
+           TreeEB.Branch('iSM_'        , addressof(s,'iSM_'),'iSM_/I')
+           TreeEB.Branch('iMod_'       , addressof(s,'iMod_'),'iMod_/I')
+           TreeEB.Branch('iTT_'        , addressof(s,'iTT_'),'iTT_/I')
+           TreeEB.Branch('iTTeta_'     , addressof(s,'iTTeta_'),'iTTeta_/I')
+           TreeEB.Branch('iTTphi_'     , addressof(s,'iTTphi_'),'iTTphi_/I')
+           TreeEB.Branch('iter_'       , addressof(s,'iter_'),'iter_/I')
+           TreeEB.Branch('coeff_'      , addressof(s,'coeff_'),'coeff_/F')
+           TreeEB.Branch('Chisqu_'     , addressof(s,'Chisqu_'),'Chisqu_/F')
+           TreeEB.Branch('Ndof_'       , addressof(s,'Ndof_'),'Ndof_/F')
+           TreeEB.Branch('fit_mean_'   , addressof(s,'fit_mean_'),'fit_mean_/F')
+           TreeEB.Branch('fit_mean_err_'   , addressof(s,'fit_mean_err_'),'fit_mean_err_/F')
+           TreeEB.Branch('fit_sigma_'  , addressof(s,'fit_sigma_'),'fit_sigma_/F')
            if not isEoverEtrue:
-               TreeEB.Branch('Signal_'     , AddressOf(s,'Signal_'),'Signal_/F')
-               TreeEB.Branch('Backgr_'     , AddressOf(s,'Backgr_'),'Backgr_/F')
-               TreeEB.Branch('fit_Snorm_'  , AddressOf(s,'fit_Snorm_'),'fit_Snorm_/F')
-               TreeEB.Branch('fit_b0_'     , AddressOf(s,'fit_b0_'),'fit_b0_/F')
-               TreeEB.Branch('fit_b1_'     , AddressOf(s,'fit_b1_'),'fit_b1_/F')
-               TreeEB.Branch('fit_b2_'     , AddressOf(s,'fit_b2_'),'fit_b2_/F')
-               TreeEB.Branch('fit_b3_'     , AddressOf(s,'fit_b3_'),'fit_b3_/F')
-               TreeEB.Branch('fit_Bnorm_'  , AddressOf(s,'fit_Bnorm_'),'fit_Bnorm_/F')
+               TreeEB.Branch('Signal_'     , addressof(s,'Signal_'),'Signal_/F')
+               TreeEB.Branch('Backgr_'     , addressof(s,'Backgr_'),'Backgr_/F')
+               TreeEB.Branch('fit_Snorm_'  , addressof(s,'fit_Snorm_'),'fit_Snorm_/F')
+               TreeEB.Branch('fit_b0_'     , addressof(s,'fit_b0_'),'fit_b0_/F')
+               TreeEB.Branch('fit_b1_'     , addressof(s,'fit_b1_'),'fit_b1_/F')
+               TreeEB.Branch('fit_b2_'     , addressof(s,'fit_b2_'),'fit_b2_/F')
+               TreeEB.Branch('fit_b3_'     , addressof(s,'fit_b3_'),'fit_b3_/F')
+               TreeEB.Branch('fit_Bnorm_'  , addressof(s,'fit_Bnorm_'),'fit_Bnorm_/F')
 
     
         if(Barrel_or_Endcap=='ONLY_ENDCAP' or Barrel_or_Endcap=='ALL_PLEASE'):
-           TreeEE.Branch('ix_'         , AddressOf(t,'ix_'),'ix_/I')
-           TreeEE.Branch('iy_'         , AddressOf(t,'iy_'),'iy_/I')
-           TreeEE.Branch('zside_'      , AddressOf(t,'zside_'),'zside_/I')
-           TreeEE.Branch('sc_'         , AddressOf(t,'sc_'),'sc_/I')
-           TreeEE.Branch('isc_'        , AddressOf(t,'isc_'),'isc_/I')
-           TreeEE.Branch('ic_'         , AddressOf(t,'ic_'),'ic_/I')
-           TreeEE.Branch('iquadrant_'  , AddressOf(t,'iquadrant_'),'iquadrant_/I')
-           TreeEE.Branch('hashedIndex_', AddressOf(t,'hashedIndex_'),'hashedIndex_/I')
-           TreeEE.Branch('iter_'       , AddressOf(t,'iter_'),'iter_/I')
-           TreeEE.Branch('coeff_'      , AddressOf(t,'coeff_'),'coeff_/F')
-           TreeEE.Branch('Chisqu_'     , AddressOf(t,'Chisqu_'),'Chisqu_/F')
-           TreeEE.Branch('Ndof_'       , AddressOf(t,'Ndof_'),'Ndof_/F')
-           TreeEE.Branch('fit_mean_'   , AddressOf(t,'fit_mean_'),'fit_mean_/F')
-           TreeEE.Branch('fit_mean_err_'   , AddressOf(t,'fit_mean_err_'),'fit_mean_err_/F')
-           TreeEE.Branch('fit_sigma_'  , AddressOf(t,'fit_sigma_'),'fit_sigma_/F')
+           TreeEE.Branch('ix_'         , addressof(t,'ix_'),'ix_/I')
+           TreeEE.Branch('iy_'         , addressof(t,'iy_'),'iy_/I')
+           TreeEE.Branch('zside_'      , addressof(t,'zside_'),'zside_/I')
+           TreeEE.Branch('sc_'         , addressof(t,'sc_'),'sc_/I')
+           TreeEE.Branch('isc_'        , addressof(t,'isc_'),'isc_/I')
+           TreeEE.Branch('ic_'         , addressof(t,'ic_'),'ic_/I')
+           TreeEE.Branch('iquadrant_'  , addressof(t,'iquadrant_'),'iquadrant_/I')
+           TreeEE.Branch('hashedIndex_', addressof(t,'hashedIndex_'),'hashedIndex_/I')
+           TreeEE.Branch('iter_'       , addressof(t,'iter_'),'iter_/I')
+           TreeEE.Branch('coeff_'      , addressof(t,'coeff_'),'coeff_/F')
+           TreeEE.Branch('Chisqu_'     , addressof(t,'Chisqu_'),'Chisqu_/F')
+           TreeEE.Branch('Ndof_'       , addressof(t,'Ndof_'),'Ndof_/F')
+           TreeEE.Branch('fit_mean_'   , addressof(t,'fit_mean_'),'fit_mean_/F')
+           TreeEE.Branch('fit_mean_err_'   , addressof(t,'fit_mean_err_'),'fit_mean_err_/F')
+           TreeEE.Branch('fit_sigma_'  , addressof(t,'fit_sigma_'),'fit_sigma_/F')
            if not isEoverEtrue:
-               TreeEE.Branch('Signal_'     , AddressOf(t,'Signal_'),'Signal_/F')
-               TreeEE.Branch('Backgr_'     , AddressOf(t,'Backgr_'),'Backgr_/F')
-               TreeEE.Branch('fit_Snorm_'  , AddressOf(t,'fit_Snorm_'),'fit_Snorm_/F')
-               TreeEE.Branch('fit_b0_'     , AddressOf(t,'fit_b0_'),'fit_b0_/F')
-               TreeEE.Branch('fit_b1_'     , AddressOf(t,'fit_b1_'),'fit_b1_/F')
-               TreeEE.Branch('fit_b2_'     , AddressOf(t,'fit_b2_'),'fit_b2_/F')
-               TreeEE.Branch('fit_b3_'     , AddressOf(t,'fit_b3_'),'fit_b3_/F')
-               TreeEE.Branch('fit_Bnorm_'  , AddressOf(t,'fit_Bnorm_'),'fit_Bnorm_/F')
+               TreeEE.Branch('Signal_'     , addressof(t,'Signal_'),'Signal_/F')
+               TreeEE.Branch('Backgr_'     , addressof(t,'Backgr_'),'Backgr_/F')
+               TreeEE.Branch('fit_Snorm_'  , addressof(t,'fit_Snorm_'),'fit_Snorm_/F')
+               TreeEE.Branch('fit_b0_'     , addressof(t,'fit_b0_'),'fit_b0_/F')
+               TreeEE.Branch('fit_b1_'     , addressof(t,'fit_b1_'),'fit_b1_/F')
+               TreeEE.Branch('fit_b2_'     , addressof(t,'fit_b2_'),'fit_b2_/F')
+               TreeEE.Branch('fit_b3_'     , addressof(t,'fit_b3_'),'fit_b3_/F')
+               TreeEE.Branch('fit_Bnorm_'  , addressof(t,'fit_Bnorm_'),'fit_Bnorm_/F')
 
         # print "Printing list of files on eos ..."
         # print "############################"
@@ -925,13 +925,13 @@ If this is not the case, modify FillEpsilonPlot.cc
         # print eosFileList.communicate()
         # print "############################"
 
-        print "Going to merge the following files ..."
+        print("Going to merge the following files ...")
         for thisfile_s in ListFinalHadd:
             thisfile_s = thisfile_s.rstrip()
-            print "file --> " + str(thisfile_s)
+            print("file --> " + str(thisfile_s))
             thisfile_f = TFile.Open(thisfile_s)
             if not thisfile_f: 
-                print "Error in calibJobHandlerCondor.py --> file not found" 
+                print("Error in calibJobHandlerCondor.py --> file not found")
                 quit()
             #Taking Interval and EB or EE
             h_Int = thisfile_f.Get("hint")
@@ -947,31 +947,31 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEB_g2")
                else:
                    thisTree = thisfile_f.Get("calibEB")
-               thisTree.SetBranchAddress( 'rawId',AddressOf(s1,'rawId'));
-               thisTree.SetBranchAddress( 'hashedIndex',AddressOf(s1,'hashedIndex'));
-               thisTree.SetBranchAddress( 'ieta',AddressOf(s1,'ieta'));
-               thisTree.SetBranchAddress( 'iphi',AddressOf(s1,'iphi'));
-               thisTree.SetBranchAddress( 'iSM',AddressOf(s1,'iSM'));
-               thisTree.SetBranchAddress( 'iMod',AddressOf(s1,'iMod'));
-               thisTree.SetBranchAddress( 'iTT',AddressOf(s1,'iTT'));
-               thisTree.SetBranchAddress( 'iTTeta',AddressOf(s1,'iTTeta'));
-               thisTree.SetBranchAddress( 'iTTphi',AddressOf(s1,'iTTphi'));
-               thisTree.SetBranchAddress( 'iter',AddressOf(s1,'iter'));
-               thisTree.SetBranchAddress( 'coeff',AddressOf(s1,'coeff'));
-               thisTree.SetBranchAddress( 'Chisqu',AddressOf(s1,'Chisqu'));
-               thisTree.SetBranchAddress( 'Ndof',AddressOf(s1,'Ndof'));
-               thisTree.SetBranchAddress( 'fit_mean',AddressOf(s1,'fit_mean'));
-               thisTree.SetBranchAddress( 'fit_mean_err',AddressOf(s1,'fit_mean_err'));
-               thisTree.SetBranchAddress( 'fit_sigma',AddressOf(s1,'fit_sigma'));
+               thisTree.SetBranchAddress( 'rawId', cast['void*'](addressof(s1,'rawId')));
+               thisTree.SetBranchAddress( 'hashedIndex', cast['void*'](addressof(s1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'ieta', cast['void*'](addressof(s1,'ieta')));
+               thisTree.SetBranchAddress( 'iphi', cast['void*'](addressof(s1,'iphi')));
+               thisTree.SetBranchAddress( 'iSM', cast['void*'](addressof(s1,'iSM')));
+               thisTree.SetBranchAddress( 'iMod', cast['void*'](addressof(s1,'iMod')));
+               thisTree.SetBranchAddress( 'iTT', cast['void*'](addressof(s1,'iTT')));
+               thisTree.SetBranchAddress( 'iTTeta', cast['void*'](addressof(s1,'iTTeta')));
+               thisTree.SetBranchAddress( 'iTTphi', cast['void*'](addressof(s1,'iTTphi')));
+               thisTree.SetBranchAddress( 'iter', cast['void*'](addressof(s1,'iter')));
+               thisTree.SetBranchAddress( 'coeff', cast['void*'](addressof(s1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu', cast['void*'](addressof(s1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof', cast['void*'](addressof(s1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean', cast['void*'](addressof(s1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err', cast['void*'](addressof(s1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma', cast['void*'](addressof(s1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',AddressOf(s1,'Signal'));
-                   thisTree.SetBranchAddress( 'Backgr',AddressOf(s1,'Backgr'));
-                   thisTree.SetBranchAddress( 'fit_Snorm',AddressOf(s1,'fit_Snorm'));
-                   thisTree.SetBranchAddress( 'fit_b0',AddressOf(s1,'fit_b0'));
-                   thisTree.SetBranchAddress( 'fit_b1',AddressOf(s1,'fit_b1'));
-                   thisTree.SetBranchAddress( 'fit_b2',AddressOf(s1,'fit_b2'));
-                   thisTree.SetBranchAddress( 'fit_b3',AddressOf(s1,'fit_b3'));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',AddressOf(s1,'fit_Bnorm'));
+                   thisTree.SetBranchAddress( 'Signal', cast['void*'](addressof(s1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr', cast['void*'](addressof(s1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm', cast['void*'](addressof(s1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0', cast['void*'](addressof(s1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1', cast['void*'](addressof(s1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2', cast['void*'](addressof(s1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3', cast['void*'](addressof(s1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm', cast['void*'](addressof(s1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
@@ -1006,30 +1006,30 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEE_g2")
                else:
                    thisTree = thisfile_f.Get("calibEE")
-               thisTree.SetBranchAddress( 'ix',AddressOf(t1,'ix'));
-               thisTree.SetBranchAddress( 'iy',AddressOf(t1,'iy'));
-               thisTree.SetBranchAddress( 'zside',AddressOf(t1,'zside'));
-               thisTree.SetBranchAddress( 'sc',AddressOf(t1,'sc'));
-               thisTree.SetBranchAddress( 'isc',AddressOf(t1,'isc'));
-               thisTree.SetBranchAddress( 'ic',AddressOf(t1,'ic'));
-               thisTree.SetBranchAddress( 'iquadrant',AddressOf(t1,'iquadrant'));
-               thisTree.SetBranchAddress( 'hashedIndex',AddressOf(t1,'hashedIndex'));
-               thisTree.SetBranchAddress( 'iter',AddressOf(t1,'iter'));
-               thisTree.SetBranchAddress( 'coeff',AddressOf(t1,'coeff'));
-               thisTree.SetBranchAddress( 'Chisqu',AddressOf(t1,'Chisqu'));
-               thisTree.SetBranchAddress( 'Ndof',AddressOf(t1,'Ndof'));
-               thisTree.SetBranchAddress( 'fit_mean',AddressOf(t1,'fit_mean'));
-               thisTree.SetBranchAddress( 'fit_mean_err',AddressOf(t1,'fit_mean_err'));
-               thisTree.SetBranchAddress( 'fit_sigma',AddressOf(t1,'fit_sigma'));
+               thisTree.SetBranchAddress( 'ix', cast['void*'](addressof(t1,'ix')));
+               thisTree.SetBranchAddress( 'iy', cast['void*'](addressof(t1,'iy')));
+               thisTree.SetBranchAddress( 'zside', cast['void*'](addressof(t1,'zside')));
+               thisTree.SetBranchAddress( 'sc', cast['void*'](addressof(t1,'sc')));
+               thisTree.SetBranchAddress( 'isc', cast['void*'](addressof(t1,'isc')));
+               thisTree.SetBranchAddress( 'ic', cast['void*'](addressof(t1,'ic')));
+               thisTree.SetBranchAddress( 'iquadrant', cast['void*'](addressof(t1,'iquadrant')));
+               thisTree.SetBranchAddress( 'hashedIndex', cast['void*'](addressof(t1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'iter', cast['void*'](addressof(t1,'iter')));
+               thisTree.SetBranchAddress( 'coeff', cast['void*'](addressof(t1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu', cast['void*'](addressof(t1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof', cast['void*'](addressof(t1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean', cast['void*'](addressof(t1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err', cast['void*'](addressof(t1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma', cast['void*'](addressof(t1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',AddressOf(t1,'Signal'));
-                   thisTree.SetBranchAddress( 'Backgr',AddressOf(t1,'Backgr'));
-                   thisTree.SetBranchAddress( 'fit_Snorm',AddressOf(t1,'fit_Snorm'));
-                   thisTree.SetBranchAddress( 'fit_b0',AddressOf(t1,'fit_b0'));
-                   thisTree.SetBranchAddress( 'fit_b1',AddressOf(t1,'fit_b1'));
-                   thisTree.SetBranchAddress( 'fit_b2',AddressOf(t1,'fit_b2'));
-                   thisTree.SetBranchAddress( 'fit_b3',AddressOf(t1,'fit_b3'));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',AddressOf(t1,'fit_Bnorm'));
+                   thisTree.SetBranchAddress( 'Signal', cast['void*'](addressof(t1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr', cast['void*'](addressof(t1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm', cast['void*'](addressof(t1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0', cast['void*'](addressof(t1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1', cast['void*'](addressof(t1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2', cast['void*'](addressof(t1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3', cast['void*'](addressof(t1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm', cast['void*'](addressof(t1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
@@ -1077,14 +1077,14 @@ If this is not the case, modify FillEpsilonPlot.cc
                        # and the map is basically in a single SM (but repreated in all the others as well)
                        if nFitB < 1700:
                            for ism in range(1,37):
-                               myRechit = EBDetId(ism, nFitB+1, 1)
+                               myRechit = ROOT.EBDetId(ism, nFitB+1, 1)
                                bin_x = myRechit.ieta()+MaxEta+1
                                bin_y = myRechit.iphi()
                                value = thisHistoEB.GetBinContent(bin_x,bin_y)
                                calibMap_EB.SetBinContent(bin_x,bin_y,value)
                    else:
                        if nFitB < 61200:
-                           myRechit = EBDetId( EBDetId.detIdFromDenseIndex(nFitB) )
+                           myRechit = ROOT.EBDetId( ROOT.EBDetId.detIdFromDenseIndex(nFitB) )
                            bin_x = myRechit.ieta()+MaxEta+1
                            bin_y = myRechit.iphi()
                            value = thisHistoEB.GetBinContent(bin_x,bin_y)
@@ -1094,7 +1094,7 @@ If this is not the case, modify FillEpsilonPlot.cc
                Fin1 = int(finit+1)
                for nFitE in range(Init1,Fin1):
                    if nFitE < 14648:
-                      myRechitE = EEDetId( EEDetId.detIdFromDenseIndex(nFitE) )
+                      myRechitE = ROOT.EEDetId( ROOT.EEDetId.detIdFromDenseIndex(nFitE) )
                       if myRechitE.zside() < 0 :
                          value = thisHistoEEm.GetBinContent(myRechitE.ix(),myRechitE.iy())
                          calibMap_EEm.SetBinContent(myRechitE.ix(),myRechitE.iy(),value)
@@ -1117,8 +1117,8 @@ If this is not the case, modify FillEpsilonPlot.cc
     # f.Write()
     f.Close()
 
-    print "Done with iteration " + str(iters)
+    print("Done with iteration " + str(iters))
     if( ONLYHADD or ONLYFINHADD or ONLYFIT or ONLYMERGEFIT):
        ONLYHADD = False; ONLYFINHADD = False; ONLYFIT=False; ONLYMERGEFIT=False
 
-print "---THE END---"
+print("---THE END---")
