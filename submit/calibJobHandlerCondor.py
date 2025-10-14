@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import subprocess, time, sys, os
-from ROOT import *
+import ROOT
+from ROOT import gSystem, gROOT, TTree, TH2F, TFile, FWLiteEnabler, addressof
 from cppyy.ll import cast
 from methods import *
 from datetime import datetime
@@ -35,10 +36,11 @@ def checkNjobsCondor(grepArg="ecalpro"):
     # 0 jobs; 0 completed, 0 removed, 0 idle, 0 running, 0 held, 0 suspended
 
     checkJobs = subprocess.Popen(['condor_q'], stdout=subprocess.PIPE, shell=True);
-    tmp = str(checkJobs.communicate()[0].decode())
+    tmp = checkJobs.communicate()[0].decode()
     if all(x in tmp for x in ["OWNER", "BATCH_NAME", "SUBMITTED", "jobs", "completed", "removed"]):   # a very dumb check, I know
         checkJobs = subprocess.Popen(['condor_q -af JobBatchName| grep {gr} | wc -l'.format(gr=grepArg)], stdout=subprocess.PIPE, shell=True);
         nRetjobs = checkJobs.communicate()[0].decode()
+        # check nRetjobs is not a null string, but a number (either 0 or something else)
         if len(nRetjobs) and nRetjobs != "\n" and nRetjobs.replace('\n','').isdigit():
             return int(nRetjobs)
         else:
@@ -53,7 +55,10 @@ def checkNjobsCondor(grepArg="ecalpro"):
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
 def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
+MY.XRDCP_CREATE_DIR     = True
+MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
+arguments = $(script)
 use_x509userproxy = True
 Log        = {ld}/$(ProcId).log
 Output     = {ld}/$(ProcId).out
@@ -61,7 +66,7 @@ Error      = {ld}/$(ProcId).error
 getenv      = True
 environment = "LS_SUBCWD={here}"
 request_memory = {mem}
-periodic_remove = (JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600)
+periodic_remove = ((JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600))
 +MaxRuntime = {time}
 +JobBatchName = "{jbn}"
 '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
@@ -86,8 +91,8 @@ parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   hel
 pwd         = os.getcwd()
 
 if not options.njobs:
-        print("Must specify number of jobs with option -n. Abort")
-        sys.exit(1)
+    print("Must specify number of jobs with option -n. Abort")
+    sys.exit(1)
 
 if options.resubmit: # Batch system
     if not options.run:
@@ -150,6 +155,7 @@ for iters in range(options.iteration,nIterations):
 
         print("\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******")
         print("Submitting " + str(njobs) + " jobs")
+        condor_file.write('queue script from (\n')
         for ijob in range(njobs):
             #In case you want the stat. syst
             if ( options.syst == 1 ):
@@ -164,9 +170,9 @@ for iters in range(options.iteration,nIterations):
                  env_script_n.close()
             # preparing submission of filling tasks
             fill_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_"     + str(iters) + "_job_" + str(ijob) + ".sh"
-            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fill_src_n)))
+            condor_file.write('    {sf}\n'.format(sf=os.path.abspath(fill_src_n)))
             #print '\n[job #' + str(ijob) + '] :: ' + submit_s
-
+        condor_file.write(')\n')
         condor_file.close()
 
         submit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
@@ -174,7 +180,7 @@ for iters in range(options.iteration,nIterations):
         # actually submitting filling tasks
         submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
         output = submitJobs.communicate()[0].decode()
-        print("Out: " + str(output))
+        print("Out: " + output)
 
         time.sleep(15)    
         nFilljobs = checkNjobsCondor("ecalpro_Fill")
@@ -216,6 +222,7 @@ for iters in range(options.iteration,nIterations):
                     mymaxtimeFill = 48 * 3600
                 writeCondorSubmitBase(condor_file, condordir+'/dummy_exec_fill.sh', logdir, "ecalpro_Fill_recovery", 
                                       memory=2000, maxtime=mymaxtimeFill)  
+                condor_file.write('queue script from (\n')
                 goodNtp = 0
                 for ih in range(njobs):
                     
@@ -229,29 +236,9 @@ for iters in range(options.iteration,nIterations):
                     eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "EcalNtp_" + str(ih) + ".root"
                     Ntp_src_n = srcPath + "/Fill/iter_" + str(iters) + "/submit_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                     print("checking the presence and the sanity of EcalNtp file: " + eosFile)
-                    ######
-                    ### old code
-                    # filesize=0
-                    # if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
-                    # if filesize>100000:
-                    #     tf = TFile.Open("root://eoscms/"+eosFile)
-                    #     if not tf or tf.IsZombie(): 
-                    #         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                    #     elif tf.TestBit(TFile.kRecovered):                    
-                    #         condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                    #         tf.Close()
-                    #     else:
-                    #         goodNtp += 1
-                    #         tf.Close()
-                    # else:
-                    #     condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))
-                    ### end of old code
-                    ####
-                    ### new code
                     if not os.path.exists(eosFile):
-                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Ntp_src_n)))                   
-                    ### end of new code
-                    ####
+                        condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Ntp_src_n)))
+                condor_file.write(')\n')
                 condor_file.close()
                 print("Found {n}/{ntot} good EcalNtp files.".format(n=goodNtp,ntot=njobs))
                 nGoodOverTot = float(goodNtp)/float(njobs)
@@ -261,7 +248,7 @@ for iters in range(options.iteration,nIterations):
                     Ntpsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
                     # actually submitting recovery tasks
                     subJobs = subprocess.Popen([Ntpsubmit_s], stdout=subprocess.PIPE, shell=True);
-                    outJobs = subJobs.communicate().decode()
+                    outJobs = subJobs.communicate()[0].decode()
                     print(outJobs)
 
                     time.sleep(30)
@@ -316,9 +303,10 @@ for iters in range(options.iteration,nIterations):
         Nlist_flo = float(NrelJob/nHadd) + 1.
         Nlist = int(Nlist_flo)
         print("Number of Hadd in parallel: " + str(Nlist))
+        condor_file.write('queue script from (\n')
         for nHadds in range(Nlist):
             Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(nHadds) + ".sh"
-            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+            condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
             #Before each HADD we need to check if the all the files in the list are present
             #BUT we do that only if you are working on batch
             Grepcommand = "grep -i list " + Hadd_src_n + " | grep -v echo | grep -v bash | awk '{print $2}'"
@@ -367,22 +355,23 @@ for iters in range(options.iteration,nIterations):
                 for l in newlines:
                     fprun.write(l)
                 fprun.close()
-                MoveComm = "cp " + prunedfile + " " + str(FoutGrep)
+                MoveComm = "cp " + prunedfile + " " + FoutGrep
                 MoveC = subprocess.Popen([MoveComm], stdout=subprocess.PIPE, shell=True);
                 mvOut = MoveC.communicate()[0].decode()
-                #print "Some files were removed in " + str(FoutGrep)
-                #print "Copied " + prunedfile + " into " + str(FoutGrep)
+                #print "Some files were removed in " + FoutGrep
+                #print "Copied " + prunedfile + " into " + FoutGrep
 
             #End of the check, sending the job
             print("Preparing job to hadd files in list number " + str(nHadds) + "/" + str(Nlist - 1))  #nHadds goes from 0 to Nlist -1
 
+        condor_file.write(')\n')
         condor_file.close()
         Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
         print(">>> Running --> " + Hsubmit_s)
         subJobs = subprocess.Popen([Hsubmit_s], stdout=subprocess.PIPE, shell=True);
         outJobs = subJobs.communicate()[0].decode()
 
-        print(str(outJobs))
+        print(outJobs)
         time.sleep(15)
         nHaddjobs = checkNjobsCondor("ecalpro_Hadd")
         print("There are {n} jobs for Hadd part".format(n=nHaddjobs))
@@ -428,6 +417,7 @@ for iters in range(options.iteration,nIterations):
 
             print("Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt))
             goodHadds = 0
+            condor_file.write('queue script from (\n')
             for ih in range(Nlist):
                 eosFile = eosPath + "/" + dirname + "/iter_" + str(iters) + "/" + NameTag + "epsilonPlots_" + str(ih) + ".root"
                 filesize=0
@@ -437,19 +427,18 @@ for iters in range(options.iteration,nIterations):
                 Hadd_src_n = srcPath + "/hadd/HaddCfg_iter_" + str(iters) + "_job_" + str(ih) + ".sh"
                 if filesize<100000:
                     #print "The file " + eosFile + " is not present, or empty. Redoing hadd..."
-                    condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+                    condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                     #print Hadd_src_n                
                 else: 
                     tf = TFile.Open("root://eoscms/"+eosFile)
                     if not tf or tf.IsZombie():
-                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+                        condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                         continue # must not close file
                     if tf.TestBit(TFile.kRecovered):
-                        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(Hadd_src_n)))
+                        condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                     else:
                         goodHadds += 1
                     tf.Close()
-                        
 
             print("Good files: {num}/{den}".format(num=goodHadds,den=Nlist))
             if goodHadds == Nlist: 
@@ -458,6 +447,7 @@ for iters in range(options.iteration,nIterations):
             # inside this loop, it can be that goodHadds == Nlist, because when we enter we resubmit some jobs for sure, and at the next attempt 
             # we still don't know if they were all successful: if so, we exit the loop
 
+            condor_file.write(')\n')
             condor_file.close()
             Hsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
             print(">>> Running --> " + Hsubmit_s)
@@ -508,7 +498,8 @@ for iters in range(options.iteration,nIterations):
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_FinalHadd", memory=2000, maxtime=5000) # this does not close the file
         
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
-        condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(FHadd_src_n)))        
+        condor_file.write('queue script from (\n')
+        condor_file.write('    {sf}\n)\n'.format(sf=os.path.abspath(FHadd_src_n)))
         condor_file.close()
         
         FHsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
@@ -550,10 +541,10 @@ If this is not the case, modify FillEpsilonPlot.cc
         if not os.path.isfile(hFoldFile):
             srcFold_n = srcPath + "/Fit/submit_justFoldSM_iter_" + str(iters) + ".sh"
             Fitsubmit_s = "{src}".format(src=srcFold_n)
-            print(">>> Running --> " + Fitsubmit_s)      
+            print(">>> Running --> " + Fitsubmit_s)
             FsubJobs = subprocess.Popen([Fitsubmit_s], stdout=subprocess.PIPE, shell=True);
             FoutJobs = FsubJobs.communicate()[0].decode()  # do I really need to communicate to stdout?
-            print(FoutJobs)        
+            print(FoutJobs)
             #os.system(Fitsubmit_s)    
 
     # N of Fit to send
@@ -583,6 +574,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     condor_file_name = condordir+'/condor_submit_fit.condor'
     condor_file = open(condor_file_name,'w')
     writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400) # this does not close the file
+    condor_file.write('queue script from (\n')
 
     # preparing submission of fit tasks (EB)
     if (not ONLYMERGEFIT): print('Submitting ' + str(nEB) + ' jobs to fit the Barrel')
@@ -592,7 +584,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         if (not ONLYMERGEFIT):
             print('About to EB fit:')
             print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName)            
-            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
+            condor_file.write('    {sf}\n'.format(sf=os.path.abspath(fit_src_n)))
 
     # preparing submission of fit tasks (EE)
     if (not ONLYMERGEFIT): print('Submitting ' + str(nEE) + ' jobs to fit the Endcap')
@@ -602,8 +594,9 @@ If this is not the case, modify FillEpsilonPlot.cc
         if (not ONLYMERGEFIT):
             print('About to EE fit:')
             print(eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
-            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit_src_n)))
+            condor_file.write('    {sf}\n'.format(sf=os.path.abspath(fit_src_n)))
 
+    condor_file.write(')\n')
     condor_file.close()
             
     if (not ONLYMERGEFIT ):
@@ -658,8 +651,10 @@ If this is not the case, modify FillEpsilonPlot.cc
         condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
         condor_file = open(condor_file_name,'w')
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400) # this does not close the file
+        condor_file.write('queue script from (\n')
         for fit in fit_src_toResub:
-            condor_file.write('arguments = {sf} \nqueue 1 \n\n'.format(sf=os.path.abspath(fit)))               
+            condor_file.write('    {sf}\n'.format(sf=os.path.abspath(fit)))
+        condor_file.write(')\n')
         condor_file.close()
 
         Fitsubmit_s = "condor_submit {cfn}".format(cfn=condor_file_name)
@@ -691,21 +686,17 @@ If this is not the case, modify FillEpsilonPlot.cc
        ListFinalHadd = ListFinalHaddEB
        ListFinalHadd = ListFinalHadd + ListFinalHaddEE
 
-    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + Add_path + '/' + NameTag + calibMapName
+    finalCalibMapFileName = eosPath + '/' + dirname + '/iter_' + str(iters) + "/" + Add_path + "/" + NameTag + calibMapName
+    gSystem.Load("libFWCoreFWLite.so")
+    #AutoLibraryLoader.enable()
+    FWLiteEnabler.enable()
     f = TFile.Open(finalCalibMapFileName, 'recreate')
     if not f:
         print("WARNING in calibJobHandlerCondor.py: file '" + finalCalibMapFileName +  "' not opened correctly. Quitting ...")
         quit()
     else:
         f.cd()
-    # cbasile [CMSSW_13_3_0_pre3]: 
-    #       solve the error >'TypeError: can only concatenate str (not "function") to str'
-    #       when declaring finalCalibMapFileName
-    #       move the libFWCoreFWLite lib. import here since it contains a function called dirname() apparently
-    from PhysicsTools.PythonAnalysis import *
-    gSystem.Load("libFWCoreFWLite.so")
-    #AutoLibraryLoader.enable()
-    FWLiteEnabler.enable()
+
     for n_repeat in range(2):
 
         # when isEoverEtrue is True we have two maps for the two photons (for each detector), otherwise we only have one 
@@ -836,11 +827,11 @@ If this is not the case, modify FillEpsilonPlot.cc
                  };")
                
         if(Barrel_or_Endcap=='ONLY_BARREL' or Barrel_or_Endcap=='ALL_PLEASE'):
-            s = EBStruct()
-            s1 = EB1Struct()
+            s = ROOT.EBStruct()
+            s1 = ROOT.EB1Struct()
         if(Barrel_or_Endcap=='ONLY_ENDCAP' or Barrel_or_Endcap=='ALL_PLEASE'):
-            t = EEStruct()
-            t1 = EE1Struct()
+            t = ROOT.EEStruct()
+            t1 = ROOT.EE1Struct()
 
         if f.IsOpen():
             f.cd()
@@ -928,7 +919,7 @@ If this is not the case, modify FillEpsilonPlot.cc
             print("file --> " + str(thisfile_s))
             thisfile_f = TFile.Open(thisfile_s)
             if not thisfile_f: 
-                print("Error in calibJobHandlerCondor.py --> file not found") 
+                print("Error in calibJobHandlerCondor.py --> file not found")
                 quit()
             #Taking Interval and EB or EE
             h_Int = thisfile_f.Get("hint")
@@ -944,31 +935,31 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEB_g2")
                else:
                    thisTree = thisfile_f.Get("calibEB")
-               thisTree.SetBranchAddress( 'rawId',cast['void*'](addressof(s1,'rawId')));
-               thisTree.SetBranchAddress( 'hashedIndex',cast['void*'](addressof(s1,'hashedIndex')));
-               thisTree.SetBranchAddress( 'ieta',cast['void*'](addressof(s1,'ieta')));
-               thisTree.SetBranchAddress( 'iphi',cast['void*'](addressof(s1,'iphi')));
-               thisTree.SetBranchAddress( 'iSM',cast['void*'](addressof(s1,'iSM')));
-               thisTree.SetBranchAddress( 'iMod',cast['void*'](addressof(s1,'iMod')));
-               thisTree.SetBranchAddress( 'iTT',cast['void*'](addressof(s1,'iTT')));
-               thisTree.SetBranchAddress( 'iTTeta',cast['void*'](addressof(s1,'iTTeta')));
-               thisTree.SetBranchAddress( 'iTTphi',cast['void*'](addressof(s1,'iTTphi')));
-               thisTree.SetBranchAddress( 'iter',cast['void*'](addressof(s1,'iter')));
-               thisTree.SetBranchAddress( 'coeff',cast['void*'](addressof(s1,'coeff')));
-               thisTree.SetBranchAddress( 'Chisqu',cast['void*'](addressof(s1,'Chisqu')));
-               thisTree.SetBranchAddress( 'Ndof',cast['void*'](addressof(s1,'Ndof')));
-               thisTree.SetBranchAddress( 'fit_mean',cast['void*'](addressof(s1,'fit_mean')));
-               thisTree.SetBranchAddress( 'fit_mean_err',cast['void*'](addressof(s1,'fit_mean_err')));
-               thisTree.SetBranchAddress( 'fit_sigma',cast['void*'](addressof(s1,'fit_sigma')));
+               thisTree.SetBranchAddress( 'rawId', cast['void*'](addressof(s1,'rawId')));
+               thisTree.SetBranchAddress( 'hashedIndex', cast['void*'](addressof(s1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'ieta', cast['void*'](addressof(s1,'ieta')));
+               thisTree.SetBranchAddress( 'iphi', cast['void*'](addressof(s1,'iphi')));
+               thisTree.SetBranchAddress( 'iSM', cast['void*'](addressof(s1,'iSM')));
+               thisTree.SetBranchAddress( 'iMod', cast['void*'](addressof(s1,'iMod')));
+               thisTree.SetBranchAddress( 'iTT', cast['void*'](addressof(s1,'iTT')));
+               thisTree.SetBranchAddress( 'iTTeta', cast['void*'](addressof(s1,'iTTeta')));
+               thisTree.SetBranchAddress( 'iTTphi', cast['void*'](addressof(s1,'iTTphi')));
+               thisTree.SetBranchAddress( 'iter', cast['void*'](addressof(s1,'iter')));
+               thisTree.SetBranchAddress( 'coeff', cast['void*'](addressof(s1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu', cast['void*'](addressof(s1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof', cast['void*'](addressof(s1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean', cast['void*'](addressof(s1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err', cast['void*'](addressof(s1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma', cast['void*'](addressof(s1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',cast['void*'](addressof(s1,'Signal')));
-                   thisTree.SetBranchAddress( 'Backgr',cast['void*'](addressof(s1,'Backgr')));
-                   thisTree.SetBranchAddress( 'fit_Snorm',cast['void*'](addressof(s1,'fit_Snorm')));
-                   thisTree.SetBranchAddress( 'fit_b0',cast['void*'](addressof(s1,'fit_b0')));
-                   thisTree.SetBranchAddress( 'fit_b1',cast['void*'](addressof(s1,'fit_b1')));
-                   thisTree.SetBranchAddress( 'fit_b2',cast['void*'](addressof(s1,'fit_b2')));
-                   thisTree.SetBranchAddress( 'fit_b3',cast['void*'](addressof(s1,'fit_b3')));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',cast['void*'](addressof(s1,'fit_Bnorm')));
+                   thisTree.SetBranchAddress( 'Signal', cast['void*'](addressof(s1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr', cast['void*'](addressof(s1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm', cast['void*'](addressof(s1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0', cast['void*'](addressof(s1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1', cast['void*'](addressof(s1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2', cast['void*'](addressof(s1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3', cast['void*'](addressof(s1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm', cast['void*'](addressof(s1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
@@ -1003,30 +994,30 @@ If this is not the case, modify FillEpsilonPlot.cc
                    thisTree = thisfile_f.Get("calibEE_g2")
                else:
                    thisTree = thisfile_f.Get("calibEE")
-               thisTree.SetBranchAddress( 'ix',cast['void*'](addressof(t1,'ix')));
-               thisTree.SetBranchAddress( 'iy',cast['void*'](addressof(t1,'iy')));
-               thisTree.SetBranchAddress( 'zside',cast['void*'](addressof(t1,'zside')));
-               thisTree.SetBranchAddress( 'sc',cast['void*'](addressof(t1,'sc')));
-               thisTree.SetBranchAddress( 'isc',cast['void*'](addressof(t1,'isc')));
-               thisTree.SetBranchAddress( 'ic',cast['void*'](addressof(t1,'ic')));
-               thisTree.SetBranchAddress( 'iquadrant',cast['void*'](addressof(t1,'iquadrant')));
-               thisTree.SetBranchAddress( 'hashedIndex',cast['void*'](addressof(t1,'hashedIndex')));
-               thisTree.SetBranchAddress( 'iter',cast['void*'](addressof(t1,'iter')));
-               thisTree.SetBranchAddress( 'coeff',cast['void*'](addressof(t1,'coeff')));
-               thisTree.SetBranchAddress( 'Chisqu',cast['void*'](addressof(t1,'Chisqu')));
-               thisTree.SetBranchAddress( 'Ndof',cast['void*'](addressof(t1,'Ndof')));
-               thisTree.SetBranchAddress( 'fit_mean',cast['void*'](addressof(t1,'fit_mean')));
-               thisTree.SetBranchAddress( 'fit_mean_err',cast['void*'](addressof(t1,'fit_mean_err')));
-               thisTree.SetBranchAddress( 'fit_sigma',cast['void*'](addressof(t1,'fit_sigma')));
+               thisTree.SetBranchAddress( 'ix', cast['void*'](addressof(t1,'ix')));
+               thisTree.SetBranchAddress( 'iy', cast['void*'](addressof(t1,'iy')));
+               thisTree.SetBranchAddress( 'zside', cast['void*'](addressof(t1,'zside')));
+               thisTree.SetBranchAddress( 'sc', cast['void*'](addressof(t1,'sc')));
+               thisTree.SetBranchAddress( 'isc', cast['void*'](addressof(t1,'isc')));
+               thisTree.SetBranchAddress( 'ic', cast['void*'](addressof(t1,'ic')));
+               thisTree.SetBranchAddress( 'iquadrant', cast['void*'](addressof(t1,'iquadrant')));
+               thisTree.SetBranchAddress( 'hashedIndex', cast['void*'](addressof(t1,'hashedIndex')));
+               thisTree.SetBranchAddress( 'iter', cast['void*'](addressof(t1,'iter')));
+               thisTree.SetBranchAddress( 'coeff', cast['void*'](addressof(t1,'coeff')));
+               thisTree.SetBranchAddress( 'Chisqu', cast['void*'](addressof(t1,'Chisqu')));
+               thisTree.SetBranchAddress( 'Ndof', cast['void*'](addressof(t1,'Ndof')));
+               thisTree.SetBranchAddress( 'fit_mean', cast['void*'](addressof(t1,'fit_mean')));
+               thisTree.SetBranchAddress( 'fit_mean_err', cast['void*'](addressof(t1,'fit_mean_err')));
+               thisTree.SetBranchAddress( 'fit_sigma', cast['void*'](addressof(t1,'fit_sigma')));
                if not isEoverEtrue:
-                   thisTree.SetBranchAddress( 'Signal',cast['void*'](addressof(t1,'Signal')));
-                   thisTree.SetBranchAddress( 'Backgr',cast['void*'](addressof(t1,'Backgr')));
-                   thisTree.SetBranchAddress( 'fit_Snorm',cast['void*'](addressof(t1,'fit_Snorm')));
-                   thisTree.SetBranchAddress( 'fit_b0',cast['void*'](addressof(t1,'fit_b0')));
-                   thisTree.SetBranchAddress( 'fit_b1',cast['void*'](addressof(t1,'fit_b1')));
-                   thisTree.SetBranchAddress( 'fit_b2',cast['void*'](addressof(t1,'fit_b2')));
-                   thisTree.SetBranchAddress( 'fit_b3',cast['void*'](addressof(t1,'fit_b3')));
-                   thisTree.SetBranchAddress( 'fit_Bnorm',cast['void*'](addressof(t1,'fit_Bnorm')));
+                   thisTree.SetBranchAddress( 'Signal', cast['void*'](addressof(t1,'Signal')));
+                   thisTree.SetBranchAddress( 'Backgr', cast['void*'](addressof(t1,'Backgr')));
+                   thisTree.SetBranchAddress( 'fit_Snorm', cast['void*'](addressof(t1,'fit_Snorm')));
+                   thisTree.SetBranchAddress( 'fit_b0', cast['void*'](addressof(t1,'fit_b0')));
+                   thisTree.SetBranchAddress( 'fit_b1', cast['void*'](addressof(t1,'fit_b1')));
+                   thisTree.SetBranchAddress( 'fit_b2', cast['void*'](addressof(t1,'fit_b2')));
+                   thisTree.SetBranchAddress( 'fit_b3', cast['void*'](addressof(t1,'fit_b3')));
+                   thisTree.SetBranchAddress( 'fit_Bnorm', cast['void*'](addressof(t1,'fit_Bnorm')));
                for ntre in range(thisTree.GetEntries()):
                    thisTree.GetEntry(ntre);
                    if (ntre>=init and ntre<=finit):
@@ -1074,14 +1065,14 @@ If this is not the case, modify FillEpsilonPlot.cc
                        # and the map is basically in a single SM (but repreated in all the others as well)
                        if nFitB < 1700:
                            for ism in range(1,37):
-                               myRechit = EBDetId(ism, nFitB+1, 1)
+                               myRechit = ROOT.EBDetId(ism, nFitB+1, 1)
                                bin_x = myRechit.ieta()+MaxEta+1
                                bin_y = myRechit.iphi()
                                value = thisHistoEB.GetBinContent(bin_x,bin_y)
                                calibMap_EB.SetBinContent(bin_x,bin_y,value)
                    else:
                        if nFitB < 61200:
-                           myRechit = EBDetId( EBDetId.detIdFromDenseIndex(nFitB) )
+                           myRechit = ROOT.EBDetId( ROOT.EBDetId.detIdFromDenseIndex(nFitB) )
                            bin_x = myRechit.ieta()+MaxEta+1
                            bin_y = myRechit.iphi()
                            value = thisHistoEB.GetBinContent(bin_x,bin_y)
@@ -1091,7 +1082,7 @@ If this is not the case, modify FillEpsilonPlot.cc
                Fin1 = int(finit+1)
                for nFitE in range(Init1,Fin1):
                    if nFitE < 14648:
-                      myRechitE = EEDetId( EEDetId.detIdFromDenseIndex(nFitE) )
+                      myRechitE = ROOT.EEDetId( ROOT.EEDetId.detIdFromDenseIndex(nFitE) )
                       if myRechitE.zside() < 0 :
                          value = thisHistoEEm.GetBinContent(myRechitE.ix(),myRechitE.iy())
                          calibMap_EEm.SetBinContent(myRechitE.ix(),myRechitE.iy(),value)

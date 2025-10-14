@@ -1,4 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-demo = cms.EDProducer('DummyRechitDigis'
+
+GTconditions = cms.VPSet(
 )

@@ -17,7 +17,6 @@ CalibMapEtaRing    = "CalibCode/FillEpsilonPlot/data/calibMap.root"
 FixGhostDigis      = False   # this parameter is useful only for 2015. In 2016 stream the ghosts are no more there, but this is not harmful (can stay True)
 
 #PATH
-#eosPath = '/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run3/emanuele'
 eosPath = '/eos/cms/store/group/dpg_ecal/comm_ecal/pi0/'
 #
 prefixSourceFile = 'root://cms-xrd-global.cern.ch/'  # last / is left on purpose; tipically it can be '', but if source files are not on eos you need this prefix in PoolSource
@@ -80,8 +79,6 @@ if justCreateRecHits:
    ijobmax = 1 # when recreating rechits from digis, keep same correspondance of files 
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
-useFit_RooMinuit = False if isEoverEtrue else True # if True the fit is done with RooMinuit, otherwise with RooMinimizer. The former is obsolete, but the latter can lead to a CMSSW error which makes the job fail, creating large white strips in the map. This happens often because the fit sees a negative PDF at the border of the fit range, RooFit will try to adjust the fit range to avoid the unphysical region, but after few trials CMSSW throws an error: without CMSSW the fit should actually be able to try several thousands of times before failing
-# However, at least from CMSSW_10_2_X, for EoverEtrue with fits using RooCMSshape+double-Crystal-Ball the fits are much better, so let's use RooMinimizer in that case
 Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = 'EoverEtrue' # Option: 'EoverEtrue' , 'No'
 copyCCfileToTMP = False  # copy file from eos to /tmp/, should make jobs faster

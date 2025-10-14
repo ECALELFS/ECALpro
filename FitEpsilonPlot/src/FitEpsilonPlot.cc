@@ -38,11 +38,6 @@ Implementation:
 #include "TStyle.h"
 
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
 #include "PhysicsTools/TagAndProbe/interface/RooCMSShape.h"
@@ -63,7 +58,6 @@ Implementation:
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooFitLegacy/RooMinuit.h"
 #include "RooMinimizer.h"
 #include "RooAbsReal.h" 
 #include "RooAbsCategory.h" 
@@ -115,13 +109,11 @@ FitEpsilonPlot::FitEpsilonPlot(const edm::ParameterSet& iConfig)
     Barrel_orEndcap_ = iConfig.getUntrackedParameter<std::string>("Barrel_orEndcap");
     useMassInsteadOfEpsilon_ = iConfig.getUntrackedParameter<bool>("useMassInsteadOfEpsilon",true);
     isEoverEtrue_ = iConfig.getUntrackedParameter<bool>("isEoverEtrue",false);
-    useFit_RooMinuit_ = iConfig.getUntrackedParameter<bool>("useFit_RooMinuit",false);
     foldInSuperModule_ = iConfig.getUntrackedParameter<bool>("foldInSuperModule",false);
     makeFoldedHistograms_ = iConfig.getUntrackedParameter<bool>("makeFoldedHistograms",false);
 
     // apparently for E/Etrue the fits are much better (I tried RooCMSShape + double-Crystal-Ball)
     // some tuning might be required, though
-    // if (isEoverEtrue_) useFit_RooMinuit_ = false;
     // eventually I decided to use FitTo method for E/Etrue
 
     //foldInSuperModule_ = true;
@@ -2172,57 +2164,31 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     if(ngaus==1)      model = &model1;
     else if(ngaus==2) model = &model2;
 
-
-    RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
-    //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
+    std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
 
     RooFitResult* res = nullptr;
-    RooMinuit m(nll);
-    RooMinimizer mfit(nll);
+    RooMinimizer mfit(*nll);
 
-    if (useFit_RooMinuit_) {
+    // IMPORTANT, READ CAREFULLY: sometimes this method fails.
+    // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
+    // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
+    // the job crashes, and this seems to be a feature of cmssw, not of RooFit
+    // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
+    // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
+    // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
+    // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
+    mfit.setPrintLevel(-1);
+    mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
+    //cout << "FIT_EPSILON: Minimize" << endl;
+    mfit.minimize("Minuit2","minimize");
+    //cout << "FIT_EPSILON: Minimize hesse " << endl;
+    mfit.minimize("Minuit2","hesse");
+    //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
+    mfit.migrad();
+    mfit.hesse();  // sometimes it fails, caution
+    mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+    res = mfit.save() ;
 
-      // // original fit
-      // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
-      // // better to use RooMinimizer, but please read caveat below
-      m.setVerbose(kFALSE);
-      //m.setVerbose(kTRUE);
-      m.migrad();
-      m.hesse();  // sometimes it fails, caution
-      res = m.save() ;
-
-    } else {
-
-      // alternative fit (results are pretty much the same)
-      // IMPORTANT, READ CAREFULLY: sometimes this method fails.
-      // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
-      // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
-      // the job crashes, and this seems to be a feature of cmssw, not of RooFit
-      // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
-      // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
-      // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
-      // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
-      // The previous method using RooMinuit seems to be more robust, so I suggest we should use that one even though it is said to be obsolete
-      mfit.setVerbose(kFALSE);
-      mfit.setPrintLevel(-1);
-      mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
-      //cout << "FIT_EPSILON: Minimize" << endl;
-      mfit.minimize("Minuit2","minimize");
-      //cout << "FIT_EPSILON: Minimize hesse " << endl;
-      mfit.minimize("Minuit2","hesse");
-      //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
-      mfit.minos(RooArgSet(Nsig,Nbkg,mean));
-      res = mfit.save() ;
-
-    }
-
-    // cbasile [CMSSW_13_3_0_pre3] : with ROOT v6.24 and earlyer 
-    //                                 RooChi2Var (const char *name, const char *title, RooAbsPdf &pdf, RooDataHist &data, Bool_t extended=kFALSE, ...)
-    //                               with ROOT v6.26 
-    //                                 RooChi2Var (const char *name, const char *title, RooAbsPdf &pdf, RooDataHist &data, RooAbsTestStatistic::Configuration const &cfg=RooAbsTestStatistic::Configuration{}, bool extended=false, RooDataHist::ErrorType=RooDataHist::SumW2) 
-    //                                 > include RooAbsTestStatistic with deafult parameters (check https://root.cern/doc/v626/RooAbsTestStatistic_8h_source.html)
-   
-    RooChi2Var chi2("chi2","chi2 var",*model,dh, RooAbsTestStatistic::Configuration{}, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
     int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) +1 - res->floatParsFinal().getSize(); 
@@ -2551,7 +2517,7 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
   // some flags for the fit
   // using the double Crystal Ball seems the better choice, but might require some parameters tuning
-  bool simpleFitTo = true; // will use neither RooMinuit nor RooMinimizer, but rather simple x.fitTo()
+  bool simpleFitTo = true; // will not use RooMinimizer, but rather simple x.fitTo()
   bool noFitBkg = isSecondGenPhoton ? false : true;  // if true, use only signal model for the fit
   bool useRooCMSShapeAsBkg = isSecondGenPhoton ? false : false;
   bool useCBtoFit = isSecondGenPhoton ? true : false;  // use Crystal Ball (tail orientation depends on the parameter alpha given below)
@@ -3009,9 +2975,8 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   // cout << "===============================================" << endl;
   // cout << "===============================================" << endl;
 
-  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(kTRUE), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-  //RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-  //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
+  //std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true), RooFit::Range(xlo, xhi)};
+  //std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(false), RooFit::Range(xlo, xhi)};
 
   RooFitResult* res = nullptr;
 
@@ -3026,50 +2991,31 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
     // else                 res = gaus.fitTo(dh,RooFit::Save(),RooFit::Range(xlo, xhi),RooFit::SumW2Error(kTRUE));
   } else {
 
-    // warning: I removed definition of nll and m and mfit from outside here, because I don't think I want to use them
+    // warning: I removed definition of nll and mfit from outside here, because I don't think I want to use them
     // in case I do, this might crash, because once res is returned, it might be destroyed outside this scope
-    if (useFit_RooMinuit_) {
-
-      RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-      RooMinuit m(nll);
-
-      // // original fit
-      // // obsolete: see here --> https://root-forum.cern.ch/t/roominuit-and-roominimizer-difference/18230/8
-      // // better to use RooMinimizer, but please read caveat below
-      m.setVerbose(kFALSE);
-      //m.setVerbose(kTRUE);
-      m.migrad();
-      m.hesse();  // sometimes it fails, caution
-      res = m.save() ;
-
-    } else {
-
-      RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-      RooMinimizer mfit(nll);
-      // alternative fit (results are pretty much the same)
-      // IMPORTANT, READ CAREFULLY: sometimes this method fails.
-      // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
-      // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
-      // the job crashes, and this seems to be a feature of cmssw, not of RooFit
-      // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
-      // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
-      // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
-      // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
-      // The previous method using RooMinuit seems to be more robust, so I suggest we should use that one even though it is said to be obsolete
-      mfit.setVerbose(kFALSE);
-      mfit.setPrintLevel(-1);
-      mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
-      //cout << "FIT_EPSILON: Minimize" << endl;
-      mfit.minimize("Minuit2","minimize");
-      //cout << "FIT_EPSILON: Minimize hesse " << endl;
-      mfit.minimize("Minuit2","hesse");
-      //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
-      //mfit.minos(RooArgSet(Nsig,Nbkg,mean));
-      //mfit.minos(RooArgSet(mean));
-      res = mfit.save() ;
-
-    }
-
+    std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(false), RooFit::Range(xlo,xhi))};
+    RooMinimizer mfit(*nll);
+    // IMPORTANT, READ CAREFULLY: sometimes this method fails.
+    // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
+    // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 
+    // the job crashes, and this seems to be a feature of cmssw, not of RooFit
+    // The reason why the pdf gets negative could be due to the fact that, regardless the chosen fit range given by xlo and xhi, the actual fit range goes from the 
+    // lower edge of the leftmost bin containing xlo to the upper edge of the rightmost one containing xhi, but then the fit tries to "pass" across the bin centers
+    // Therefore, for a sharply rising (or falling) distribution, the pdf can become negative
+    // The consequence is that there are large areas in the calibration map of related 2D plots that are white (because the fit there was not done succesfully)
+    mfit.setVerbose(kFALSE);
+    mfit.setPrintLevel(-1);
+    mfit.setStrategy(2);  // 0,1,2:  MINUIT strategies for dealing most efficiently with fast FCNs (0), expensive FCNs (2) and 'intermediate' FCNs (1)
+    //cout << "FIT_EPSILON: Minimize" << endl;
+    mfit.minimize("Minuit2","minimize");
+    //cout << "FIT_EPSILON: Minimize hesse " << endl;
+    mfit.minimize("Minuit2","hesse");
+    mfit.migrad();
+    mfit.hesse();  // sometimes it fails, caution
+    //cout<<"FIT_EPSILON: Estimate minos errors for all parameters"<<endl;
+    //mfit.minos(RooArgSet(Nsig,Nbkg,mean));
+    //mfit.minos(RooArgSet(mean));
+    res = mfit.save() ;
   }
 
   // cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
@@ -3083,8 +3029,6 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
   //compute S/B and chi2
   //x.setRange("sobRange",mean.getVal() - 2.0*sigma.getVal(), mean.getVal() + 2.*sigma.getVal());
   x.setRange("sobRange",xlo,xhi);
-  //RooChi2Var chi2("chi2","chi2 var",*model,dh, true,"sobRange");
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, RooAbsTestStatistic::Configuration{"sobRange"}, false);
   // cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" << endl;
   RooAbsReal* integralSig = gaus.createIntegral(x,NormSet(x),Range("sobRange"));
   // cout << "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY" << endl;

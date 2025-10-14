@@ -51,7 +51,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
@@ -62,7 +61,7 @@
 using namespace std;
 using namespace RooFit;
 
-static const string PhpToCopy = "/afs/cern.ch/user/m/mciprian/www/index.php";
+static const string PhpToCopy = "/eos/user/t/treis/www/cms/ecal_dpg/index.php";
 
 //==========================================================
 
@@ -185,14 +184,18 @@ void drawRooPlotFromFile(const string& inputDir = "",
   canvas->SetTickx(1);
   canvas->SetTicky(1);
   canvas->cd();
-  // canvas->SetBottomMargin(0.3);
+  canvas->SetBottomMargin(0.1);
   canvas->SetRightMargin(0.06);
-  canvas->SetLeftMargin(0.18);
+  canvas->SetLeftMargin(0.16);
+
+  float textsize = 0.6 * canvas->GetTopMargin();
 
   RooHist* data = xframe->getHist("data");
   Double_t maxY = 1.2 * data->getYAxisMax();
+  std::string ytitle = Form("Number of #gamma#gamma pairs / %.3f GeV", data->getFitRangeBinW());
+  xframe->setDrawOptions("data", "P");
   xframe->GetYaxis()->SetRangeUser(0,maxY);
-  xframe->GetYaxis()->SetTitle("Number of #gamma#gamma pairs");
+  xframe->GetYaxis()->SetTitle(ytitle.c_str());
   xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV)");
 
   // to add a dummy legend
@@ -222,10 +225,10 @@ void drawRooPlotFromFile(const string& inputDir = "",
   h4->SetLineWidth(2);
   h4->SetLineStyle(2);
 
-  xframe->GetXaxis()->SetLabelSize(0.04);
-  xframe->GetXaxis()->SetTitleSize(0.05);
-  xframe->GetYaxis()->SetTitleOffset(1.45);
-  xframe->GetYaxis()->SetTitleSize(0.055);
+  xframe->GetXaxis()->SetLabelSize(textsize * 0.9);
+  xframe->GetXaxis()->SetTitleSize(textsize);
+  xframe->GetYaxis()->SetTitleOffset(1.9);
+  xframe->GetYaxis()->SetTitleSize(textsize);
   xframe->Draw();
 
   TLegend *leg = NULL;
@@ -240,6 +243,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   }
   leg->SetFillColor(0);
   leg->SetFillStyle(0);
+  leg->SetTextSize(textsize);
   leg->SetBorderSize(0);
   leg->AddEntry(h1,"data","PLE");
   //leg->AddEntry(h2,"S + B","LF");
@@ -272,7 +276,7 @@ void drawRooPlotFromFile(const string& inputDir = "",
   TLatex lat;
   std::string line = "";
   lat.SetNDC();
-  lat.SetTextSize(0.045);
+  lat.SetTextSize(textsize);
   lat.SetTextFont(42);
   lat.SetTextColor(1);
   float xmin(0.22), yhi(0.85), ypass(0.05);
@@ -470,8 +474,8 @@ void manageRooPlotFromFile(const string& dirName = "AlCaEta_2016_ULrereco",
 
   // string outputDirEB = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/iter_" + iter + "/fitResPlots/Barrel/";
   // string outputDirEE = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/iter_" + iter + "/fitResPlots/Endcap/";
-  string outputDirEB = "/afs/cern.ch/user/m/mciprian/www/pi0calib/" + outDirName + "/" + dirName + "/" + subdirTag + "/iter_" + iter + "/fitResPlots/Barrel/";
-  string outputDirEE = "/afs/cern.ch/user/m/mciprian/www/pi0calib/" + outDirName + "/" + dirName + "/" + subdirTag + "/iter_" + iter + "/fitResPlots/Endcap/";
+  string outputDirEB = "/eos/user/t/treis/www/cms/ecal_dpg/pi0calib/" + outDirName + "/" + dirName + "/" + subdirTag + "/iter_" + iter + "/fitResPlots/Barrel/";
+  string outputDirEE = "/eos/user/t/treis/www/cms/ecal_dpg/pi0calib/" + outDirName + "/" + dirName + "/" + subdirTag + "/iter_" + iter + "/fitResPlots/Endcap/";
 
   if (skip_EB1_EE2 != 1) createPlotDirAndCopyPhp(outputDirEB);
   if (skip_EB1_EE2 != 2) createPlotDirAndCopyPhp(outputDirEE);
