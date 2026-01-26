@@ -2168,11 +2168,10 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     else if(ngaus==2) model = &model2;
 
 
-    RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
-    //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same
+    RooAbsReal * nll = model->createNLL(dh, RooFit::Extended(true));
 
     RooFitResult* res = nullptr;
-    RooMinimizer mfit(nll);
+    RooMinimizer mfit(*nll);
 
     // IMPORTANT, READ CAREFULLY: sometimes this method fails.
     // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
@@ -3000,8 +2999,9 @@ Pi0FitResult FitEpsilonPlot::FitEoverEtruePeakRooFit(TH1F* h1, Bool_t isSecondGe
 
     // warning: I removed definition of nll and mfit from outside here, because I don't think I want to use them
     // in case I do, this might crash, because once res is returned, it might be destroyed outside this scope
-    RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
-    RooMinimizer mfit(nll);
+    RooAbsReal * nll = model->createNLL(dh,RooFit::Extended(0), RooFit::SumW2Error(kTRUE), RooFit::Range(xlo,xhi));
+
+    RooMinimizer mfit(*nll);
     // IMPORTANT, READ CAREFULLY: sometimes this method fails.
     // This happens because at the boundaries of the fit range the pdf goea slightly below 0 (so it is negative). The fitter tries to cope wth it and should tipically
     // manage to converge. However, I noticed that after few attemps (even though the default number of attemps should be several hundreds or thousands of times) 

@@ -7,12 +7,12 @@
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "Geometry/CaloTopology/interface/CaloTopology.h"
-#include "Geometry/Records/interface/CaloGeometryRecord.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloCluster.h"
 
@@ -29,6 +29,10 @@
 #include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
 #include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 #include "CalibCode/FillEpsilonPlot/interface/JSON.h"
+// to get L1 info
+#include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
+//L1                                                                                                                                         
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
 #include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
