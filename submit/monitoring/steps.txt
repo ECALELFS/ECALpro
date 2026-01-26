@@ -1,0 +1,5 @@
+./steerReconstructPi0.sh
+collectEventInTimeFrame.py --inFile rootfiles/*root --outFile hist_pi0mass.root
+root -l -b -q fitMass.C\(\"hist_pi0mass\"\,true,true\) ###input root file name, isCalibLaser, isAppendToExistingTxtFile
+root -l -b -q finalTimeVariationPlot.C\(\"listFileForTimeVariation.txt\"\) ### needs listFileForTimeVariation.txt
+
