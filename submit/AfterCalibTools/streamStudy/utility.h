@@ -69,7 +69,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 #include "RooMinimizer.h"
 
 using namespace RooFit;
@@ -255,16 +254,7 @@ Pi0FitResult drawHisto(TH1* hist = NULL,
   RooNLLVar nll("nll","log likelihood var",*model,dh, RooFit::Extended(true));
   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                      
 
-  // FIT 1
-  // copied from ECALpro
-  // RooMinuit m(nll);
-  // m.setVerbose(kFALSE);
-  // //m.setVerbose(kTRUE);                                                                                                       
-  // m.migrad();
-  // //m.hesse();                                                                                                                          
-  // RooFitResult* res = m.save() ;
-
-  // FIT2
+  // FIT
   // copied from Raffaele Gerosa
   RooMinimizer mfit(nll);
   mfit.setVerbose(kFALSE);
@@ -454,15 +444,7 @@ Pi0FitResult fitMassSingleHisto(TH1* hist) {
   //RooAbsReal * nll = model->createNLL(dh); //suggetsed way, taht should be the same                                                                                     
 
 
-  // FIT 1
-  // copied from ECALpro
-  // RooMinuit m(nll);
-  // m.setVerbose(kFALSE);
-  // //m.setVerbose(kTRUE);                                                    
-  // m.migrad();
-  // //m.hesse();                                                                 
-  // RooFitResult* res = m.save() ;
-  // FIT2
+  // FIT
   // copied from Raffaele Gerosa
   RooMinimizer mfit(nll);
   mfit.setVerbose(kFALSE);

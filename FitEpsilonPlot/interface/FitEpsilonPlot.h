@@ -11,7 +11,7 @@
 #include "RooAbsCategory.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -77,7 +77,7 @@ class My_double_CB : public RooAbsPdf {
 
 /////////////////////////////
 
-class FitEpsilonPlot : public edm::EDAnalyzer {
+class FitEpsilonPlot : public edm::one::EDAnalyzer<> {
    public:
       enum FitMode{ Eta=0, Pt, GausPol3, GausEndpoint, Pi0EB, Pi0EE, EtaEB };
       explicit FitEpsilonPlot(const edm::ParameterSet&);
@@ -137,7 +137,6 @@ class FitEpsilonPlot : public edm::EDAnalyzer {
       std::string calibMapPath_; 
       std::string Barrel_orEndcap_; 
       std::string fitFileName_;
-      bool useFit_RooMinuit_;
 
       std::string EEoEB_; 
       bool isNot_2010_; 
