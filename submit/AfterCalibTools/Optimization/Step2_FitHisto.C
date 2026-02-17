@@ -197,7 +197,6 @@ vector<float> FitFit(TH1D* h, double xmin, double xmax, int events, int Name, FI
 
   RooFitResult* res = m.save() ;
 
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, Extended());
   int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
   delete res;
   x.setRange("sobRange",mean.getVal()-2.*sigma.getVal(), mean.getVal()+2.*sigma.getVal());

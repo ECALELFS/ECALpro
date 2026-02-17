@@ -67,8 +67,6 @@
 #include "RooArgList.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooMinimizer.h"
 
 using namespace RooFit;
@@ -271,8 +269,6 @@ Pi0FitResult drawHisto(TH1* hist = NULL,
   cout << "print fit result" << endl;
   res->Print();
 
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
-
   int nFitParam = res->floatParsFinal().getSize();
   // FIXME: must use bins in the fit range
   int ndof = hist->GetNbinsX() - nFitParam; // nBins - floating parameters in model after fit
@@ -458,8 +454,6 @@ Pi0FitResult fitMassSingleHisto(TH1* hist) {
 
   cout << "print fit result" << endl;
   res->Print();
-
-  RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
 
   int nFitParam = res->floatParsFinal().getSize();
   int ndof = hist->GetNbinsX() - nFitParam; // nBins - floating parameters in model after fit

@@ -56,12 +56,9 @@ Implementation:
 #include "RooArgList.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooMinimizer.h"
 #include "RooAbsReal.h" 
 #include "RooAbsCategory.h" 
-#include "RooAbsTestStatistic.h" 
 
 #include "CalibCode/FitEpsilonPlot/interface/FitEpsilonPlot.h"
 
