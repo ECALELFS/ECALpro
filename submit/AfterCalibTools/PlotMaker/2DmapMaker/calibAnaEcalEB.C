@@ -194,7 +194,6 @@ void calibAnaEcalEB::Loop()
       sigma->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[6],(Double_t)fit_sigma));
       chisquare->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[7],(Double_t)Chisqu));
       resolution->Fill((Double_t)iphi,(Double_t)ieta, max(th2dMinZaxisVector[8],resolution_fromFit));
-
       chisquare_vs_etaring->Fill((Double_t)ieta,(Double_t)Chisqu * (Double_t)Ndof);
 
       // 0.0174532925 = pi/180; in the barrel eta is simply proportional to ieta

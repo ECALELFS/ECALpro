@@ -21,7 +21,7 @@ outDir="./"
 if [[ "X${username}" == "X" ]]; then
     username="mciprian"
 fi
-  
+
 if [ "${drawonly}" != "0" ]; then
     echo ""
     echo "Running MultiplyIC_txt_root.py"

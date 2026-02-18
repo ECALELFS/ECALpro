@@ -1,7 +1,7 @@
 #!/bin/bash                                                                        
                                                                                   
-iter_ini=0
-iter_fin=0  # it is included in sequence below                                   
+iter_ini=4
+iter_fin=4  # it is included in sequence below                                   
 
 eosPrefix="root://eoscms//eos/cms"                                        
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"                             
