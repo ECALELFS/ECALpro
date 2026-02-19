@@ -33,6 +33,8 @@ Implementation:
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
@@ -73,7 +75,6 @@ Implementation:
 #include "CondFormats/EcalObjects/interface/EcalChannelStatus.h"
 #include "CondFormats/DataRecord/interface/EcalChannelStatusRcd.h"
 //Geom
-#include "Geometry/Records/interface/CaloGeometryRecord.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
 #include "RecoEcal/EgammaCoreTools/interface/PositionCalc.h"
 #include "Geometry/CaloGeometry/interface/TruncatedPyramid.h"
@@ -89,9 +90,6 @@ Implementation:
 // for L1
 #include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "DataFormats/L1TGlobal/interface/GlobalAlgBlk.h" // included to get L1 info
-#include "CondFormats/DataRecord/interface/L1TUtmTriggerMenuRcd.h"
-#include "CondFormats/L1TObjects/interface/L1TUtmAlgorithm.h"
-#include "CondFormats/L1TObjects/interface/L1TUtmTriggerMenu.h"
 
 using std::cout;
 using std::endl;
@@ -107,11 +105,6 @@ using std::max;
 #include "TLorentzVector.h" // slow
 #include "DataFormats/Math/interface/Vector3D.h"  // to use math::XYZVector
 #include "DataFormats/Math/interface/deltaR.h"
-
-#include "CoralBase/TimeStamp.h"
-#include "CondFormats/Common/interface/Time.h"
-#include "CondFormats/Common/interface/TimeConversions.h"
-
 
 #define DR_FOR_UNMERGED_GEN_PHOTONS 0.025 // if two gen photons are closer than this value, they will not be used for the gen-reco matching, because they are too close to be distinguished by the reco clustering algorithm (0.0175 in Dphi or Deta is ~1 ECAL cystal and the seeds must be farther than 1 crystal also on the diagonal)
 
@@ -154,6 +147,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     EBRecHitCollectionToken_           = consumes<EBRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EBRecHitCollectionTag"));
     EERecHitCollectionToken_           = consumes<EERecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("EERecHitCollectionTag"));
     ESRecHitCollectionToken_           = consumes<ESRecHitCollection>(iConfig.getUntrackedParameter<edm::InputTag>("ESRecHitCollectionTag"));
+
     HLTResults_                        = iConfig.getUntrackedParameter<bool>("HLTResults",false);
     HLTResultsNameEB_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEB","AlCa_EcalPi0EB");
     HLTResultsNameEE_                  = iConfig.getUntrackedParameter<std::string>("HLTResultsNameEE","AlCa_EcalPi0EE");
@@ -437,6 +431,7 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
     pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
     pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
+
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsIetaEB->GetXaxis()->SetTitle("i#eta");
     pi0MassVsIetaEB->GetYaxis()->SetTitle("#pi^{0} mass");
@@ -726,7 +721,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   // std::cout<<"Event: "<<iEvent.id().event()<<" Run "<<iEvent.id().run()<<" LS "<<iEvent.id().luminosityBlock()<<endl;
   //JSON
   if ( JSONfile_!="" && !myjson->isGoodLS(iEvent.id().run(),iEvent.id().luminosityBlock()) ) return;
-
 
   myEvent = iEvent.id().event();
   myLumiBlock = iEvent.id().luminosityBlock();
@@ -1134,7 +1128,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   iEvent.getByToken ( EERecHitCollectionToken_, eeHandle);
   iEvent.getByToken ( ESRecHitCollectionToken_, esHandle);
 
-
   //Internal Geometry
   geometry = &iSetup.getData(geoToken_);
   estopology_ = new EcalPreshowerTopology();
@@ -1198,11 +1191,11 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //cout << "I'm after chStatus_ = iSetup.getHandle(chStatusToken_); " << endl;
 
   if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
-    fillEBClusters(ebclusters, iEvent, channelStatus);
+    fillEBClusters(ebclusters, iEvent);
   }
   //cout << "I'm after fillEBClusters(ebclusters, iEvent) " << endl;
   if ( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) { 
-    fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);
+    fillEEClusters(eseeclusters, eseeclusters_tot, iEvent);
   }
   // std::cout << "ebclusters.size() = " << ebclusters.size() << std::endl;
   // std::cout << "eseeclusters.size() = " << eseeclusters.size() << std::endl;
@@ -1265,7 +1258,7 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
 
 /*===============================================================*/
-void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus)
+void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent)
   /*===============================================================*/
 {
 
@@ -1279,8 +1272,6 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
   // sort by energy and find the seeds
   for(EBRecHitCollection::const_iterator itb= ebHandle->begin(); itb != ebHandle->end(); ++itb, ++dc) 
   {
-
-    //cout << "Check EBRecHitCollection in FillEpsilonPlot::fillEBClusters" << endl;
     EBDetId tmp_id(itb->id());
     if(itb->energy() > EB_Seed_E_)  ebseeds.push_back( *itb );
   }
@@ -1327,7 +1318,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	if(ixtal->energy()>0.) posTotalEnergy += ixtal->energy(); // use only pos energy for position
     } // loop over xtals in the region
     ///debug
-    //cout << "seed #" << seed_c << "RecHitsInWindow.size() = " << RecHitsInWindow.size() << endl;
+    // cout << "seed #" << seed_c << "RecHitsInWindow.size() = " << RecHitsInWindow.size() << endl;
 
     if(simple_energy <= 0) { 
 	//cout << "skipping cluster with negative energy " << simple_energy << endl; 
@@ -1358,7 +1349,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
     float maxDepth = PCparams_.param_X0_ * ( T0 + log( posTotalEnergy ) );
     float maxToFront;
     if( GeometryFromFile_ ) maxToFront = geom_->getPosition(seed_id).mag(); // to front face
-    else                  {
+    else {
       const CaloCellGeometry* cell = geometry->getGeometry( seed_id ).get();
       GlobalPoint posit = ( dynamic_cast<const TruncatedPyramid*>(cell) )->getPosition( 0. );
       maxToFront = posit.mag();
@@ -1375,7 +1366,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 	EBDetId det(RecHitsInWindow[j]->id());
 
 	if( RemoveDead_Flag_){
-	  if(!checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  )  {
+	  if(!checkStatusOfEcalRecHit(*RecHitsInWindow[j] )  )  {
 	    All_rechit_good = false; 
 	    break;  // exit this loop as soon as one crystal is dead, because at the end of this loop there is a continue if All_rechit_good = false
 	    // at the moment I see the rechits are added in the list of used ones, which is probably wrong if I reject this cluster
@@ -1509,7 +1500,7 @@ void FillEpsilonPlot::fillEBClusters(std::vector< CaloCluster > & ebclusters, co
 }
 
 /*===============================================================*/
-void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus)
+void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent)
   /*===============================================================*/
 {
 
@@ -1636,7 +1627,7 @@ void FillEpsilonPlot::fillEEClusters(std::vector< CaloCluster > & eseeclusters, 
 	EEDetId det(RecHitsInWindow[j]->id());
 
 	if( RemoveDead_Flag_ ){
-	  if( !checkStatusOfEcalRecHit(channelStatus, *RecHitsInWindow[j] )  ) {
+	  if( !checkStatusOfEcalRecHit(*RecHitsInWindow[j] )  ) {
 	    All_rechit_good = false;
 	    break;  // exit this loop as soon as one crystal is dead, because at the end of this loop there is a continue if All_rechit_good = false
 	    // at the moment I see the rechits are added in the list of used ones, which is probably wrong if I reject this cluster
