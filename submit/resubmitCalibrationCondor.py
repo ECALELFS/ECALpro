@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess, time, sys, os
 from methods import *
@@ -57,6 +57,8 @@ dummy_exec_name = condordir+'/dummy_exec_daemon.sh'
 condor_file_name = condordir+'/condor_resubmit_daemon.condor'
 condor_file = open(condor_file_name,'w')
 condor_file.write('''Universe = vanilla
+MY.XRDCP_CREATE_DIR     = True
+MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
 use_x509userproxy = True
 Log        = {ld}/$(ProcId).log

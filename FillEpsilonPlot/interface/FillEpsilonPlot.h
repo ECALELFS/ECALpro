@@ -59,13 +59,12 @@ struct iXiYtoRing {
 
 using namespace reco;
 
-class FillEpsilonPlot : public edm::one::EDAnalyzer<> {
+class FillEpsilonPlot : public edm::one::EDAnalyzer<edm::one::WatchRuns, edm::one::SharedResources> {
 public:
     explicit FillEpsilonPlot(const edm::ParameterSet&);
     ~FillEpsilonPlot();
 
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
 
 private:
     virtual void beginJob() ;
@@ -78,21 +77,20 @@ private:
     virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&);
 
     // ---------- user defined ------------------------
-    void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
-    void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent, const EcalChannelStatus &channelStatus);
+    void fillEBClusters(std::vector< CaloCluster > & ebclusters, const edm::Event& iEvent);
+    void fillEEClusters(std::vector< CaloCluster > & eseeclusters,std::vector< CaloCluster > & eseeclusters_tot, const edm::Event& iEvent);
     //std::vector< CaloCluster > MCTruthAssociate(std::vector< CaloCluster > & clusters, double deltaR, bool isEB);
     std::vector< CaloCluster > MCTruthAssociateMultiPi0(std::vector< CaloCluster > & clusters, int& retNumberUnmergedGen, int& retNumberMatchedGen, std::vector<TLorentzVector*>& retClusters_matchedGenPhotonEnergy, const double deltaR, const bool isEB);
     // void computePairProperties(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
     void computePairProperties(const CaloCluster* g1, const CaloCluster* g2, math::XYZVector &tmp_photon1, math::XYZVector &tmp_photon2, float &m_pair, float &pt_pair, float &eta_pair, float &phi_pair);
     void computeEpsilon(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
     void computeEoverEtrue(std::vector< CaloCluster > & clusters, std::vector<TLorentzVector*>& clusters_matchedGenPhoton, int subDetId);
-    bool checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh);
+    bool checkStatusOfEcalRecHit(const EcalRecHit &rh);
     bool isInDeadMap( bool isEB, const EcalRecHit &rh );
     float GetDeltaR(float eta1, float eta2, float phi1, float phi2);
     float DeltaPhi(float phi1, float phi2);
     double min( double a, double b);
     int getNumberOverlappingCrystals(std::vector<CaloCluster>::const_iterator g1, std::vector<CaloCluster>::const_iterator g2, const bool isEB);
-
 
     TH2F* initializeEpsilonHistograms2D(const char *name, const char *title, int size );
     void deleteEpsilonPlot2D(TH2F *h);
@@ -115,12 +113,12 @@ private:
 
     // ----------member data ---------------------------
     edm::ESGetToken<CaloGeometry, CaloGeometryRecord> geoToken_;
-    edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_;    
+    edm::ESGetToken<EcalChannelStatus, EcalChannelStatusRcd> chStatusToken_;
     edm::ESGetToken<L1TUtmTriggerMenu, L1TUtmTriggerMenuRcd> l1tMenuToken_;
     edm::Handle< EBRecHitCollection > ebHandle;
     edm::Handle< EBRecHitCollection > eeHandle;
     edm::Handle< ESRecHitCollection > esHandle;
-    // edm::Handle< edm::SortedCollection<EcalRecHit,edm::StrictWeakOrdering<EcalRecHit> > > esHandle;
+    edm::ESHandle<EcalChannelStatus> chStatus_;
 
     const EcalPreshowerGeometry *esGeometry_;     
     const CaloGeometry* geometry;
@@ -309,7 +307,6 @@ private:
     TH2F *pi0MassVsETEB;
     TH2F *photonDeltaRVsIetaEB;
 
-    ///SJ
     TH1F *pi0_mass_EB;
     TH1F *pi0_mass_EEP;
     TH1F *pi0_mass_EEM;

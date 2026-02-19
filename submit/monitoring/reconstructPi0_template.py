@@ -125,7 +125,7 @@ if useHLTFilter:
     process.AlcaP0Filter = copy.deepcopy(hltHighLevel)
     process.AlcaP0Filter.throw = cms.bool(False)
     process.AlcaP0Filter.TriggerResultsTag = cms.InputTag("TriggerResults","","HLT")
-    process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*"]
+    process.AlcaP0Filter.HLTPaths = ["AlCa_EcalPi0E*", "AlCa_HIEcalPi0E*"]
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
@@ -146,9 +146,8 @@ process.source = cms.Source('PoolSource',
 
 
 process.source.fileNames = options.inputFiles 
-###SJ - use the present available file to store the monitoring tree
+# use the present available file to store the monitoring tree
 #process.TFileService = cms.Service("TFileService", fileName = cms.string('monitoringTree.root'))
-
 
 import FWCore.PythonUtilities.LumiList as LumiList
 #json_file = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions18/13TeV/ReReco/Cert_314472-325175_13TeV_17SeptEarlyReReco2018ABC_PromptEraD_Collisions18_JSON.txt'
@@ -167,8 +166,8 @@ process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('/eos/cms/store/
 
 process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('CalibCode/FillEpsilonPlot/data/Endc_x_y_ring.txt')
 process.analyzerFillEpsilon.HLTResults                  = cms.untracked.bool(True)
-process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('AlCa_EcalPi0EB')
-process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('AlCa_EcalPi0EE')
+process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('EcalPi0EB') # the HLT path should contain this pattern. The Alca_ prefix is omitted to allow paths like Alca_HIEcalPi0EB as well
+process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('EcalPi0EE') # the HLT path should contain this pattern. The Alca_ prefix is omitted to allow paths like Alca_HIEcalPi0EE as well
 process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(True)
 process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('')
 process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)

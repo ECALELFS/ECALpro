@@ -21,13 +21,13 @@ if len(args)<1:
     parser.print_usage()
     quit()
 
-print ""
+print("")
 eosFile = args[0]
 eosFileNameToOpen = eosFile
 if eosFileNameToOpen.startswith("/eos/cms"):
     eosFileNameToOpen = "root://eoscms/" + eosFile
 elif not eosFileNameToOpen.startswith("root://eoscms//eos/cms"):
-    print "Error: file name in input not valid, must start with /eos/cms or root://eoscms//eos/cms"
+    print("Error: file name in input not valid, must start with /eos/cms or root://eoscms//eos/cms")
     quit()
 
 isGood = True
@@ -37,28 +37,28 @@ filesize=0
 if os.path.exists(eosFile): 
     filesize = os.path.getsize(eosFile)
 if filesize < sizeThreshold:
-    print "%%% size is too small"
+    print("%%% size is too small")
     isGood = False
 else:
     tf = ROOT.TFile.Open(eosFileNameToOpen)
     if not tf or tf.IsZombie(): 
-        print "%%% file is zombie"
+        print("%%% file is zombie")
         isGood = False
     elif tf.TestBit(ROOT.TFile.kRecovered):                    
-        print "%%% file was recovered"
+        print("%%% file was recovered")
         isGood = False
         tf.Close()
                     
 if isGood:
-    print ">>> Check successful: file is good on EOS"
+    print(">>> Check successful: file is good on EOS")
 else:
-    print "#### File is bad or non existing."
+    print("#### File is bad or non existing.")
     if options.delete: 
-        print "### Will be deleted if existing"
+        print("### Will be deleted if existing")
         if not ROOT.gSystem.AccessPathName(eosFile):
             # file exists, let's delete it
             # gSystem.Exec("rm " + eosFile)  
             ROOT.gSystem.Unlink(eosFile) # this works also for non-Unix systems, just in case
 
-print ""
+print("")
 

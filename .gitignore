@@ -1,4 +1,5 @@
 *__init__.py
+*cbasile.cc
 *.pyc
 *.pdf
 *.png
@@ -8,7 +9,7 @@
 *.pcm
 LSFJOB*/
 *.o
-
+submit/AlCaP0_20*_TestCalib/
 FillEpsilonPlot/data/Cert*JSON.txt
 submit/AfterCalibTools/PlotMaker/2DmapMaker/histoManager.h
 submit/AfterCalibTools/PlotMaker/2DmapMaker/main

@@ -191,8 +191,8 @@ vector<float> FitFit(TH1D* h, double xmin, double xmax, int events, int Name, FI
 
   model = &model1;
 
-  RooNLLVar nll("nll","log likelihood var",*model,dh,Extended());
-  RooMinimizer m(nll);
+  std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
+  RooMinimizer m(*nll);
   m.migrad();
 
   RooFitResult* res = m.save() ;

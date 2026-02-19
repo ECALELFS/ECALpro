@@ -9,14 +9,12 @@ process = cms.Process("analyzerFillEpsilon")
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.load("Configuration.Geometry.GeometryIdeal_cff")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
-#process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-#from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag  
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 
-process.GlobalTag.globaltag = '105X_dataRun2_v8'
+process.GlobalTag.globaltag = '150X_dataRun3_Prompt_v1'
 #DUMMY RECHIT
 process.dummyHits = cms.EDProducer('DummyRechitDigis',
                                      doDigi = cms.untracked.bool(True),
@@ -45,13 +43,13 @@ process.ecalMultiFitUncalibRecHit.algoPSet.useLumiInfoRunHeader = False #added t
 #UNCALIB to CALIB
 from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *
 process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()
-process.ecalRecHit.killDeadChannels = cms.bool( False )
-process.ecalRecHit.recoverEBVFE = cms.bool( False )
-process.ecalRecHit.recoverEEVFE = cms.bool( False )
-process.ecalRecHit.recoverEBFE = cms.bool( False )
-process.ecalRecHit.recoverEEFE = cms.bool( False )
-process.ecalRecHit.recoverEEIsolatedChannels = cms.bool( False )
-process.ecalRecHit.recoverEBIsolatedChannels = cms.bool( False )
+process.ecalRecHit.cpu.killDeadChannels = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBVFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEVFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEFE = cms.bool( False )
+process.ecalRecHit.cpu.recoverEEIsolatedChannels = cms.bool( False )
+process.ecalRecHit.cpu.recoverEBIsolatedChannels = cms.bool( False )
 process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)
 process.GlobalTag.toGet = cms.VPSet(
      cms.PSet(record = cms.string('EcalLaserAPDPNRatiosRcd'),

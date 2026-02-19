@@ -158,9 +158,8 @@ void Total_fit( TString File, TString folder, TString Hname, bool RunOnAll, bool
     if(ngaus==1)      model = &model1;
     else if(ngaus==2) model = &model2;
 
-    RooNLLVar nll("nll","log likelihood var",*model,dh,RooFit::Extended(true));//RooFit::Extended(true) fundamental for right ormalization
-    //RooAbsReal * nll = model->createNLL(dh); Suggested way
-    RooMinimizer m(nll);
+    std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
+    RooMinimizer m(*nll);
     m.setVerbose(kFALSE);
     m.migrad();
     //RooFitResult* res = m.save() ;

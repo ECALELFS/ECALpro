@@ -80,6 +80,9 @@ void setTDRStyle (){
   gStyle->SetLabelOffset(0.007, "XYZ");
   gStyle->SetLabelSize(0.04, "XYZ");
 
+  gStyle->SetLegendFont(42);
+  gStyle->SetLegendTextSize(0.04);
+
   gStyle->SetAxisColor(1, "XYZ");
   gStyle->SetStripDecimals(1); 
   gStyle->SetTickLength(0.025, "XYZ");
@@ -101,53 +104,42 @@ void CMS_lumi(TPad* pad = NULL, string lumi = "", bool up = false, bool skipPrel
   // keep track of pad margin, otherwise CMS Preliminary goes out of the margin
   float lm = pad->GetLeftMargin() - 0.15;  // 0.15 should be the default
 
+  float basetextsize = 0.6;
+  if (reduceSize == 1) {
+    basetextsize = 0.4;
+  } else if (reduceSize > 1) {
+    basetextsize = 0.3;
+  }
+
   TLatex* latex2 = new TLatex();
   latex2->SetNDC();
-  latex2->SetTextSize(0.6*pad->GetTopMargin());
+  latex2->SetTextSize(basetextsize*pad->GetTopMargin());
   latex2->SetTextFont(42);
   latex2->SetTextAlign(31);
-  if(reduceSize)
-    latex2->SetTextSize(0.5*pad->GetTopMargin());
   
   if(lumi != "")
-    latex2->DrawLatex(0.94+offsetLumi, 0.95,(lumi+" fb^{-1} (13 TeV)").c_str());
+    latex2->DrawLatex(0.94+offsetLumi, 0.94,(lumi+" fb^{-1} (13.6 TeV)").c_str());
   else
-    latex2->DrawLatex(0.94+offsetLumi, 0.95,(lumi+"(13 TeV)").c_str());
+    latex2->DrawLatex(0.94+offsetLumi, 0.94,(lumi+"(13.6 TeV)").c_str());
 
+  latex2->SetTextSize(basetextsize*1.3*pad->GetTopMargin());
+  latex2->SetTextFont(62);
+  latex2->SetTextAlign(11);
   if(up){
-    latex2->SetTextSize(0.65*pad->GetTopMargin());
-    if(reduceSize)
-      latex2->SetTextSize(0.5*pad->GetTopMargin());
-    latex2->SetTextFont(62);
-    latex2->SetTextAlign(11);    
-    latex2->DrawLatex(lm+0.15+offset, 0.95, "CMS");
+    latex2->DrawLatex(lm+0.15+offset, 0.94, "CMS");
   }
   else{
-    latex2->SetTextSize(0.6*pad->GetTopMargin());
-    if(reduceSize)
-      latex2->SetTextSize(0.45*pad->GetTopMargin());
-    else if(reduceSize == 2)
-      latex2->SetTextSize(0.40*pad->GetTopMargin());
-
-    latex2->SetTextFont(62);
-    latex2->SetTextAlign(11);    
     latex2->DrawLatex(lm+0.175+offset, 0.85, "CMS");
   }
 
   if(not skipPreliminary){
-    
+    latex2->SetTextSize(basetextsize*pad->GetTopMargin());
+    latex2->SetTextFont(52);
+    latex2->SetTextAlign(11);
     if(up){
-      latex2->SetTextSize(0.65*pad->GetTopMargin());
-      latex2->SetTextFont(52);
-      latex2->SetTextAlign(11);
-      latex2->DrawLatex(lm+0.25+offset, 0.95, Form("Preliminary %d",year));
+      latex2->DrawLatex(lm+0.27+offset, 0.94, Form("Preliminary %d",year));
     }
     else{
-      latex2->SetTextSize(0.6*pad->GetTopMargin());
-      if(reduceSize)
-	latex2->SetTextSize(0.45*pad->GetTopMargin());
-      latex2->SetTextFont(52);
-      latex2->SetTextAlign(11);    
       if(reduceSize)
 	latex2->DrawLatex(lm+0.235+offset, 0.85, Form("Preliminary %d",year));
       else

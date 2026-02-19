@@ -345,7 +345,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     TH1::SetDefaultSumw2(); // all new histograms will automatically activate the storage of the sum of squares of errors (i.e, TH1::Sumw2 is automatically called).
 
     /// external hardcoded geometry
-
     externalGeometryFile_ = TFile::Open( edm::FileInPath( externalGeometry_.c_str() ).fullPath().c_str() );
     if(!externalGeometryFile_ or not externalGeometryFile_->IsOpen()) cms::Exception("ExtGeom") << "External Geometry file (" << externalGeometry_ << ") not found" << endl;
     geom_ = ECALGeometry::getGeometry(externalGeometryFile_);
@@ -379,45 +378,29 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     }
 
     /// epsilon histograms
-    if(!MakeNtuple4optimization_){
-
+    if (!MakeNtuple4optimization_) {
       if (isEoverEtrue_) {
-
-	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
+	if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
 	  EoverEtrue_g1_EB_h2D = initializeEpsilonHistograms2D("EoverEtrue_g1_EB_iR","reco/gen #gamma1 energy EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
 	  EoverEtrue_g2_EB_h2D = initializeEpsilonHistograms2D("EoverEtrue_g2_EB_iR","reco/gen #gamma2 energy EB", regionalCalibration_g2_->getCalibMap()->getNRegionsEB() );
 	}
-	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  {
+	if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) ) {
 	  EoverEtrue_g1_EE_h2D = initializeEpsilonHistograms2D("EoverEtrue_g1_EE_iR","reco/gen #gamma1 energy", regionalCalibration_->getCalibMap()->getNRegionsEE() );
 	  EoverEtrue_g2_EE_h2D = initializeEpsilonHistograms2D("EoverEtrue_g2_EE_iR","reco/gen #gamma2 energy", regionalCalibration_g2_->getCalibMap()->getNRegionsEE() );
 	}
-
       } else {
-
-          ///SJ
-          /*pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
-          pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
-          pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
-          */
-              
 	if(useMassInsteadOfEpsilon_ ) {
-
-            if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+          if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )
 	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","#pi^{0} Mass distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
-	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )
 	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","#pi^{0} Mass distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
-	
 	} else {
-	
-	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  if( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) )
 	    epsilon_EB_h2D = initializeEpsilonHistograms2D("epsilon_EB_iR","Epsilon distribution EB", regionalCalibration_->getCalibMap()->getNRegionsEB() );
-	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )  
+	  if( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) )
 	    epsilon_EE_h2D = initializeEpsilonHistograms2D("epsilon_EE_iR","Epsilon distribution EE", regionalCalibration_->getCalibMap()->getNRegionsEE() );
-	
 	}
-
       }
-
     }
 
     if (fillKinematicVariables_) {
@@ -454,8 +437,6 @@ FillEpsilonPlot::FillEpsilonPlot(const edm::ParameterSet& iConfig):
     pi0_mass_EB = new TH1F("pi0_mass_EB","pi0_mass_EB",120, 0., 0.3);
     pi0_mass_EEP = new TH1F("pi0_mass_EEP","pi0_mass_EEP",120, 0., 0.3);
     pi0_mass_EEM = new TH1F("pi0_mass_EEM","pi0_mass_EEM",120, 0., 0.3);
-    
-    
     pi0MassVsIetaEB = new TH2F("pi0MassVsIetaEB","#pi^{0} mass vs i#eta",85,0.5,85.5,120,Are_pi0_? 0.:0.3, Are_pi0_? 0.3:0.8);
     pi0MassVsIetaEB->GetXaxis()->SetTitle("i#eta");
     pi0MassVsIetaEB->GetYaxis()->SetTitle("#pi^{0} mass");
@@ -758,26 +739,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   pi0_mass = -999.; 
   pho1_eta = -999.; 
   pho2_eta = -999.;
-  ///SJ - taken from here: https://cmssdt.cern.ch/lxr/source/CalibTracker/SiStripDCS/test/Synchronization/SyncDCSO2O.cc#0100
-  //cout<<"Event time "<<iEvent.time().value()<<endl;
-  //coral::TimeStamp coralTime(cond::time::to_boost(iEvent.time().value()));
-
-  /*std::cout << "year = " << coralTime.year() << ", month = " << coralTime.month() << ", day = " << coralTime.day();
-// N.B. we add 1 hour to the coralTime because it is the conversion from posix_time which is non-adjusted.
-// The shift of +1 gives the CERN time zone.
-    std::cout << ", hour = " << coralTime.hour() + 1 << ", minute = " << coralTime.minute()
-              << ", second = " << coralTime.second();
-    std::cout << ", nanosecond = " << coralTime.nanosecond() << std::endl;
-  */
-
-  ///SJ
-  // event_year = coralTime.year();
-  // event_month = coralTime.month();
-  // event_day = coralTime.day();
-  // event_time = (coralTime.hour() + 1) + (coralTime.minute())/60. + (coralTime.second())/3600; ///we dont need ns
-
-  
-        // std::cout << "iEvent.bunchCrossing() = " << iEvent.bunchCrossing() << std::endl;
 
   if (MakeNtuple4optimization_) {
 
@@ -856,7 +817,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 	unsigned int iTrigIndex = keyval.second.getIndex(); 
 	std::cerr << "bit: " << iTrigIndex << "\tname: " << trigName << std::endl;                                                         
 	algoBitToName[iTrigIndex] = TString( trigName );
-
       } // end algo Map
  
       int trigCompBin = 1;
@@ -1177,7 +1137,6 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   //Internal Geometry
   geometry = &iSetup.getData(geoToken_);
-  // estopology_ = new EcalPreshowerTopology(geoHandle);
   estopology_ = new EcalPreshowerTopology();
   esGeometry_ = (dynamic_cast<const EcalPreshowerGeometry*>( (CaloSubdetectorGeometry*) geometry->getSubdetectorGeometry (DetId::Ecal,EcalPreshower) ));
 
@@ -1235,19 +1194,19 @@ FillEpsilonPlot::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   //cout << "I'm after Ncristal_EB.clear(); Ncristal_EE.clear(); " << endl;
 
   //get status from DB
-  const EcalChannelStatus &channelStatus = iSetup.getData(chStatusToken_);; 
-  ////cout << "I'm after const EcalChannelStatus &channelStatus = *csHandle; " << endl;
+  chStatus_ = iSetup.getHandle(chStatusToken_);
+  //cout << "I'm after chStatus_ = iSetup.getHandle(chStatusToken_); " << endl;
 
   if ( (Barrel_orEndcap_=="ONLY_BARREL" || Barrel_orEndcap_=="ALL_PLEASE" ) && EB_HLT ) { 
     fillEBClusters(ebclusters, iEvent, channelStatus);
   }
-  ////cout << "I'm after fillEBClusters(ebclusters, iEvent, channelStatus) " << endl;
+  //cout << "I'm after fillEBClusters(ebclusters, iEvent) " << endl;
   if ( (Barrel_orEndcap_=="ONLY_ENDCAP" || Barrel_orEndcap_=="ALL_PLEASE" ) && EE_HLT ) { 
     fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, channelStatus);
   }
   // std::cout << "ebclusters.size() = " << ebclusters.size() << std::endl;
   // std::cout << "eseeclusters.size() = " << eseeclusters.size() << std::endl;
-  ////cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
+  //cout << "I'm after fillEEClusters(eseeclusters, eseeclusters_tot, iEvent, ...) " << endl;
 
   std::vector< CaloCluster > ebclusters_used, eeclusters_used;
   ebclusters_used.clear(); eeclusters_used.clear();
@@ -2648,24 +2607,23 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	  // also, I should add the mass cut
 	  // once I have the mass cut, I can have pairs of photons whose pi0 falls in EB (|eta| < 1.479), but the selections on photons is correctly the one for EE
 
-        ////SJ - just try to fill an inclusive pi0 histogram
-            if(subDetId==EcalBarrel){
-                pi0_mass_EB->Fill(pi0P4_mass);
-            }
+          // fill an inclusive pi0 histogram
+          if(subDetId==EcalBarrel){
+            pi0_mass_EB->Fill(pi0P4_mass);
+          }
             
-        if(subDetId == EcalEndcap){
+          if(subDetId == EcalEndcap){
             if(g1eta < 0 || g2eta < 0)
-                pi0_mass_EEM->Fill(pi0P4_mass);
+              pi0_mass_EEM->Fill(pi0P4_mass);
             if(g1eta > 0 && g2eta > 0)
-                pi0_mass_EEP->Fill(pi0P4_mass);
-        }
+              pi0_mass_EEP->Fill(pi0P4_mass);
+          }
 
-        pi0_mass = pi0P4_mass;
-        pho1_eta = g1eta;
-        pho2_eta = g2eta;
-        isPi0EB = subDetId==EcalBarrel;
-        tree_mon->Fill();
-        ////END of SJ
+          pi0_mass = pi0P4_mass;
+          pho1_eta = g1eta;
+          pho2_eta = g2eta;
+          isPi0EB = subDetId==EcalBarrel;
+          tree_mon->Fill();
 
 	  pi0pt_afterCuts->Fill(whichRegionEcalStreamPi0, pi0P4_nocor_pt);
 	  g1pt_afterCuts->Fill(whichRegionEcalStreamPi0, g1pt);
@@ -2849,8 +2807,6 @@ void FillEpsilonPlot::computeEpsilon(std::vector< CaloCluster > & clusters, std:
 	      int iY = List_IR_XYZ.find(iR)->second[1]; 
 	      int iZ = List_IR_XYZ.find(iR)->second[2]; int Quad = List_IR_XYZ.find(iR)->second[3];
 
-              
-              
 	      if( iZ==-1 ){
 		//If Low Statistic fill all the Eta Ring
 		if( EtaRingCalibEE_ ){
@@ -3511,7 +3467,6 @@ bool FillEpsilonPlot::getTriggerResult(const edm::Event& iEvent, const edm::Even
     // here we redo the association bit number <--> bit name
     // the reason is that this is not a constant 
     //e.g. during data taking in 2017 I noticed the number associated to a name changed, for instance SingleJet16 was 130 and then it became 131)
-
     // get the bit/name association         
     auto const& menu = iSetup.getData(l1tMenuToken_);
     for (auto const & keyval: menu.getAlgorithmMap()) { 
@@ -3716,8 +3671,10 @@ void FillEpsilonPlot::beginRun(edm::Run const&, edm::EventSetup const& iSetup) {
   //    }
 }
 
-bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalChannelStatus &channelStatus,const EcalRecHit &rh){
-  int status =  int(channelStatus[rh.id().rawId()].getStatusCode()); 
+bool FillEpsilonPlot::checkStatusOfEcalRecHit(const EcalRecHit &rh){
+  DetId detid(rh.id());
+  EcalChannelStatusMap::const_iterator chit = chStatus_->find(detid);
+  int status = int(chit->getStatusCode());
   if ( status > 0/*statusLevelRecHitsToUsea_*/ ) return false; 
   return true; 
 }
