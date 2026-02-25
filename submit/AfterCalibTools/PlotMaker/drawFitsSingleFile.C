@@ -45,7 +45,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
@@ -67,7 +66,8 @@ int Xtal_Iz[14648]={0};
 // Actually it looks like some objects are written twice in the file. In the following, a check is made to avoid drawing the same object twice
 
 void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& BarrelOrEndcap = "Barrel", const string& outputDIR = "./", const Int_t nFitsToPlot = 10, 
-			const Int_t fitIndexToPlot = -1) {
+			const Int_t fitIndexToPlot = -1,
+			const Bool_t draw_RooPlot0_Canvas1 = 0) {
 
   // if fitIndexToPlot >= 0 we just look for plot with that index and plot that one
   // otherwise just plot nFitsToPlot plots from fitResFileOnEos file
@@ -77,13 +77,13 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
   // nFitsToPlot is the number of fits to plot. A loop on objects in file is made and the first nFitsToPlot objects are drawn
 
   // EB
+
   if (BarrelOrEndcap == "Barrel") {
 
     for(int i = 0; i < 61200; i++)
       {
-	int det_ID = EBDetId::detIdFromDenseIndex(i);
 
-	EBDetId ebseed(det_ID);
+	EBDetId ebseed(EBDetId::detIdFromDenseIndex(i));
         int ieta = ebseed.ieta();
         int iphi = ebseed.iphi();		
 	Xtal_Ieta[i] = ieta;
@@ -96,10 +96,9 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     // EE
     for(int i = 0; i < 14648; i++)
       {
-	int det_ID = EEDetId::detIdFromDenseIndex(i);
 
 	// TO BE TESTED
-	EEDetId eeseed(det_ID);
+	EEDetId eeseed(EEDetId::detIdFromDenseIndex(i));
         int ix = eeseed.ix();
         int iy = eeseed.iy();		       
 	int iz = eeseed.zside();		
@@ -136,15 +135,28 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     // could just use entries for which iloop is even, but then if we fix the bug we should remember to modify this patch
 
     TClass *cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("RooPlot")) continue;
+    if     ((draw_RooPlot0_Canvas1 == 0) && not cl->InheritsFrom("RooPlot")) continue;
+    else if((draw_RooPlot0_Canvas1 == 1) && not cl->InheritsFrom("TCanvas")) continue;
 
-    RooPlot * xframe = (RooPlot*) key->ReadObj();
-    if (!xframe) {
-      cout << "Warning: RooPlot object not found in file. Skipping and going on with next object" <<endl;
-      continue;
+
+    RooPlot * xframe = nullptr;
+    TCanvas * cframe = nullptr;
+      
+    if (draw_RooPlot0_Canvas1 == 0) {
+      xframe = (RooPlot*) key->ReadObj();
+      if (!xframe) {
+	cout << "Warning: RooPlot object not found in file. Skipping and going on with next object" <<endl;
+	continue;
+      }
+    } else {
+      cframe = (TCanvas*) key->ReadObj();
+      if (!cframe) {
+	cout << "Warning: TCanvas object not found in file. Skipping and going on with next object" <<endl;
+	continue;
+      }
     }
 
-    string rooplotname(xframe->GetName());
+    string rooplotname = Form("%s",draw_RooPlot0_Canvas1 ? cframe->GetName() : xframe->GetName());
     if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) == string::npos)) continue;
     string rooplotTitle = "";
     string canvasname = "";
@@ -186,7 +198,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       
       //rooplotTitle = "iR = " + ss_iR + " (iEta = " + ss_ieta + "  iPhi = " + ss_iphi + ")";
       rooplotTitle = "i#eta = " + ss_ieta + "  i#phi = " + ss_iphi;
-      c = new TCanvas("c",rooplotname.c_str());
+      c = new TCanvas("c",rooplotname.c_str(),700,700);
       canvasname = rooplotname + "_ieta" + ss_ieta + "_iphi" + ss_iphi + ".png";
     
     } else {
@@ -209,18 +221,25 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
       //rooplotTitle = "iR = " + ss_iR + " (iX = " + ss_ix + "  iY = " + ss_iy + "  iZ = " + ss_iz + ")";
       if (Xtal_Iz[fitIndex] > 0) rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE+";
       else rooplotTitle = "iX = " + ss_ix + "  iY = " + ss_iy + "  EE-";
-      c = new TCanvas("c",rooplotname.c_str());
+      c = new TCanvas("c",rooplotname.c_str(),700,700);
       canvasname = rooplotname + "_ix" + ss_ix + "_iy" + ss_iy + "_iz" + ss_iz + ".png";
 
     }
       
-    if (xframe) {
+    if (draw_RooPlot0_Canvas1 == 0) {
+      c->SetTickx(1);
+      c->SetTicky(1);
       xframe->SetTitle(rooplotTitle.c_str());
       xframe->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
       xframe->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");
       xframe->Draw();
-      c->SaveAs((outputDIR + canvasname).c_str());
+    } else {
+      cframe->SetLeftMargin(0.16);
+      c->SetTickx(1);
+      c->SetTicky(1);
+      cframe->DrawClonePad();
     }
+    c->SaveAs((outputDIR + canvasname).c_str());
 
 
     // TFile* outputFile = NULL;
@@ -243,7 +262,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
     delete c;
 
     // if for a given crystal we have more than one fit, do not increase loop counter when evaluating the attempts
-    // iloop should refer to the nuber of crystals to plot, not actual fits to plot in total
+    // iloop should refer to the number of crystals to plot, not actual fits to plot in total
     if (fitAttemptNumber_int == 0) iloop++;
 
     if (fitIndexToPlot >= 0 && (rooplotname.find(Form("%d",fitIndexToPlot)) != string::npos)) break;

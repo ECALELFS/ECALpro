@@ -1,5 +1,5 @@
 from parameters import *
-####from parameters_NEWESTCRAB import *
+import os
 
 def printFillCfg1( outputfile ):
     outputfile.write("useHLTFilter = " + useHLTFilter + "\n")
@@ -8,7 +8,10 @@ def printFillCfg1( outputfile ):
     outputfile.write('import RecoLocalCalo.EcalRecProducers.ecalRecalibRecHit_cfi\n')
     outputfile.write("import os, sys, imp, re\n")
     outputfile.write('CMSSW_VERSION=os.getenv("CMSSW_VERSION")\n')
-    outputfile.write('process = cms.Process("analyzerFillEpsilon")\n')
+    if runCalibrationFromRecHits:
+        outputfile.write('process = cms.Process("analyzerFillEpsilonFromRecHits")\n')
+    else:
+        outputfile.write('process = cms.Process("analyzerFillEpsilon")\n')
     outputfile.write('process.load("FWCore.MessageService.MessageLogger_cfi")\n\n')
     outputfile.write('process.load("Configuration.Geometry.GeometryIdeal_cff")\n')
 
@@ -20,23 +23,19 @@ def printFillCfg1( outputfile ):
     #     outputfile.write("    sizeOfStackForThreadsInKB = cms.untracked.uint32( 10*1024 )\n")
     #     outputfile.write(")\n\n")
 
-
-    if(globaltag_New):
-       outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")\n')
-    else:
-       outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
+    outputfile.write('process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")\n')
     outputfile.write("process.GlobalTag.globaltag = '" + globaltag + "'\n")
     #From DIGI
     if (FROMDIGI):
         outputfile.write("#DUMMY RECHIT\n")
-        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigis',\n")
+        outputfile.write("process.dummyHits = cms.EDProducer('DummyRechitDigisPi0',\n")
         outputfile.write("                                     doDigi = cms.untracked.bool(True),\n")
         outputfile.write("                                     # rechits\n")                                                                                                
         outputfile.write("                                     barrelHitProducer      = cms.InputTag('hltAlCaPi0EBUncalibrator','pi0EcalRecHitsEB'),\n")
         outputfile.write("                                     endcapHitProducer      = cms.InputTag('hltAlCaPi0EEUncalibrator','pi0EcalRecHitsEE'),\n")
         outputfile.write("                                     barrelRecHitCollection = cms.untracked.string('dummyBarrelRechits'),\n")
         outputfile.write("                                     endcapRecHitCollection = cms.untracked.string('dummyEndcapRechits'),\n")
-        outputfile.write("                                     # digis\n")                                                                                                                               
+        outputfile.write("                                     # digis\n")                                                         
         outputfile.write("                                     barrelDigis            = cms." + EBdigi + ",\n")
         outputfile.write("                                     endcapDigis            = cms." + EEdigi + ",\n")
         outputfile.write("                                     barrelDigiCollection   = cms.untracked.string('dummyBarrelDigis'),\n")
@@ -84,6 +83,7 @@ def printFillCfg1( outputfile ):
                outputfile.write("process.ecalweight.EEdigiCollection = cms.InputTag('dummyHits','dummyEndcapDigis','analyzerFillEpsilon')\n")               
         outputfile.write("#UNCALIB to CALIB\n")
         outputfile.write("from RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi import *\n")
+        outputfile.write("process.ecalRecHit = RecoLocalCalo.EcalRecProducers.ecalRecHit_cfi.ecalRecHit.clone()\n")
         outputfile.write("process.ecalDetIdToBeRecovered =  RecoLocalCalo.EcalRecProducers.ecalDetIdToBeRecovered_cfi.ecalDetIdToBeRecovered.clone()\n")
         outputfile.write("process.ecalRecHit.killDeadChannels = cms.bool( False )\n")
         outputfile.write("process.ecalRecHit.recoverEBVFE = cms.bool( False )\n")
@@ -95,7 +95,7 @@ def printFillCfg1( outputfile ):
         if(WEIGHTS):
            outputfile.write("process.ecalRecHit.EEuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEE')\n")
            outputfile.write("process.ecalRecHit.EBuncalibRecHitCollection =  cms.InputTag('ecalweight','EcalUncalibRecHitsEB')\n")
-        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(ecalRecHit)\n")
+        outputfile.write("process.ecalLocalRecoSequence = cms.Sequence(process.ecalRecHit)\n")
 
     if (overWriteGlobalTag):        
         outputfile.write("process.GlobalTag.toGet = cms.VPSet(\n")
@@ -113,6 +113,11 @@ def printFillCfg1( outputfile ):
             outputfile.write("     cms.PSet(record = cms.string('" + GeVTagRecord + "'),\n")
             outputfile.write("              tag = cms.string('" + GeVTag + "'),\n")
             outputfile.write("              connect = cms.string('" + GeVDB + "')\n")
+            outputfile.write('     ),\n')
+        if not(PFRechitTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + PFRechitTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + PFRechitTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + PFRechitDB + "')\n")
             outputfile.write('     ),\n')
         if not(pulseShapeTag==''):
             outputfile.write("     cms.PSet(record = cms.string('" + pulseShapeTagRecord + "'),\n")
@@ -149,6 +154,11 @@ def printFillCfg1( outputfile ):
             outputfile.write("              tag = cms.string('" + linearCorrectionsTag + "'),\n")
             outputfile.write("              connect = cms.string('" + linearCorrectionsDB + "')\n")
             outputfile.write('     ),\n')
+        if not(EcalChannelStatusTag==''):
+            outputfile.write("     cms.PSet(record = cms.string('" + EcalChannelStatusTagRecord + "'),\n")
+            outputfile.write("              tag = cms.string('" + EcalChannelStatusTag + "'),\n")
+            outputfile.write("              connect = cms.string('" + EcalChannelStatusDB + "')\n")
+            outputfile.write('     ),\n')
         outputfile.write(')\n\n')
 
     outputfile.write('### Recalibration Module to apply laser corrections on the fly\n')
@@ -183,7 +193,6 @@ def printFillCfg1( outputfile ):
     # outputfile.write(")\n")
     outputfile.write("process.options = cms.untracked.PSet(\n")
     outputfile.write("   wantSummary = cms.untracked.bool(True),\n")
-    #outputfile.write("   SkipEvent = cms.untracked.vstring('ProductNotFound','CrystalIDError')\n")
     outputfile.write(")\n")
     outputfile.write("process.source = cms.Source('PoolSource',\n")
     #outputfile.write("                            inputCommands = cms.untracked.vstring( #type_Module_instance_process\n")
@@ -196,7 +205,8 @@ def printFillCfg1( outputfile ):
     outputfile.write("    fileNames = cms.untracked.vstring(\n")
 
 def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
-    outputfile.write("    )\n")
+    outputfile.write("    ),\n")
+    outputfile.write("    skipBadFiles = cms.untracked.bool(True)\n")
     outputfile.write(")\n")
 #    outputfile.write("\n")
 #    if(len(json_file)>0):
@@ -214,166 +224,216 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
 #           outputfile.write("   myLumis = LumiList.LumiList(filename = '" + pwd + "/../../CalibCode/FillEpsilonPlot/data/" + json_file + "').getCMSSWString().split(',')\n")
 #       outputfile.write("   process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange()\n")
 #       outputfile.write("   process.source.lumisToProcess.extend(myLumis)\n")
-    outputfile.write("\n")
-    outputfile.write("process.analyzerFillEpsilon = cms.EDAnalyzer('FillEpsilonPlot')\n")
-    outputfile.write("process.analyzerFillEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.OutputFile = cms.untracked.string('" + NameTag +  outputFile + "_" + str(ijob) + ".root')\n")
-    outputfile.write("process.analyzerFillEpsilon.ExternalGeometry = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + ExternalGeometry + "')\n")
-    if (isCRAB):
-        outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + NameTag + calibMapName + "')\n")
-        outputfile.write("process.analyzerFillEpsilon.isCRAB  = cms.untracked.bool(True)\n")
-    else:
-        if (SubmitFurtherIterationsFromExisting and iteration == 0):
-            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
+    if(useJsonFilterInCpp and len(json_file)>0):
+        outputfile.write("import FWCore.PythonUtilities.LumiList as LumiList\n")
+        outputfile.write("json_file = '" + json_file + "'\n")
+        if json_file.startswith('/afs/cern.ch/'):
+            outputfile.write("process.source.lumisToProcess = LumiList.LumiList(filename = json_file).getVLuminosityBlockRange()\n")
         else:
-            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
-        if SubmitFurtherIterationsFromExisting:
-            if SystOrNot != 0:
-                outputfile.write("process.analyzerFillEpsilon.SystOrNot = cms.untracked.int32(" + str(SystOrNot) + ")\n")
+            CMSSW_BASE=os.getenv("CMSSW_BASE")
+            outputfile.write("process.source.lumisToProcess = LumiList.LumiList(filename = '" + CMSSW_BASE + "/src/CalibCode/FillEpsilonPlot/data/" + json_file + "').getVLuminosityBlockRange()\n")
 
-    outputfile.write("process.analyzerFillEpsilon.useEBContainmentCorrections = cms.untracked.bool(" + useEBContainmentCorrections + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.useEEContainmentCorrections = cms.untracked.bool(" + useEEContainmentCorrections + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.EBContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContainmentCorrections + "')\n")
-    if (new_pi0ContainmentCorrections):
-	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEBContainmentCorrections_01 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEBContainmentCorrections_02 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEEContainmentCorrections_01 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + new_MVAEEContainmentCorrections_02 + "')\n")
+
+    outputfile.write("\n")
+    if justCreateRecHits:
+        # here we create rechits through output module, without running fillEpsilon analyzer
+        outputfile.write("## create rechits and save them\n")
+        outputfile.write("outRecHitsFileName = '%s/AlCaP0_RecHitsFromDigis_%s/out_%s.root'\n" % (eosOutputPathForRecHits, dirname, str(ijob)))
+        outputfile.write("process.outputALCAP0 = cms.OutputModule( 'PoolOutputModule',\n")
+        outputfile.write("    fileName = cms.untracked.string( str(outRecHitsFileName) ),\n")
+        outputfile.write("    fastCloning = cms.untracked.bool( False ),\n")
+        outputfile.write("    dataset = cms.untracked.PSet(\n")
+        outputfile.write("        filterName = cms.untracked.string( '' ),\n")
+        outputfile.write("        dataTier = cms.untracked.string( 'RAW' )\n")
+        outputfile.write("    ),\n")
+        if filterEventsByAlCaTrigger:
+            outputfile.write("    SelectEvents = cms.untracked.PSet(\n")
+            outputfile.write("        SelectEvents = cms.vstring('p')\n")
+            outputfile.write("    ),\n")
+        outputfile.write("    outputCommands = cms.untracked.vstring( \n")
+        outputfile.write("        'drop *',\n")
+        if Barrel_or_Endcap == 'ONLY_BARREL':
+            outputfile.write("        'keep *_ecalRecHit_EcalRecHitsEB*_*',\n")
+        elif Barrel_or_Endcap == 'ONLY_ENDCAP':
+            outputfile.write("        'keep *_ecalRecHit_EcalRecHitsEE*_*',\n")
+        else:
+            outputfile.write("        'keep *_ecalRecHit_EcalRecHitsE*_*',\n")
+                         
+        if not Barrel_or_Endcap == 'ONLY_BARREL':
+            if not filterEventsByAlCaTrigger or (filterEventsByAlCaTrigger and 'AlCa_EcalEta' in HLTPaths):
+                outputfile.write("        'keep *_hltAlCaEtaRecHitsFilterEEonlyRegionalLowPU_etaEcalRecHitsES_*',\n")
+                outputfile.write("        'keep *_hltAlCaEtaRecHitsFilterEEonlyRegional_etaEcalRecHitsES_*',\n")
+            if not filterEventsByAlCaTrigger or (filterEventsByAlCaTrigger and 'AlCa_EcalPi0' in HLTPaths):
+                outputfile.write("        'keep *_hltAlCaPi0RecHitsFilterEEonlyRegionalLowPU_pi0EcalRecHitsES_*',\n")
+                outputfile.write("        'keep *_hltAlCaPi0RecHitsFilterEEonlyRegional_pi0EcalRecHitsES_*',\n")
+        if L1TriggerInfo:
+            outputfile.write("        'keep *_hltGtStage2Digis_*_*',\n")
+        outputfile.write("        'keep edmTriggerResults_*_*_HLT' ) # collection is recreated for this process, keep only original from HLT\n")
+        outputfile.write(")\n")
     else:
-	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_01 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_02 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_01 + "')\n")
-	    outputfile.write("process.analyzerFillEpsilon.MVAEEContainmentCorrections_02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEEContainmentCorrections_02 + "')\n")
+        outputfile.write("process.analyzerFillEpsilon = cms.EDAnalyzer('FillEpsilonPlot')\n")
+        outputfile.write("process.analyzerFillEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
+        outputfile.write("process.analyzerFillEpsilon.OutputFile = cms.untracked.string('" + NameTag +  outputFile + "_" + str(ijob) + ".root')\n")
+        outputfile.write("process.analyzerFillEpsilon.ExternalGeometry = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + ExternalGeometry + "')\n")
+        if (isCRAB):
+            outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + NameTag + calibMapName + "')\n")
+            outputfile.write("process.analyzerFillEpsilon.isCRAB  = cms.untracked.bool(True)\n")
+        else:
+            if (SubmitFurtherIterationsFromExisting and iteration == 0):
+                outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
+            else:
+                outputfile.write("process.analyzerFillEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+            if SubmitFurtherIterationsFromExisting:
+                if SystOrNot != 0:
+                    outputfile.write("process.analyzerFillEpsilon.SystOrNot = cms.untracked.int32(" + str(SystOrNot) + ")\n")
 
-    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta01  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_eta01 + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.MVAEBContainmentCorrections_eta02  = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + MVAEBContainmentCorrections_eta02 + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + Endc_x_y + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.EBPHIContainmentCorrections = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBPHIContainmentCorrections + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.EEContainmentCorrections    = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EEContainmentCorrections + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.ContCorr_EB                 = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + EBContCorr + "')\n")
-    #outputfile.write("process.analyzerFillEpsilon.json_file                   = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.HLTResults                  = cms.untracked.bool(" + HLTResults + ")\n")
-    if(HLTResultsNameEB!=""):
-        outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('" + HLTResultsNameEB + "')\n")
-    if(HLTResultsNameEE!=""):
-        outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('" + HLTResultsNameEE + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(" + RemoveDead_Flag + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('" + RemoveDead_Map + "')\n")
-    if(EtaRingCalibEB):
-      outputfile.write("process.analyzerFillEpsilon.EtaRingCalibEB    = cms.untracked.bool(True)\n")
-    if(EtaRingCalibEE):
-      outputfile.write("process.analyzerFillEpsilon.EtaRingCalibEE    = cms.untracked.bool(True)\n")
-    if(SMCalibEB):
-      outputfile.write("process.analyzerFillEpsilon.SMCalibEB    = cms.untracked.bool(True)\n")
-    if(SMCalibEE):
-      outputfile.write("process.analyzerFillEpsilon.SMCalibEE    = cms.untracked.bool(True)\n")
-    if(EtaRingCalibEB or SMCalibEB or EtaRingCalibEE or SMCalibEE):
-      outputfile.write("process.analyzerFillEpsilon.CalibMapEtaRing = cms.untracked.string('" + CalibMapEtaRing + "')\n")
-    if(MC_Asssoc):
-        outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Asssoc            = cms.untracked.bool(True)\n")
-        outputfile.write("process.analyzerFillEpsilon.MC_Asssoc_DeltaR     = cms.untracked.double(0.3)\n")
-    if(Are_pi0):
-        outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
-    else:
-        outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(False)\n")
-    
-    if(useMVAContainmentCorrections):
-        outputfile.write("process.analyzerFillEpsilon.useMVAContainmentCorrections                 = cms.untracked.bool(True)\n")
-    else:
-        outputfile.write("process.analyzerFillEpsilon.useMVAContainmentCorrections                 = cms.untracked.bool(False)\n")
+        outputfile.write("process.analyzerFillEpsilon.Endc_x_y                        = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + Endc_x_y + "')\n")
+        outputfile.write("process.analyzerFillEpsilon.HLTResults                  = cms.untracked.bool(" + HLTResults + ")\n")
+        if(HLTResultsNameEB!=""):
+            outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEB            = cms.untracked.string('" + HLTResultsNameEB + "')\n")
+        if(HLTResultsNameEE!=""):
+            outputfile.write("process.analyzerFillEpsilon.HLTResultsNameEE            = cms.untracked.string('" + HLTResultsNameEE + "')\n")
+        if RemoveSeedsCloseToDeadXtal:
+            outputfile.write("process.analyzerFillEpsilon.RemoveSeedsCloseToDeadXtal             = cms.untracked.bool(True)\n")        
+        outputfile.write("process.analyzerFillEpsilon.RemoveDead_Flag             = cms.untracked.bool(" + RemoveDead_Flag + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.RemoveDead_Map              = cms.untracked.string('" + RemoveDead_Map + "')\n")
+        if(EtaRingCalibEB):
+          outputfile.write("process.analyzerFillEpsilon.EtaRingCalibEB    = cms.untracked.bool(True)\n")
+        if(EtaRingCalibEE):
+          outputfile.write("process.analyzerFillEpsilon.EtaRingCalibEE    = cms.untracked.bool(True)\n")
+        if(SMCalibEB):
+          outputfile.write("process.analyzerFillEpsilon.SMCalibEB    = cms.untracked.bool(True)\n")
+        if(SMCalibEE):
+          outputfile.write("process.analyzerFillEpsilon.SMCalibEE    = cms.untracked.bool(True)\n")
+        if(EtaRingCalibEB or SMCalibEB or EtaRingCalibEE or SMCalibEE):
+          outputfile.write("process.analyzerFillEpsilon.CalibMapEtaRing = cms.untracked.string('" + CalibMapEtaRing + "')\n")
+        if(Are_pi0):
+            outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)\n")
+        else:
+            outputfile.write("process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(False)\n")
 
-    if(new_pi0ContainmentCorrections):
-         outputfile.write("process.analyzerFillEpsilon.new_pi0ContainmentCorrections                 = cms.untracked.bool(True)\n")
-    else:
-        outputfile.write("process.analyzerFillEpsilon.new_pi0ContainmentCorrections                 = cms.untracked.bool(False)\n")
 
-    
-    outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
+        if useContainmentCorrectionsFromEoverEtrue:
+            outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
+            outputfile.write("process.analyzerFillEpsilon.scalingEoverEtrueCC_g1 = cms.untracked.double("+ scalingEoverEtrueCC_g1 +")\n")
+            outputfile.write("process.analyzerFillEpsilon.scalingEoverEtrueCC_g2 = cms.untracked.double("+ scalingEoverEtrueCC_g2 +")\n")
+            if copyCCfileToTMP:
+                copiedCCfile = str(fileEoverEtrueContainmentCorrections.split('/')[-1])
+                copiedCCfile = "/tmp/" + copiedCCfile.replace(".root","_iter_{ni}_job_{nj}.root".format(ni=iteration, nj=ijob))
+                # do not copy here, but inside job .sh
+                #os.system("xrdcp {rf} /tmp/{rfcopy}".format(rf=fileEoverEtrueContainmentCorrections, rfcopy=copiedCCfile)
+                outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"" + copiedCCfile + "\")\n")
+            else:
+                outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"" + fileEoverEtrueContainmentCorrections + "\")\n")
+        else:
+            outputfile.write("process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
+            outputfile.write("process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"\")\n")
 
-    outputfile.write("### choosing proper input tag (recalibration module changes the collection names)\n")
-    outputfile.write("if correctHits:\n")
-    outputfile.write("    process.analyzerFillEpsilon.EBRecHitCollectionTag = cms.untracked.InputTag('ecalPi0ReCorrected','pi0EcalRecHitsEB')\n")
-    outputfile.write("    process.analyzerFillEpsilon.EERecHitCollectionTag = cms.untracked.InputTag('ecalPi0ReCorrected','pi0EcalRecHitsEE')\n")
-    outputfile.write("else:\n")
-    outputfile.write("    process.analyzerFillEpsilon.EBRecHitCollectionTag = cms.untracked." + ebInputTag + "\n")
-    outputfile.write("    process.analyzerFillEpsilon.EERecHitCollectionTag = cms.untracked." + eeInputTag + "\n")
-    outputfile.write("process.analyzerFillEpsilon.ESRecHitCollectionTag = cms.untracked." + esInputTag + "\n")
-    #outputfile.write("process.analyzerFillEpsilon.l1InputTag = cms.untracked." + l1InputTag + "\n")
 
-    outputfile.write("process.analyzerFillEpsilon.L1TriggerTag = cms.untracked." + hltGtDigis + "\n")
-    outputfile.write("process.analyzerFillEpsilon.triggerTag   = cms.untracked." + triggerTag + "\n")
-    outputfile.write("process.analyzerFillEpsilon.hltL1GtObjectMap   = cms.untracked." + hltL1GtObjectMap + "\n")
-    outputfile.write("process.analyzerFillEpsilon.CalibType    = cms.untracked.string('" + CalibType + "')\n")
-    outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
-    if( EB_Seed_E!='' ):
-        outputfile.write("process.analyzerFillEpsilon.EB_Seed_E = cms.untracked.double(" + EB_Seed_E + ")\n")
-    if( useEE_EtSeed!='' ):
-        outputfile.write("process.analyzerFillEpsilon.useEE_EtSeed = cms.untracked.bool(" + useEE_EtSeed + ")\n")
-    if( EE_Seed_E!='' ):
-        outputfile.write("process.analyzerFillEpsilon.EE_Seed_E = cms.untracked.double(" + EE_Seed_E + ")\n")
-    if( EE_Seed_Et!='' ):
-        outputfile.write("process.analyzerFillEpsilon.EE_Seed_Et = cms.untracked.double(" + EE_Seed_Et + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_low = cms.untracked.double(" + Pi0PtCutEB_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_high = cms.untracked.double(" + Pi0PtCutEB_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEE_low = cms.untracked.double(" + Pi0PtCutEE_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEE_high = cms.untracked.double(" + Pi0PtCutEE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.gPtCutEB_low = cms.untracked.double(" + gPtCutEB_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.gPtCutEB_high = cms.untracked.double(" + gPtCutEB_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.gPtCutEE_low = cms.untracked.double(" + gPtCutEE_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.gPtCutEE_high = cms.untracked.double(" + gPtCutEE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEB_low = cms.untracked.double(" + Pi0IsoCutEB_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEB_high = cms.untracked.double(" + Pi0IsoCutEB_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_low = cms.untracked.double(" + Pi0IsoCutEE_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_high = cms.untracked.double(" + Pi0IsoCutEE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.CutOnHLTIso = cms.untracked.bool(" + CutOnHLTIso + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_low = cms.untracked.double(" + Pi0HLTIsoCutEB_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_high = cms.untracked.double(" + Pi0HLTIsoCutEB_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_low = cms.untracked.double(" + Pi0HLTIsoCutEE_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_high = cms.untracked.double(" + Pi0HLTIsoCutEE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_low = cms.untracked.int32(" +  nXtal_1_EB_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_high = cms.untracked.int32(" +  nXtal_1_EB_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_low = cms.untracked.int32(" +  nXtal_2_EB_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_high = cms.untracked.int32(" +  nXtal_2_EB_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_low = cms.untracked.int32(" +  nXtal_1_EE_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_high = cms.untracked.int32(" +  nXtal_1_EE_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_low = cms.untracked.int32(" +  nXtal_2_EE_low+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_high = cms.untracked.int32(" +  nXtal_2_EE_high+ ")\n")
-    outputfile.write("process.analyzerFillEpsilon.S4S9_EB_low = cms.untracked.double(" + S4S9_EB_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.S4S9_EB_high = cms.untracked.double(" + S4S9_EB_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.S4S9_EE_low = cms.untracked.double(" + S4S9_EE_low + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.S4S9_EE_high = cms.untracked.double(" + S4S9_EE_high + ")\n")
-    outputfile.write("process.analyzerFillEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
-    if(len(json_file)>0):
-       outputfile.write("process.analyzerFillEpsilon.JSONfile = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
-    if GeometryFromFile:
-       outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
-    if isDebug:
-        outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
-    if isMC:
-       outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
-    if MakeNtuple4optimization:
-       outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
-    if( L1TriggerInfo ):
-        outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
-        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
-        nSeeds = L1SeedExpression.count(" OR ") + 1 
-        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
-    else:
-        # if L1TriggerInfo is false, pass following two variables anyway, because FIllEpsilonPlot.cc expects to get them, even though they won't be used
-        outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"\")\n")
-        outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(0)\n")
+        outputfile.write("process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(" + useOnlyEEClusterMatchedWithES + ")\n\n")
 
-    if not( L1Seed=='' ):
-        outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
-    outputfile.write("process.p = cms.EndPath()\n")
+        outputfile.write("### choosing proper input tag (recalibration module changes the collection names)\n")
+        outputfile.write("if correctHits:\n")
+        outputfile.write("    process.analyzerFillEpsilon.EBRecHitCollectionTag = cms.untracked.InputTag('ecalPi0ReCorrected','pi0EcalRecHitsEB')\n")
+        outputfile.write("    process.analyzerFillEpsilon.EERecHitCollectionTag = cms.untracked.InputTag('ecalPi0ReCorrected','pi0EcalRecHitsEE')\n")
+        outputfile.write("else:\n")
+        outputfile.write("    process.analyzerFillEpsilon.EBRecHitCollectionTag = cms.untracked." + ebInputTag + "\n")
+        outputfile.write("    process.analyzerFillEpsilon.EERecHitCollectionTag = cms.untracked." + eeInputTag + "\n")
+        outputfile.write("process.analyzerFillEpsilon.ESRecHitCollectionTag = cms.untracked." + esInputTag + "\n")
+
+        outputfile.write("process.analyzerFillEpsilon.triggerTag   = cms.untracked." + triggerTag + "\n")
+        outputfile.write("process.analyzerFillEpsilon.L1GTobjmapTag   = cms.untracked." + L1GTobjmapTag + "\n")
+        outputfile.write("process.analyzerFillEpsilon.CalibType    = cms.untracked.string('" + CalibType + "')\n")
+        outputfile.write("process.analyzerFillEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
+        if( EB_Seed_E!='' ):
+            outputfile.write("process.analyzerFillEpsilon.EB_Seed_E = cms.untracked.double(" + EB_Seed_E + ")\n")
+        if( useEE_EtSeed!='' ):
+            outputfile.write("process.analyzerFillEpsilon.useEE_EtSeed = cms.untracked.bool(" + useEE_EtSeed + ")\n")
+        if( EE_Seed_E!='' ):
+            outputfile.write("process.analyzerFillEpsilon.EE_Seed_E = cms.untracked.double(" + EE_Seed_E + ")\n")
+        if( EE_Seed_Et!='' ):
+            outputfile.write("process.analyzerFillEpsilon.EE_Seed_Et = cms.untracked.double(" + EE_Seed_Et + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_low = cms.untracked.double(" + Pi0PtCutEB_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEB_high = cms.untracked.double(" + Pi0PtCutEB_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEE_low = cms.untracked.double(" + Pi0PtCutEE_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0PtCutEE_high = cms.untracked.double(" + Pi0PtCutEE_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.gPtCutEB_low = cms.untracked.double(" + gPtCutEB_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.gPtCutEB_high = cms.untracked.double(" + gPtCutEB_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.gPtCutEE_low = cms.untracked.double(" + gPtCutEE_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.gPtCutEE_high = cms.untracked.double(" + gPtCutEE_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEB_low = cms.untracked.double(" + Pi0IsoCutEB_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEB_high = cms.untracked.double(" + Pi0IsoCutEB_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_low = cms.untracked.double(" + Pi0IsoCutEE_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0IsoCutEE_high = cms.untracked.double(" + Pi0IsoCutEE_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.CutOnHLTIso = cms.untracked.bool(" + CutOnHLTIso + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_low = cms.untracked.double(" + Pi0HLTIsoCutEB_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEB_high = cms.untracked.double(" + Pi0HLTIsoCutEB_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_low = cms.untracked.double(" + Pi0HLTIsoCutEE_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Pi0HLTIsoCutEE_high = cms.untracked.double(" + Pi0HLTIsoCutEE_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_low = cms.untracked.int32(" +  nXtal_1_EB_low+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_1_EB_high = cms.untracked.int32(" +  nXtal_1_EB_high+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_low = cms.untracked.int32(" +  nXtal_2_EB_low+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_2_EB_high = cms.untracked.int32(" +  nXtal_2_EB_high+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_low = cms.untracked.int32(" +  nXtal_1_EE_low+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_1_EE_high = cms.untracked.int32(" +  nXtal_1_EE_high+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_low = cms.untracked.int32(" +  nXtal_2_EE_low+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.nXtal_2_EE_high = cms.untracked.int32(" +  nXtal_2_EE_high+ ")\n")
+        outputfile.write("process.analyzerFillEpsilon.S4S9_EB_low = cms.untracked.double(" + S4S9_EB_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.S4S9_EB_high = cms.untracked.double(" + S4S9_EB_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.S4S9_EE_low = cms.untracked.double(" + S4S9_EE_low + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.S4S9_EE_high = cms.untracked.double(" + S4S9_EE_high + ")\n")
+        outputfile.write("process.analyzerFillEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
+        if(useJsonFilterInCpp and len(json_file)>0):
+           if json_file.startswith('/afs/cern.ch/'): 
+               outputfile.write("process.analyzerFillEpsilon.JSONfile = cms.untracked.string('" + json_file + "')\n")
+           else:
+               outputfile.write("process.analyzerFillEpsilon.JSONfile = cms.untracked.string('CalibCode/FillEpsilonPlot/data/" + json_file + "')\n")
+        if GeometryFromFile:
+           outputfile.write("process.analyzerFillEpsilon.GeometryFromFile = cms.untracked.bool(True)\n")
+        if useMassInsteadOfEpsilon:
+            outputfile.write("process.analyzerFillEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")
+        else:
+            outputfile.write("process.analyzerFillEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(False)\n")
+        if isDebug:
+            outputfile.write("process.analyzerFillEpsilon.isDebug = cms.untracked.bool(True)\n")
+        if isMC:
+           outputfile.write("process.analyzerFillEpsilon.isMC = cms.untracked.bool(True)\n")
+           outputfile.write("process.analyzerFillEpsilon.pileupSummaryTag = cms.untracked." + pileupInputTag + "\n")
+           if(MC_Assoc):
+               outputfile.write("process.analyzerFillEpsilon.GenPartCollectionTag = cms.untracked." + genPartInputTag + "\n")
+               outputfile.write("process.analyzerFillEpsilon.MC_Assoc             = cms.untracked.bool(True)\n")
+               outputfile.write("process.analyzerFillEpsilon.MC_Assoc_DeltaR      = cms.untracked.double(" + MC_Assoc_DeltaR + ")\n")        
+           if isEoverEtrue:
+               outputfile.write("process.analyzerFillEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
+        if fillKinematicVariables:
+            outputfile.write("process.analyzerFillEpsilon.fillKinematicVariables = cms.untracked.bool(True)\n")
+        else:
+            outputfile.write("process.analyzerFillEpsilon.fillKinematicVariables = cms.untracked.bool(False)\n")
+        if MakeNtuple4optimization:
+           outputfile.write("process.analyzerFillEpsilon.MakeNtuple4optimization = cms.untracked.bool(True)\n")
+        if( L1TriggerInfo ):
+            outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(True)\n")
+            outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"" + L1SeedExpression + "\")\n")
+            nSeeds = L1SeedExpression.count(" OR ") + 1 
+            outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(" + str(nSeeds) + ")\n")
+        else:
+            # if L1TriggerInfo is false, pass following two variables anyway, because FIllEpsilonPlot.cc expects to get them, even though they won't be used
+            outputfile.write("process.analyzerFillEpsilon.L1TriggerInfo = cms.untracked.bool(False)\n")
+            outputfile.write("process.analyzerFillEpsilon.L1SeedsPi0Stream = cms.untracked.string(\"\")\n")
+            outputfile.write("process.analyzerFillEpsilon.nL1SeedsPi0Stream = cms.untracked.int32(0)\n")
+
+        if not( L1Seed=='' ):
+            outputfile.write("process.analyzerFillEpsilon.L1_Bit_Sele = cms.untracked.string('" + L1Seed + "')\n")
+
+
+    outputfile.write("process.p = cms.Path()\n")
     outputfile.write("if useHLTFilter:\n")
     outputfile.write("    process.p *= process.AlcaP0Filter\n")
     outputfile.write("if correctHits:\n")
-    outputfile.write("    print 'ADDING RECALIB RECHIT MODULE WITH PARAMETERS'\n")
-    outputfile.write("    print 'ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale)\n")
-    outputfile.write("    print 'INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib)\n")
-    outputfile.write("    print 'LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections)\n")
+    outputfile.write("    print('ADDING RECALIB RECHIT MODULE WITH PARAMETERS')\n")
+    outputfile.write("    print('ENERGY SCALE '+str(process.ecalPi0ReCorrected.doEnergyScale))\n")
+    outputfile.write("    print('INTERCALIBRATION '+str(process.ecalPi0ReCorrected.doIntercalib))\n")
+    outputfile.write("    print('LASER '+str(process.ecalPi0ReCorrected.doLaserCorrections))\n")
     outputfile.write("    process.p *= process.ecalPi0ReCorrected\n")
     if (FROMDIGI):
         outputfile.write("process.p *= process.dummyHits\n")
@@ -384,9 +444,16 @@ def printFillCfg2( outputfile, pwd , iteration, outputDir, ijob ):
         if (WEIGHTS):
            outputfile.write("process.p *= process.ecalweight\n")
         outputfile.write("process.p *= process.ecalLocalRecoSequence\n")
-    outputfile.write("process.p *= process.analyzerFillEpsilon\n")
+    if not justCreateRecHits:
+        outputfile.write("process.p *= process.analyzerFillEpsilon\n")
+    if justCreateRecHits:
+        outputfile.write("process.endp = cms.EndPath(process.outputALCAP0)\n")
+    else:
+        outputfile.write("process.endp = cms.EndPath()\n")
 
-def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
+def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit, justDoHistogramFolding=False ):
+    if isEoverEtrue and localFolderToWriteFits:
+        outputDir = outputDir.replace("/tmp",localFolderToWriteFits)
     outputfile.write("import FWCore.ParameterSet.Config as cms\n")
     outputfile.write("process = cms.Process('FitEpsilonPlot')\n")
     outputfile.write("process.load('FWCore.MessageService.MessageLogger_cfi')\n")
@@ -395,10 +462,7 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
     outputfile.write("process.fitEpsilon = cms.EDAnalyzer('FitEpsilonPlot')\n")
     outputfile.write("process.fitEpsilon.OutputFile = cms.untracked.string('" + NameTag + EBorEE + "_" + str(nFit) + "_" + calibMapName + "')\n")
     outputfile.write("process.fitEpsilon.CalibType = cms.untracked.string('" + CalibType + "')\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('$TMPDIR')\n")
-    else:
-        outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
+    outputfile.write("process.fitEpsilon.OutputDir = cms.untracked.string('" +  outputDir + "')\n")
     outputfile.write("process.fitEpsilon.CurrentIteration = cms.untracked.int32(" + str(iteration) + ")\n")
     outputfile.write("process.fitEpsilon.NInFit = cms.untracked.int32(" + str(nIn) + ")\n")
     outputfile.write("process.fitEpsilon.NFinFit = cms.untracked.int32(" + str(nFin) + ")\n")
@@ -408,18 +472,28 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( True )\n")
     else:
         outputfile.write("process.fitEpsilon.Are_pi0 = cms.untracked.bool( False )\n")
-
-    if(useMVAContainmentCorrections):
-        outputfile.write("process.fitEpsilon.useMVAContainmentCorrections = cms.untracked.bool( True )\n")
-    else:
-        outputfile.write("process.fitEpsilon.useMVAContainmentCorrections = cms.untracked.bool( False )\n")
     
-    if(new_pi0ContainmentCorrections):
-        outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( True )\n")
-    else:
-        outputfile.write("process.fitEpsilon.new_pi0ContainmentCorrections = cms.untracked.bool( False )\n")
 
+    if useContainmentCorrectionsFromEoverEtrue:
+        outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( True )\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"" + fileEoverEtrueContainmentCorrections + "\")\n")
+    else:
+        outputfile.write("process.fitEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )\n")
+        outputfile.write("process.fitEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string(\"\")\n")
+
+    if useMassInsteadOfEpsilon:
+        outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.useMassInsteadOfEpsilon = cms.untracked.bool(False)\n")
+    if isEoverEtrue:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.isEoverEtrue = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.StoreForTest = cms.untracked.bool( True )\n")
+    if foldInSuperModule:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.foldInSuperModule = cms.untracked.bool(False)\n")
     outputfile.write("process.fitEpsilon.Barrel_orEndcap = cms.untracked.string('" + Barrel_or_Endcap + "')\n")
     if not(isCRAB): #If CRAB you have to put the correct path, and you do it on calibJobHandler.py, not on ./submitCalibration.py
         outputfile.write("process.fitEpsilon.EpsilonPlotFileName = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration) + "/" + NameTag + "epsilonPlots.root')\n")
@@ -427,75 +501,98 @@ def printFitCfg( outputfile, iteration, outputDir, nIn, nFin, EBorEE, nFit ):
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + startingCalibMap + "')\n")
         else:
             outputfile.write("process.fitEpsilon.calibMapPath = cms.untracked.string('" + eosPath + "/" + dirname + "/iter_" + str(iteration-1) + "/" + NameTag + calibMapName + "')\n")
+    if justDoHistogramFolding:
+        outputfile.write("process.fitEpsilon.makeFoldedHistograms = cms.untracked.bool(True)\n")
+    else:
+        outputfile.write("process.fitEpsilon.makeFoldedHistograms = cms.untracked.bool(False)\n")
 
     outputfile.write("process.p = cms.EndPath(process.fitEpsilon)\n")
 
 
-def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath):
+def printSubmitFitSrc(outputfile, cfgName, source, destination, pwd, logpath, justDoHistogramFolding=False):
+    if isEoverEtrue and localFolderToWriteFits:        
+        source = source.replace("/tmp",localFolderToWriteFits)
     outputfile.write("#!/bin/bash\n")
-    if( isOtherT2 and storageSite=="T2_BE_IIHE" and isCRAB ):
-        outputfile.write("export SCRAM_ARCH=slc6_amd64_gcc491\n")
-        outputfile.write("source $VO_CMS_SW_DIR/cmsset_default.sh\n")
-        # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n")
-        outputfile.write("export X509_USER_PROXY=/localgrid/lpernie/x509up_u20580\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    # if using RooMinuit fo the fit (obsolete according too RooFit guide), then save some pieces from stdout to check status of fit
-    # this is not needed if one uses RooMinimizer (suggested option) because the printing is different
-    # anyway, these prints doesn't affect the code behaviour, they just fall in the fit log file
     # we keep only the output containing 'FIT_EPSILON:'
-    #outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/{quote}' > " + logpath  + "\n")
-    #outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/ || /WITHOUT CONVERGENCE/ || /HAS CONVERGED/' >> " + logpath  + "\n")
     outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FIT_EPSILON:/{quote}' > " + logpath  + "\n")
     outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FIT_EPSILON:/' >> " + logpath  + "\n")
-    outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
-    outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-    sourcerooplot = source.replace("calibMap","fitRes")
-    destrooplot = destination.replace("calibMap","fitRes")
-    outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
-    outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
-    outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("cp " + sourcerooplot + " " + destrooplot + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
-    outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
-    outputfile.write("echo 'rm -f " + sourcerooplot + "' >> " + logpath + " \n")
-    outputfile.write("rm -f " + sourcerooplot + " >> " + logpath + " 2>&1 \n")
+    # if only folding there won't be any actual output in /tmp
+    if not justDoHistogramFolding:
+        sourcerooplot = source.replace("calibMap","fitRes")
+        destrooplot = destination.replace("calibMap","fitRes")
+        outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
+        outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
+        outputfile.write("echo 'ls " + sourcerooplot + " >> " + logpath + " 2>&1' \n" )
+        outputfile.write("ls " + sourcerooplot + " >> " + logpath + " 2>&1 \n" )
+        outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")           
+        outputfile.write("echo 'cp " + sourcerooplot + " " + destrooplot + "' >> " + logpath  + "\n")
+        outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("cp " + sourcerooplot + " " + destrooplot + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
+        outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'rm -f " + sourcerooplot + "' >> " + logpath + " \n")
+        outputfile.write("rm -f " + sourcerooplot + " >> " + logpath + " 2>&1 \n")
 
 def printSubmitSrc(outputfile, cfgName, source, destination, pwd, logpath):
     outputfile.write("#!/bin/bash\n")
+    outputfile.write("export XRD_NETWORKSTACK=IPv4\n")
     outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
-    # outputfile.write("source /cvmfs/cms.cern.ch/crab3/crab.sh\n") this line produces problem when running in CMSSW_8_0_3, anyway we don't use crab
-    if not(Silent):
+    copiedCCfile = ""
+    if useContainmentCorrectionsFromEoverEtrue and copyCCfileToTMP:
+        # get iter and job numbers
+        #cfgName is like /bla/bla/fillEps_iter_N_job_M.py, need to get iter_N_job_M
+        iterJob = str(cfgName.split('/')[-1])
+        iterJob = iterJob.replace("fillEps_","").replace(".py","")
+        copiedCCfile = str(fileEoverEtrueContainmentCorrections.split('/')[-1])
+        copiedCCfile = "/tmp/" + copiedCCfile.replace(".root","_{itj}.root".format(itj=iterJob))
+        # copy file to tmp (recreate if already exists using -f)
+        cpcmd = "xrdcp -f {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections, rfcopy=copiedCCfile)
+        #cpcmd = "xrdcp {rf} {rfcopy}".format(rf=fileEoverEtrueContainmentCorrections,rfcopy=copiedCCfile) 
+        outputfile.write("echo '" + cpcmd + "'\n")
+        outputfile.write(cpcmd + "\n")
+        outputfile.write("export EOSCMS_MGM_URL=root://eoscms.cern.ch\n\n")
+    if not Silent:
         outputfile.write("echo 'cmsRun " + cfgName + "'\n")
         outputfile.write("cmsRun " + cfgName + "\n")
-        outputfile.write("echo 'cp " + source + " " + destination + "'\n")
-        outputfile.write("cp " + source + " " + destination + "\n")
-        outputfile.write("echo 'rm -f " + source + "'\n")
-        outputfile.write("rm -f " + source + "\n")
+
+        outputfile.write("if test -f " + source + "; then\n")
+        outputfile.write("    echo 'file exists in %s and is good, now copying to eos'\n" % source)
+        outputfile.write("    ls -l " + source + "\n")
+        outputfile.write("    echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "'\n")
+        outputfile.write("    xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "\n")
+        outputfile.write("    echo 'rm -f " + source + "'\n")
+        outputfile.write("    rm -f " + source + "\n")
+        outputfile.write("    echo 'now checking goodness of file on eos'\n")
+        outputfile.write("    cmdpy='python3 " + pwd + "/Utilities/checkGoodnessFileEOS.py -d " + destination + "'\n")
+        outputfile.write("    echo \"${cmdpy}\"\n") # note: need " and not '  here !!
+        outputfile.write("    echo \"${cmdpy}\" | bash\n") # here as well
+        outputfile.write("    echo ''\n")
+        outputfile.write("else\n")
+        outputfile.write("    echo 'file did not exist in /tmp/ (probably it was bad and deleted already'\n")
+        outputfile.write("fi\n")
     else:
         outputfile.write("echo 'cmsRun " + cfgName + " 2>&1 | awk {quote}/FILL_COUT:/{quote}' > " + logpath  + "\n")
         outputfile.write("cmsRun " + cfgName + " 2>&1 | awk '/FILL_COUT:/' >> " + logpath  + "\n")
         outputfile.write("echo 'ls " + source + " >> " + logpath + " 2>&1' \n" )
         outputfile.write("ls " + source + " >> " + logpath + " 2>&1 \n" )
-        outputfile.write("echo 'cp " + source + " " + destination + "' >> " + logpath  + "\n")
-        outputfile.write("cp " + source + " " + destination + " >> " + logpath + " 2>&1 \n")
+        outputfile.write("echo 'xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + "' >> " + logpath  + "\n")
+        outputfile.write("xrdcp -f " + source + " $EOSCMS_MGM_URL/" + destination + " >> " + logpath + " 2>&1 \n")
         outputfile.write("echo 'rm -f " + source + "' >> " + logpath + " \n")
         outputfile.write("rm -f " + source + " >> " + logpath + " 2>&1 \n")
+    if len(copiedCCfile):
+        outputfile.write("echo 'rm -f " + copiedCCfile + "'\n")
+        outputfile.write("rm -f " + copiedCCfile + "\n")        
 
 def printParallelHaddFAST(outputfile, outFile, listReduced, destination, pwd, numList):
     import os, sys, imp, re
     destinationWithFinalSlash = destination 
     if not destinationWithFinalSlash.endswith("/"):
         destinationWithFinalSlash = destination + "/"
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
+    outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")
@@ -511,14 +608,8 @@ def printFinalHaddFAST(outputfile, listReduced, destination, pwd):
     destinationWithFinalSlash = destination 
     if not destinationWithFinalSlash.endswith("/"):
         destinationWithFinalSlash = destination + "/"
-    CMSSW_VERSION=os.getenv("CMSSW_VERSION")
     outputfile.write("#!/bin/bash\n")
-    if(re.match("CMSSW_5_.*_.*",CMSSW_VERSION)):
-         print "WARNING!!!! ----> I'm ging to use a harcoded path: /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src"
-         print "This because you are in a release CMSSW_5_*_*, that do not allow a hadd with a @file.list."
-         outputfile.write("cd /afs/cern.ch/work/l/lpernie/ECALpro/gitHubCalib/CMSSW_4_2_4/src\n")
-    else:
-         outputfile.write("cd " + pwd + "\n")
+    outputfile.write("cd " + pwd + "\n")
     outputfile.write("eval `scramv1 runtime -sh`\n")
     outputfile.write("files=`cat " + listReduced + "`\n")
     outputfile.write("haddstr=''\n")
@@ -561,3 +652,5 @@ def printFinalHaddRegroup(outputfile, listReduced, destination, pwd, grouping=10
     outputfile.write("hadd -f -k " + destinationWithFinalSlash +  NameTag + "epsilonPlots.root " + " ".join(grouped_files) + "\n")
     outputfile.write("rm " + destinationWithFinalSlash + "hadded_epsilon*\n")
 
+
+#fill_cfg_n = cfgFillPath + "/iter_" + str(it) + "/fillEps_iter_" + str(it) + "_job_" + str(ijob) + ".py"

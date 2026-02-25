@@ -39,7 +39,7 @@ int EndcapTools::getRingIndex(DetId id)
 
     EEDetId eid(id);
     int endcapRingIndex = endcapRingIndex_[eid.ix()-1][eid.iy()-1];
-    if (eid.zside() == 1) endcapRingIndex += N_RING_ENDCAP/2;
+    if (eid.zside() == 1) endcapRingIndex += N_RING_ENDCAP_SIDE;
     return endcapRingIndex;
 }
 
@@ -57,8 +57,8 @@ std::vector<DetId> EndcapTools::getDetIdsInRing(int etaIndex)
     if (!isInitializedFromGeometry_)
 	    initializeFromGeometry();
       
-    int zside= (etaIndex < (N_RING_ENDCAP/2) ) ? -1 : 1;
-    int eeEtaIndex = (etaIndex)%(N_RING_ENDCAP/2); 
+    int zside= (etaIndex < N_RING_ENDCAP_SIDE ) ? -1 : 1;
+    int eeEtaIndex = (etaIndex)%N_RING_ENDCAP_SIDE; 
 
     for (int ix=0;ix<EEDetId::IX_MAX;++ix)
 	    for (int iy=0;iy<EEDetId::IY_MAX;++iy)
@@ -118,20 +118,20 @@ void EndcapTools::initializeFromGeometry()
         //std::cout<<"EE Xtal, |eta| is "<<fabs(cellGeometry->getPosition().eta())<<std::endl;
     }
 
-    float eta_ring[N_RING_ENDCAP/2];
+    float eta_ring[N_RING_ENDCAP_SIDE];
 
     /// span half of the y axis (x value is fixed)
-    for (int ring=0; ring<N_RING_ENDCAP/2; ++ring)
+    for (int ring=0; ring<N_RING_ENDCAP_SIDE; ++ring)
         eta_ring[ring]=m_cellPosEta[ring][50];
 
-    double etaBoundary[N_RING_ENDCAP/2 + 1];
+    double etaBoundary[N_RING_ENDCAP_SIDE + 1];
     etaBoundary[0]=1.47;
     etaBoundary[N_RING_ENDCAP/2]=4.0;
 
-    for (int ring=1; ring<N_RING_ENDCAP/2; ++ring)
+    for (int ring=1; ring<N_RING_ENDCAP_SIDE; ++ring)
         etaBoundary[ring]=(eta_ring[ring]+eta_ring[ring-1])/2.;
   
-    for (int ring=0; ring<N_RING_ENDCAP/2; ring++){
+    for (int ring=0; ring<N_RING_ENDCAP_SIDE; ring++){
     // std::cout<<"***********************EE ring: "<<ring<<" eta "<<(etaBoundary[ring] + etaBoundary[ring+1])/2.<<std::endl;
         for (int ix=0; ix<EEDetId::IX_MAX; ix++)
             for (int iy=0; iy<EEDetId::IY_MAX; iy++)

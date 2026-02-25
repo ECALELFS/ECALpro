@@ -42,13 +42,16 @@ Int_t main(int argc, char* argv[]) {
     
     chain = new TChain("calibEB");
 
-    for (Int_t i = 0; i < 31; i++) {
-      ostringstream convert;   // stream used for the conversion                                                                                                       
-      convert << i;      // insert the textual representation of 'i' in the characters in the stream                     
-      Result = convert.str();
-      fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "Barrel_" + Result + "_calibMap.root";
-      chain->Add(TString(fileToChain.c_str()));
-    }
+    // for (Int_t i = 0; i < 31; i++) {
+    //   ostringstream convert;   // stream used for the conversion                                                                                                       
+    //   convert << i;      // insert the textual representation of 'i' in the characters in the stream                     
+    //   Result = convert.str();
+    //   fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "Barrel_" + Result + "_calibMap.root";
+    //   chain->Add(TString(fileToChain.c_str()));
+    // }
+
+    fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "calibMap.root";
+    chain->Add(TString(fileToChain.c_str()));
 
     ana = new calibAnaEcalEB(chain);
 
@@ -56,13 +59,16 @@ Int_t main(int argc, char* argv[]) {
 
     chain = new TChain("calibEE");
 
-    for (Int_t i = 0; i < 8; i++) {
-      ostringstream convert;   // stream used for the conversion                            
-      convert << i;      // insert the textual representation of 'i' in the characters in the stream                  
-      Result = convert.str();
-      fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "Endcap_" + Result + "_calibMap.root";
-      chain->Add(TString(fileToChain.c_str()));
-    }
+    // for (Int_t i = 0; i < 8; i++) {
+    //   ostringstream convert;   // stream used for the conversion                            
+    //   convert << i;      // insert the textual representation of 'i' in the characters in the stream                  
+    //   Result = convert.str();
+    //   fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "Endcap_" + Result + "_calibMap.root";
+    //   chain->Add(TString(fileToChain.c_str()));
+    // }
+
+    fileToChain = eosPath + dirName + "/iter_" + iter_num + "/" + tagName + "calibMap.root";
+    chain->Add(TString(fileToChain.c_str()));
 
     ana = new calibAnaEcalEE(chain);
 

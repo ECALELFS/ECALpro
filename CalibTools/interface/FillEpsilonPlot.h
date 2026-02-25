@@ -3,7 +3,7 @@
 #include "TH1F.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -27,7 +27,7 @@ enum calibGranularity{ xtal, tt, etaring };
 
 using namespace reco;
 
-class FillEpsilonPlot : public edm::EDAnalyzer {
+class FillEpsilonPlot : public edm::one::EDAnalyzer<> {
    public:
       explicit FillEpsilonPlot(const edm::ParameterSet&);
       ~FillEpsilonPlot();

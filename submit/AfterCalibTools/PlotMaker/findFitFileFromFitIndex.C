@@ -45,7 +45,6 @@
 #include "RooFitResult.h"
 #include "RooNLLVar.h"
 #include "RooChi2Var.h"
-#include "RooMinuit.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/EcalDetId/interface/EBDetId.h"
@@ -53,6 +52,15 @@
 
 using namespace std;
 using namespace RooFit;
+
+// example: 
+//
+//root -l -b -q 'findFitFileFromFitIndex.C+(5000,"/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/","AlcaP0_Run2016G_sel17optim_reg12",0,true)'
+//
+// returns number of fit file that contains fit with index 5000. This can be used with drawFitsSingleFile.sh
+// It looks inside /eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlcaP0_Run2016G_sel17optim_reg12/iter_0/ and search for fits in EB
+
+// note that fro EB it is easy because the file number is the integer part of fitIndex/(#fit per job), where the denominator is tipically 2000 (see parameters.py)
 
 void findFitFileFromFitIndex(const Int_t& fitIndex = 5000,
 			     const string& eosPath = "/eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
@@ -89,5 +97,7 @@ void findFitFileFromFitIndex(const Int_t& fitIndex = 5000,
     }
 
   }
+
+  cout << "Sorry, I didn't find the fit with index " << fitIndex << " anywhere." << endl;
 
 }

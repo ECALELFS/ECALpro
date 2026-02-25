@@ -50,7 +50,7 @@ ECALGeometry::ECALGeometry(TFile* f) {
 
 GlobalPoint ECALGeometry::getPosition(DetId id, float depth) const {
   std::map<DetId,GlobalPoint>::const_iterator it = posMap.find(id);
-  std::map<DetId,GlobalVector>::const_iterator iax = axisMap.find(id);
+  //std::map<DetId,GlobalVector>::const_iterator iax = axisMap.find(id);
   if( it != posMap.end() )
     return it->second + depth*getAxis(id).unit();
   else throw( std::exception() );

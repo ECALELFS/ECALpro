@@ -1,6 +1,7 @@
 <use name="root"/>
 <use name="roofit"/>
 <use name="FWCore/Framework"/>
+<use name="PhysicsTools/TagAndProbe"/>
 <use name="FWCore/PluginManager"/>
 <use name="FWCore/ParameterSet"/>
 <use name="CalibCode/CalibTools"/>

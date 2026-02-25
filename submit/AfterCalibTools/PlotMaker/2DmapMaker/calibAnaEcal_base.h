@@ -171,41 +171,41 @@ void calibAnaEcal_base::Init(TTree *tree)
 
    // set the following in the derived class depending on the usage of EB or EE
    /* // EB */
-   /* fChain->SetBranchAddress("rawId", &rawId, &b_rawId); */
-   /* fChain->SetBranchAddress("ieta", &ieta, &b_ieta); */
-   /* fChain->SetBranchAddress("iphi", &iphi, &b_iphi); */
-   /* fChain->SetBranchAddress("iSM", &iSM, &b_iSM); */
-   /* fChain->SetBranchAddress("iMod", &iMod, &b_iMod); */
-   /* fChain->SetBranchAddress("iTT", &iTT, &b_iTT); */
-   /* fChain->SetBranchAddress("iTTeta", &iTTeta, &b_iTTeta); */
-   /* fChain->SetBranchAddress("iTTphi", &iTTphi, &b_iTTphi); */
+   /* fChain->SetBranchAddress("rawId_", &rawId, &b_rawId); */
+   /* fChain->SetBranchAddress("ieta_", &ieta, &b_ieta); */
+   /* fChain->SetBranchAddress("iphi_", &iphi, &b_iphi); */
+   /* fChain->SetBranchAddress("iSM_", &iSM, &b_iSM); */
+   /* fChain->SetBranchAddress("iMod_", &iMod, &b_iMod); */
+   /* fChain->SetBranchAddress("iTT_", &iTT, &b_iTT); */
+   /* fChain->SetBranchAddress("iTTeta_", &iTTeta, &b_iTTeta); */
+   /* fChain->SetBranchAddress("iTTphi_", &iTTphi, &b_iTTphi); */
 
    /* // EE */
-   /* fChain->SetBranchAddress("ix", &ix, &b_ix); */
-   /* fChain->SetBranchAddress("iy", &iy, &b_iy); */
-   /* fChain->SetBranchAddress("zside", &zside, &b_zside); */
-   /* fChain->SetBranchAddress("sc", &sc, &b_sc); */
-   /* fChain->SetBranchAddress("isc", &isc, &b_isc); */
-   /* fChain->SetBranchAddress("ic", &ic, &b_ic); */
-   /* fChain->SetBranchAddress("iquadrant", &iquadrant, &b_iquadrant); */
+   /* fChain->SetBranchAddress("ix_", &ix, &b_ix); */
+   /* fChain->SetBranchAddress("iy_", &iy, &b_iy); */
+   /* fChain->SetBranchAddress("zside_", &zside, &b_zside); */
+   /* fChain->SetBranchAddress("sc_", &sc, &b_sc); */
+   /* fChain->SetBranchAddress("isc_", &isc, &b_isc); */
+   /* fChain->SetBranchAddress("ic_", &ic, &b_ic); */
+   /* fChain->SetBranchAddress("iquadrant_", &iquadrant, &b_iquadrant); */
 
    // EB and EE
-   fChain->SetBranchAddress("hashedIndex", &hashedIndex, &b_hashedIndex);
-   fChain->SetBranchAddress("iter", &iter, &b_iter);
-   fChain->SetBranchAddress("coeff", &coeff, &b_coeff);
-   fChain->SetBranchAddress("Signal", &Signal, &b_Signal);
-   fChain->SetBranchAddress("Backgr", &Backgr, &b_Backgr);
-   fChain->SetBranchAddress("Chisqu", &Chisqu, &b_Chisqu);
-   fChain->SetBranchAddress("Ndof", &Ndof, &b_Ndof);
-   fChain->SetBranchAddress("fit_mean", &fit_mean, &b_fit_mean);
-   fChain->SetBranchAddress("fit_mean_err", &fit_mean_err, &b_fit_mean_err);
-   fChain->SetBranchAddress("fit_sigma", &fit_sigma, &b_fit_sigma);
-   fChain->SetBranchAddress("fit_Snorm", &fit_Snorm, &b_fit_Snorm);
-   fChain->SetBranchAddress("fit_b0", &fit_b0, &b_fit_b0);
-   fChain->SetBranchAddress("fit_b1", &fit_b1, &b_fit_b1);
-   fChain->SetBranchAddress("fit_b2", &fit_b2, &b_fit_b2);
-   fChain->SetBranchAddress("fit_b3", &fit_b3, &b_fit_b3);
-   fChain->SetBranchAddress("fit_Bnorm", &fit_Bnorm, &b_fit_Bnorm);
+   fChain->SetBranchAddress("hashedIndex_", &hashedIndex, &b_hashedIndex);
+   fChain->SetBranchAddress("iter_", &iter, &b_iter);
+   fChain->SetBranchAddress("coeff_", &coeff, &b_coeff);
+   fChain->SetBranchAddress("Signal_", &Signal, &b_Signal);
+   fChain->SetBranchAddress("Backgr_", &Backgr, &b_Backgr);
+   fChain->SetBranchAddress("Chisqu_", &Chisqu, &b_Chisqu);
+   fChain->SetBranchAddress("Ndof_", &Ndof, &b_Ndof);
+   fChain->SetBranchAddress("fit_mean_", &fit_mean, &b_fit_mean);
+   fChain->SetBranchAddress("fit_mean_err_", &fit_mean_err, &b_fit_mean_err);
+   fChain->SetBranchAddress("fit_sigma_", &fit_sigma, &b_fit_sigma);
+   fChain->SetBranchAddress("fit_Snorm_", &fit_Snorm, &b_fit_Snorm);
+   fChain->SetBranchAddress("fit_b0_", &fit_b0, &b_fit_b0);
+   fChain->SetBranchAddress("fit_b1_", &fit_b1, &b_fit_b1);
+   fChain->SetBranchAddress("fit_b2_", &fit_b2, &b_fit_b2);
+   fChain->SetBranchAddress("fit_b3_", &fit_b3, &b_fit_b3);
+   fChain->SetBranchAddress("fit_Bnorm_", &fit_Bnorm, &b_fit_Bnorm);
    Notify();
 }
 
