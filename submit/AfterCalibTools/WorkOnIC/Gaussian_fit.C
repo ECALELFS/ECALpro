@@ -3,8 +3,6 @@
 #include "RooGaussian.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooMinimizer.h"
 #include "RooDataHist.h"
 #include "RooAbsPdf.h"

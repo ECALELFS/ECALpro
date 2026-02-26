@@ -3,8 +3,6 @@
 #include "RooGaussian.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooMinimizer.h"
 #include "RooDataHist.h"
 #include "RooAbsPdf.h"
@@ -168,7 +166,6 @@ void Total_fit( TString File, TString folder, TString Hname, bool RunOnAll, bool
     RooAbsReal* integralSig = gaus.createIntegral(x,NormSet(x),Range("sobRange"));
     RooAbsReal* integralBkg = bkg.createIntegral(x,NormSet(x),Range("sobRange"));
 
-    RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
     x.setRange("sobRange",mean.getVal()-2.*sigma.getVal(), mean.getVal()+2.*sigma.getVal());
 
