@@ -8,7 +8,6 @@
 #include "RooGaussian.h"
 #include "RooProdPdf.h"
 #include "RooAddPdf.h"
-#include "RooNLLVar.h"
 #include "RooFitResult.h"
 #include "RooPlot.h"
 #include "TCanvas.h"

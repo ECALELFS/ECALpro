@@ -178,7 +178,6 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
     mfit.minos(RooArgSet(Nsig,Nbkg,mean));
     res = mfit.save() ;
 
-    // RooChi2Var chi2("chi2","chi2 var",*model,dh, true);
     // use only bins in fit range for ndof (dh is made with var x that already has the restricted range, but h is the full histogram)
     //int ndof = h->GetNbinsX() - res->floatParsFinal().getSize();
     int ndof = h->FindFixBin(xhi) - h->FindFixBin(xlo) +1 - res->floatParsFinal().getSize();

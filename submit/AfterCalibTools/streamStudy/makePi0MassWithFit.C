@@ -47,8 +47,6 @@
 #include "RooArgList.h"
 #include "RooPlot.h"
 #include "RooFitResult.h"
-#include "RooNLLVar.h"
-#include "RooChi2Var.h"
 #include "RooMinimizer.h"
 
 #include "DataFormats/DetId/interface/DetId.h"
@@ -129,6 +127,212 @@ bool noDeadXtalIn3x3matrixSeededByThisXtal(const TH2F* hDeadXtals = NULL, const 
   return (nDeadXtals == 0) ? true : false;
 
 }
+
+//=================================================
+
+// void drawHisto(TH1* hSum = NULL, 
+// 	       const bool isEB = true, 
+// 	       const string& outDir = "./", 
+// 	       const string& hName = "", 
+// 	       const double lumi = 8.6) {
+
+//   TGaxis::SetMaxDigits(3); 
+
+//   TCanvas* canvas = new TCanvas("canvas","",600,600);
+//   canvas->cd();
+//   canvas->SetTickx(1);
+//   canvas->SetTicky(1);
+//   canvas->cd();
+//   canvas->SetRightMargin(0.06);
+
+//   hSum->SetStats(0);
+//   hSum->SetLineColor(kBlack);
+//   hSum->SetMarkerColor(kBlack);
+//   hSum->SetMarkerStyle(20);
+//   hSum->SetMarkerSize(1);
+
+//   hSum->SetTitle(0);
+  
+//   hSum->GetXaxis()->SetLabelSize(0.04);
+//   hSum->GetXaxis()->SetTitle("#gamma#gamma invariant mass (GeV/c^{2})");
+//   hSum->GetXaxis()->SetTitleSize(0.05);  
+//   hSum->GetXaxis()->SetTitleOffset(0.9);
+//   hSum->GetXaxis()->SetRangeUser(0.05,0.25);
+
+//   double maxY = hSum->GetBinContent(hSum->GetMaximumBin());
+//   hSum->GetYaxis()->SetRangeUser(0.0, 1.2*maxY);
+//   hSum->GetYaxis()->SetTitle("#gamma#gamma pairs / 0.004 GeV/c^{2}");
+//   hSum->GetYaxis()->SetTitleOffset(1.1);
+//   hSum->GetYaxis()->SetTitleSize(0.05);
+//   hSum->Draw("EP");
+
+//   /////////////////////////
+//   /////////////////////////
+//   // fit and draw result
+
+//   // better not to use extreme values of histogram as the fit range, because the actual range is shorter
+//   // see example here --> http://mciprian.web.cern.ch/mciprian/test_plot/pi0Mass_EB_h_xtal_iter0.png
+//   // I suggest using 0.080 and 0.21 for pi0
+//   RooRealVar x("x","#gamma#gamma invariant mass", Are_pi0_? 0.07:0.4, Are_pi0_? 0.21:0.65, "GeV/c^2");
+//   if (Are_pi0_ && not isEB) x.setRange(0.075, 0.24);
+
+//   RooDataHist dh("dh","#gamma#gamma invariant mass",RooArgList(x),hSum);
+
+//   RooRealVar mean("mean","#pi^{0} peak position", Are_pi0_? 0.13:0.52,  Are_pi0_? 0.105:0.5, Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB,"GeV/c^{2}");
+//   RooRealVar sigma("sigma","#pi^{0} core #sigma",0.011, 0.005,0.015,"GeV/c^{2}");
+//   if(not isEB)  {
+//     mean.setRange( Are_pi0_? 0.1:0.45, Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE);
+//     mean.setVal(Are_pi0_? 0.13:0.55);
+//     sigma.setRange(0.005, 0.020);
+//   }
+
+//   RooRealVar Nsig("Nsig","#pi^{0} yield", hSum->Integral()*0.15,0.,hSum->Integral()*10.0);
+//   //Nsig.setVal( hSum->Integral()*0.1);
+
+//   //sig model
+//   RooGaussian gaus("gaus","Core Gaussian",x, mean,sigma);
+
+//   // bkg model
+//   RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
+//   RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
+//   RooRealVar cb2("cb2","cb2", 0.1,  -1.,1.);
+//   RooRealVar cb3("cb3","cb3", -0.1, -0.5,0.5);
+//   RooArgList cbpars(cb0,cb1,cb2,cb3);
+//   RooChebychev bkg("bkg","bkg model", x, cbpars );
+
+//   RooRealVar Nbkg("Nbkg","background yield",hSum->Integral()*0.85,0.,hSum->Integral()*10.0);
+//   //Nbkg.setVal( hSum->Integral()*0.8 );
+
+//   RooAbsPdf* model = 0;
+//   // can use many models
+//   RooAddPdf model1("model","sig+bkg",RooArgList(gaus,bkg),RooArgList(Nsig,Nbkg));
+//   // modelXXX ...
+//   model = &model1;
+
+//   std::unique_ptr<RooAbsReal> nll{model->createNLL(dh, RooFit::Extended(true))};
+
+//   // FIT2
+//   // copied from Raffaele Gerosa
+//   RooMinimizer mfit(*nll);
+//   mfit.setVerbose(kFALSE);
+//   mfit.setPrintLevel(-1);
+//   cout << "######### Minimize" << endl;
+//   mfit.minimize("Minuit2","minimize");
+//   cout << "######### Minimize hesse " << endl;
+//   mfit.minimize("Minuit2","hesse");
+//   cout<<"######### Estimate minos errors for all parameters"<<endl;
+//   mfit.minos(RooArgSet(Nsig,Nbkg));
+//   RooFitResult* res = mfit.save("res") ;
+
+//   // FIT 1 and FIT 2 yields practically the same result, using the second
+
+//   cout << "print fit result" << endl;
+//   res->Print();
+
+//   int ndof = hSum->GetNbinsX() - res->floatParsFinal().getSize();
+
+//   //compute S/B and chi2                 
+//   // use 3 sigma range around mean to get S/B                                                                                       
+//   x.setRange("sobRange",mean.getVal()-3.*sigma.getVal(), mean.getVal()+3.*sigma.getVal());
+//   RooAbsReal* integralSig = gaus.createIntegral(x,NormSet(x),Range("sobRange"));
+
+//   RooAbsReal* integralBkg = bkg.createIntegral(x,NormSet(x),Range("sobRange"));
+
+//   float normSig = integralSig->getVal();
+//   float normBkg = integralBkg->getVal();
+
+//   Pi0FitResult pi0res; // this is the output value of this method                                                                                                          
+//   pi0res.res = res;
+
+//   pi0res.S = normSig*Nsig.getVal();
+//   pi0res.Serr = normSig*Nsig.getError();
+
+//   pi0res.B = normBkg*Nbkg.getVal();
+//   pi0res.Berr = normBkg*Nbkg.getError();
+
+//   pi0res.SoB =  pi0res.S/pi0res.B;
+//   pi0res.SoBerr =  pi0res.SoB*sqrt( pow(pi0res.Serr/pi0res.S,2) +
+// 				    pow(pi0res.Berr/pi0res.B,2) ) ;
+//   pi0res.dof = ndof;
+
+//   RooPlot*  xframe = x.frame(hSum->GetNbinsX());
+//   xframe->SetTitle(0);
+//   dh.plotOn(xframe);  // already drawn
+//   model->plotOn(xframe,Components(bkg),LineStyle(kDashed), LineColor(kRed));
+//   model->plotOn(xframe);
+
+//   xframe->Draw("same");
+
+//   TLatex lat;
+//   char line[300];
+//   lat.SetNDC();
+//   lat.SetTextSize(0.035);
+//   lat.SetTextColor(1);
+
+//   float xmin(0.6), yhi(0.85), ypass(0.05);
+//   if(isEB and not Are_pi0_) yhi=0.30;
+//   sprintf(line,"Nsig: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
+//   lat.DrawLatex(xmin,yhi, line);
+
+//   sprintf(line,"m_{#gamma#gamma}: %.2f #pm %.2f", mean.getVal()*1000., mean.getError()*1000. );
+//   lat.DrawLatex(xmin,yhi-ypass, line);
+
+//   sprintf(line,"#sigma: %.2f #pm %.2f (%.2f%s)", sigma.getVal()*1000., sigma.getError()*1000., sigma.getVal()*100./mean.getVal(), "%" );
+//   lat.DrawLatex(xmin,yhi-2.*ypass, line);
+
+//   sprintf(line,"S/B(3#sigma): %.2f #pm %.2f", pi0res.SoB, pi0res.SoBerr );                                                                                               
+//   lat.DrawLatex(xmin,yhi-3.*ypass, line);
+
+//   sprintf(line,"#Chi^{2}: %.2f", xframe->chiSquare()/pi0res.dof );
+//   lat.DrawLatex(xmin,yhi-4.*ypass, line);
+
+//   // if using a function to do the fit, can return the output
+//   // Pi0FitResult fitres = pi0res;
+//   // return fitres;
+
+//   // end of fit part
+//   /////////////////////////
+//   /////////////////////////
+
+//   canvas->RedrawAxis("sameaxis");
+//   if (lumi < 1.0) CMS_lumi(canvas,Form("%.2f",lumi),false,false);
+//   else CMS_lumi(canvas,Form("%.1f",lumi),false,false);
+//   setTDRStyle();
+
+//   string title = "pi0mass";
+//   title += isEB ? "_EB_" : "_EE_";
+//   string canvasTitle = outDir + title + hName;
+//   canvas->SaveAs((canvasTitle + ".png").c_str());
+
+//   // save fit parameters in file named as the canvas but with txt extension
+  
+//   string fitParameterFileName = canvasTitle + ".txt";
+//   ofstream fitParameterFile(fitParameterFileName.c_str(),ios::out);
+//   if ( !fitParameterFile.is_open() ) {  
+//     cout<<"Error: unable to open file " << fitParameterFileName <<" !"<<endl;
+//     exit(EXIT_FAILURE);
+//   } else {
+//     pi0res.probchi2 = TMath::Prob(xframe->chiSquare(), ndof);
+//     pi0res.chi2 = xframe->chiSquare();
+//     fitParameterFile << "FIT PARAMETERS:" << endl;
+//     fitParameterFile << "-------------------" << endl;
+//     fitParameterFile << setw(15) <<  " Nsig: " << Nsig.getVal() << " +/- " << Nsig.getError() << endl;
+//     fitParameterFile << setw(15) <<  " Nbkg: " << Nbkg.getVal() << " +/- " << Nbkg.getError() << endl;
+//     fitParameterFile << setw(15) <<  " Nsig(3sigma): " << pi0res.S << " +/- " << pi0res.Serr << endl;
+//     fitParameterFile << setw(15) <<  " Nbkg(3sigma): " << pi0res.B << " +/- " << pi0res.Berr << endl;
+//     fitParameterFile << setw(15) <<  " S/B(3sigma) : " << pi0res.SoB << " +/- " << pi0res.SoBerr << endl;
+//     fitParameterFile << setw(15) <<  " mean : " << mean.getVal()*1000. << " +/- " << mean.getError()*1000. << endl;
+//     fitParameterFile << setw(15) <<  " sigma : " << sigma.getVal()*1000. << " +/- " << sigma.getError()*1000. << endl;
+//     fitParameterFile << setw(15) <<  " chi2: " << xframe->chiSquare() << endl;
+//     fitParameterFile << setw(15) <<  " DOF: " << pi0res.dof << endl;
+//     fitParameterFile << setw(15) <<  " prob(chi2): " << pi0res.probchi2 << endl;
+//     fitParameterFile.close();
+//   }
+
+
+// }
+
+//=================================================   
 
 void doPi0MassWithFit(TH1* h,
 		      const string& hName = "h",
