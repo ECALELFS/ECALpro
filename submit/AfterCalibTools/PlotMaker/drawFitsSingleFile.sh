@@ -1,10 +1,10 @@
-#!/bin/bash                                                                        
-                                                                                  
-iter_ini=4
-iter_fin=4  # it is included in sequence below                                   
+#!/bin/bash
 
-eosPrefix="root://eoscms//eos/cms"                                        
-wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"                             
+iter_ini=0
+iter_fin=0  # it is included in sequence below
+
+eosPrefix="root://eoscms//eos/cms"
+wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/"
 #dirName="AlcaP0_Run2016G_sel16_reg12"
 #dirName="AlCaEta_2016_ULrereco"
@@ -23,9 +23,9 @@ nFitsToPlot=10  # there are at most 2000 plots in each file
 
 # if fitIndexToPlot>=0, look for this specific index in the rooplots in the file and just plot that one
 # if negative just plot nFistToPlot plots
-#fitIndexToPlot="30003"  
-fitIndexToPlot="-1"  
-#fitIndexToPlot="8155"  
+#fitIndexToPlot="30003"
+fitIndexToPlot="-1"
+#fitIndexToPlot="8155"
 
 for i in `seq $iter_ini $iter_fin`
 do
@@ -37,9 +37,9 @@ do
 	outputDIR=${wwwPath}${dirName}"/iter_${i}/fitResPlots/${BarrelOrEndcap}/"
 	echo "iter_${i}"
 	if [ "$useMergedFitFile" = true ]; then
-	    file="${eosPrefix}${eosPath}${dirName}/iter_${i}/${tagName}All${BarrelOrEndcap}_fitRes.root" 
+	    file="${eosPrefix}${eosPath}${dirName}/iter_${i}/${tagName}All${BarrelOrEndcap}_fitRes.root"
 	else
-	    file="${eosPrefix}${eosPath}${dirName}/iter_${i}/${tagName}${BarrelOrEndcap}_${fileIndex}_fitRes.root" 
+	    file="${eosPrefix}${eosPath}${dirName}/iter_${i}/${tagName}${BarrelOrEndcap}_${fileIndex}_fitRes.root"
 	fi
 	echo "file --> ${file}"
 	echo "output directory --> ${outputDIR}"

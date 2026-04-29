@@ -31,9 +31,8 @@ def collectEvents(inputFileNameList, inputTreeName, outputPath, nPi0EB, nPi0EE):
     """
     ROOT.gROOT.LoadMacro(os.environ['CMSSW_BASE']+'/src/CalibCode/submit/monitoring/fitMass.C')
 
-    #print(pd.__version__)
-    data = uproot.lazy({inputFile : inputTreeName for inputFile in inputFileNameList}, 
-                       filter_name=["event_time", "isPi0EB", "pi0_mass"])
+    data = uproot.dask({inputFile : inputTreeName for inputFile in inputFileNameList},
+                       filter_name=["event_time", "isPi0EB", "pi0_mass"], library='ak')
 
     index = ak.argsort(data.event_time)
     for f in data.fields:
@@ -44,23 +43,26 @@ def collectEvents(inputFileNameList, inputTreeName, outputPath, nPi0EB, nPi0EE):
 
     outdata = []    
 
-    #split data in chuncks and fill histograms
+    #split data in chunks and fill histograms
     #math.ceil is needed in order to collect the last period with potentially not enough pi0
     for part, dset in data_part.items():
-        for ick, chunck in enumerate(np.array_split(dset, math.ceil(len(dset)/nPi0EB))):
-            print(f'{part}: filling chunk {ick} with {len(chunck)} pi0 candidates')
+        # execute the graph to be able to do the splitting
+        dset = dset.compute()
+        nPi0 = nPi0EB if part == 'EB' else nPi0EE
+        for ick, chunk in enumerate(np.array_split(dset, math.ceil(len(dset)/nPi0))):
+            print(f'{part}: filling chunk {ick} with {len(chunk)} pi0 candidates')
             # fill mass histogram
             histName = f'pi0_mass_{ick}'
             hist = ROOT.TH1F(histName,histName,nbins,xmin,xmax)
             times = []
-            for t,m,_ in chunck:
+            for t,m,_ in chunk:
                 times.append(t)
                 hist.Fill(m)    
             mean_time = np.mean(times)
 
             # fit
             print("fitting")
-            res = ROOT.fitMass(hist, ick, str(os.path.dirname(outputPath))+'/', part=="EB")
+            res = ROOT.fitMass(hist, ick, str(os.path.dirname(outputPath))+'/', part, part=="EB")
 
             # output data: mean time, EB/EE, mass, mass_unc
             outdata.append(f'{mean_time} {part} {res[0]} {res[1]}')
@@ -85,10 +87,12 @@ def main():
     
     parser.add_option("-B", "--nPi0EB", dest="nPi0EB",
                       help="Number of pi0s in the EB", 
+                      type=int,
                       default=250000)
 
     parser.add_option("-E", "--nPi0EE", dest="nPi0EE",
                       help="Number of pi0s in the EE", 
+                      type=int,
                       default=100000)
 
 
