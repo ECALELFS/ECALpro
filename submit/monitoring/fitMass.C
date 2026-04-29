@@ -1,4 +1,4 @@
-vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
+vector<double> fitMass(TH1F* h, int ick, string prefix="", string postfix="EB", bool isEB=true)
 {
     ///extracted from FitEpsilonPlot.cc
     const int ngaus = 1;
@@ -6,6 +6,7 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
 
     static double upper_bound_pi0mass_EB = 0.15;
     static double upper_bound_pi0mass_EE = 0.16;
+
     static float fitRange_low_pi0 = 0.080; // value used in the fit function to define the fit range
     //original from Rome's code but had to reduce since the drop in 12X is before 0.212 or 0.222
     //static float fitRange_high_pi0 = 0.212; // value used in the fit function to define the fit range
@@ -74,8 +75,7 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
         mean.setRange( 0.1, maxMassForGaussianMean);
         mean.setVal(0.13);
         sigma.setRange(0.005,0.020);
-    }
-    if(isEB){
+    } else {
         mean.setRange(0.105, maxMassForGaussianMean);
         sigma.setRange(0.003,0.030);
     }
@@ -100,6 +100,7 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
     RooRealVar p4("p4","p4",-4000.,-1.e5,1.e5);
     RooRealVar p5("p5","p5", 5.,-1.e5,1.e5);
     RooRealVar p6("p6","p6", 6.,-1.e5,1.e5);
+
     RooRealVar cb0("cb0","cb0", 0.2, -1.,1.);
     RooRealVar cb1("cb1","cb1",-0.1, -1.,1.);
     RooRealVar cb2("cb2","cb2", 0.1,  -1.,1.);
@@ -227,11 +228,13 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
          << " N(fit.param.): " << nFitParam
          << " prob(chi2): " << probchi2
          << endl;
+
     TLatex lat;
     std::string line = "";
     lat.SetNDC();
     lat.SetTextSize(0.040);
     lat.SetTextColor(1);
+
     float xmin(0.2), yhi(0.80), ypass(0.05);
     if(!isEB) yhi=0.5;
     line = Form("Yield: %.0f #pm %.0f", Nsig.getVal(), Nsig.getError() );
@@ -254,8 +257,8 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", bool isEB=true)
     lat.DrawLatex(xmin,yhi-5.*ypass, line.c_str());
 
     canvas->RedrawAxis("sameaxis");
-    canvas->Print(Form("%s/pi0_mass_fit_chunck_%s_%d.png", prefix.c_str(), isEB ? "EB" : "EE", ick));
-    canvas->Print(Form("%s/pi0_mass_fit_chunck_%s_%d.root", prefix.c_str(), isEB ? "EB" : "EE",ick));
+    canvas->Print(Form("%s/pi0_mass_fit_chunck_%s_%d.png", prefix.c_str(), postfix.c_str(), ick));
+    canvas->Print(Form("%s/pi0_mass_fit_chunck_%s_%d.root", prefix.c_str(), postfix.c_str(), ick));
 
     return {mean.getVal()*1000, mean.getError()*1000};
 }
