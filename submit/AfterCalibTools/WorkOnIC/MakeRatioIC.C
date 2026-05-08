@@ -40,8 +40,8 @@ static const int MIN_IPHI = 1;
 
 //Usage:
 
-//.x MakeRatioIC.C+( "root://eoscms//eos/cms//store/caf/user/lpernie/ALL_2010ArelevantFiles_NOXTALWRONG_01/iter_4/calibMap.root",
-//"root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_4/calibMap.root", "./Ratio_IC_2010/","Old_Selec_2012_selct.png" )
+//.x MakeRatioIC.C+( "root://cms-xrd-global.cern.ch//eos/cms//store/caf/user/lpernie/ALL_2010ArelevantFiles_NOXTALWRONG_01/iter_4/calibMap.root",
+//"root://cms-xrd-global.cern.ch//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_4/calibMap.root", "./Ratio_IC_2010/","Old_Selec_2012_selct.png" )
 void MakeRatioIC( string inputFile0, string inputFile1, string OutPath, string OutPath1 )
 {
 

@@ -55,8 +55,6 @@ def checkNjobsCondor(grepArg="ecalpro"):
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
 def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400):    
     condor_file.write('''Universe = vanilla
-MY.XRDCP_CREATE_DIR     = True
-MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
 arguments = $(script)
 use_x509userproxy = True
@@ -339,7 +337,7 @@ for iters in range(options.iteration,nIterations):
                     else:
                         # at this point the file should be good, but let's check if there are no recovered keys
                         #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
-                        tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
+                        tf = TFile.Open("root://cms-xrd-global.cern.ch//"+filetoCheck.strip())
                         if not tf or tf.IsZombie(): continue
                         if tf.TestBit(TFile.kRecovered):
                             #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
@@ -393,7 +391,7 @@ for iters in range(options.iteration,nIterations):
             filesize=0
             if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
             if filesize>100000:
-                tf = TFile.Open("root://eoscms/"+eosFile)
+                tf = TFile.Open("root://cms-xrd-global.cern.ch//"+eosFile)
                 if not tf or tf.IsZombie(): continue
                 if not tf.TestBit(TFile.kRecovered):                    
                     goodHadds += 1
@@ -430,7 +428,7 @@ for iters in range(options.iteration,nIterations):
                     condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                     #print Hadd_src_n                
                 else: 
-                    tf = TFile.Open("root://eoscms/"+eosFile)
+                    tf = TFile.Open("root://cms-xrd-global.cern.ch//"+eosFile)
                     if not tf or tf.IsZombie():
                         condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                         continue # must not close file

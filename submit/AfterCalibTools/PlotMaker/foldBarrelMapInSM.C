@@ -48,7 +48,7 @@ using namespace std;
 // macro to plot maps of IC folded in one SM (actually averaging the IC in the 36 SM)
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
 
 ///////////////////////
 // OBSOLETE: now I use makeICmapAndDump.C

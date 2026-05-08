@@ -340,7 +340,7 @@ void doPi0MassWithFit(TH1* h,
 		      const string& plotType = "etaring",
 		      const string& outDir = "./",
 		      const double lumi = 8.6,
-		      const string& filename = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_IC2017_upTo31July2017_noCC/iter_0/AlCaP0_IC2017_upTo31July2017_noCC_epsilonPlots.root"
+		      const string& filename = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_IC2017_upTo31July2017_noCC/iter_0/AlCaP0_IC2017_upTo31July2017_noCC_epsilonPlots.root"
 		      ) 
 {
 
@@ -648,7 +648,7 @@ void makePi0MassWithFit(const bool isEB = true,
 			const string& outDir = "/afs/cern.ch/user/m/mciprian/www/test_plot/",
 			const double lumi = 8.6,
 			const string& dirName = "AlCaP0_IC2017_upTo31July2017_noCC",
-			const string& filePath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
+			const string& filePath = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
 			) 
 {
 

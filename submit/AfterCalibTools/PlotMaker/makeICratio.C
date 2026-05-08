@@ -44,7 +44,7 @@ using namespace std;
 // macro to plot of ratio between two calibration maps in EB 
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
  
 void realDrawMapRatio(const string& outDir = "",
 		      const string& inputFile = "",

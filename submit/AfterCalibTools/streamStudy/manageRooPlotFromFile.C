@@ -440,7 +440,7 @@ void manageRooPlotFromFile(const string& dirName = "AlCaEta_2016_ULrereco",
 			   const int whichIteration = 0, 
 			   const string& subdirTag = "",
 			   const Int_t year = 2016,
-			   const string& eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/" 
+			   const string& eosPath = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/" 
 			   ) {
 
   // intLumi is in /fb, use 2 digits after .

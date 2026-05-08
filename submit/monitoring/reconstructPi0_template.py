@@ -175,7 +175,7 @@ process.analyzerFillEpsilon.Are_pi0                 = cms.untracked.bool(True)
 process.analyzerFillEpsilon.useContainmentCorrectionsFromEoverEtrue = cms.untracked.bool( False )
 process.analyzerFillEpsilon.scalingEoverEtrueCC_g1 = cms.untracked.double(1.0)
 process.analyzerFillEpsilon.scalingEoverEtrueCC_g2 = cms.untracked.double(1.0)
-#process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root")
+#process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root")
 process.analyzerFillEpsilon.fileEoverEtrueContainmentCorrections = cms.untracked.string("")
 process.analyzerFillEpsilon.useOnlyEEClusterMatchedWithES = cms.untracked.bool(True)
 

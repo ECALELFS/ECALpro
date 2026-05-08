@@ -1,5 +1,6 @@
 *__init__.py
 *cbasile.cc
+*delvecch.cc
 *.pyc
 *.pdf
 *.png
@@ -16,6 +17,7 @@ submit/AfterCalibTools/PlotMaker/2DmapMaker/main
 submit/AfterCalibTools/TestConvergence/*.log
 submit/AfterCalibTools/TestConvergence/plot_*
 submit/AlcaP0*
+submit/AlCaP0*
 submit/pi0data*
 submit/HLT*
 #submit/InputList/*

@@ -70,7 +70,7 @@ void drawFitsSingleFile(const string& fitResFileOnEos = "", const string& Barrel
   // if fitIndexToPlot >= 0 we just look for plot with that index and plot that one
   // otherwise just plot nFitsToPlot plots from fitResFileOnEos file
 
-  // fitResFileOnEos is the file on EOS you want to run on. It must start with --> root://eoscms//eos/cms/store/....
+  // fitResFileOnEos is the file on EOS you want to run on. It must start with --> root://cms-xrd-global.cern.ch//eos/cms/store/....
   // outputDIR is the output directory were plotted fits are stored. It is created if not existing
   // nFitsToPlot is the number of fits to plot. A loop on objects in file is made and the first nFitsToPlot objects are drawn
 

@@ -150,7 +150,7 @@ void makeStreamNxtalStudy(const bool isEB = true,
 			  const bool useHLTisoCalibForComparison = false,
 			  const bool useStream2017ForComparison = false,
 			  const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/Optimization/streamSelection/",
-			  const string& pathToNtuples = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
+			  const string& pathToNtuples = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
 			  const TString& dirList = "AlCaP0_fromHLTPhysics_2017AB_TreeOptim,AlCaP0_from_ParkingHLTPhysics_TreeOptim"
 			  ) 
 {

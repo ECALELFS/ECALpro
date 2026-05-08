@@ -148,7 +148,7 @@ bool noDeadXtalIn3x3matrixSeededByThisXtal(const TH2F* hDeadXtals = NULL, const 
 void makeStreamOptim(const bool isEB = true,
 		     const bool isPi0 = true,
 		     const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/Optimization/streamSelection/",
-		     const string& eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
+		     const string& eosPath = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/"
 		     ) 
 {
 

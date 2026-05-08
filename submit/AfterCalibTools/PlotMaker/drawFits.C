@@ -66,7 +66,7 @@ void createFits(const string& Barrel_or_Endcap = "Barrel",
 		const string& tagName = "") {
 
   string storePath = wwwPath + dirName + "/" + iterNumber + "/fitResPlots/";
-  string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + Barrel_or_Endcap + "_fitRes.root";
+  string filename = "root://cms-xrd-global.cern.ch//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + Barrel_or_Endcap + "_fitRes.root";
   storePath += (Barrel_or_Endcap + "/");
 
   string rooplotbasename = "Fit_n_";

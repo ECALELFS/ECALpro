@@ -222,10 +222,10 @@ for iters in range(Iter_toResub, nIterations):
        fit_src_n = srcPath + "/Fit/submit_EB_" + str(inteb) + "_iter_"     + str(iters) + ".sh"
        #submit_s = "bsub -q " + queue + " -o " + fit_log_n + " source " + fit_src_n
        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-       ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
+       ListFinaHadd.append('root://cms-xrd-global.cern.ch///eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName )
        if(onlyFinalHadd=='False'):
          print 'About to EB fit:'
-         print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
+         print 'root://cms-xrd-global.cern.ch///eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Barrel_'+str(inteb)+'_' + calibMapName
          print submit_s
          # actually submitting fit tasks (EB)
          submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);
@@ -239,10 +239,10 @@ for iters in range(Iter_toResub, nIterations):
        fit_src_n = srcPath + "/Fit/submit_EE_" + str(inte) + "_iter_"     + str(iters) + ".sh"
        # redirecting output on /dev/null is required to avoid LSF directory to be created automatically
        submit_s = "bsub -q " + queue + " -o /dev/null -e /dev/null " + fit_src_n
-       ListFinaHadd.append('root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
+       ListFinaHadd.append('root://cms-xrd-global.cern.ch///eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName)
        if(onlyFinalHadd=='False'):
          print 'About to EE fit:'
-         print 'root://eoscms//eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
+         print 'root://cms-xrd-global.cern.ch///eos/cms' + eosPath + '/' + dirname + '/iter_' + str(iters) + '/' + NameTag + 'Endcap_'+str(inte) + '_' + calibMapName
          print submit_s
          # actually submitting fit tasks (EE)
          submitJobs = subprocess.Popen([submit_s], stdout=subprocess.PIPE, shell=True);

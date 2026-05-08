@@ -40,7 +40,7 @@ vector<double> fitMass(TH1F* h, int ick, string prefix="", string postfix="EB", 
 
     if (xValMaxHisto < xhi) {
         if (xValMaxHisto > upMassBoundary) {
-            maxMassForGaussianMean = xValMaxHisto;
+            maxMassForGaussianMean = min(xValMaxHisto,upMassBoundary);
             xhi = fitRange_high_pi0_ext; //xhi + 0.012; // increase a bit the fit range
         } else {
             maxMassForGaussianMean = upMassBoundary;

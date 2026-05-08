@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ## check if a file is good on eos, and delete it if it is not good
-# the file name should be of the form /eos/cms/... or root://eoscms//eos/cms
+# the file name should be of the form /eos/cms/... or root://cms-xrd-global.cern.ch///eos/cms
 ## a file is bad if:
 ## 1) the size is below a minimum threshold (default is 1 MB)
 ## 2) the kRecovered bit is true
@@ -25,9 +25,10 @@ print("")
 eosFile = args[0]
 eosFileNameToOpen = eosFile
 if eosFileNameToOpen.startswith("/eos/cms"):
-    eosFileNameToOpen = "root://eoscms/" + eosFile
-elif not eosFileNameToOpen.startswith("root://eoscms//eos/cms"):
-    print("Error: file name in input not valid, must start with /eos/cms or root://eoscms//eos/cms")
+    # eosFileNameToOpen = "root://cms-xrd-global.cern.ch//" + eosFile
+    eosFileNameToOpen = "root://cms-xrd-global.cern.ch//" + eosFile
+elif not eosFileNameToOpen.startswith("root://cms-xrd-global.cern.ch///eos/cms"):
+    print("Error: file name in input not valid, must start with /eos/cms or root://cms-xrd-global.cern.ch///eos/cms")
     quit()
 
 isGood = True

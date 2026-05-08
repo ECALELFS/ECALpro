@@ -781,7 +781,7 @@ void drawDistribution(TH1* h = NULL,
 
 void runOnTree(TH2* map_IC = NULL,
 	       TH2* map_IC_err = NULL,
-	       const string& treeRootFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_6/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_calibMap.root", 
+	       const string& treeRootFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_6/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_calibMap.root", 
 	       const Int_t izside = 0,
 	       const Bool_t iphiOnXaxis = true)
 {

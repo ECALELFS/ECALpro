@@ -64,7 +64,7 @@ static double EEetaRegionBoundary = 1.8; // 1.8 is boundary between region 1 and
 
 void makeStreamCorrelation(const bool isPi0 = true,
 			   const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/Optimization/correlation/looseSel/",
-			   const string& eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
+			   const string& eosPath = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/",
 			   const TString& dirList = "AlCaP0_fromHLTPhysics_2017AB_TreeOptim,AlCaP0_from_ParkingHLTPhysics_TreeOptim"
 		     ) 
 {
