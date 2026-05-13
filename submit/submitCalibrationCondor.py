@@ -293,7 +293,7 @@ for it in range(nIterations):
         debugout = changePermission.communicate()
 
 #build command with options and arguments
-calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(2)
+calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
 if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)

@@ -41,8 +41,8 @@ MakeNtuple4optimization = False # for HLT triggers study
 useCalibrationSelection = False # to use same selection of calibration when making ntuples (so not to copy all the cuts)
 useStreamSelection = False   # for now it only work with MakeNtuple4optimization = True, otherwise it is ignored, it is a hardcoded way to use the stream selection below
 #InputList and Folder name
-inputlist_n      = 'InputList/purified_AlCaP0_Run2026D_07_05_2026.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'
-dirname          = 'AlCaP0_2026D_TestCalib_test' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_adirname          = 'AlCaEta_2018_tagAsPi0ForULcalibration_ntuplesOptim' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
+inputlist_n      = 'InputList/purified_AlCaP0_Run2025DE_13_05_2026.list' if isMC==False else 'InputList/MultiPion_FlatPt-1To15_PhotonPtFilter_RunIIAutumn18DRPremix-102X_upgrade2018_realistic_v15-v2.list'
+dirname          = 'AlCaP0_2025DE_TestCalib_test' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_adirname          = 'AlCaEta_2018_tagAsPi0ForULcalibration_ntuplesOptim' if isMC==False else 'pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue'   #'pi0Gun_MCV2_EoverEtrue_foldSM' #'testMC_all_v2' #'AlCaP0_IC2017_upTo21September2017_2012regression_v2' # 'test' 
 NameTag          = dirname+'_' # Tag to the names to avoid overlap
 Silent           = False                 # True->Fill modules is silent; False->Fill modules has a standard output
 
@@ -61,7 +61,7 @@ queue            = 'cmscaf1nd'
 #############
 
 #ITERS
-nIterations      = 1 if isMC==False else 1 # 7
+nIterations      = 10 if isMC==False else 1 # 7
 if justCreateRecHits:
    nIterations = 1
 if MakeNtuple4optimization:
@@ -79,7 +79,7 @@ if justCreateRecHits:
    ijobmax = 1 # when recreating rechits from digis, keep same correspondance of files 
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
-Barrel_or_Endcap = 'ONLY_ENDCAP'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = 'EoverEtrue' # Option: 'EoverEtrue' , 'No'
 copyCCfileToTMP = False  # copy file from eos to /tmp/, should make jobs faster
 foldInSuperModule = False if isMC==False else True
