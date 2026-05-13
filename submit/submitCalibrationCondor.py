@@ -10,7 +10,8 @@ parser = OptionParser(usage="%prog [options]")
 parser.add_option("-c", "--create",           dest="create", action="store_true", default=False, help="Do not submit the jobs, only create the subfolders")
 parser.add_option("-l", "--daemon-local",     dest="daemonLocal", action="store_true", default=False, help="Do not submit a job to manage the daemon, do it locally")
 parser.add_option(      "--recover-fill",     dest="recoverFill", action="store_true", default=False, help="Before moving to the  hadd part of the calibration, first try to recover failed fills")
-parser.add_option("-t", "--token-file", dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
+parser.add_option("-t", "--token-file",       dest="tokenFile",  type="string", default="", help="File needed to renew token (when daemon running locally)")
+parser.add_option("-a", "--automation",       dest="automation", action="store_true", default=False, help="Run condor jobs inside automation singularity image")
 parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecoverFill",   type="float", default=0.97, help="Tolerance of EcalNtp loss. Require fraction of good EcalNtp above this number to skip recover");
 (options, args) = parser.parse_args()
 pwd = os.getcwd()
@@ -292,12 +293,13 @@ for it in range(nIterations):
         debugout = changePermission.communicate()
 
 #build command with options and arguments
-calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(njobs)
+calibCMD = "python3 " + pwd + "/calibJobHandlerCondor.py -n " + str(2)
 if options.recoverFill: calibCMD += " --recover-fill "
 if options.daemonLocal: calibCMD += " --daemon-local "
 if options.tokenFile:   calibCMD += " --token-file {tf}".format(tf=options.tokenFile)
 if options.minEfficiencyToRecoverFill >= 0.0:
         calibCMD += (" --min-efficiency-recover-fill " + str(options.minEfficiencyToRecoverFill)) 
+if options.automation:  calibCMD += " --automation"
 calibCMD += "\n"
 
 ### setting environment
@@ -323,7 +325,10 @@ dummy_exec.close()
 condor_file_name = condordir+'/condor_submit_daemon.condor'
 condor_file = open(condor_file_name,'w')
 # line 'next_job_start_delay = 1' not needed here
-condor_file.write('''Universe = vanilla
+if options.automation:
+    condor_file.write('''Universe = vanilla
+MY.XRDCP_CREATE_DIR     = True
+MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
 Executable = {de}
 use_x509userproxy = True
 x509userproxy = $ENV(X509_USER_PROXY)
@@ -335,7 +340,29 @@ environment = "LS_SUBCWD={here}"
 request_memory = 4000
 +MaxRuntime = 604800
 +JobBatchName = "ecalpro_daemon"
-'''.format(de=os.path.abspath(dummy_exec.name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
+'''.format(
+        de=os.path.abspath(dummy_exec.name),
+        ld=os.path.abspath(condordir),
+        here=os.environ['PWD']
+    ))
+else:
+    condor_file.write('''Universe = vanilla
+Executable = {de}
+use_x509userproxy = True
+x509userproxy = $ENV(X509_USER_PROXY)
+Log        = {ld}/$(ProcId).log
+Output     = {ld}/$(ProcId).out
+Error      = {ld}/$(ProcId).error
+getenv      = True
+environment = "LS_SUBCWD={here}"
+request_memory = 4000
++MaxRuntime = 604800
++JobBatchName = "ecalpro_daemon"
+'''.format(
+        de=os.path.abspath(dummy_exec.name), 
+        ld=os.path.abspath(condordir), 
+        here=os.environ['PWD']
+    ))
 if os.environ['USER'] in ['mciprian']:
     # mydate = datetime.today()
     # month = int(mydate.month)
