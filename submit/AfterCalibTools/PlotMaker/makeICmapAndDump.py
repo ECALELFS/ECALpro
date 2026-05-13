@@ -12,7 +12,7 @@ excludeMod4EBm06 = True if "2016" in foldername else False # might also have iph
 outpath = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/"
 outfull = outpath + foldername + "/iter_" + str(niter) + "/2DMaps/ICmaps/IC_work/"
 
-f1 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/{eosfd}/mciprian/{fd}/iter_{n}/{fd}_calibMap.root".format(eosfd=eosPi0Folder,
+f1 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/{eosfd}/mciprian/{fd}/iter_{n}/{fd}_calibMap.root".format(eosfd=eosPi0Folder,
                                                                                                                            fd=foldername, 
                                                                                                                            n=niter)
 

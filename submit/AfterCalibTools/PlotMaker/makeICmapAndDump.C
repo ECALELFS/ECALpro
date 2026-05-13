@@ -3,9 +3,9 @@
 using namespace std;
 
 void makeICmapAndDump(//const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot_Legacy/AlCaP0_AllRun2017_condor/iter_1/2DMaps/ICmaps/IC_work/",
-		      //const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_AllRun2017_condor/iter_1/AlCaP0_AllRun2017_condor_calibMap.root",
+		      //const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/AlCaP0_AllRun2017_condor/iter_1/AlCaP0_AllRun2017_condor_calibMap.root",
 		      const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6/iter_6/2DMaps/ICmaps/IC_work/",
-		      const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6/iter_6/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6_calibMap.root",
+		      const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6/iter_6/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_ext1_fromIter6_calibMap.root",
 		      const string& outICdumpFileName = "dumpIC_norm1etaRing.dat",
 		      const string& canvasNamePrefix = "calibMap_EB",
 		      const Double_t mapMin = 0.95,

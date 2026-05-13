@@ -49,7 +49,7 @@ static const int MIN_IPHI = 1;
 
 using namespace RooFit;
 
-//Usage: .x CheckFit.C+("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_0/2015A_calibMap.root",
+//Usage: .x CheckFit.C+("root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_0/2015A_calibMap.root",
 //                       "PlotFIT2015A_pi0", 0, true)
 //EBorEE: 0(EB+EE) 1(EB) 2(EE);
 void CheckFit( TString File, TString folder , int EBorEE=0, bool Are_pi0_=true ){

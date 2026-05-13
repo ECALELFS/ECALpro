@@ -3,7 +3,7 @@
 iter_ini=3
 iter_fin=3  # it is included in sequence below                                   
 
-eosPrefix="root://eoscms//eos/cms"                                        
+eosPrefix="root://cms-xrd-global.cern.ch//eos/cms"                                        
 wwwPath="/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/"                             
 eosPath="/store/group/dpg_ecal/alca_ecalcalib/piZero2016/mciprian/"
 dirName="AlcaP0_2016EF_mar2017newCond_reg2012_ext1"

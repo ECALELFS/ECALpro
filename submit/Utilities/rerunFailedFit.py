@@ -111,7 +111,7 @@ for f in sorted(files):
     if os.path.getsize > 100000:  # expect about 500 kB, so ask at least 100k
         # at this point the file should be good, but let's check if there are no recovered keys                                                           
         #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail                             
-        tf = TFile.Open("root://eoscms/"+f)        
+        tf = TFile.Open("root://cms-xrd-global.cern.ch//"+f)        
         #if not tf:             
         #    continue
         if not tf or tf.IsZombie(): 

@@ -41,10 +41,10 @@ using namespace std;
 // macro to normalize EB maps to 1 for crystals inside modules without using gaps
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
  
 void realNormalizeEoverEtrueMapsInModul(const string& outDir = "./",
-					const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
+					const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
 					const Int_t nPhoton = 1, // 1 or 2
 					const Double_t mapMin = 1.0, 
 					const Double_t mapMax = -1			    
@@ -202,7 +202,7 @@ void realNormalizeEoverEtrueMapsInModul(const string& outDir = "./",
 
 
 void normalizeEoverEtrueMapsInModule(const string& outDir = "./",
-				     const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
+				     const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM/iter_0/pi0Gun_MC_EoverEtrue_foldSM_calibMap.root",
 				     const Double_t mapMin = 0,
 				     const Double_t mapMax = -1) 
 {

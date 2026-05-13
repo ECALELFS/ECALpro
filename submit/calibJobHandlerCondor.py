@@ -53,23 +53,39 @@ def checkNjobsCondor(grepArg="ecalpro"):
 
 
 # helper function to save some lines, the file is not opened not closed here, this must be handled outside
-def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400):    
-    condor_file.write('''Universe = vanilla
-MY.XRDCP_CREATE_DIR     = True
-MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
-Executable = {de}
-arguments = $(script)
-use_x509userproxy = True
-Log        = {ld}/$(ProcId).log
-Output     = {ld}/$(ProcId).out
-Error      = {ld}/$(ProcId).error
-getenv      = True
-environment = "LS_SUBCWD={here}"
-request_memory = {mem}
-periodic_remove = ((JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600))
-+MaxRuntime = {time}
-+JobBatchName = "{jbn}"
-'''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ) )
+def writeCondorSubmitBase(condor_file="", dummy_exec_name="", logdir="", jobBatchName="undefined", memory=2000, maxtime=86400, automation=False):
+    if automation:    
+        condor_file.write('''Universe = vanilla
+        MY.XRDCP_CREATE_DIR     = True
+        MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
+        Executable = {de}
+        arguments = $(script)
+        use_x509userproxy = True
+        Log        = {ld}/$(ProcId).log
+        Output     = {ld}/$(ProcId).out
+        Error      = {ld}/$(ProcId).error
+        getenv      = True
+        environment = "LS_SUBCWD={here}"
+        request_memory = {mem}
+        periodic_remove = ((JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600))
+        +MaxRuntime = {time}
+        +JobBatchName = "{jbn}"
+        '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ))
+    else:
+        condor_file.write('''Universe = vanilla
+        Executable = {de}
+        arguments = $(script)
+        use_x509userproxy = True
+        Log        = {ld}/$(ProcId).log
+        Output     = {ld}/$(ProcId).out
+        Error      = {ld}/$(ProcId).error
+        getenv      = True
+        environment = "LS_SUBCWD={here}"
+        request_memory = {mem}
+        periodic_remove = ((JobStatus == 2) && (time() - EnteredCurrentStatus) > (48 * 3600))
+        +MaxRuntime = {time}
+        +JobBatchName = "{jbn}"
+        '''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(logdir), here=os.environ['PWD'], jbn=jobBatchName, mem=memory, time=maxtime ))
     if os.environ['USER'] in ['mciprian']:
         condor_file.write('+AccountingGroup = "group_u_CMS.CAF.ALCA"\n\n')
     else:
@@ -84,6 +100,7 @@ parser.add_option("-i", "--iteration", dest="iteration",  type="int",     defaul
 parser.add_option("-n", "--njobs", dest="njobs",  type="int",     default=0,   help="Number of jobs")
 #parser.add_option("-q", "--queue", dest="queue",  type="string",     default="",   help="Queue for running jobs")
 parser.add_option("--resubmit", dest="resubmit", action="store_true", default=False, help="Must be set to true when resubmitting jobs")
+parser.add_option("-a", "--automation", dest="automation", action="store_true", default=False, help="Enable automation condor options")
 parser.add_option("-r", "--run", dest="run",  type="string",     default="",   help="Specify where to start from when resubmitting jobs [hadd,finalhadd,fit,mergefit]")
 parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   help="Can be set to 1 or 2 to run on odd or even events to compute stat uncertainty on intercalibration constants. Default is 0 (run on all events)")
 (options, args) = parser.parse_args()
@@ -151,7 +168,7 @@ for iters in range(options.iteration,nIterations):
         if mymaxtimeFill > 48 * 3600:
             mymaxtimeFill = 48 * 3600
         writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fill", 
-                              memory=2000, maxtime=mymaxtimeFill) # this does not close the file
+                              memory=2000, maxtime=mymaxtimeFill, automation=options.automation) # this does not close the file
 
         print("\n*******  ITERATION " + str(iters) + "/" + str(nIterations-1) + "  *******")
         print("Submitting " + str(njobs) + " jobs")
@@ -221,7 +238,7 @@ for iters in range(options.iteration,nIterations):
                 if mymaxtimeFill > 48 * 3600:
                     mymaxtimeFill = 48 * 3600
                 writeCondorSubmitBase(condor_file, condordir+'/dummy_exec_fill.sh', logdir, "ecalpro_Fill_recovery", 
-                                      memory=2000, maxtime=mymaxtimeFill)  
+                                      memory=2000, maxtime=mymaxtimeFill, automation=options.automation)  
                 condor_file.write('queue script from (\n')
                 goodNtp = 0
                 for ih in range(njobs):
@@ -292,7 +309,7 @@ for iters in range(options.iteration,nIterations):
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_hadd.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000, maxtime=5000) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd",memory=2000, maxtime=5000, automation=options.automation) # this does not close the file
 
         print('Now adding files...')
         Nlist = 0
@@ -339,7 +356,7 @@ for iters in range(options.iteration,nIterations):
                     else:
                         # at this point the file should be good, but let's check if there are no recovered keys
                         #open and check there are no recovered keys: in this case remove these files from the list, otherwise hadd might fail
-                        tf = TFile.Open("root://eoscms/"+filetoCheck.strip())
+                        tf = TFile.Open("root://cms-xrd-global.cern.ch//"+filetoCheck.strip())
                         if not tf or tf.IsZombie(): continue
                         if tf.TestBit(TFile.kRecovered):
                             #print "HADD::Attemp to recover file {f}".format(f=filetoCheck.strip())
@@ -393,7 +410,7 @@ for iters in range(options.iteration,nIterations):
             filesize=0
             if os.path.exists(eosFile): filesize = os.path.getsize(eosFile)
             if filesize>100000:
-                tf = TFile.Open("root://eoscms/"+eosFile)
+                tf = TFile.Open("root://cms-xrd-global.cern.ch//"+eosFile)
                 if not tf or tf.IsZombie(): continue
                 if not tf.TestBit(TFile.kRecovered):                    
                     goodHadds += 1
@@ -413,7 +430,7 @@ for iters in range(options.iteration,nIterations):
             if not os.path.exists(logdir): os.makedirs(logdir)
             condor_file_name = condordir+'/condor_submit_hadd_recovery_{nr}.condor'.format(nr=str(HaddRecoveryAttempt))
             condor_file = open(condor_file_name,'w')
-            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000, maxtime=5000)  
+            writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Hadd_recovery",memory=2000, maxtime=5000, automation=options.automation)  
 
             print("Trying to recover failed hadd. Attempt n." + str(HaddRecoveryAttempt))
             goodHadds = 0
@@ -430,7 +447,7 @@ for iters in range(options.iteration,nIterations):
                     condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                     #print Hadd_src_n                
                 else: 
-                    tf = TFile.Open("root://eoscms/"+eosFile)
+                    tf = TFile.Open("root://cms-xrd-global.cern.ch//"+eosFile)
                     if not tf or tf.IsZombie():
                         condor_file.write('    {sf}\n'.format(sf=os.path.abspath(Hadd_src_n)))
                         continue # must not close file
@@ -495,7 +512,7 @@ for iters in range(options.iteration,nIterations):
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_finalHadd.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_FinalHadd", memory=2000, maxtime=5000) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_FinalHadd", memory=2000, maxtime=5000, automation=options.automation) # this does not close the file
         
         FHadd_src_n = srcPath + "/hadd/Final_HaddCfg_iter_" + str(iters) + ".sh"
         condor_file.write('queue script from (\n')
@@ -573,7 +590,7 @@ If this is not the case, modify FillEpsilonPlot.cc
     if not os.path.exists(logdir): os.makedirs(logdir)
     condor_file_name = condordir+'/condor_submit_fit.condor'
     condor_file = open(condor_file_name,'w')
-    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400) # this does not close the file
+    writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit", memory=2000, maxtime=86400, automation=options.automation) # this does not close the file
     condor_file.write('queue script from (\n')
 
     # preparing submission of fit tasks (EB)
@@ -650,7 +667,7 @@ If this is not the case, modify FillEpsilonPlot.cc
         if not os.path.exists(logdir): os.makedirs(logdir)
         condor_file_name = condordir+'/condor_submit_fit_recovery.condor'
         condor_file = open(condor_file_name,'w')
-        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400) # this does not close the file
+        writeCondorSubmitBase(condor_file, dummy_exec.name, logdir, "ecalpro_Fit_recovery", memory=2000, maxtime=86400, automation=options.automation) # this does not close the file
         condor_file.write('queue script from (\n')
         for fit in fit_src_toResub:
             condor_file.write('    {sf}\n'.format(sf=os.path.abspath(fit)))

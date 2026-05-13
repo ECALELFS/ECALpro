@@ -371,7 +371,7 @@ void tmp(const string& dirName = "AlCaP0_Run2017A_runs296966to296980_v2", const 
   // gROOT->ProcessLine(".L saveRooPlotFromFile.C++");
   // gROOT->ProcessLine(".L makeRooPlotFromFile.C++");
 
-  string eosPath = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
+  string eosPath = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/";
 
   bool isPi0 = usePi0;
   // safety check in case user makes mistakes with dirName and isPi0

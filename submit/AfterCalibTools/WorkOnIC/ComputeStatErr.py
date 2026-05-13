@@ -43,8 +43,8 @@ if (len(sys.argv) != 4):
     sys.exit(1)
 try:
     #Input
-    pathTH2_eve = 'root://eoscms//eos/cms' + sys.argv[1]
-    pathTH2_odd = 'root://eoscms//eos/cms' + sys.argv[2]
+    pathTH2_eve = 'root://cms-xrd-global.cern.ch//eos/cms' + sys.argv[1]
+    pathTH2_odd = 'root://cms-xrd-global.cern.ch//eos/cms' + sys.argv[2]
     Output  = sys.argv[3]
     print "Reading TH2F with Even IC in: " +str(pathTH2_eve)
     print "Reading TH2F with Odd IC in: " +str(pathTH2_odd)

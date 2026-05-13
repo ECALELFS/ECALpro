@@ -73,7 +73,7 @@ void drawICmap(const string& wwwPath = "",
   gStyle->SetPalette(55, 0);  // 1:raibow palette ; 107 kVisibleSpectrum ; 77 kDarkRainBow                                               
   gStyle->SetNumberContours(100); // default is 20 
 
-  string filename = "root://eoscms//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
+  string filename = "root://cms-xrd-global.cern.ch//eos/cms" + eosPath + dirName + "/" + iterNumber + "/" + tagName + "calibMap.root";
 
   TFile* f = TFile::Open(filename.c_str(),"READ");
   if (!f || !f->IsOpen()) {

@@ -52,7 +52,7 @@ using namespace RooFit;
 
 //5_3_6:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc5_amd64_gcc462/lcg/roofit/5.32.03-cms9/include/")
 //7_1_0:  gROOT->ProcessLine(".include /afs/cern.ch/cms/slc6_amd64_gcc481/lcg/roofit/5.34.22-cms2/include/")
-//Usage: .x Total_fit.C+("root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/
+//Usage: .x Total_fit.C+("root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/
 //ALL_Neutrino_Pt2to20_AVE40BX25_FoldEtaRing_eta01/iter_0/epsilonPlots.root", "Comp_2015A", "", true, true, false )
 void Total_fit( TString File, TString folder, TString Hname, bool RunOnAll, bool isEB=true, bool Are_pi0_=true ){
  

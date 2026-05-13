@@ -68,10 +68,10 @@ void Residual( string inputFile0, string inputFile , string NiterEB,string Niter
     Final_tree->Branch( "iphi1_", &iphi1_, "iphi1_/I");  
 
     //In File
-    string inputFile_mineEB = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEB + "/" + Tag + "calibMap.root";
-    string inputFile_mineEE = "root://eoscms//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEE + "/" + Tag + "calibMap.root";
-    if(isPi0) inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
-    else      inputFile             = "root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_forResid_01/iter_15/2010_calibMap.root";
+    string inputFile_mineEB = "root://cms-xrd-global.cern.ch//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEB + "/" + Tag + "calibMap.root";
+    string inputFile_mineEE = "root://cms-xrd-global.cern.ch//eos/cms" + inputFile0 + inputFile + "/iter_"+ NiterEE + "/" + Tag + "calibMap.root";
+    if(isPi0) inputFile             = "root://cms-xrd-global.cern.ch//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_WithNEWSelection_02/iter_13/calibMap.root";
+    else      inputFile             = "root://cms-xrd-global.cern.ch//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2010_forResid_01/iter_15/2010_calibMap.root";
     TFile* f_base = TFile::Open( inputFile.c_str() );
     if(!f_base) {
 	  cout << "Invalid file: " << inputFile << " .. try again" << endl;

@@ -14,10 +14,10 @@ ROOT.gStyle.SetPalette(1)
 ROOT.gStyle.SetOptFit(11111)
 
 #python MultiplyIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
-#root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A_Iter9 IC_Plotted.root --SystErr FIT
+#root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A_Iter9 IC_Plotted.root --SystErr FIT
 
 #python MultiplyIC_txt_root.py Original_IC/2015B_BON_dump_EcalIntercalibConstants__since_00251004_till_18446744073709551615.dat
-#root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015B_Multifit_01/iter_13/2015B_calibMap.root 2015B_CMSSW746_GTGR_P_V56_Iter13_Error
+#root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015B_Multifit_01/iter_13/2015B_calibMap.root 2015B_CMSSW746_GTGR_P_V56_Iter13_Error
 #IC_Plotted.root --SystErr FIT
 
 def usage():
@@ -428,7 +428,7 @@ def TEST_average(options):
 
 print "STARTING"
 Usage = """python MultiplyIC_txt_root.py Original_IC/2015A_BOFF_dump_EcalIntercalibConstants__since_00239580_till_00251003.dat
-root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A Absolute_IC.root
+root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/lpernie/ALL_2015A_RAW_RECHIT_SMIC_estimTime_01/iter_8/2015A_calibMap.root 2015A Absolute_IC.root
 --SystErr ITplus1"""
 
 if (len(sys.argv) < 5):

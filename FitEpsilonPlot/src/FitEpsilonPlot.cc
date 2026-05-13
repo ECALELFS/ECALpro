@@ -2025,7 +2025,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     canvas->SetLeftMargin(0.15);
 
     Double_t upMassBoundaryEB = Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EB; 
-    Double_t upMassBoundaryEE = Are_pi0_? upper_bound_pi0mass_EB:upper_bound_etamass_EE; 
+    Double_t upMassBoundaryEE = Are_pi0_? upper_bound_pi0mass_EE:upper_bound_etamass_EE; 
     Double_t upMassBoundary = (mode==Pi0EB) ? upMassBoundaryEB : upMassBoundaryEE;
     // need a patch for some crystals in EB that might have the peak around 160 MeV due to high laser corrections.
     // depending on the year, the containment corrections might also increase a bit the peak position
@@ -2033,7 +2033,7 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
     Double_t xValMaxHisto = h->GetXaxis()->GetBinCenter(h->GetMaximumBin()+1); // use value just above maximum, it will be used to set the mean of the gaussian
     // check the maximum is within xlo and xhi (the histogram range is larger than the fit range)
     Double_t maxMassForGaussianMean = 0.0; //upper_bound_pi0mass_EB;
-    // first check if peak is in the fit range (for EB it will be, in EE the background rises up and the maximum might not coincide wth peak)
+    // first check if peak is in the fit range (for EB it will be, in EE the background rises up and the maximum might not coincide with peak)
     if (xValMaxHisto < xhi) {
 
       if (xValMaxHisto > upMassBoundary) {
@@ -2056,10 +2056,8 @@ Pi0FitResult FitEpsilonPlot::FitMassPeakRooFit(TH1F* h, double xlo, double xhi, 
       }
       // check if maximum was found and it was not the last-1 bin
       // in that case, use the next bin to get max value for mass, just to avoid biases (that's why we asked last-1)
-      if (binYmaxHisto > 0 && binYmaxHisto < (h->GetXaxis()->FindFixBin(xhi)-1)) {
+      if (binYmaxHisto > 0 && binYmaxHisto < (h->GetXaxis()->FindFixBin(upMassBoundary))) {
 	maxMassForGaussianMean = h->GetXaxis()->GetBinCenter(binYmaxHisto+1);
-	if (maxMassForGaussianMean > upMassBoundary) xhi = Are_pi0_? fitRange_high_pi0_ext : fitRange_high_eta_ext;  //xhi + 0.012; // increase a bit the fit range
-
       } else {
 	maxMassForGaussianMean = upMassBoundary; // if all this mess didn't work, just use the value we would have used in the beginning
       }

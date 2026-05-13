@@ -34,7 +34,7 @@ static const int MAX_IPHI = 360;
 static const int MIN_IETA = 1;
 static const int MIN_IPHI = 1;
 
-//Usage: .x DeadXtal.C+("root://eoscms//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2012C_pi0_NewTag_01/iter_0/2012C_epsilonPlots.root","plots/")
+//Usage: .x DeadXtal.C+("root://cms-xrd-global.cern.ch//eos/cms/store/group/alca_ecalcalib/lpernie/ALL_2012C_pi0_NewTag_01/iter_0/2012C_epsilonPlots.root","plots/")
 void DeadXtal( TString Path, TString OutDir ){
 
   //Starting

@@ -77,7 +77,7 @@ private:
 // macro to plot compare pairs of plots in the calibration epsilon files
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
 
 //=============================================================
 
@@ -255,8 +255,8 @@ void adjustSettings_CMS_lumi(const string& outputDir = "./") {
  
 
 void compareDistributionsTwoFile(const string& outDir = "",			  
-				 const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
-				 const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
+				 const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
+				 const string& inputFile2 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
 				 const string& leg1 ="file 1",
 				 const string& leg2 ="file 2"
 			  ) 
@@ -333,7 +333,7 @@ void compareDistributionsTwoFile(const string& outDir = "",
 //=========================================
 
 void compareDistributionsSameFile(const string& outDir = "",			  
-				  const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_3/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root"
+				  const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_3/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root"
 				  ) 
 {
 
@@ -387,8 +387,8 @@ void compareDistributionsSameFile(const string& outDir = "",
 
 void compareDistributions(const string& outDir = "",			  
 			  const Bool_t fromSameFile = true,
-			  const string& inputFile = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
-			  const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
+			  const string& inputFile = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC/iter_5/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_epsilonPlots.root",
+			  const string& inputFile2 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3/iter_1/AlCaP0_Run2017_DE_run304366_ContCorrEoverEtrueScaledToV2MC_nxtal9both_ext1_fromIter3_epsilonPlots.root",
 			  const string& leg1 ="file 1",
 			  const string& leg2 ="file 2"		
 			  ) 

@@ -104,8 +104,8 @@ void saveRooPlotFromFile() {
 
   string outputDIR_EB = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/iter_0/fitResPlots/Barrel/";
   string outputDIR_EE = "/afs/cern.ch/user/m/mciprian/www/pi0calib/ICplot/" + dirName + "/iter_0/fitResPlots/Endcap/";
-  string inputDIR_EB = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" + dirName + "/iter_0/" + dirName + "_Barrel_15_fitRes.root";
-  string inputDIR_EE = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" + dirName + "/iter_0/" + dirName + "_Endcap_3_fitRes.root";
+  string inputDIR_EB = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" + dirName + "/iter_0/" + dirName + "_Barrel_15_fitRes.root";
+  string inputDIR_EE = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/" + dirName + "/iter_0/" + dirName + "_Endcap_3_fitRes.root";
 
   string outputFileName = "pi0Mass_singleXtal_Rooplot.root";
 

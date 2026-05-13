@@ -41,7 +41,7 @@ using namespace std;
 // macro to plot maps of containment correction from E/Etrue in MC
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
  
 void realDrawEoverEtrueMaps(const string& outDir = "",
 			    const string& inputFile = "",
@@ -166,8 +166,8 @@ void realDrawEoverEtrueMaps(const string& outDir = "",
 
 void makeMapRatio(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue_2018/ratio_CC/2018over2017/",
 		  const string& canvasSuffix = "ratioCC_2018over2017",
-		  const string& inputFile1 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root",
-		  const string& inputFile2 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM_v4/iter_0/pi0Gun_MC_EoverEtrue_foldSM_v4_calibMap.root") 
+		  const string& inputFile1 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero_Run2/mciprian/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue/iter_0/pi0CC_2018_EoverEtrue_foldSM_nFit10_onlyEB_fixGamma2EoverEtrue_calibMap.root",
+		  const string& inputFile2 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MC_EoverEtrue_foldSM_v4/iter_0/pi0Gun_MC_EoverEtrue_foldSM_v4_calibMap.root") 
 {
 
   system(Form("mkdir -p %s",outDir.c_str()));

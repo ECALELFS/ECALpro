@@ -15,6 +15,7 @@ parser.add_option("--min-efficiency-recover-fill",   dest="minEfficiencyToRecove
 parser.add_option("-i", "--iteration", dest="iteration",  type="int",     default=0,   help="Iteration to start from, usually 0 unless resubmitting jobs")
 parser.add_option("-n", "--njobs", dest="njobs",  type="int",     default=0,   help="Number of jobs")
 #parser.add_option("-q", "--queue", dest="queue",  type="string",     default="",   help="Queue for running jobs")
+parser.add_option("-a", "--automation", dest="automation", action="store_true", default=False, help="Enable automation condor options")
 parser.add_option("-r", "--run", dest="run",  type="string",     default="",   help="Specify where to start from when resubmitting jobs [hadd,finalhadd,fit,mergefit]")
 parser.add_option("-s", "--syst", dest="syst",  type="int",     default=0,   help="To run on all events (0, default), only even (1) or odd (2) events ")
 (options, args) = parser.parse_args()
@@ -42,6 +43,7 @@ if options.daemonLocal: pycmd += " --daemon-local "
 if options.tokenFile: pycmd += " --token-file {tf}".format(tf=options.tokenFile)
 if options.minEfficiencyToRecoverFill >= 0.0:
         pycmd += (" --min-efficiency-recover-fill " + str(options.minEfficiencyToRecoverFill))
+if options.automation: pycmd += " --automation"
 
 print(pycmd)
 env_script_f.write(pycmd + "\n")
@@ -56,9 +58,23 @@ dummy_exec_name = condordir+'/dummy_exec_daemon.sh'
 
 condor_file_name = condordir+'/condor_resubmit_daemon.condor'
 condor_file = open(condor_file_name,'w')
-condor_file.write('''Universe = vanilla
+if options.automation:
+    condor_file.write('''Universe = vanilla
 MY.XRDCP_CREATE_DIR     = True
 MY.SingularityImage     = "/cvmfs/unpacked.cern.ch/gitlab-registry.cern.ch/cms-ecal-dpg/ecalelfs/automation:prod"
+Executable = {de}
+use_x509userproxy = True
+Log        = {ld}/$(ProcId).log
+Output     = {ld}/$(ProcId).out
+Error      = {ld}/$(ProcId).error
+getenv      = True
+environment = "LS_SUBCWD={here}"
+request_memory = 4000
++MaxRuntime = 604800
++JobBatchName = "ecalpro_daemon"
+'''.format(de=os.path.abspath(dummy_exec_name), ld=os.path.abspath(condordir), here=os.environ['PWD'] ) )
+else:
+    condor_file.write('''Universe = vanilla
 Executable = {de}
 use_x509userproxy = True
 Log        = {ld}/$(ProcId).log

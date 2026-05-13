@@ -256,7 +256,7 @@ void Convergence::run(const string& detectorToSkip = "no", const Bool_t& saveHis
       cout << "Running chunk " << iChunk << " iteration offset = " << iterOffset << endl;
       
       Int_t PrevChunkConsidered = false;   // when using an extension, it triggers the usage of the last calibMap from previous set of iterations
-      string PathL = "root://eoscms//eos/cms" + Path_0_ + Paths_[iChunk];
+      string PathL = "root://cms-xrd-global.cern.ch//eos/cms" + Path_0_ + Paths_[iChunk];
       
       for(int i=0; i<(int)nIters_[iChunk]-1; ++i){
 
@@ -275,7 +275,7 @@ void Convergence::run(const string& detectorToSkip = "no", const Bool_t& saveHis
         
 	if (iChunk > 0 && i == 0 && !PrevChunkConsidered) {
         
-	  string PathLPrevChunk = "root://eoscms//eos/cms" + Path_0_ + Paths_[iChunk-1];
+	  string PathLPrevChunk = "root://cms-xrd-global.cern.ch//eos/cms" + Path_0_ + Paths_[iChunk-1];
           stringstream ssNminus1; ssNminus1 << nIters_[iChunk-1]-1;
           string fileName = string(PathLPrevChunk) + "/iter_" + ssNminus1.str() + "/" + string(Tags_[iChunk-1]) + "calibMap.root";   
           cout<<"Opening: "<<fileName<<endl;
@@ -624,7 +624,7 @@ Int_t main(int argc, char* argv[]) {
   // iter_num is the number of iterations, so if you have iter_0, ..., iter_4 then iter_num = 5
 
   string eosPath(argv[1]);
-  //eosPath = "root://eoscms//eos/cms" + eosPath;
+  //eosPath = "root://cms-xrd-global.cern.ch//eos/cms" + eosPath;
   string dirName(argv[2]);
   Int_t iter_num = atoi(argv[3]);
   string tagName(argv[4]);

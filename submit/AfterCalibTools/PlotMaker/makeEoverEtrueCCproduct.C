@@ -9,7 +9,7 @@ using namespace std;
 // you a have a photon 1 or 2 yet
 // pass:
 // 1) the name of the folder where to store the output plots
-// 2) the input file name where the maps are stored (the file is probably on EOS, use root://eoscms//eos/cms/...)
+// 2) the input file name where the maps are stored (the file is probably on EOS, use root://cms-xrd-global.cern.ch//eos/cms/...)
  
 // the map in the calibMap file has ieta on x axis, but we produce the map with iphi on x axis (for full EB)
 // we keep ieta on x axis for a single SM
@@ -146,7 +146,7 @@ void realDrawMapProduct(const string& outDir = "",
 
 
 void makeEoverEtrueCCproduct(const string& outDir = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/product_CC/pi0Gun_MC_EoverEtrue_foldSM_v4_iter2/",
-			     const string& inputFile1 = "root://eoscms//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC_iter2_notScaled/iter_0/pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC_iter2_notScaled_calibMap.root",
+			     const string& inputFile1 = "root://cms-xrd-global.cern.ch//eos/cms/store/group/dpg_ecal/alca_ecalcalib/piZero2017/mciprian/pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC_iter2_notScaled/iter_0/pi0Gun_MCV1_EoverEtrue_foldSM_EoverEtrueCC_iter2_notScaled_calibMap.root",
 			     const string& inputFile2 = "/afs/cern.ch/user/m/mciprian/www/pi0calib/CC_EoverEtrue/product_CC/pi0Gun_MC_EoverEtrue_foldSM_v4_iter1/ContainmentCorrections_EoverEtrue.root",
 			     const Double_t mapMin = 1.0,
 			     const Double_t mapMax = 1.12 
