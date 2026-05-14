@@ -79,7 +79,7 @@ if justCreateRecHits:
    ijobmax = 1 # when recreating rechits from digis, keep same correspondance of files 
 nHadd            = 35 #35                    # 35 number of files per hadd
 nFit             = 2000 if isMC==False else 10                 # number of fits done in parallel
-Barrel_or_Endcap = 'ALL_PLEASE'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
+Barrel_or_Endcap = 'ONLY_ENDCAP'          # Option: 'ONLY_BARREL','ONLY_ENDCAP','ALL_PLEASE'
 ContainmentCorrection = 'EoverEtrue' # Option: 'EoverEtrue' , 'No'
 copyCCfileToTMP = False  # copy file from eos to /tmp/, should make jobs faster
 foldInSuperModule = False if isMC==False else True
