@@ -1,13 +1,13 @@
 #! /bin/bash
 
-thisYear="26"   # use 16, 17, 18
+thisYear="25"   # use 16, 17, 18
 dayMonthYear=`date +%d_%m_%Y`
 dataset="AlCaP0"
 runYear="20${thisYear}"
 # eras=(B C D E F G)
-eras=(D)
+eras=(D E)
 #JsonFilter="/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions${thisYear}/13TeV/DCSOnly/json_DCSONLY.txt"   # caution to the year
-JsonFilter="/afs/cern.ch/user/d/delvecch/CMSSW_15_0_18/src/CalibCode/submit/InputList/Collisions26_13p6TeV_Latest.json"
+JsonFilter="/afs/cern.ch/user/d/delvecch/CMSSW_15_0_18/src/CalibCode/submit/InputList/Collisions25_13p6TeV_Latest.json"
 firstRunBrilcalc="" # can be empty, otherwise it is used to select a run range for the brilcalc command
 lastRunBrilcalc="" # can be empty, otherwise it is used to select a run range for the brilcalc command
 
@@ -15,7 +15,7 @@ ecalproFolder="${CMSSW_BASE}/src/CalibCode/submit/"
 outputdir="${ecalproFolder}InputList/"
 # outputfile="${dataset}_Run${runYear}${dataEra}_${dayMonthYear}.list"
 # outputfile="${dataset}_Run${runYear}${eras[0]}${eras[-1]}_${dayMonthYear}.list"
-outputfile="${dataset}_Run${runYear}${eras[0]}_${dayMonthYear}.list"
+outputfile="${dataset}_Run${runYear}${eras[0]}${eras[-1]}_${dayMonthYear}.list"
 fileList="${outputdir}${outputfile}"
 brilcalcOutputFile="${ecalproFolder}brilcalc_${outputfile/list/txt}"
 
