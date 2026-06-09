@@ -141,6 +141,7 @@ process.source = cms.Source('PoolSource',
                             
                         #'root://cms-xrd-global.cern.ch//store/data/Run2018D/AlCaP0/RAW/v1/000/321/396/00000/248ADA80-FBA1-E811-8742-FA163E7B2F96.root'
                         ),
+                            delayReadingEventProducts=cms.untracked.bool(False), # Workaround for rare FileReadError exceptions. See https://github.com/cms-sw/cmssw/issues/49398
                             skipBadFiles = cms.untracked.bool(False)
 )
 
